@@ -224,6 +224,9 @@ export default function OrderRoutingSection() {
                       <TableRow key={order.id} className="border-slate-700">
                         <TableCell className="text-white font-mono text-xs">
                           #{order.id.slice(-8)}
+                          {order.is_priority && (
+                            <Badge className="ml-2 bg-orange-500">⚡</Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-slate-300">
                           <div>
@@ -239,6 +242,9 @@ export default function OrderRoutingSection() {
                         </TableCell>
                         <TableCell className="text-white font-semibold">
                           ${order.total_amount.toFixed(2)}
+                          {order.is_priority && (
+                            <span className="text-xs text-orange-400 block">+$4 priority</span>
+                          )}
                         </TableCell>
                         <TableCell className="text-cyan-400">
                           ${calculatePlatformShare(order.total_amount)}
@@ -371,6 +377,9 @@ export default function OrderRoutingSection() {
                     <CardTitle className="text-white text-sm flex items-center gap-2">
                       <Printer className="w-4 h-4" />
                       Assigned Maker
+                      {selectedOrder.is_priority && (
+                        <Badge className="bg-orange-500 ml-2">⚡ PRIORITY</Badge>
+                      )}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -397,6 +406,13 @@ export default function OrderRoutingSection() {
                         </div>
                       );
                     })()}
+                    {selectedOrder.is_priority && (
+                      <div className="mt-4 p-3 bg-orange-900/20 border border-orange-500/30 rounded">
+                        <p className="text-sm text-orange-300">
+                          <strong>⚡ PRIORITY ORDER:</strong> Must be completed by next day
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               )}
