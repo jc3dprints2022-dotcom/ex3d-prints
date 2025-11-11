@@ -356,6 +356,13 @@ The EX3D Team`
                   {selectedRequest.budget_range && (
                     <div className="col-span-2"><span className="font-medium text-white">Budget Range:</span> {selectedRequest.budget_range}</div>
                   )}
+                  {selectedRequest.is_class_project && (
+                    <div className="col-span-2">
+                      <span className="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
+                        🎓 CLASS PROJECT - 25% OFF ELIGIBLE
+                      </span>
+                    </div>
+                  )}
                   {selectedRequest.special_requirements && (
                     <div className="col-span-2"><span className="font-medium text-white">Special Requirements:</span> {selectedRequest.special_requirements}</div>
                   )}
