@@ -238,6 +238,11 @@ Deno.serve(async (req) => {
 
                         const priorityText = order.is_priority ? '\n\n⚡⚡⚡ PRIORITY OVERNIGHT ORDER ⚡⚡⚡\nThis order MUST be completed by the next day!\n' : '';
 
+                        const earningsCalculation = ((order.total_amount || 0) * 0.7) - 0.30 + (order.is_priority ? 2.80 : 0);
+                        const earningsNote = order.is_priority 
+                          ? ' (70% - $0.30 Stripe fee + $2.80 priority bonus)'
+                          : ' (70% - $0.30 Stripe fee)';
+
                         await base44.asServiceRole.functions.invoke('sendEmail', {
                             to: maker.email,
                             subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
@@ -247,7 +252,7 @@ You have a new order assigned to you!${priorityText}
 
 Order ID: ${order.id.slice(-8)}
 Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${(((order.total_amount || 0) * 0.7) - 0.30).toFixed(2)} (70% - $0.30 Stripe fee)
+Your Earnings: $${earningsCalculation.toFixed(2)}${earningsNote}
 
 Order Details:
 ${itemsDetails}
@@ -307,6 +312,11 @@ The EX3D Team`
 
                 const priorityText = order.is_priority ? '\n\n⚡⚡⚡ PRIORITY OVERNIGHT ORDER ⚡⚡⚡\nThis order MUST be completed by the next day!\n' : '';
 
+                const earningsCalculation = ((order.total_amount || 0) * 0.7) - 0.30 + (order.is_priority ? 2.80 : 0);
+                const earningsNote = order.is_priority 
+                  ? ' (70% - $0.30 Stripe fee + $2.80 priority bonus)'
+                  : ' (70% - $0.30 Stripe fee)';
+
                 await base44.asServiceRole.functions.invoke('sendEmail', {
                     to: maker.email,
                     subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
@@ -316,7 +326,7 @@ You have a new order assigned to you!${priorityText}
 
 Order ID: ${order.id.slice(-8)}
 Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${(((order.total_amount || 0) * 0.7) - 0.30).toFixed(2)} (70% - $0.30 Stripe fee)
+Your Earnings: $${earningsCalculation.toFixed(2)}${earningsNote}
 
 Order Details:
 ${itemsDetails}

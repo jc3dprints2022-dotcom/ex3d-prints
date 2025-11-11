@@ -4,9 +4,9 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Package, Clock } from "lucide-react";
+import { DollarSign, TrendingUp, Package, Clock, Loader2 } from "lucide-react"; // Added Loader2
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { useToast } from "@/components/ui/use-toast"; // Added for toast notifications
+import { useToast } from "@/components/ui/use-toast";
 
 export default function PaymentsFinancialsSection() {
   const [orders, setOrders] = useState([]);
@@ -20,6 +20,7 @@ export default function PaymentsFinancialsSection() {
   const [platformRevenue, setPlatformRevenue] = useState(0); // New state for Platform Revenue
   const [makerProfits, setMakerProfits] = useState(0); // New state for Maker Profits
   const [loading, setLoading] = useState(true); // New loading state
+  const [makersList, setMakersList] = useState([]); // New state for maker payouts
 
   const { toast } = useToast();
 
@@ -39,39 +40,77 @@ export default function PaymentsFinancialsSection() {
     try {
       const allOrders = await base44.entities.Order.list();
       const allProducts = await base44.entities.Product.list();
-      
+      const allUsers = await base44.entities.User.list(); // Fetch all users
+
       setOrders(allOrders);
       setProducts(allProducts);
 
       // Calculate metrics based on completed and paid orders
-      const completedOrders = allOrders.filter(o => 
+      const completedOrders = allOrders.filter(o =>
         ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
       );
-      
+
       const revenue = completedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
       setTotalRevenue(revenue);
 
       // Calculate average price per order (reusing avgPricePerHour state for this)
-      const avgPricePerOrder = completedOrders.length > 0 
-        ? revenue / completedOrders.length 
+      const avgPricePerOrder = completedOrders.length > 0
+        ? revenue / completedOrders.length
         : 0;
       setAvgPricePerHour(avgPricePerOrder);
 
-      // Platform revenue (30% + $0.30 per order)
-      const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => 
-        sum + ((o.total_amount || 0) * 0.30) + 0.30, 0
-      );
+      // Platform revenue (30% + $0.30 per order PLUS 30% of priority fees)
+      const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => {
+        const baseRevenue = ((o.total_amount || 0) * 0.30) + 0.30;
+        // If priority, add 30% of $4 = $1.20
+        const priorityRevenue = o.is_priority ? 1.20 : 0;
+        return sum + baseRevenue + priorityRevenue;
+      }, 0);
       setPlatformRevenue(calculatedPlatformRevenue);
 
-      // Maker profits (70% - $0.30 per order)
-      const calculatedMakerProfits = completedOrders.reduce((sum, o) => 
-        sum + ((o.total_amount || 0) * 0.70) - 0.30, 0
-      );
+      // Maker profits (70% - $0.30 per order PLUS 70% of priority fees)
+      const calculatedMakerProfits = completedOrders.reduce((sum, o) => {
+        const baseProfit = ((o.total_amount || 0) * 0.70) - 0.30;
+        // If priority, add 70% of $4 = $2.80
+        const priorityProfit = o.is_priority ? 2.80 : 0;
+        return sum + baseProfit + priorityProfit;
+      }, 0);
       setMakerProfits(calculatedMakerProfits);
+
+      // Calculate per-maker earnings
+      const makerEarnings = {};
+      completedOrders.forEach(order => {
+        if (order.maker_id) {
+          if (!makerEarnings[order.maker_id]) {
+            makerEarnings[order.maker_id] = 0;
+          }
+          const baseEarning = ((order.total_amount || 0) * 0.70) - 0.30;
+          const priorityEarning = order.is_priority ? 2.80 : 0;
+          makerEarnings[order.maker_id] += baseEarning + priorityEarning;
+        }
+      });
+
+      // Get maker details
+      const makersList = [];
+      for (const [makerId, earnings] of Object.entries(makerEarnings)) {
+        const maker = allUsers.find(u => u.maker_id === makerId); // Assuming 'maker_id' is a property on User
+        if (maker) {
+          makersList.push({
+            maker_id: makerId,
+            full_name: maker.full_name,
+            email: maker.email,
+            earnings: earnings
+          });
+        }
+      }
+
+      // Sort by earnings (highest first)
+      makersList.sort((a, b) => b.earnings - a.earnings);
+      setMakersList(makersList);
 
       // The useEffect hook with [orders, ordersTimeRange, profitTimeRange] dependencies
       // will trigger generateOrdersChart and generateProfitChart after setOrders(allOrders).
-      
+
     } catch (error) {
       console.error("Failed to load financial data:", error);
       toast({ title: "Failed to load data", variant: "destructive" });
@@ -82,7 +121,7 @@ export default function PaymentsFinancialsSection() {
   const getTimeRangeDate = (range) => {
     const now = new Date();
     const startDate = new Date();
-    
+
     switch(range) {
       case 'day':
         startDate.setDate(now.getDate() - 1);
@@ -101,15 +140,15 @@ export default function PaymentsFinancialsSection() {
       default:
         startDate.setDate(now.getDate() - 7);
     }
-    
+
     return startDate;
   };
 
   const generateOrdersChart = () => {
     const startDate = getTimeRangeDate(ordersTimeRange);
     const now = new Date();
-    
-    const filteredOrders = startDate 
+
+    const filteredOrders = startDate
       ? orders.filter(o => {
           const orderDate = new Date(o.created_date);
           return orderDate >= startDate && orderDate <= now;
@@ -140,8 +179,8 @@ export default function PaymentsFinancialsSection() {
   const generateProfitChart = () => {
     const startDate = getTimeRangeDate(profitTimeRange);
     const now = new Date();
-    
-    const filteredOrders = startDate 
+
+    const filteredOrders = startDate
       ? orders.filter(o => {
           const orderDate = new Date(o.created_date);
           return orderDate >= startDate && orderDate <= now && o.payment_status === 'paid';
@@ -215,7 +254,7 @@ export default function PaymentsFinancialsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${platformRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">30% + $0.30 per completed order</p>
+            <p className="text-xs text-muted-foreground mt-1">30% + $0.30 per completed order (+ priority fees)</p>
           </CardContent>
         </Card>
 
@@ -226,7 +265,7 @@ export default function PaymentsFinancialsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${makerProfits.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">70% - $0.30 per completed order</p>
+            <p className="text-xs text-muted-foreground mt-1">70% - $0.30 per completed order (+ priority fees)</p>
           </CardContent>
         </Card>
       </div>
@@ -318,6 +357,41 @@ export default function PaymentsFinancialsSection() {
                 </div>
               ))}
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Maker Payouts */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Maker Payouts</CardTitle>
+          <p className="text-sm text-muted-foreground mt-1">
+            Total owed to makers for completed orders (70% - $0.30 per order + 70% of priority fees)
+          </p>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+            </div>
+          ) : makersList.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">No maker payouts yet</p>
+          ) : (
+            <div className="space-y-3">
+              {makersList.map(maker => (
+                <div key={maker.maker_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div className="flex-1">
+                    <p className="font-semibold">{maker.full_name}</p>
+                    <p className="text-sm text-gray-600">{maker.email}</p>
+                    <p className="text-xs text-gray-500 mt-1">Maker ID: {maker.maker_id}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold text-green-600">${maker.earnings.toFixed(2)}</p>
+                    <p className="text-xs text-gray-500">Owed</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

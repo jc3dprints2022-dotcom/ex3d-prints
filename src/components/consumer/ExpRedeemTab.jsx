@@ -43,7 +43,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
       const allTransactions = await base44.entities.ExpTransaction.filter(
         { user_id: user.id },
         '-created_date',
-        20
+        50 // Changed limit from 20 to 50
       );
       setTransactions(allTransactions);
     } catch (error) {
@@ -276,6 +276,24 @@ export default function ExpRedeemTab({ user, onUpdate }) {
                     <p className="text-sm text-gray-500">
                       {new Date(tx.created_date).toLocaleDateString()}
                     </p>
+                    {tx.stripe_coupon_id && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <Badge variant="outline" className="font-mono text-xs">
+                          {tx.stripe_coupon_id}
+                        </Badge>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            navigator.clipboard.writeText(tx.stripe_coupon_id);
+                            toast({ title: "Coupon code copied!" });
+                          }}
+                          className="h-6 px-2"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                   <Badge className={tx.action === 'earned' ? 'bg-green-500' : 'bg-orange-500'}>
                     {tx.action === 'earned' ? '+' : ''}{tx.amount} EXP
