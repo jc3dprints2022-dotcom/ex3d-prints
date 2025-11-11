@@ -94,14 +94,35 @@ Deno.serve(async (req) => {
                 if (maker && maker.email) {
                     await base44.integrations.Core.SendEmail({
                         to: maker.email,
-                        subject: 'Order Cancelled by Customer - EX3D Prints',
+                        subject: '🚫 Order Cancelled by Customer - EX3D Prints',
                         body: `Hi ${maker.full_name},
 
-Order #${orderId.slice(-8)} has been cancelled by the customer and refunded.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚠️ ORDER CANCELLATION NOTICE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Cancellation Reason: ${cancellationReason}
+Order #${orderId.slice(-8)} has been cancelled by the customer.
 
-If you've already started printing, please stop immediately.
+Order Total: $${order.total_amount?.toFixed(2)}
+Your Lost Earnings: $${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
+
+Cancellation Reason:
+${cancellationReason}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚠️ ACTION REQUIRED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+If you've already started printing this order:
+• STOP printing immediately
+• Do not continue work on this order
+• The customer has been refunded
+
+If you haven't started:
+• No action needed
+• This order will be removed from your dashboard
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Best regards,
 The EX3D Team`
@@ -116,19 +137,36 @@ The EX3D Team`
         try {
             await base44.integrations.Core.SendEmail({
                 to: user.email,
-                subject: 'Order Cancellation Confirmed - EX3D Prints',
+                subject: '✅ Order Cancellation Confirmed - EX3D Prints',
                 body: `Hi ${user.full_name},
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ORDER CANCELLATION CONFIRMED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Your order #${orderId.slice(-8)} has been successfully cancelled and refunded.
 
+Order Details:
+${order.items?.map(item => `• ${item.product_name} (x${item.quantity})`).join('\n')}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   💰 REFUND INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Refund Amount:      $${order.total_amount?.toFixed(2)}
+Processing Time:    5-10 business days
+Refund Method:      Original payment method
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 The refund will appear in your account within 5-10 business days.
 
-Total Refunded: $${order.total_amount.toFixed(2)}
-
-If you have any questions, please contact us at support@ex3dprints.com
+Need help? Contact us at support@ex3dprints.com
 
 Best regards,
-The EX3D Team`
+The EX3D Team
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
             });
         } catch (emailError) {
             console.error('Failed to send confirmation email:', emailError);

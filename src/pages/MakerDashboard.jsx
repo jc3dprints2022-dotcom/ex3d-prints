@@ -75,7 +75,7 @@ export default function MakerDashboard() {
         const isAssignedMaker = order.maker_id === currentUser.maker_id;
         const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && order.status === 'pending';
         
-        return isAssignedMaker || isInMultiAssignment;
+        return isAssignedMaker || isInMultiAssignment || order.status === 'cancelled'; // Show cancelled orders always
       });
 
       setOrders(myOrders.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
@@ -88,7 +88,9 @@ export default function MakerDashboard() {
 
       // Calculate stats
       const activeOrders = myOrders.filter(o => ['pending', 'accepted', 'printing'].includes(o.status)).length;
-      const completedOrders = myOrders.filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status)).length;
+      const completedOrders = myOrders
+        .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
+        .length;
       const totalEarnings = myOrders
         .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
         .reduce((sum, o) => {
@@ -407,6 +409,10 @@ The EX3D Team`
     return colors[status] || 'bg-gray-100 text-gray-900';
   };
 
+  const getOrderCardHeaderClass = (status) => {
+    return status === 'cancelled' ? 'bg-red-100 border-b-2 border-red-500' : 'bg-gray-50';
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -534,10 +540,15 @@ The EX3D Team`
             ) : (
               orders.map(order => (
                 <Card key={order.id} className="overflow-hidden">
-                  <CardHeader className="bg-gray-50">
+                  <CardHeader className={getOrderCardHeaderClass(order.status)}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg">Order #{order.id.slice(-8)}</CardTitle>
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          Order #{order.id.slice(-8)}
+                          {order.status === 'cancelled' && (
+                            <span className="text-red-600 text-sm font-normal">❌ CANCELLED</span>
+                          )}
+                        </CardTitle>
                         <p className="text-sm text-gray-600 mt-1">
                           {new Date(order.created_date).toLocaleString()}
                         </p>
@@ -549,14 +560,30 @@ The EX3D Team`
                         {order.is_priority && (
                           <Badge className="bg-orange-500">⚡ Priority</Badge>
                         )}
-                        <div className="text-right">
-                          <p className="text-sm text-gray-500">Your Earnings:</p>
-                          <p className="text-xl font-bold text-green-600">
-                            ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
-                          </p>
-                        </div>
+                        {order.status !== 'cancelled' && (
+                          <div className="text-right">
+                            <p className="text-sm text-gray-500">Your Earnings:</p>
+                            <p className="text-xl font-bold text-green-600">
+                              ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
+                            </p>
+                          </div>
+                        )}
+                        {order.status === 'cancelled' && (
+                          <div className="text-right">
+                            <p className="text-sm text-red-600">Lost Earnings:</p>
+                            <p className="text-xl font-bold text-red-600 line-through">
+                              ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
+                    {order.status === 'cancelled' && order.cancellation_reason && (
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+                        <p className="text-sm font-semibold text-red-900">Cancellation Reason:</p>
+                        <p className="text-sm text-red-800 mt-1">{order.cancellation_reason}</p>
+                      </div>
+                    )}
                   </CardHeader>
                   <CardContent className="p-6">
                     <div className="space-y-4">
