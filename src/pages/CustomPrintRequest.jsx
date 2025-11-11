@@ -33,7 +33,7 @@ export default function CustomPrintRequest() {
     material_preference: 'PLA',
     color_preference: 'Black',
     quantity: 1,
-    timeline: 'normal',
+    timeline: 'normal', // Kept for backend compatibility, removed from UI
     budget_range: '',
     is_class_project: false
   });
@@ -161,7 +161,7 @@ export default function CustomPrintRequest() {
         material_preference: formData.material_preference,
         color_preference: formData.color_preference,
         quantity: parseInt(formData.quantity) || 1,
-        timeline: formData.timeline,
+        timeline: formData.timeline, // Remains for backend, even if UI field removed
         budget_range: formData.budget_range,
         is_class_project: formData.is_class_project,
         // special_requirements and dimensions removed from requestData as fields are no longer in UI
@@ -310,7 +310,7 @@ export default function CustomPrintRequest() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="quantity">Quantity *</Label>
                   <Input
@@ -321,19 +321,6 @@ export default function CustomPrintRequest() {
                     onChange={(e) => handleInputChange('quantity', parseInt(e.target.value))}
                     required
                   />
-                </div>
-                <div>
-                  <Label htmlFor="timeline">Desired Timeline</Label>
-                  <Select value={formData.timeline} onValueChange={(value) => handleInputChange('timeline', value)}>
-                    <SelectTrigger id="timeline">
-                      <SelectValue placeholder="Select timeline" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="expedited">1-2 Days (Expedited)</SelectItem>
-                      <SelectItem value="normal">3-5 Days (Standard)</SelectItem>
-                      <SelectItem value="long">7-9 Days (Economy)</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
                 <div>
                   <Label htmlFor="budget_range">Target Budget (Optional)</Label>

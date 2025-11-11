@@ -15,7 +15,7 @@ export default function Checkout() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [deliveryOption, setDeliveryOption] = useState("campus_pickup");
-  const [pickupLocation, setPickupLocation] = useState("Student Union");
+  // const [pickupLocation, setPickupLocation] = useState("Student Union"); // Removed as per changes
   const [couponCode, setCouponCode] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [isPriority, setIsPriority] = useState(false);
@@ -292,17 +292,7 @@ export default function Checkout() {
                   </div>
                 </RadioGroup>
 
-                <div className="mt-4">
-                  <Label htmlFor="pickup_location">Pickup Location</Label>
-                  <Input
-                    id="pickup_location"
-                    value={pickupLocation}
-                    readOnly
-                    disabled
-                    className="mt-2 bg-gray-50 cursor-not-allowed"
-                  />
-                </div>
-
+                {/* The pickupLocation input and label were removed here */}
                 {/* Priority Option */}
                 <div className="mt-4 border rounded-lg p-4 bg-orange-50 border-orange-200">
                   <div className="flex items-center space-x-3">

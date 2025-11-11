@@ -565,15 +565,9 @@ The EX3D Team`
                                     {order.assigned_cabinet_number && (
                                       <>
                                         <div>
-                                          <span className="font-semibold text-gray-700">Cabinet #:</span>
-                                          <p className="text-gray-600">Cabinet {order.assigned_cabinet_number}</p>
+                                          <span className="font-semibold text-gray-700">Pickup Instructions:</span>
+                                          <p className="text-gray-600">{order.pickup_location || 'Contact: labaghr@my.erau.edu or 610-858-3200'}</p>
                                         </div>
-                                        {order.cabinet_unlock_code && (
-                                          <div>
-                                            <span className="font-semibold text-gray-700">Unlock Code:</span>
-                                            <p className="text-gray-600 font-mono">{order.cabinet_unlock_code}</p>
-                                          </div>
-                                        )}
                                       </>
                                     )}
                                   </div>

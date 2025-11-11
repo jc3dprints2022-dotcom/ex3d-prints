@@ -197,16 +197,14 @@ export default function PaymentsFinancialsSection() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800 border-cyan-500/30">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-cyan-400" />
-              Avg Price/Order
-            </CardTitle>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Price/Order</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-white">${avgPricePerHour.toFixed(2)}</p>
-            <p className="text-sm text-slate-400">Per completed order</p>
+            <div className="text-2xl font-bold">${avgPricePerHour.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">Per completed order</p>
           </CardContent>
         </Card>
 
