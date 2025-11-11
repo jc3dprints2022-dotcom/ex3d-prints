@@ -216,17 +216,36 @@ Deno.serve(async (req) => {
             for (const { maker } of makersToAssign) {
                 if (maker.email) {
                     try {
+                        // Get detailed order items with print files and colors
+                        const itemsDetails = order.items?.map((item, idx) => {
+                            let itemText = `${idx + 1}. ${item.product_name}
+   - Material: ${item.selected_material || 'PLA'}
+   - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
+   - Quantity: ${item.quantity}
+   - Resolution: ${item.selected_resolution || 0.2}mm`;
+                            
+                            if (item.print_files && item.print_files.length > 0) {
+                                itemText += `\n   - Print Files: ${item.print_files.join(', ')}`;
+                            }
+                            
+                            return itemText;
+                        }).join('\n\n') || 'No items';
+
+                        const priorityText = order.is_priority ? '\n\n⚡⚡⚡ PRIORITY OVERNIGHT ORDER ⚡⚡⚡\nThis order MUST be completed by the next day!\n' : '';
+
                         await base44.asServiceRole.functions.invoke('sendEmail', {
                             to: maker.email,
-                            subject: 'New Order Assigned - EX3D Prints',
+                            subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
                             body: `Hello ${maker.full_name},
 
-You have a new order assigned to you!
+You have a new order assigned to you!${priorityText}
 
 Order ID: ${order.id.slice(-8)}
 Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${((order.total_amount || 0) * 0.7).toFixed(2)} (70%)
-Items: ${order.items?.length || 0} item(s)
+Your Earnings: $${(((order.total_amount || 0) * 0.7) - 0.30).toFixed(2)} (70% - $0.30 Stripe fee)
+
+Order Details:
+${itemsDetails}
 
 Please log in to your Maker Dashboard to view and accept this order.
 
@@ -261,17 +280,36 @@ The EX3D Team`
             });
 
             try {
+                // Get detailed order items with print files and colors
+                const itemsDetails = order.items?.map((item, idx) => {
+                    let itemText = `${idx + 1}. ${item.product_name}
+   - Material: ${item.selected_material || 'PLA'}
+   - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
+   - Quantity: ${item.quantity}
+   - Resolution: ${item.selected_resolution || 0.2}mm`;
+                    
+                    if (item.print_files && item.print_files.length > 0) {
+                        itemText += `\n   - Print Files: ${item.print_files.join(', ')}`;
+                    }
+                    
+                    return itemText;
+                }).join('\n\n') || 'No items';
+
+                const priorityText = order.is_priority ? '\n\n⚡⚡⚡ PRIORITY OVERNIGHT ORDER ⚡⚡⚡\nThis order MUST be completed by the next day!\n' : '';
+
                 await base44.asServiceRole.functions.invoke('sendEmail', {
                     to: maker.email,
-                    subject: 'New Order Assigned - EX3D Prints',
+                    subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
                     body: `Hello ${maker.full_name},
 
-You have a new order assigned to you!
+You have a new order assigned to you!${priorityText}
 
 Order ID: ${order.id.slice(-8)}
 Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${((order.total_amount || 0) * 0.7).toFixed(2)} (70%)
-Items: ${order.items?.length || 0} item(s)
+Your Earnings: $${(((order.total_amount || 0) * 0.7) - 0.30).toFixed(2)} (70% - $0.30 Stripe fee)
+
+Order Details:
+${itemsDetails}
 
 Please log in to your Maker Dashboard to view and accept this order.
 

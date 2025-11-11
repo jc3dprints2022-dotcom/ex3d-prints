@@ -6,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { DollarSign, TrendingUp, Package, Clock } from "lucide-react";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useToast } from "@/components/ui/use-toast"; // Added for toast notifications
 
 export default function PaymentsFinancialsSection() {
   const [orders, setOrders] = useState([]);
@@ -15,12 +16,15 @@ export default function PaymentsFinancialsSection() {
   const [ordersChartData, setOrdersChartData] = useState([]);
   const [profitChartData, setProfitChartData] = useState([]);
   const [totalRevenue, setTotalRevenue] = useState(0);
-  const [avgPricePerHour, setAvgPricePerHour] = useState(0);
-  const [avgPricePerListing, setAvgPricePerListing] = useState(0); // This state will now hold Platform Revenue
-  const [makerProfit, setMakerProfit] = useState(0);
+  const [avgPricePerHour, setAvgPricePerHour] = useState(0); // This state will now hold Avg Price/Order
+  const [platformRevenue, setPlatformRevenue] = useState(0); // New state for Platform Revenue
+  const [makerProfits, setMakerProfits] = useState(0); // New state for Maker Profits
+  const [loading, setLoading] = useState(true); // New loading state
+
+  const { toast } = useToast();
 
   useEffect(() => {
-    loadData();
+    loadFinancialData();
   }, []);
 
   useEffect(() => {
@@ -30,52 +34,49 @@ export default function PaymentsFinancialsSection() {
     }
   }, [orders, ordersTimeRange, profitTimeRange]);
 
-  const loadData = async () => {
+  const loadFinancialData = async () => {
+    setLoading(true);
     try {
-      const [allOrders, allProducts] = await Promise.all([
-        base44.entities.Order.list(),
-        base44.entities.Product.list()
-      ]);
+      const allOrders = await base44.entities.Order.list();
+      const allProducts = await base44.entities.Product.list();
       
       setOrders(allOrders);
       setProducts(allProducts);
 
-      // Calculate total revenue from all paid orders
-      const revenue = allOrders
-        .filter(o => o.payment_status === 'paid')
-        .reduce((sum, o) => sum + (o.total_amount || 0), 0);
+      // Calculate metrics based on completed and paid orders
+      const completedOrders = allOrders.filter(o => 
+        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+      );
       
+      const revenue = completedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
       setTotalRevenue(revenue);
 
-      // Calculate maker profit (70% of paid orders)
-      const profit = allOrders
-        .filter(o => o.payment_status === 'paid')
-        .reduce((sum, o) => sum + ((o.total_amount || 0) * 0.7), 0);
+      // Calculate average price per order (reusing avgPricePerHour state for this)
+      const avgPricePerOrder = completedOrders.length > 0 
+        ? revenue / completedOrders.length 
+        : 0;
+      setAvgPricePerHour(avgPricePerOrder);
+
+      // Platform revenue (30% + $0.30 per order)
+      const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => 
+        sum + ((o.total_amount || 0) * 0.30) + 0.30, 0
+      );
+      setPlatformRevenue(calculatedPlatformRevenue);
+
+      // Maker profits (70% - $0.30 per order)
+      const calculatedMakerProfits = completedOrders.reduce((sum, o) => 
+        sum + ((o.total_amount || 0) * 0.70) - 0.30, 0
+      );
+      setMakerProfits(calculatedMakerProfits);
+
+      // The useEffect hook with [orders, ordersTimeRange, profitTimeRange] dependencies
+      // will trigger generateOrdersChart and generateProfitChart after setOrders(allOrders).
       
-      setMakerProfit(profit);
-
-      // Calculate platform revenue (30% of paid orders)
-      const platformRevenue = allOrders
-        .filter(o => o.payment_status === 'paid')
-        .reduce((sum, o) => sum + ((o.total_amount || 0) * 0.3), 0);
-      setAvgPricePerListing(platformRevenue); // Reusing this state variable for platform revenue
-
-      // Calculate average price per hour
-      let totalHours = 0;
-      let totalPrice = 0;
-      allOrders.filter(o => o.payment_status === 'paid').forEach(order => {
-        if (order.items) {
-          order.items.forEach(item => {
-            totalHours += (item.print_time_hours || 0) * (item.quantity || 1);
-            totalPrice += item.total_price || 0;
-          });
-        }
-      });
-      setAvgPricePerHour(totalHours > 0 ? totalPrice / totalHours : 0);
-
     } catch (error) {
-      console.error("Failed to load data:", error);
+      console.error("Failed to load financial data:", error);
+      toast({ title: "Failed to load data", variant: "destructive" });
     }
+    setLoading(false);
   };
 
   const getTimeRangeDate = (range) => {
@@ -173,7 +174,10 @@ export default function PaymentsFinancialsSection() {
       paid: 'bg-green-100 text-green-800',
       pending: 'bg-yellow-100 text-yellow-800',
       failed: 'bg-red-100 text-red-800',
-      refunded: 'bg-gray-100 text-gray-800'
+      refunded: 'bg-gray-100 text-gray-800',
+      completed: 'bg-green-100 text-green-800', // Added for visibility
+      delivered: 'bg-green-100 text-green-800', // Added for visibility
+      dropped_off: 'bg-green-100 text-green-800' // Added for visibility
     };
     return colors[status] || 'bg-gray-100 text-gray-800';
   };
@@ -189,18 +193,20 @@ export default function PaymentsFinancialsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">From all paid orders</p>
+            <p className="text-xs text-muted-foreground mt-1">From all completed paid orders</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Price/Hour</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
+        <Card className="bg-slate-800 border-cyan-500/30">
+          <CardHeader>
+            <CardTitle className="text-white flex items-center gap-2">
+              <DollarSign className="w-5 h-5 text-cyan-400" />
+              Avg Price/Order
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${avgPricePerHour.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Per print hour</p>
+            <p className="text-3xl font-bold text-white">${avgPricePerHour.toFixed(2)}</p>
+            <p className="text-sm text-slate-400">Per completed order</p>
           </CardContent>
         </Card>
 
@@ -210,8 +216,8 @@ export default function PaymentsFinancialsSection() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${avgPricePerListing.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">30% of total revenue</p>
+            <div className="text-2xl font-bold">${platformRevenue.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">30% + $0.30 per completed order</p>
           </CardContent>
         </Card>
 
@@ -221,8 +227,8 @@ export default function PaymentsFinancialsSection() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${makerProfit.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">70% of revenue</p>
+            <div className="text-2xl font-bold">${makerProfits.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">70% - $0.30 per completed order</p>
           </CardContent>
         </Card>
       </div>

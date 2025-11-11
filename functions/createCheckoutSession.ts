@@ -10,18 +10,17 @@ Deno.serve(async (req) => {
         const user = await base44.auth.me();
         
         if (!user) {
-            console.error('User not authenticated');
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        console.log('User authenticated:', user.email);
-
-        const body = await req.json();
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode } = body;
+        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority } = await req.json();
 
         if (!cartItems || cartItems.length === 0) {
-            console.error('Cart is empty');
             return Response.json({ error: 'Cart is empty' }, { status: 400 });
+        }
+
+        if (!successUrl || !cancelUrl) {
+            return Response.json({ error: 'Success and cancel URLs are required' }, { status: 400 });
         }
 
         const stripeKey = Deno.env.get('Stripe_Secret_Key');
@@ -70,23 +69,36 @@ Deno.serve(async (req) => {
             }
         }
 
-        // Create line items for Stripe
+        // Create line items from cart
         const lineItems = cartItems.map(item => ({
             price_data: {
                 currency: 'usd',
                 product_data: {
                     name: item.product_name || 'Product',
-                    description: `${item.selected_material} - ${item.selected_color}`,
+                    description: `Material: ${item.selected_material || 'N/A'}, Color: ${item.selected_color || 'N/A'}`,
                 },
                 unit_amount: Math.round(item.unit_price * 100),
             },
             quantity: item.quantity,
         }));
 
-        console.log('Line items created:', lineItems.length);
+        // Add priority fee if selected
+        if (isPriority) {
+            lineItems.push({
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: '⚡ Priority Overnight Delivery',
+                        description: 'Your order will be completed by the next day',
+                    },
+                    unit_amount: 400, // $4.00
+                },
+                quantity: 1,
+            });
+        }
 
         // Prepare session data with referral metadata
-        const sessionData = {
+        const sessionData: Stripe.Checkout.SessionCreateParams = {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
@@ -95,11 +107,10 @@ Deno.serve(async (req) => {
             customer_email: user.email,
             metadata: {
                 user_id: user.id,
-                user_email: user.email, // Added user_email to metadata
-                referral_code: referralCode || '',
                 referrer_id: referralValidation?.referrer_id || '',
-                has_referral: referralValidation?.valid ? 'true' : 'false'
-            }
+                has_referral: referralValidation?.valid ? 'true' : 'false',
+                is_priority: isPriority ? 'true' : 'false'
+            },
         };
 
         // If a specific coupon code is provided, validate and apply it

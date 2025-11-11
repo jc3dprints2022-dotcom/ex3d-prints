@@ -35,7 +35,7 @@ export default function CustomPrintRequest() {
     quantity: 1,
     timeline: 'normal',
     budget_range: '',
-    // Removed dimensions and special_requirements from formData as per UI changes
+    is_class_project: false
   });
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -163,6 +163,7 @@ export default function CustomPrintRequest() {
         quantity: parseInt(formData.quantity) || 1,
         timeline: formData.timeline,
         budget_range: formData.budget_range,
+        is_class_project: formData.is_class_project,
         // special_requirements and dimensions removed from requestData as fields are no longer in UI
         status: 'pending'
       };
@@ -173,7 +174,7 @@ export default function CustomPrintRequest() {
         await base44.functions.invoke('sendEmail', {
           to: user.email,
           subject: 'Custom Print Request Received - EX3D Prints',
-          body: `Hi ${user.full_name || user.email},\n\nWe've received your custom print request!\n\nRequest Details:\n- Title: ${formData.title}\n- Quantity: ${formData.quantity}\n- Material: ${formData.material_preference || 'Not specified'}\n- Color: ${formData.color_preference || 'Not specified'}\n- Timeline: ${formData.timeline || 'Flexible'}\n\nOur team will review your request and provide a quote within 24-48 hours. You'll receive an email notification once your quote is ready.\n\nYou can track your request status in your dashboard.\n\nThank you for choosing EX3D Prints!\n\nBest regards,\nThe EX3D Prints Team`
+          body: `Hi ${user.full_name || user.email},\n\nWe've received your custom print request!\n\nRequest Details:\n- Title: ${formData.title}\n- Quantity: ${formData.quantity}\n- Material: ${formData.material_preference || 'Not specified'}\n- Color: ${formData.color_preference || 'Not specified'}\n- Timeline: ${formData.timeline || 'Flexible'}\n- Class Project: ${formData.is_class_project ? 'Yes' : 'No'}\n\nOur team will review your request and provide a quote within 24-48 hours. You'll receive an email notification once your quote is ready.\n\nYou can track your request status in your dashboard.\n\nThank you for choosing EX3D Prints!\n\nBest regards,\nThe EX3D Prints Team`
         });
       } catch (emailError) {
         console.error("Failed to send customer confirmation email:", emailError);
@@ -183,7 +184,7 @@ export default function CustomPrintRequest() {
         await base44.functions.invoke('sendEmail', {
           to: 'support@ex3dprints.com',
           subject: 'New Custom Print Request - Action Required',
-          body: `New custom print request received:\n\nCustomer: ${user.full_name || user.email} (${user.email})\nTitle: ${formData.title}\nQuantity: ${formData.quantity}\nBudget Range: ${formData.budget_range || 'Not specified'}\nTimeline: ${formData.timeline || 'Flexible'}\n\nDescription:\n${formData.description}\n\nRequest ID: ${newRequest.id}\n\nPlease log in to the admin portal to review and provide a quote.`
+          body: `New custom print request received:\n\nCustomer: ${user.full_name || user.email} (${user.email})\nTitle: ${formData.title}\nQuantity: ${formData.quantity}\nBudget Range: ${formData.budget_range || 'Not specified'}\nTimeline: ${formData.timeline || 'Flexible'}\nClass Project: ${formData.is_class_project ? 'Yes' : 'No'}\n\nDescription:\n${formData.description}\n\nRequest ID: ${newRequest.id}\n\nPlease log in to the admin portal to review and provide a quote.`
         });
       } catch (adminEmailError) {
         console.error("Failed to send admin notification email:", adminEmailError);
@@ -345,28 +346,19 @@ export default function CustomPrintRequest() {
                 </div>
               </div>
 
-              {/* The following div for dimensions and special_requirements was removed based on the code_outline */}
-              {/* <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="dimensions">Expected Dimensions (Optional)</Label>
-                  <Input
-                    id="dimensions"
-                    value={formData.dimensions}
-                    onChange={(e) => handleInputChange('dimensions', e.target.value)}
-                    placeholder="e.g., 100mm x 50mm x 20mm"
-                  />
-                </div>
-
-                <div>
-                  <Label htmlFor="special_requirements">Special Requirements (Optional)</Label>
-                  <Input
-                    id="special_requirements"
-                    value={formData.special_requirements}
-                    onChange={(e) => handleInputChange('special_requirements', e.target.value)}
-                    placeholder="e.g., smooth finish, specific infill"
-                  />
-                </div>
-              </div> */}
+              {/* Class Project Checkbox */}
+              <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="is_class_project"
+                  checked={formData.is_class_project}
+                  onChange={(e) => handleInputChange('is_class_project', e.target.checked)}
+                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+                />
+                <Label htmlFor="is_class_project" className="cursor-pointer text-blue-900 font-medium">
+                  This is for a class project or capstone (Get 25% off!)
+                </Label>
+              </div>
 
               <div className="flex justify-end pt-6">
                 <Button type="submit" size="lg" disabled={submitting}>

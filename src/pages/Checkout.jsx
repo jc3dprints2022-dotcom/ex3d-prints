@@ -18,6 +18,7 @@ export default function Checkout() {
   const [pickupLocation, setPickupLocation] = useState("Student Union");
   const [couponCode, setCouponCode] = useState("");
   const [referralCode, setReferralCode] = useState("");
+  const [isPriority, setIsPriority] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const { toast } = useToast();
 
@@ -117,6 +118,14 @@ export default function Checkout() {
   const calculateSubtotal = () =>
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
+  const calculateTotal = () => {
+    let total = calculateSubtotal();
+    if (isPriority) {
+      total += 4; // Add $4 for priority
+    }
+    return total;
+  };
+
   const formatPrice = (price) => `$${price.toFixed(2)}`;
 
   const handleCheckout = async (e) => {
@@ -134,6 +143,7 @@ export default function Checkout() {
       console.log('Cart items:', cartItems);
       console.log('Coupon code:', couponCode);
       console.log('Referral code:', referralCode);
+      console.log('Is priority:', isPriority);
       
       // Validate cart items have required fields
       const invalidItems = cartItems.filter(item => 
@@ -159,7 +169,8 @@ export default function Checkout() {
         successUrl: `${window.location.origin}/PaymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/Checkout?payment=cancelled`,
         couponCode: couponCode.trim() || undefined,
-        referralCode: referralCode.trim().toUpperCase() || undefined
+        referralCode: referralCode.trim().toUpperCase() || undefined,
+        isPriority: isPriority
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -291,6 +302,25 @@ export default function Checkout() {
                     className="mt-2 bg-gray-50 cursor-not-allowed"
                   />
                 </div>
+
+                {/* Priority Option */}
+                <div className="mt-4 border rounded-lg p-4 bg-orange-50 border-orange-200">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="priority"
+                      checked={isPriority}
+                      onChange={(e) => setIsPriority(e.target.checked)}
+                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                    />
+                    <Label htmlFor="priority" className="cursor-pointer flex-1">
+                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
+                      <p className="text-sm text-orange-700">
+                        Your order will be completed by the next day
+                      </p>
+                    </Label>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -352,6 +382,12 @@ export default function Checkout() {
                   <span>Pickup</span>
                   <span className="text-green-600 font-semibold">FREE</span>
                 </div>
+                {isPriority && (
+                  <div className="flex justify-between text-orange-600">
+                    <span>⚡ Priority Overnight</span>
+                    <span>+$4.00</span>
+                  </div>
+                )}
                 {couponCode && (
                   <div className="flex justify-between text-green-600 text-sm">
                     <span>Coupon: {couponCode}</span>
@@ -367,7 +403,7 @@ export default function Checkout() {
                 <div className="border-t pt-3 flex justify-between text-lg font-bold">
                   <span>Total</span>
                   <span className="text-teal-600">
-                    {formatPrice(calculateSubtotal())}
+                    {formatPrice(calculateTotal())}
                   </span>
                 </div>
                 

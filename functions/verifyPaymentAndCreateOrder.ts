@@ -160,6 +160,8 @@ Deno.serve(async (req) => {
 
         // Create the order
         console.log('Creating order...');
+        const isPriority = session.metadata.is_priority === 'true';
+        
         const newOrder = await base44.asServiceRole.entities.Order.create({
             customer_id: user.id,
             items: enrichedItems,
@@ -169,7 +171,8 @@ Deno.serve(async (req) => {
             status: 'pending',
             payment_status: 'paid',
             payment_intent_id: session.payment_intent,
-            stripe_session_id: sessionId
+            stripe_session_id: sessionId,
+            is_priority: isPriority
         });
 
         console.log('✅ Order created:', newOrder.id);
@@ -284,12 +287,14 @@ Deno.serve(async (req) => {
                 ? `\nDiscount Applied: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
                 : '';
 
+            const priorityInfo = isPriority ? '\n\n⚡ PRIORITY OVERNIGHT DELIVERY\nYour order will be completed by the next day!' : '';
+
             await base44.integrations.Core.SendEmail({
                 to: user.email,
-                subject: 'Order Confirmation - EX3D Prints',
+                subject: `Order Confirmation${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
                 body: `Hi ${user.full_name},
 
-Thank you for your order! Your payment has been processed successfully.
+Thank you for your order! Your payment has been processed successfully.${priorityInfo}
 
 Order #${newOrder.id.slice(-8)}
 

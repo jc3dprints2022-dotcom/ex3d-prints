@@ -248,7 +248,7 @@ export default function OrderRoutingSection() {
                         </TableCell>
                         <TableCell>
                           <Badge className={getStatusBadgeColor(order.status)}>
-                            {order.status.replace('_', ' ')}
+                            {order.status === 'dropped_off' ? 'delivered' : order.status.replace('_', ' ')}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-slate-300">
