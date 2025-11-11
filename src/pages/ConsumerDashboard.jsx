@@ -318,68 +318,40 @@ export default function ConsumerDashboard() {
     }
   };
 
-  const handleCancelOrder = async () => { // This function operates on `cancellingOrder` from state
+  const handleCancelOrder = async () => {
     if (!cancellingOrder || !cancellationReason.trim()) {
       toast({ title: "Please provide a cancellation reason", variant: "destructive" });
       return;
     }
 
     try {
-      const order = orders.find(o => o.id === cancellingOrder.id);
-      
-      await base44.entities.Order.update(cancellingOrder.id, { 
-        status: 'cancelled',
-        notes: `Cancelled by customer. Reason: ${cancellationReason}`
+      const { data, error } = await base44.functions.invoke('cancelOrderWithRefund', {
+        orderId: cancellingOrder.id,
+        cancellationReason: cancellationReason
       });
 
-      if (order.maker_id) {
-        try {
-          const allUsers = await base44.entities.User.list();
-          const maker = allUsers.find(u => u.maker_id === order.maker_id);
-          
-          if (maker && maker.email) {
-            console.log('Sending cancellation email to maker:', maker.email);
-            const { data: emailResult, error: emailError } = await base44.functions.invoke('sendEmail', {
-              to: maker.email,
-              subject: 'Order Cancelled by Customer - EX3D Prints',
-              body: `Hi ${maker.full_name},
-
-Order #${cancellingOrder.id.slice(-8)} has been cancelled by the customer.
-
-Cancellation Reason: ${cancellationReason}
-
-If you've already started printing, please stop immediately.
-
-Best regards,
-The EX3D Team`
-            });
-
-            if (emailResult?.success) {
-              toast({ title: "Order cancelled and maker notified" });
-            } else {
-              const errorMessage = emailError?.message || emailResult?.error || "Unknown email error";
-              toast({ title: "Order cancelled, but notification failed", description: `Email error: ${errorMessage}` });
-            }
-          } else {
-            toast({ title: "Order cancelled", description: "Could not find maker for notification." });
-          }
-        } catch (invokeError) {
-          console.error("Failed to invoke sendEmail function:", invokeError);
-          toast({ title: "Order cancelled, but notification failed", description: `Error invoking email function: ${invokeError.message}` });
-        }
+      if (data?.success) {
+        toast({ 
+          title: "Order cancelled successfully",
+          description: "Your refund will be processed within 5-10 business days." 
+        });
       } else {
-        toast({ title: "Order cancelled successfully" });
+        throw new Error(error?.message || data?.error || 'Cancellation failed');
       }
 
       setCancellingOrder(null);
       setCancellationReason('');
-      // After cancelling order, reload dashboard data to reflect changes
+      
       if (user) {
         loadDashboardData(user);
       }
     } catch (error) {
       console.error("Failed to cancel order:", error);
-      toast({ title: "Failed to cancel order", variant: "destructive", description: error.message });
+      toast({ 
+        title: "Failed to cancel order", 
+        variant: "destructive", 
+        description: error.message 
+      });
     }
   };
 
@@ -533,6 +505,9 @@ The EX3D Team`
                                   }>
                                     {order.status.replace('_', ' ')}
                                   </Badge>
+                                  {order.is_priority && (
+                                    <Badge className="bg-orange-500">⚡ Priority</Badge>
+                                  )}
                                 </div>
                                 <p className="text-sm text-gray-600">
                                   Placed: {new Date(order.created_date).toLocaleDateString()}
@@ -554,7 +529,7 @@ The EX3D Team`
                                     </div>
                                     <div>
                                       <span className="font-semibold text-gray-700">Payment Status:</span>
-                                      <Badge className={order.payment_status === 'paid' ? 'bg-green-500' : 'bg-yellow-500'}>
+                                      <Badge className={order.payment_status === 'paid' ? 'bg-green-500' : order.payment_status === 'refunded' ? 'bg-gray-500' : 'bg-yellow-500'}>
                                         {order.payment_status}
                                       </Badge>
                                     </div>
@@ -599,15 +574,15 @@ The EX3D Team`
                                     Confirm I Picked This Up
                                   </Button>
                                 )}
-                                {order.status === 'pending' && (
+                                {(order.status === 'pending' || order.status === 'accepted') && (
                                   <Button 
                                     size="sm" 
                                     variant="outline"
-                                    onClick={() => setCancellingOrder(order)} // Original correct pattern
+                                    onClick={() => setCancellingOrder(order)}
                                     className="border-red-500 text-red-500 hover:bg-red-50"
                                   >
                                     <X className="w-4 h-4 mr-2" />
-                                    Cancel
+                                    Cancel & Refund
                                   </Button>
                                 )}
                               </div>

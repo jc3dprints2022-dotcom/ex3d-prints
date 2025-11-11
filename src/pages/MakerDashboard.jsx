@@ -646,7 +646,10 @@ The EX3D Team`
 
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
-                          <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
+                          <p className="font-semibold">
+                            Total: ${order.total_amount.toFixed(2)}
+                            {order.is_priority && <Badge className="ml-2 bg-orange-500">⚡ Priority +$4</Badge>}
+                          </p>
                           <p className="text-sm text-green-600">
                             Your earnings: ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)} 
                             (70% - $0.30 Stripe fee{order.is_priority ? ' + $2.80 priority bonus' : ''})
@@ -654,6 +657,11 @@ The EX3D Team`
                           <p className="text-sm text-gray-600 mt-1">
                             Pickup: {order.pickup_location}
                           </p>
+                          {order.is_priority && (
+                            <p className="text-sm text-orange-600 font-semibold mt-1">
+                              ⚡ PRIORITY: Must be completed by next day!
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex gap-2">
