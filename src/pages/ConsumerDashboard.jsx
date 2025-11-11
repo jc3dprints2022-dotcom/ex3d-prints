@@ -538,7 +538,7 @@ The EX3D Team`
                                   Placed: {new Date(order.created_date).toLocaleDateString()}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  Total: ${order.total_amount.toFixed(2)}
+                                  Total: ${order.total_amount.toFixed(2)}{order.is_priority ? ' (includes $4 priority)' : ''}
                                 </p>
                                 
                                 {/* Expanded Order Details */}
