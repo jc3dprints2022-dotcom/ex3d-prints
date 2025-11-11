@@ -1,3 +1,4 @@
+
 import { createClient } from 'npm:@base44/sdk@0.7.1';
 
 Deno.serve(async (req) => {
@@ -114,33 +115,19 @@ Deno.serve(async (req) => {
                         emailBody += `\n\n<div style="border-top: 2px solid #e5e7eb; margin-top: 30px; padding-top: 20px;">`;
                         emailBody += `<h3 style="color: #111827; font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: bold;">${contentHeader}</h3>\n`;
                         
-                        if (productsToShow.length === 1) {
-                            const product = productsToShow[0];
+                        emailBody += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; max-width: 600px;">';
+                        productsToShow.forEach(product => {
                             productIds.push(product.id);
                             emailBody += `
-                                <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                    ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.name}" style="max-width: 100%; width: 300px; border-radius: 8px; margin-bottom: 16px;" />` : ''}
-                                    <h4 style="margin: 12px 0; font-size: 20px; color: #111827; font-weight: 600;">${product.name}</h4>
-                                    <p style="color: #6b7280; font-size: 15px; margin: 12px 0; line-height: 1.5;">${product.description || ''}</p>
-                                    <p style="font-size: 24px; font-weight: bold; color: #14b8a6; margin: 12px 0;">$${product.price.toFixed(2)}</p>
-                                    <a href="${Deno.env.get('BASE44_APP_URL') || 'https://ex3dprints.com'}/ProductDetail?id=${product.id}" style="display: inline-block; background: #14b8a6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; margin-top: 12px; font-weight: 600;">Shop Now</a>
+                                <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                    ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />` : ''}
+                                    <h4 style="margin: 6px 0; font-size: 14px; color: #111827; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${product.name}</h4>
+                                    <p style="font-size: 16px; font-weight: bold; color: #14b8a6; margin: 6px 0;">$${product.price.toFixed(2)}</p>
+                                    <a href="${Deno.env.get('BASE44_APP_URL') || 'https://ex3dprints.com'}/ProductDetail?id=${product.id}" style="display: block; background: #14b8a6; color: white; padding: 8px 12px; text-decoration: none; border-radius: 6px; margin-top: 8px; font-size: 12px; font-weight: 600; text-align: center;">Shop Now</a>
                                 </div>
                             `;
-                        } else {
-                            emailBody += '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 600px;">';
-                            productsToShow.forEach(product => {
-                                productIds.push(product.id);
-                                emailBody += `
-                                    <div style="border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; background: #ffffff; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                                        ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.name}" style="max-width: 100%; width: 100%; border-radius: 8px; margin-bottom: 12px;" />` : ''}
-                                        <h4 style="margin: 8px 0; font-size: 16px; color: #111827; font-weight: 600;">${product.name}</h4>
-                                        <p style="font-size: 20px; font-weight: bold; color: #14b8a6; margin: 8px 0;">$${product.price.toFixed(2)}</p>
-                                        <a href="${Deno.env.get('BASE44_APP_URL') || 'https://ex3dprints.com'}/ProductDetail?id=${product.id}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 18px; text-decoration: none; border-radius: 6px; margin-top: 8px; font-size: 14px; font-weight: 600; width: 100%; text-align: center; box-sizing: border-box;">Shop Now</a>
-                                    </div>
-                                `;
-                            });
-                            emailBody += '</div>';
-                        }
+                        });
+                        emailBody += '</div>';
                         
                         emailBody += '</div>';
                     }

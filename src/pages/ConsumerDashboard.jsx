@@ -533,18 +533,6 @@ export default function ConsumerDashboard() {
                                         {order.payment_status}
                                       </Badge>
                                     </div>
-                                    <div>
-                                      <span className="font-semibold text-gray-700">Delivery:</span>
-                                      <p className="text-gray-600">{order.pickup_location || 'Student Union'}</p>
-                                    </div>
-                                    {order.assigned_cabinet_number && (
-                                      <>
-                                        <div>
-                                          <span className="font-semibold text-gray-700">Pickup Instructions:</span>
-                                          <p className="text-gray-600">{order.pickup_location || 'Contact: labaghr@my.erau.edu or 610-858-3200'}</p>
-                                        </div>
-                                      </>
-                                    )}
                                   </div>
                                 </div>
                               </div>
@@ -822,15 +810,6 @@ export default function ConsumerDashboard() {
                               <p className="text-sm text-gray-800">
                                 <Clock className="w-4 h-4 inline mr-1" />
                                 This quote has expired (30 days have passed). Please submit a new custom request for an updated quote.
-                              </p>
-                            </div>
-                          )}
-
-                          {request.status === 'declined' && (
-                            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                              <p className="text-sm text-red-800">
-                                <XCircle className="w-4 h-4 inline mr-1" />
-                                You declined this quote.
                               </p>
                             </div>
                           )}
