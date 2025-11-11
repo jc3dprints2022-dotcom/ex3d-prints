@@ -75,49 +75,87 @@ Deno.serve(async (req) => {
             stripe_coupon_id: coupon.id
         });
 
-        // Send email to customer with coupon code
+        // Send formatted email to customer with coupon code
         try {
             await base44.integrations.Core.SendEmail({
                 to: user.email,
-                subject: 'Your EXP Redemption Coupon - EX3D Prints',
+                subject: '🎉 Your EXP Redemption Coupon - EX3D Prints',
                 body: `Hi ${user.full_name},
 
-Congratulations! You've successfully redeemed ${totalExpCost} EXP for a discount coupon.
+Congratulations! You've successfully redeemed your EXP points for a discount coupon.
 
-Your Coupon Code: ${couponCode}
-Discount Value: $${(totalDiscountAmount / 100).toFixed(2)}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🎁 YOUR COUPON DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-To use this coupon:
+Coupon Code:     ${couponCode}
+Discount Value:  $${(totalDiscountAmount / 100).toFixed(2)}
+EXP Redeemed:    ${totalExpCost} EXP
+Quantity:        ${quantity}x ${selectedTier.label}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📋 HOW TO USE YOUR COUPON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 1. Add items to your cart
-2. Go to checkout
-3. Enter the coupon code in the "Coupon Code" field
+2. Proceed to checkout
+3. Enter coupon code: ${couponCode}
 4. Your discount will be applied automatically!
 
-This coupon can be used once and expires in 90 days.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚠️ IMPORTANT NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Thank you for being a valued customer!
+• This coupon can only be used ONCE
+• Valid for 90 days from today
+• Cannot be combined with other offers
+• Non-transferable
+
+Thank you for being a valued member of EX3D Prints!
 
 Best regards,
-The EX3D Team`
+The EX3D Team
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Need help? Email us at support@ex3dprints.com`
             });
         } catch (emailError) {
             console.error('Failed to send customer email:', emailError);
         }
 
-        // Send notification to admin
+        // Send formatted notification to admin
         try {
             await base44.integrations.Core.SendEmail({
                 to: 'jc3dprints2022@gmail.com',
-                subject: 'EXP Redemption Notification - EX3D Prints',
-                body: `New EXP redemption:
+                subject: '💰 EXP Redemption Alert - EX3D Prints',
+                body: `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   EXP REDEMPTION NOTIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-User: ${user.full_name || 'Unknown'} (${user.email})
-EXP Redeemed: ${totalExpCost} EXP
-Quantity: ${quantity}
-Coupon Code: ${couponCode}
-Discount Value: $${(totalDiscountAmount / 100).toFixed(2)}
+A user has just redeemed their EXP points for a discount coupon.
 
-The coupon has been created in Stripe and sent to the user.`
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📊 REDEMPTION DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User Name:       ${user.full_name || 'Unknown'}
+Email:           ${user.email}
+User ID:         ${user.id}
+
+EXP Redeemed:    ${totalExpCost} EXP
+Quantity:        ${quantity}x ${selectedTier.label}
+Coupon Code:     ${couponCode}
+Discount Value:  $${(totalDiscountAmount / 100).toFixed(2)}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ✅ STATUS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• Stripe coupon created successfully
+• Customer notification email sent
+• User's EXP balance updated
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
             });
         } catch (adminEmailError) {
             console.error('Failed to send admin notification:', adminEmailError);

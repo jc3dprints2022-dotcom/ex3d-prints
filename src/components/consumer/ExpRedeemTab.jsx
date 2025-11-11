@@ -84,8 +84,13 @@ export default function ExpRedeemTab({ user, onUpdate }) {
         // Reset quantity to 1
         setQuantities(prev => ({ ...prev, [tier.value]: 1 }));
         
-        await onUpdate();
+        // Reload transactions without navigating away
         await loadTransactions();
+        
+        // Update user data in parent component (just for EXP balance display)
+        if (onUpdate) {
+          await onUpdate();
+        }
       } else {
         throw new Error(data?.error || 'Redemption failed');
       }

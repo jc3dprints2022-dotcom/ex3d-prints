@@ -542,9 +542,20 @@ The EX3D Team`
                           {new Date(order.created_date).toLocaleString()}
                         </p>
                       </div>
-                      <Badge className={getStatusBadgeColor(order.status)}>
-                        {order.status}
-                      </Badge>
+                      <div className="flex flex-col items-end gap-2">
+                        <Badge className={getStatusBadgeColor(order.status)}>
+                          {order.status}
+                        </Badge>
+                        {order.is_priority && (
+                          <Badge className="bg-orange-500">⚡ Priority</Badge>
+                        )}
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">Your Earnings:</p>
+                          <p className="text-xl font-bold text-green-600">
+                            ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </CardHeader>
                   <CardContent className="p-6">
@@ -651,8 +662,8 @@ The EX3D Team`
                             {order.is_priority && <Badge className="ml-2 bg-orange-500">⚡ Priority +$4</Badge>}
                           </p>
                           <p className="text-sm text-green-600">
-                            Your earnings: ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)} 
-                            (70% - $0.30 Stripe fee{order.is_priority ? ' + $2.80 priority bonus' : ''})
+                            {/* "Your earnings:" removed as it's now in the header for primary visibility */}
+                            Earnings calculation: (70% - $0.30 Stripe fee{order.is_priority ? ' + $2.80 priority bonus' : ''})
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
                             Pickup: {order.pickup_location}
