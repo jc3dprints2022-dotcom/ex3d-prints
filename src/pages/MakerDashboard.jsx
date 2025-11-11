@@ -91,7 +91,7 @@ export default function MakerDashboard() {
       const completedOrders = myOrders.filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status)).length;
       const totalEarnings = myOrders
         .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
-        .reduce((sum, o) => sum + (o.total_amount * 0.7), 0); // 70% goes to maker
+        .reduce((sum, o) => sum + ((o.total_amount * 0.7) - 0.30), 0); // 70% minus $0.30 Stripe fee
 
       setStats({
         activeOrders,
@@ -643,7 +643,7 @@ The EX3D Team`
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
                           <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
-                          <p className="text-sm text-green-600">Your earnings: ${(order.total_amount * 0.7).toFixed(2)} (70%)</p>
+                          <p className="text-sm text-green-600">Your earnings: ${((order.total_amount * 0.7) - 0.30).toFixed(2)} (70% - $0.30 Stripe fee)</p>
                           <p className="text-sm text-gray-600 mt-1">
                             Pickup: {order.pickup_location}
                           </p>

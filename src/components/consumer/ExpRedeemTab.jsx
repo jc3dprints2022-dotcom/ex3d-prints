@@ -27,8 +27,10 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState(null);
+  const [quantities, setQuantities] = useState({ 1: 1, 5: 1, 20: 1 }); // Track quantities for each tier
   const [showCouponDialog, setShowCouponDialog] = useState(false);
   const [couponCode, setCouponCode] = useState('');
+  const [couponAmount, setCouponAmount] = useState('');
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -51,19 +53,37 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   };
 
   const handleRedeem = async (tier) => {
+    const quantity = quantities[tier.value];
+    const totalExpCost = tier.exp * quantity;
+    
+    if ((user.exp_points || 0) < totalExpCost) {
+      toast({
+        title: "Insufficient EXP",
+        description: `You need ${totalExpCost} EXP but have ${user.exp_points || 0} EXP.`,
+        variant: "destructive"
+      });
+      return;
+    }
+
     setRedeeming(tier.value);
     try {
       const { data } = await base44.functions.invoke('redeemExpForCoupon', {
-        tier: tier.value.toString()
+        tier: tier.value.toString(),
+        quantity: quantity
       });
 
       if (data?.success) {
         setCouponCode(data.coupon_code);
+        setCouponAmount(data.discount_amount);
         setShowCouponDialog(true);
         toast({
           title: "EXP Redeemed!",
-          description: `You got a ${tier.label} coupon!`
+          description: `You got a ${data.discount_amount} coupon!`
         });
+        
+        // Reset quantity to 1
+        setQuantities(prev => ({ ...prev, [tier.value]: 1 }));
+        
         await onUpdate();
         await loadTransactions();
       } else {
@@ -97,7 +117,11 @@ export default function ExpRedeemTab({ user, onUpdate }) {
     const previousTier = TIERS[TIERS.indexOf(nextTier) - 1];
     const baseExp = previousTier ? previousTier.exp : 0;
 
-    return ((currentExp - baseExp) / (nextTier.exp - baseExp)) * 100;
+    // Handle edge case where nextTier.exp - baseExp is 0 or negative
+    const range = nextTier.exp - baseExp;
+    if (range <= 0) return 100; // If current exp is already past or at the last tier's exp, show 100%
+
+    return ((currentExp - baseExp) / range) * 100;
   };
 
   return (
@@ -133,7 +157,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
             </div>
             <Progress value={getProgressPercent()} className="h-3 bg-cyan-700" />
             <p className="text-xs text-cyan-100">
-              {getNextTier().exp - (user.exp_points || 0)} EXP until next reward
+              {Math.max(0, getNextTier().exp - (user.exp_points || 0))} EXP until next reward
             </p>
           </div>
         </CardContent>
@@ -150,19 +174,65 @@ export default function ExpRedeemTab({ user, onUpdate }) {
         <CardContent>
           <div className="grid md:grid-cols-3 gap-4">
             {TIERS.map(tier => {
-              const canRedeem = (user.exp_points || 0) >= tier.exp;
+              const quantity = quantities[tier.value];
+              const totalExpCost = tier.exp * quantity;
+              const totalValue = tier.value * quantity;
+              const canRedeem = (user.exp_points || 0) >= totalExpCost;
               const isRedeeming = redeeming === tier.value;
 
               return (
                 <Card key={tier.exp} className={`${canRedeem ? 'border-teal-500 border-2' : 'border-gray-200'}`}>
                   <CardContent className="p-6 text-center">
                     <div className={`${tier.color} w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4`}>
-                      <span className="text-2xl font-bold text-white">{tier.label}</span>
+                      <span className="text-2xl font-bold text-white">${totalValue}</span>
                     </div>
-                    <p className="text-2xl font-bold mb-1">{tier.exp} EXP</p>
+                    <p className="text-2xl font-bold mb-1">{totalExpCost} EXP</p>
                     <p className="text-sm text-gray-600 mb-4">
-                      {canRedeem ? '✓ You can redeem this!' : `Need ${tier.exp - (user.exp_points || 0)} more EXP`}
+                      {canRedeem ? '✓ You can redeem this!' : `Need ${totalExpCost - (user.exp_points || 0)} more EXP`}
                     </p>
+                    
+                    {/* Quantity Selector */}
+                    <div className="mb-4">
+                      <label className="text-xs text-gray-600 block mb-1">Quantity</label>
+                      <div className="flex items-center justify-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setQuantities(prev => ({
+                            ...prev,
+                            [tier.value]: Math.max(1, prev[tier.value] - 1)
+                          }))}
+                          disabled={quantity <= 1 || isRedeeming}
+                        >
+                          -
+                        </Button>
+                        <span className="w-12 text-center font-semibold">{quantity}</span>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const newQuantity = quantity + 1;
+                            const newTotalCost = tier.exp * newQuantity;
+                            if ((user.exp_points || 0) >= newTotalCost) {
+                              setQuantities(prev => ({
+                                ...prev,
+                                [tier.value]: newQuantity
+                              }));
+                            } else {
+                              toast({
+                                title: "Insufficient EXP",
+                                description: "You don't have enough EXP for this quantity.",
+                                variant: "destructive"
+                              });
+                            }
+                          }}
+                          disabled={isRedeeming}
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
+
                     <Button
                       onClick={() => handleRedeem(tier)}
                       disabled={!canRedeem || isRedeeming}
@@ -174,7 +244,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
                           Redeeming...
                         </>
                       ) : (
-                        'Redeem'
+                        `Redeem ${quantity > 1 ? `(${quantity}x)` : ''}`
                       )}
                     </Button>
                   </CardContent>
@@ -223,7 +293,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
           <DialogHeader>
             <DialogTitle>Your Discount Coupon</DialogTitle>
             <DialogDescription>
-              Use this code at checkout to apply your discount
+              Use this code at checkout to apply your {couponAmount} discount
             </DialogDescription>
           </DialogHeader>
           <div className="py-6">
@@ -245,7 +315,8 @@ export default function ExpRedeemTab({ user, onUpdate }) {
               </Button>
             </div>
             <p className="text-sm text-gray-600 mt-4 text-center">
-              Paste this code in the coupon field during Stripe checkout to apply your discount.
+              Paste this code in the coupon field during Stripe checkout to apply your discount. 
+              A confirmation email with this code has been sent to your email address.
             </p>
           </div>
         </DialogContent>

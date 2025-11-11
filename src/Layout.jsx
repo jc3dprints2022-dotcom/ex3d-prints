@@ -110,6 +110,14 @@ export default function Layout({ children, currentPageName }) {
         
         setPendingAnnouncement(newestAnnouncement);
         setShowAnnouncementDialog(true);
+        
+        // Auto-dismiss after 15 seconds
+        setTimeout(() => {
+          // Check if the dialog is still open and the same announcement is pending
+          if (showAnnouncementDialog && pendingAnnouncement?.id === newestAnnouncement.id) {
+            handleDismissAnnouncement();
+          }
+        }, 15000);
       }
     } catch (error) {
       console.error('Failed to check announcements:', error);

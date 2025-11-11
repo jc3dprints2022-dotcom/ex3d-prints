@@ -94,6 +94,7 @@ Deno.serve(async (req) => {
                         product_id: item.product_id,
                         product_name: customRequest.title,
                         custom_request_id: item.custom_request_id,
+                        description: customRequest.description, // Add description
                         quantity: item.quantity,
                         selected_material: item.selected_material,
                         selected_color: item.selected_color,

@@ -224,6 +224,11 @@ Deno.serve(async (req) => {
    - Quantity: ${item.quantity}
    - Resolution: ${item.selected_resolution || 0.2}mm`;
                             
+                            // Add custom request details if available
+                            if (item.custom_request_id && item.description) {
+                                itemText += `\n   - Description: ${item.description}`;
+                            }
+                            
                             if (item.print_files && item.print_files.length > 0) {
                                 itemText += `\n   - Print Files: ${item.print_files.join(', ')}`;
                             }
@@ -287,6 +292,11 @@ The EX3D Team`
    - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
    - Quantity: ${item.quantity}
    - Resolution: ${item.selected_resolution || 0.2}mm`;
+                    
+                    // Add custom request details if available
+                    if (item.custom_request_id && item.description) {
+                        itemText += `\n   - Description: ${item.description}`;
+                    }
                     
                     if (item.print_files && item.print_files.length > 0) {
                         itemText += `\n   - Print Files: ${item.print_files.join(', ')}`;
