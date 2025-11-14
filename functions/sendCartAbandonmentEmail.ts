@@ -85,7 +85,7 @@ Deno.serve(async (req) => {
                     const contentHeader = 'Items Still in Your Cart';
                     emailBody += `\n\n<div style="border-top: 2px solid #e5e7eb; margin-top: 30px; padding-top: 20px;">`;
                     emailBody += `<h3 style="color: #111827; font-size: 1.5rem; margin-bottom: 1.5rem; font-weight: bold;">${contentHeader}</h3>\n`;
-                    emailBody += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; max-width: 600px;">';
+                    emailBody += '<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; max-width: 600px;">';
 
                     for (const cart of userCarts.slice(0, 4)) {
                         const product = products.find(p => p.id === cart.product_id);
