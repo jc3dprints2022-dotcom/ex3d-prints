@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
                             productIds.push(product.id);
                             emailBody += `
                                 <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                    ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.name}" style="width: 100%; height: 50px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />` : ''}
+                                    ${product.images?.[0] ? `<img src="${product.images[0]}" alt="${product.name}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 6px; margin-bottom: 8px;" />` : ''}
                                     <h4 style="margin: 6px 0; font-size: 14px; color: #111827; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${product.name}</h4>
                                     <p style="font-size: 16px; font-weight: bold; color: #14b8a6; margin: 6px 0;">$${cart.unit_price.toFixed(2)}</p>
                                     <a href="${Deno.env.get('BASE44_APP_URL') || 'https://ex3dprints.com'}/ProductDetail?id=${product.id}" style="display: block; background: #14b8a6; color: white; padding: 8px 12px; text-decoration: none; border-radius: 6px; margin-top: 8px; font-size: 12px; font-weight: 600; text-align: center;">View Item</a>
