@@ -531,6 +531,7 @@ export default function ModelManagementSection() {
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     placeholder="e.g., 2.5"
                     required
+                    className = "text-white"
                   />
                 </div>
 
