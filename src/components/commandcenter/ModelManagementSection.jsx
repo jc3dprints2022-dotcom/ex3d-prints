@@ -514,6 +514,7 @@ export default function ModelManagementSection() {
                   onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
                   className="bg-slate-800 border-cyan-500/30 text-white"
                   placeholder="e.g., cosplay, helmet, character, fanart"
+                  className = "text-white"
                 />
               </div>
 
