@@ -480,7 +480,7 @@ export default function ModelManagementSection() {
                 </div>
                 <div className="flex flex-col">
                   <Label htmlFor="category" className="text-white">Category *</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required className = "text-white">
+                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required>
                     <SelectTrigger id="category">
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>
