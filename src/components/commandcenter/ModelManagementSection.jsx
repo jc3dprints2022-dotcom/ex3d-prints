@@ -732,7 +732,7 @@ export default function ModelManagementSection() {
                   multiple
                   onChange={handleImageUpload}
                   disabled={saving}
-                  className="mb-2"
+                  className="mb-2 text-white"
                 />
                 <p className="text-xs text-gray-500 mb-2">At least one image required</p>
                 {formData.images.length > 0 && (
@@ -764,7 +764,7 @@ export default function ModelManagementSection() {
                   multiple
                   onChange={handlePrintFileUpload}
                   disabled={saving}
-                  className="mb-2"
+                  className="mb-2 text-white"
                 />
                 <p className="text-xs text-gray-500 mb-2">At least one 3D model file required</p>
                 {formData.print_files.length > 0 && (
