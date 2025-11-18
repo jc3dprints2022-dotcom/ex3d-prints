@@ -479,17 +479,35 @@ export default function ModelManagementSection() {
                   />
                 </div>
                 <div className="flex flex-col">
-                  <Label htmlFor="category" className="text-white">Category *</Label>
-                  <Select value={formData.category} onValueChange={(value) => setFormData({...formData, category: value})} required>
-                    <SelectTrigger id="category">
-                      <SelectValue placeholder="Select category" />
+                    <Label htmlFor="category" className="text-white">Category *</Label>
+
+                    <Select
+                    value={formData.category}
+                    onValueChange={(value) => setFormData({ ...formData, category: value })}
+                    required
+                    >
+                    <SelectTrigger
+                        id="category"
+                        className="text-white border-white bg-transparent !text-white"
+                    >
+                        <SelectValue
+                        placeholder="Select category"
+                        className="text-white placeholder-white"
+                        />
                     </SelectTrigger>
-                    <SelectContent>
-                      {CATEGORIES.map(cat => (
-                        <SelectItem key={cat.value} value={cat.value}>{cat.label}</SelectItem>
-                      ))}
+
+                    <SelectContent className="bg-gray-900 text-white border border-gray-700">
+                        {CATEGORIES.map(cat => (
+                        <SelectItem
+                            key={cat.value}
+                            value={cat.value}
+                            className="text-white focus:text-white hover:text-white"
+                        >
+                            {cat.label}
+                        </SelectItem>
+                        ))}
                     </SelectContent>
-                  </Select>
+                    </Select>
                 </div>
               </div>
 
