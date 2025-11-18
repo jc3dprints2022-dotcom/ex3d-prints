@@ -546,6 +546,7 @@ export default function ModelManagementSection() {
                     onChange={(e) => setFormData({...formData, weight_grams: e.target.value})}
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     required
+                    className = "text-white"
                   />
                 </div>
 
