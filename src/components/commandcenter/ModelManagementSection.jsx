@@ -501,6 +501,7 @@ export default function ModelManagementSection() {
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   rows={4}
                   required
+                  className = "text-white"
                 />
               </div>
 
