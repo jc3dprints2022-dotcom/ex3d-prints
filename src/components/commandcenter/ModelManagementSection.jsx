@@ -475,6 +475,7 @@ export default function ModelManagementSection() {
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
+                    className = "text-white"
                   />
                 </div>
                 <div className="flex flex-col">
