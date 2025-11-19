@@ -6,6 +6,37 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Palette, DollarSign, Globe, Shield, TrendingUp, Users } from "lucide-react";
 
 export default function ForDesigners() {
+  const [totalEarnings, setTotalEarnings] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDesignerEarnings();
+  }, []);
+
+  const loadDesignerEarnings = async () => {
+    try {
+      const allOrders = await base44.entities.Order.list();
+      const completedOrders = allOrders.filter(o =>
+        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+      );
+
+      let total = 0;
+      completedOrders.forEach(order => {
+        order.items?.forEach(item => {
+          if (item.designer_id) {
+            total += item.total_price * 0.10;
+          }
+        });
+      });
+
+      setTotalEarnings(total);
+    } catch (error) {
+      console.error("Failed to load designer earnings:", error);
+      setTotalEarnings(0);
+    }
+    setLoading(false);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -103,7 +134,13 @@ export default function ForDesigners() {
             <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <DollarSign className="w-12 h-12 text-red-600" />
             </div>
-            <p className="text-5xl font-bold text-red-600 mb-4">$XXX,XXX</p>
+            {loading ? (
+              <Loader2 className="w-12 h-12 animate-spin mx-auto text-red-600 mb-4" />
+            ) : (
+              <p className="text-5xl font-bold text-red-600 mb-4">
+                ${totalEarnings?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
+              </p>
+            )}
             <p className="text-gray-600">Total earned by our designers</p>
           </div>
         </div>

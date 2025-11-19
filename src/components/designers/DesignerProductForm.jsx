@@ -483,7 +483,7 @@ export default function DesignerProductForm({ designerId, designerName, onSucces
           required
         />
         <Label htmlFor="license_verified" className="text-sm font-bold cursor-pointer">
-          * I verify this design does NOT have a non-commercial license restriction (REQUIRED)
+          * I verify I have the full right to sell this design (REQUIRED)
         </Label>
       </div>
 
