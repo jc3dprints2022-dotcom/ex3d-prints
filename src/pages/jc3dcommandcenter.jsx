@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -22,6 +21,7 @@ import SecurityDRMSection from "../components/commandcenter/SecurityDRMSection";
 import MakerToolsSection from "../components/commandcenter/MakerToolsSection";
 import SystemSettingsSection from "../components/commandcenter/SystemSettingsSection";
 import MakerApplicationsSection from "../components/commandcenter/MakerApplicationsSection";
+import DesignerApplicationsSection from "../components/commandcenter/DesignerApplicationsSection";
 import CustomRequestManagement from "../components/commandcenter/CustomRequestManagement";
 import AnnouncementsSection from "../components/commandcenter/AnnouncementsSection";
 import CabinetStatusSection from "../components/commandcenter/CabinetStatusSection";
@@ -93,6 +93,7 @@ export default function JC3DCommandCenter() {
     { value: "security", label: "🔒 Security & Audit Logs" },
     { value: "makers", label: "🔧 Maker Tools" },
     { value: "applications", label: "📝 Maker Applications" },
+    { value: "designer-applications", label: "🎨 Designer Applications" },
     { value: "custom-requests", label: "🎯 Custom Print Requests" },
     { value: "announcements", label: "📢 Announcements" },
     { value: "marketing", label: "🎨 Marketing Resources" },
@@ -130,6 +131,8 @@ export default function JC3DCommandCenter() {
         return <MakerToolsSection />;
       case "applications":
         return <MakerApplicationsSection />;
+      case "designer-applications":
+        return <DesignerApplicationsSection />;
       case "custom-requests":
         return <CustomRequestManagement />;
       case "announcements":

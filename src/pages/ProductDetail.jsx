@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -275,9 +274,13 @@ export default function ProductDetail() {
     }
 
     try {
+      // Fetch fresh user data to avoid race conditions
+      const freshUser = await base44.auth.me();
+      const currentWishlist = freshUser.wishlist || [];
+      
       const updatedWishlist = isInWishlist
-        ? (user.wishlist || []).filter(pid => pid !== product.id)
-        : [...(user.wishlist || []), product.id];
+        ? currentWishlist.filter(pid => pid !== product.id)
+        : [...currentWishlist, product.id];
 
       await base44.auth.updateMe({ 
         wishlist: updatedWishlist,

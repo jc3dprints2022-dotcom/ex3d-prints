@@ -20,6 +20,10 @@ import AdminPortalJC3D from './pages/AdminPortalJC3D';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
 import FAQ from './pages/FAQ';
 import PaymentSuccess from './pages/PaymentSuccess';
+import AccountInfo from './pages/AccountInfo';
+import ForDesigners from './pages/ForDesigners';
+import DesignerHowItWorks from './pages/DesignerHowItWorks';
+import DesignerSignup from './pages/DesignerSignup';
 import __Layout from './Layout.jsx';
 
 
@@ -46,6 +50,10 @@ export const PAGES = {
     "jc3dcommandcenter": jc3dcommandcenter,
     "FAQ": FAQ,
     "PaymentSuccess": PaymentSuccess,
+    "AccountInfo": AccountInfo,
+    "ForDesigners": ForDesigners,
+    "DesignerHowItWorks": DesignerHowItWorks,
+    "DesignerSignup": DesignerSignup,
 }
 
 export const pagesConfig = {

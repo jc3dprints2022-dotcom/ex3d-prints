@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Plus, Loader2, Package } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const MATERIALS = ["PLA", "PETG", "ABS", "Carbon Fiber", "Nylon", "TPU"];
+const MATERIALS = ["PLA"];
 const COLORS = [
   "White", "Black", "Gray", "Silver", "Gold", "Brown",
   "Red", "Blue", "Yellow", "Green", "Orange", "Purple", "Pink", 

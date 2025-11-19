@@ -372,6 +372,35 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForDesigners")
+                        ? "bg-red-500 text-white"
+                        : "bg-red-50 text-red-700 hover:bg-red-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Designers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("DesignerHowItWorks")} onClick={scrollToTop}>How It Works</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                      <span className="text-red-600 font-semibold">Apply Now</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -435,6 +464,13 @@ export default function Layout({ children, currentPageName }) {
                       )}
                     </div>
                     <DropdownMenuSeparator />
+
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("AccountInfo")} onClick={scrollToTop} className="flex items-center">
+                        <UserIcon className="w-4 h-4 mr-2" />
+                        Account Info
+                      </Link>
+                    </DropdownMenuItem>
 
                     <DropdownMenuItem asChild>
                       <Link to={getDashboardUrl()} onClick={scrollToTop} className="flex items-center">
