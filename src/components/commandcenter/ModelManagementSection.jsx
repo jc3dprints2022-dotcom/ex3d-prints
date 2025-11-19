@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -71,6 +72,7 @@ export default function ModelManagementSection() {
     print_files: [],
     multi_color: false,
     number_of_colors: 2,
+    custom_scale: null, // Added custom_scale field
     // 'status' removed from formData as it's hardcoded to 'active' in handleSubmit
   };
 
@@ -251,6 +253,7 @@ export default function ModelManagementSection() {
       print_files: product.print_files || [],
       multi_color: product.multi_color || false,
       number_of_colors: product.number_of_colors || 2,
+      custom_scale: product.custom_scale || null, // Populate custom_scale
       // Status not needed here as it's hardcoded to 'active' on save
     });
     setLicenseVerified(true); // Assume verified for existing products
@@ -337,8 +340,7 @@ export default function ModelManagementSection() {
       const grams = parseFloat(formData.weight_grams);
       const printTime = parseFloat(formData.print_time_hours);
 
-      //const rawPrice = (((grams / 1000) * 20) + 1 + (printTime / 5)) * 4;
-      const rawPrice = 0.01
+      const rawPrice = (((grams / 1000) * 20) + 1 + (printTime / 5)) * 4;
       calculatedPrice = Math.ceil(rawPrice);
     } else {
         toast({ title: "Weight and Print Time are required for price calculation.", variant: "destructive" });
@@ -369,6 +371,7 @@ export default function ModelManagementSection() {
         status: 'active', // Hardcoded status
         multi_color: formData.multi_color,
         number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
+        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null, // Include custom_scale
         rating: editingProduct ? editingProduct.rating : 0, // Preserve rating on update
         review_count: editingProduct ? editingProduct.review_count : 0, // Preserve on update
         view_count: editingProduct ? editingProduct.view_count : 0, // Preserve on update
@@ -535,7 +538,8 @@ export default function ModelManagementSection() {
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              {/* Updated grid for new custom_scale input */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
                   <Label htmlFor="print_time" className="text-white">Print Time (hrs) *</Label>
                   <Input
@@ -548,7 +552,6 @@ export default function ModelManagementSection() {
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     placeholder="e.g., 2.5"
                     required
-                    className = "text-white"
                   />
                 </div>
 
@@ -563,7 +566,22 @@ export default function ModelManagementSection() {
                     onChange={(e) => setFormData({...formData, weight_grams: e.target.value})}
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     required
-                    className = "text-white"
+                  />
+                </div>
+
+                {/* New input for custom_scale */}
+                <div>
+                  <Label htmlFor="scale" className="text-white">Scale (%)</Label>
+                  <Input
+                    id="scale"
+                    type="number"
+                    step="1"
+                    min="1"
+                    max="1000"
+                    value={formData.custom_scale || ''} // Display empty string for null
+                    onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
+                    className="bg-slate-800 border-cyan-500/30 text-white"
+                    placeholder="Optional (default 100)"
                   />
                 </div>
 
@@ -874,6 +892,11 @@ export default function ModelManagementSection() {
                           {product.multi_color && (
                             <Badge variant="outline" className="text-pink-400 border-pink-500/30">
                               Multi-Color ({product.number_of_colors || 2})
+                            </Badge>
+                          )}
+                          {product.custom_scale && ( // Display custom_scale if available
+                            <Badge variant="outline" className="text-yellow-400 border-yellow-500/30">
+                              Scale: {product.custom_scale}%
                             </Badge>
                           )}
                           {product.tags && product.tags.length > 0 && (
