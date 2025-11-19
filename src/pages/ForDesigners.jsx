@@ -33,7 +33,7 @@ export default function ForDesigners() {
               </div>
               <h3 className="text-xl font-bold mb-2">Earn Royalties</h3>
               <p className="text-gray-600">
-                Get paid every time your design is printed. Keep 60% of every sale.
+                Get paid every time your design is printed. Earn 10% of every sale.
               </p>
             </CardContent>
           </Card>

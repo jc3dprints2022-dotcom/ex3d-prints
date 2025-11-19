@@ -24,6 +24,7 @@ import AccountInfo from './pages/AccountInfo';
 import ForDesigners from './pages/ForDesigners';
 import DesignerHowItWorks from './pages/DesignerHowItWorks';
 import DesignerSignup from './pages/DesignerSignup';
+import DesignerDashboard from './pages/DesignerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -54,6 +55,7 @@ export const PAGES = {
     "ForDesigners": ForDesigners,
     "DesignerHowItWorks": DesignerHowItWorks,
     "DesignerSignup": DesignerSignup,
+    "DesignerDashboard": DesignerDashboard,
 }
 
 export const pagesConfig = {

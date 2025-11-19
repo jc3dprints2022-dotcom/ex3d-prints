@@ -1,12 +1,93 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Package, Clock, Loader2 } from "lucide-react"; // Added Loader2
+import { DollarSign, TrendingUp, Package, Clock, Loader2 } from "lucide-react";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useToast } from "@/components/ui/use-toast";
+
+function DesignerPayoutsContent({ orders }) {
+  const [designersList, setDesignersList] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadDesignerPayouts();
+  }, [orders]);
+
+  const loadDesignerPayouts = async () => {
+    setLoading(true);
+    try {
+      const completedOrders = orders.filter(o =>
+        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+      );
+
+      const designerEarnings = {};
+      
+      for (const order of completedOrders) {
+        for (const item of order.items || []) {
+          if (item.designer_id && item.designer_id !== 'admin') {
+            if (!designerEarnings[item.designer_id]) {
+              designerEarnings[item.designer_id] = 0;
+            }
+            designerEarnings[item.designer_id] += item.total_price * 0.10;
+          }
+        }
+      }
+
+      const allUsers = await base44.entities.User.list();
+      const designersList = [];
+
+      for (const [designerId, earnings] of Object.entries(designerEarnings)) {
+        const designer = allUsers.find(u => u.designer_id === designerId);
+        if (designer) {
+          designersList.push({
+            designer_id: designerId,
+            full_name: designer.full_name,
+            email: designer.email,
+            earnings: earnings
+          });
+        }
+      }
+
+      designersList.sort((a, b) => b.earnings - a.earnings);
+      setDesignersList(designersList);
+    } catch (error) {
+      console.error('Failed to load designer payouts:', error);
+    }
+    setLoading(false);
+  };
+
+  if (loading) {
+    return (
+      <div className="text-center py-8">
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+      </div>
+    );
+  }
+
+  if (designersList.length === 0) {
+    return <p className="text-center text-gray-500 py-8">No designer payouts yet</p>;
+  }
+
+  return (
+    <div className="space-y-3 max-h-96 overflow-y-auto">
+      {designersList.map(designer => (
+        <div key={designer.designer_id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+          <div className="flex-1">
+            <p className="font-semibold">{designer.full_name}</p>
+            <p className="text-sm text-gray-600">{designer.email}</p>
+            <p className="text-xs text-gray-500 mt-1">Designer ID: {designer.designer_id}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-bold text-red-600">${designer.earnings.toFixed(2)}</p>
+            <p className="text-xs text-gray-500">Owed</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function PaymentsFinancialsSection() {
   const [orders, setOrders] = useState([]);
@@ -19,6 +100,7 @@ export default function PaymentsFinancialsSection() {
   const [avgPricePerHour, setAvgPricePerHour] = useState(0); // This state will now hold Avg Price/Order
   const [platformRevenue, setPlatformRevenue] = useState(0); // New state for Platform Revenue
   const [makerProfits, setMakerProfits] = useState(0); // New state for Maker Profits
+  const [designerProfits, setDesignerProfits] = useState(0); // New state for Designer Profits
   const [loading, setLoading] = useState(true); // New loading state
   const [makersList, setMakersList] = useState([]); // New state for maker payouts
 
@@ -76,6 +158,16 @@ export default function PaymentsFinancialsSection() {
         return sum + baseProfit + priorityProfit;
       }, 0);
       setMakerProfits(calculatedMakerProfits);
+
+      // Designer profits (10% of item totals for non-admin designers)
+      let calculatedDesignerProfits = 0;
+      completedOrders.forEach(order => {
+        order.items?.forEach(item => {
+          if (item.designer_id && item.designer_id !== 'admin') {
+            calculatedDesignerProfits += item.total_price * 0.10;
+          }
+        });
+      });
 
       // Calculate per-maker earnings
       const makerEarnings = {};
@@ -268,6 +360,17 @@ export default function PaymentsFinancialsSection() {
             <p className="text-xs text-muted-foreground mt-1">70% - $0.30 per completed order (+ priority fees)</p>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Designer Profits</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">${designerProfits.toFixed(2)}</div>
+            <p className="text-xs text-muted-foreground mt-1">10% per sale of their designs</p>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Orders Over Time Chart */}
@@ -360,40 +463,61 @@ export default function PaymentsFinancialsSection() {
         </CardContent>
       </Card>
 
-      {/* Maker Payouts */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Maker Payouts</CardTitle>
-          <p className="text-sm text-muted-foreground mt-1">
-            Total owed to makers for completed orders (70% - $0.30 per order + 70% of priority fees)
-          </p>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-            </div>
-          ) : makersList.length === 0 ? (
-            <p className="text-center text-gray-500 py-8">No maker payouts yet</p>
-          ) : (
-            <div className="space-y-3">
-              {makersList.map(maker => (
-                <div key={maker.maker_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-semibold">{maker.full_name}</p>
-                    <p className="text-sm text-gray-600">{maker.email}</p>
-                    <p className="text-xs text-gray-500 mt-1">Maker ID: {maker.maker_id}</p>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Maker Payouts */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Maker Payouts</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Total owed to makers for completed orders (70% - $0.30 per order + 70% of priority fees)
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+              </div>
+            ) : makersList.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">No maker payouts yet</p>
+            ) : (
+              <div className="space-y-3 max-h-96 overflow-y-auto">
+                {makersList.map(maker => (
+                  <div key={maker.maker_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-semibold">{maker.full_name}</p>
+                      <p className="text-sm text-gray-600">{maker.email}</p>
+                      <p className="text-xs text-gray-500 mt-1">Maker ID: {maker.maker_id}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-green-600">${maker.earnings.toFixed(2)}</p>
+                      <p className="text-xs text-gray-500">Owed</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-2xl font-bold text-green-600">${maker.earnings.toFixed(2)}</p>
-                    <p className="text-xs text-gray-500">Owed</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Designer Payouts */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Designer Payouts</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Total owed to designers for their designs (10% per sale)
+            </p>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+              </div>
+            ) : (
+              <DesignerPayoutsContent orders={orders} />
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

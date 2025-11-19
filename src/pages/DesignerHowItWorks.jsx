@@ -70,10 +70,10 @@ export default function DesignerHowItWorks() {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-3">3. Earn Royalties</h2>
                   <p className="text-gray-600 mb-4">
-                    You keep 60% of every sale. Payments are processed monthly via your preferred payment method.
+                    You earn 10% of every sale. Payments are processed monthly via your preferred payment method.
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
-                    <li>60% royalty on every sale</li>
+                    <li>10% royalty on every sale</li>
                     <li>Monthly automated payouts</li>
                     <li>Detailed earnings dashboard</li>
                   </ul>
