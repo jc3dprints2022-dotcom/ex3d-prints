@@ -5,14 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Palette, DollarSign, TrendingUp, Package, Star, Calendar } from "lucide-react";
+import { Loader2, Palette, DollarSign, TrendingUp, Package, Star, Calendar, Plus, X } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import BankInfoManager from "../components/shared/BankInfoManager";
+import DesignerProductForm from "../components/designers/DesignerProductForm";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export default function DesignerDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [myProducts, setMyProducts] = useState([]);
+  const [showProductForm, setShowProductForm] = useState(false);
   const [stats, setStats] = useState({
     totalProducts: 0,
     totalSales: 0,
@@ -188,7 +196,8 @@ export default function DesignerDashboard() {
             <CardHeader>
               <div className="flex justify-between items-center">
                 <CardTitle>My Designs</CardTitle>
-                <Button onClick={() => window.location.href = createPageUrl("jc3dcommandcenter")} className="bg-red-600 hover:bg-red-700">
+                <Button onClick={() => setShowProductForm(true)} className="bg-red-600 hover:bg-red-700">
+                  <Plus className="w-4 h-4 mr-2" />
                   Upload New Design
                 </Button>
               </div>
@@ -198,7 +207,8 @@ export default function DesignerDashboard() {
                 <div className="text-center py-12">
                   <Palette className="w-16 h-16 mx-auto text-gray-400 mb-4" />
                   <p className="text-gray-600 mb-4">No products yet</p>
-                  <Button onClick={() => window.location.href = createPageUrl("jc3dcommandcenter")} className="bg-red-600 hover:bg-red-700">
+                  <Button onClick={() => setShowProductForm(true)} className="bg-red-600 hover:bg-red-700">
+                    <Plus className="w-4 h-4 mr-2" />
                     Upload Your First Design
                   </Button>
                 </div>
@@ -272,6 +282,23 @@ export default function DesignerDashboard() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Upload New Design</DialogTitle>
+          </DialogHeader>
+          <DesignerProductForm
+            designerId={user?.designer_id}
+            designerName={user?.full_name}
+            onSuccess={() => {
+              setShowProductForm(false);
+              loadDashboard();
+            }}
+            onCancel={() => setShowProductForm(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

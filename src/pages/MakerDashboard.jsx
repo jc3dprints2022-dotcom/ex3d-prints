@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -118,18 +117,9 @@ export default function MakerDashboard() {
   };
 
   const getNextPayoutDate = () => {
-    if (!user?.subscription_start_date) return 'Nov. 14';
-
-    const startDate = new Date(user.subscription_start_date);
     const today = new Date();
-    const dayOfMonth = startDate.getDate();
-
-    let nextPayout = new Date(today.getFullYear(), today.getMonth(), dayOfMonth);
-    if (nextPayout < today) {
-      nextPayout = new Date(today.getFullYear(), today.getMonth() + 1, dayOfMonth);
-    }
-
-    return nextPayout.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    return lastDayOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
   const handleAcceptOrder = async (orderId) => {

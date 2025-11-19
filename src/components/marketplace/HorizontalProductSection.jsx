@@ -25,12 +25,14 @@ export default function HorizontalProductSection({ title, products, viewAllUrl }
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
         {viewAllUrl && (
-          <Link to={viewAllUrl}>
-            <Button variant="ghost" className="text-teal-600 hover:text-teal-700 hover:bg-teal-50">
-              View All
-              <ArrowRight className="w-4 h-4 ml-2" />
-            </Button>
-          </Link>
+          <Button 
+            variant="ghost" 
+            className="text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+            onClick={() => window.location.href = viewAllUrl}
+          >
+            View All
+            <ArrowRight className="w-4 h-4 ml-2" />
+          </Button>
         )}
       </div>
 

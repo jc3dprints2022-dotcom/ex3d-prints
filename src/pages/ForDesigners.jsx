@@ -97,6 +97,17 @@ export default function ForDesigners() {
           </div>
         </div>
 
+        <div className="bg-white rounded-2xl shadow-xl p-12 mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8">Designer Earnings</h2>
+          <div className="text-center">
+            <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <DollarSign className="w-12 h-12 text-red-600" />
+            </div>
+            <p className="text-5xl font-bold text-red-600 mb-4">$XXX,XXX</p>
+            <p className="text-gray-600">Total earned by our designers</p>
+          </div>
+        </div>
+
         <div className="text-center">
           <h2 className="text-3xl font-bold mb-8">Ready to Share Your Designs?</h2>
           <Link to={createPageUrl("DesignerSignup")}>
