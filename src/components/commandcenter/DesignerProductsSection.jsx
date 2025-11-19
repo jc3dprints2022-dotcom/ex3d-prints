@@ -298,31 +298,61 @@ The EX3D Team`
                       
                       {/* Stats */}
                       <div className="grid grid-cols-3 gap-4 mt-3">
-                        <div className="flex items-center gap-2">
-                          <Eye className="w-4 h-4 text-blue-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Views</p>
-                            <p className="font-bold text-white">{product.stats.views}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ShoppingCart className="w-4 h-4 text-green-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Sales</p>
-                            <p className="font-bold text-white">{product.stats.sales}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-teal-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Designer Profit</p>
-                            <p className="font-bold text-white">${product.stats.profit.toFixed(2)}</p>
-                          </div>
-                        </div>
+                       <div className="flex items-center gap-2">
+                         <Eye className="w-4 h-4 text-blue-400" />
+                         <div>
+                           <p className="text-xs text-gray-400">Views</p>
+                           <p className="font-bold text-white">{product.stats.views}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <ShoppingCart className="w-4 h-4 text-green-400" />
+                         <div>
+                           <p className="text-xs text-gray-400">Sales</p>
+                           <p className="font-bold text-white">{product.stats.sales}</p>
+                         </div>
+                       </div>
+                       <div className="flex items-center gap-2">
+                         <DollarSign className="w-4 h-4 text-teal-400" />
+                         <div>
+                           <p className="text-xs text-gray-400">Designer Profit</p>
+                           <p className="font-bold text-white">${product.stats.profit.toFixed(2)}</p>
+                         </div>
+                       </div>
                       </div>
-                    </div>
-                  </div>
-                </div>
+                      </div>
+                      <div className="flex gap-2">
+                      <Button
+                       variant="outline"
+                       size="sm"
+                       onClick={() => setReviewingProduct(product)}
+                      >
+                       Edit
+                      </Button>
+                      <Button
+                       variant="destructive"
+                       size="sm"
+                       onClick={async () => {
+                         if (confirm(`Are you sure you want to decline "${product.name}"?`)) {
+                           setProcessing(true);
+                           try {
+                             await base44.entities.Product.update(product.id, {
+                               status: 'inactive'
+                             });
+                             toast({ title: "Product declined successfully" });
+                             loadProducts();
+                           } catch (error) {
+                             toast({ title: "Failed to decline product", variant: "destructive" });
+                           }
+                           setProcessing(false);
+                         }
+                       }}
+                      >
+                       Decline
+                      </Button>
+                      </div>
+                      </div>
+                      </div>
               ))}
             </div>
           )}
@@ -430,22 +460,35 @@ The EX3D Team`
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleReject(reviewingProduct)}
-              disabled={processing}
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
-              Reject
-            </Button>
-            <Button
-              onClick={() => handleApprove(reviewingProduct)}
-              disabled={processing}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-              Approve
-            </Button>
+            {reviewingProduct?.status === 'pending' ? (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleReject(reviewingProduct)}
+                  disabled={processing}
+                >
+                  {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => handleApprove(reviewingProduct)}
+                  disabled={processing}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                  Approve
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => handleApprove(reviewingProduct)}
+                disabled={processing}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                Save Changes
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
