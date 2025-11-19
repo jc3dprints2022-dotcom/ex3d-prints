@@ -95,12 +95,15 @@ export default function DesignerProductsSection() {
       });
 
       // Send email to designer
-      const designer = await base44.entities.User.get(product.designer_id);
-      if (designer) {
-        await base44.integrations.Core.SendEmail({
-          to: designer.email,
-          subject: 'Your Design Has Been Approved! - EX3D Prints',
-          body: `Hi ${designer.full_name},
+      try {
+        const allUsers = await base44.entities.User.list();
+        const designer = allUsers.find(u => u.id === product.designer_id);
+        
+        if (designer) {
+          await base44.integrations.Core.SendEmail({
+            to: designer.email,
+            subject: 'Your Design Has Been Approved! - EX3D Prints',
+            body: `Hi ${designer.full_name},
 
 Great news! Your design "${product.name}" has been approved and is now live on the marketplace!
 
@@ -112,7 +115,10 @@ Thank you for contributing to EX3D Prints!
 
 Best regards,
 The EX3D Team`
-        });
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
       }
 
       toast({ title: "Product approved successfully!" });
@@ -121,7 +127,7 @@ The EX3D Team`
       loadProducts();
     } catch (error) {
       console.error("Approval error:", error);
-      toast({ title: "Failed to approve product", variant: "destructive" });
+      toast({ title: "Failed to approve product", description: error.message, variant: "destructive" });
     }
     setProcessing(false);
   };
@@ -141,12 +147,15 @@ The EX3D Team`
       });
 
       // Send email to designer
-      const designer = await base44.entities.User.get(product.designer_id);
-      if (designer) {
-        await base44.integrations.Core.SendEmail({
-          to: designer.email,
-          subject: 'Update on Your Design Submission - EX3D Prints',
-          body: `Hi ${designer.full_name},
+      try {
+        const allUsers = await base44.entities.User.list();
+        const designer = allUsers.find(u => u.id === product.designer_id);
+        
+        if (designer) {
+          await base44.integrations.Core.SendEmail({
+            to: designer.email,
+            subject: 'Update on Your Design Submission - EX3D Prints',
+            body: `Hi ${designer.full_name},
 
 Thank you for submitting "${product.name}" to EX3D Prints.
 
@@ -160,7 +169,10 @@ If you have questions, please reply to this email.
 
 Best regards,
 The EX3D Team`
-        });
+          });
+        }
+      } catch (emailError) {
+        console.error("Failed to send email:", emailError);
       }
 
       toast({ title: "Product rejected and designer notified" });
@@ -169,7 +181,7 @@ The EX3D Team`
       loadProducts();
     } catch (error) {
       console.error("Rejection error:", error);
-      toast({ title: "Failed to reject product", variant: "destructive" });
+      toast({ title: "Failed to reject product", description: error.message, variant: "destructive" });
     }
     setProcessing(false);
   };

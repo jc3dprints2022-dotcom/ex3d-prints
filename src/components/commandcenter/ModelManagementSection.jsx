@@ -801,19 +801,43 @@ export default function ModelManagementSection() {
                 )}
               </div>
 
-              <Button type="submit" disabled={saving} className="w-full">
-                {saving ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {editingProduct ? 'Updating Product...' : 'Creating Product...'}
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    {editingProduct ? 'Update Product' : 'Create Product'}
-                  </>
+              <div className="flex gap-3">
+                {editingProduct && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={async () => {
+                      if (confirm('Are you sure you want to delete this product?')) {
+                        try {
+                          await base44.entities.Product.delete(editingProduct.id);
+                          toast({ title: "Product deleted successfully" });
+                          handleCancelEdit();
+                          loadProducts();
+                        } catch (error) {
+                          toast({ title: "Failed to delete product", variant: "destructive" });
+                        }
+                      }
+                    }}
+                    disabled={saving}
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    Delete Product
+                  </Button>
                 )}
-              </Button>
+                <Button type="submit" disabled={saving} className="flex-1">
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {editingProduct ? 'Updating Product...' : 'Creating Product...'}
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      {editingProduct ? 'Update Product' : 'Create Product'}
+                    </>
+                  )}
+                </Button>
+              </div>
             </form>
           </CardContent>
         </Card>

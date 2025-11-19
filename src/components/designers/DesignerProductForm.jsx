@@ -32,27 +32,46 @@ const COLORS = [
   "Copper", "Bronze", "Silk Rainbow", "Marble",
 ];
 
-export default function DesignerProductForm({ designerId, designerName, onSuccess, onCancel }) {
-  const [licenseVerified, setLicenseVerified] = useState(false);
+export default function DesignerProductForm({ designerId, designerName, existingProduct, onSuccess, onCancel }) {
+  const [licenseVerified, setLicenseVerified] = useState(!!existingProduct);
   const [saving, setSaving] = useState(false);
   const { toast } = useToast();
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    print_time_hours: '',
-    weight_grams: '',
-    dimensions: { length: '', width: '', height: '' },
-    category: '',
-    materials: [],
-    colors: [],
-    tags: [],
-    images: [],
-    print_files: [],
-    multi_color: false,
-    number_of_colors: 2,
-    custom_scale: null,
-  });
+  const [formData, setFormData] = useState(
+    existingProduct
+      ? {
+          name: existingProduct.name,
+          description: existingProduct.description,
+          print_time_hours: existingProduct.print_time_hours.toString(),
+          weight_grams: existingProduct.weight_grams.toString(),
+          dimensions: existingProduct.dimensions || { length: '', width: '', height: '' },
+          category: existingProduct.category,
+          materials: existingProduct.materials || [],
+          colors: existingProduct.colors || [],
+          tags: existingProduct.tags || [],
+          images: existingProduct.images || [],
+          print_files: existingProduct.print_files || [],
+          multi_color: existingProduct.multi_color || false,
+          number_of_colors: existingProduct.number_of_colors || 2,
+          custom_scale: existingProduct.custom_scale || null,
+        }
+      : {
+          name: '',
+          description: '',
+          print_time_hours: '',
+          weight_grams: '',
+          dimensions: { length: '', width: '', height: '' },
+          category: '',
+          materials: [],
+          colors: [],
+          tags: [],
+          images: [],
+          print_files: [],
+          multi_color: false,
+          number_of_colors: 2,
+          custom_scale: null,
+        }
+  );
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -231,8 +250,18 @@ export default function DesignerProductForm({ designerId, designerName, onSucces
         rejection_count: 0,
       };
 
-      await base44.entities.Product.create(productData);
-      toast({ title: "Product submitted for review!" });
+      if (existingProduct) {
+        // For updates, create new version with pending status
+        await base44.entities.Product.update(existingProduct.id, {
+          ...productData,
+          version_of: existingProduct.id,
+          status: 'pending'
+        });
+        toast({ title: "Changes submitted for review!" });
+      } else {
+        await base44.entities.Product.create(productData);
+        toast({ title: "Product submitted for review!" });
+      }
       onSuccess();
     } catch (error) {
       console.error('Error saving product:', error);

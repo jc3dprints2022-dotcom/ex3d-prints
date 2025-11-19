@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Download, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function BrandingKit() {
+export default function BrandingKit({ userRole = 'maker' }) {
   const [files, setFiles] = useState([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -78,7 +78,7 @@ export default function BrandingKit() {
             {files.length > 0 ? (
               <div className="space-y-3">
                 <p className="text-sm text-gray-600 mb-4">
-                  Download marketing materials provided by EXpressPrints to help promote your maker services.
+                  Download marketing materials provided by EXpressPrints to help promote your {userRole === 'designer' ? 'designs' : 'maker services'}.
                 </p>
                 {files.map((file, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border">
@@ -94,7 +94,7 @@ export default function BrandingKit() {
                     <Button
                       size="sm"
                       onClick={() => handleDownload(file)}
-                      className="bg-teal-600 hover:bg-teal-700"
+                      className={userRole === 'designer' ? 'bg-red-600 hover:bg-red-700' : 'bg-teal-600 hover:bg-teal-700'}
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Download

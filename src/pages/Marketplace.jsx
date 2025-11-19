@@ -118,8 +118,10 @@ export default function Marketplace() {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const allProducts = await base44.entities.Product.filter({ status: 'active' });
-      setProducts(allProducts);
+      const allProducts = await base44.entities.Product.list();
+      // Only show active products in marketplace
+      const activeProducts = allProducts.filter(p => p.status === 'active');
+      setProducts(activeProducts);
     } catch (error) {
       console.error("Failed to load products:", error);
     }
