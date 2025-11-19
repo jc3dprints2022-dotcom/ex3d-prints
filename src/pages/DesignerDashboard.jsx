@@ -5,43 +5,50 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Palette, DollarSign, TrendingUp, Package, Star, Calendar, Plus, X } from "lucide-react";
-import { createPageUrl } from "@/utils";
-import BankInfoManager from "../components/shared/BankInfoManager";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
+import BankInfoManager from "../components/shared/BankInfoManager";
+import BrandingKit from "../components/makers/BrandingKit";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function DesignerDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [myProducts, setMyProducts] = useState([]);
-  const [showProductForm, setShowProductForm] = useState(false);
-  const [stats, setStats] = useState({
-    totalProducts: 0,
-    totalSales: 0,
-    totalEarnings: 0,
-    activeProducts: 0
-  });
+  const [products, setProducts] = useState([]);
+  const [activeTab, setActiveTab] = useState('products');
+  const [showUploadForm, setShowUploadForm] = useState(false);
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [deletingProduct, setDeletingProduct] = useState(null);
   const { toast } = useToast();
 
+  const tabs = [
+    { value: 'products', label: 'My Designs', icon: Package },
+    { value: 'financial', label: 'Financial Info', icon: DollarSign },
+    { value: 'branding', label: 'Branding Kit', icon: Palette },
+  ];
+
   useEffect(() => {
-    loadDashboard();
+    loadDashboardData();
   }, []);
 
-  const loadDashboard = async () => {
+  const loadDashboardData = async () => {
     setLoading(true);
     try {
       const currentUser = await base44.auth.me();
-
       if (!currentUser.designer_id || !currentUser.business_roles?.includes('designer')) {
         toast({
           title: "Access Denied",
-          description: "You need to be approved as a designer to access this dashboard",
+          description: "You need to be approved as a designer",
           variant: "destructive"
         });
         window.location.href = '/';
@@ -50,52 +57,43 @@ export default function DesignerDashboard() {
 
       setUser(currentUser);
 
-      // Load designer's products
       const allProducts = await base44.entities.Product.list();
-      const designerProducts = allProducts.filter(p => p.designer_id === currentUser.designer_id);
-      setMyProducts(designerProducts);
-
-      // Load all completed orders to calculate earnings
-      const allOrders = await base44.entities.Order.list();
-      const completedOrders = allOrders.filter(o =>
-        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-      );
-
-      // Calculate earnings (10% of each sale of designer's products)
-      let totalEarnings = 0;
-      let totalSales = 0;
-
-      completedOrders.forEach(order => {
-        order.items?.forEach(item => {
-          if (item.designer_id === currentUser.designer_id) {
-            totalEarnings += item.total_price * 0.10;
-            totalSales += item.quantity;
-          }
-        });
-      });
-
-      setStats({
-        totalProducts: designerProducts.length,
-        totalSales: totalSales,
-        totalEarnings: totalEarnings,
-        activeProducts: designerProducts.filter(p => p.status === 'active').length
-      });
-
+      const myProducts = allProducts.filter(p => p.designer_id === currentUser.designer_id);
+      setProducts(myProducts);
     } catch (error) {
       console.error("Failed to load dashboard:", error);
       toast({
-        title: "Failed to load dashboard data",
-        description: error.message,
+        title: "Error loading dashboard",
         variant: "destructive"
       });
     }
     setLoading(false);
   };
 
-  const getNextPayoutDate = () => {
-    const today = new Date();
-    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-    return lastDayOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const handleProductCreated = () => {
+    setShowUploadForm(false);
+    setEditingProduct(null);
+    loadDashboardData();
+  };
+
+  const handleEditProduct = (product) => {
+    setEditingProduct(product);
+    setShowUploadForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!deletingProduct) return;
+    
+    try {
+      await base44.entities.Product.delete(deletingProduct.id);
+      toast({ title: "Product deleted successfully" });
+      setDeletingProduct(null);
+      loadDashboardData();
+    } catch (error) {
+      console.error("Failed to delete product:", error);
+      toast({ title: "Failed to delete product", variant: "destructive" });
+    }
   };
 
   if (loading) {
@@ -106,38 +104,29 @@ export default function DesignerDashboard() {
     );
   }
 
+  const stats = {
+    total: products.length,
+    active: products.filter(p => p.status === 'active').length,
+    pending: products.filter(p => p.status === 'pending').length,
+    rejected: products.filter(p => p.status === 'rejected').length,
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Designer Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {user?.full_name}!</p>
-          </div>
-          <Card className="bg-red-50 border-red-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-red-600" />
-                <div>
-                  <p className="text-sm text-gray-600">Next Payout</p>
-                  <p className="font-semibold text-red-900">{getNextPayoutDate()}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <h1 className="text-3xl font-bold text-gray-900">Designer Dashboard</h1>
+        <p className="text-gray-600">Welcome back, {user?.full_name}!</p>
       </div>
 
-      {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Products</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalProducts}</p>
+                <p className="text-sm text-gray-600">Total Designs</p>
+                <p className="text-3xl font-bold">{stats.total}</p>
               </div>
-              <Palette className="w-10 h-10 text-red-600" />
+              <Package className="w-10 h-10 text-red-600" />
             </div>
           </CardContent>
         </Card>
@@ -146,10 +135,10 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Active Products</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.activeProducts}</p>
+                <p className="text-sm text-gray-600">Active</p>
+                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
               </div>
-              <Package className="w-10 h-10 text-green-600" />
+              <TrendingUp className="w-10 h-10 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -158,10 +147,10 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Sales</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.totalSales}</p>
+                <p className="text-sm text-gray-600">Pending</p>
+                <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
               </div>
-              <TrendingUp className="w-10 h-10 text-blue-600" />
+              <Eye className="w-10 h-10 text-yellow-600" />
             </div>
           </CardContent>
         </Card>
@@ -170,93 +159,135 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-3xl font-bold text-gray-900">${stats.totalEarnings.toFixed(2)}</p>
+                <p className="text-sm text-gray-600">Declined</p>
+                <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
               </div>
-              <DollarSign className="w-10 h-10 text-teal-600" />
+              <ShoppingCart className="w-10 h-10 text-gray-400" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs defaultValue="products" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
-          <TabsTrigger value="products">
-            <Package className="w-4 h-4 mr-2" />
-            My Products
-          </TabsTrigger>
-          <TabsTrigger value="financial">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Financial Info
-          </TabsTrigger>
+          {tabs.map(tab => (
+            <TabsTrigger key={tab.value} value={tab.value}>
+              <tab.icon className="w-4 h-4 mr-2" />
+              {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
-        <TabsContent value="products">
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-center">
-                <CardTitle>My Designs</CardTitle>
-                <Button onClick={() => setShowProductForm(true)} className="bg-red-600 hover:bg-red-700">
-                  <Plus className="w-4 h-4 mr-2" />
+        <TabsContent value="products" className="space-y-6 mt-6">
+          {showUploadForm ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>{editingProduct ? 'Edit Design' : 'Upload New Design'}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <DesignerProductForm 
+                  designerId={user.designer_id}
+                  designerName={user.designer_name || user.full_name}
+                  existingProduct={editingProduct}
+                  onSuccess={handleProductCreated}
+                  onCancel={() => { setShowUploadForm(false); setEditingProduct(null); }}
+                />
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="flex justify-end">
+                <Button onClick={() => setShowUploadForm(true)} className="bg-red-600 hover:bg-red-700">
+                  <PlusCircle className="w-5 h-5 mr-2" />
                   Upload New Design
                 </Button>
               </div>
-            </CardHeader>
-            <CardContent>
-              {myProducts.length === 0 ? (
-                <div className="text-center py-12">
-                  <Palette className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 mb-4">No products yet</p>
-                  <Button onClick={() => setShowProductForm(true)} className="bg-red-600 hover:bg-red-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Upload Your First Design
-                  </Button>
-                </div>
+
+              {products.length === 0 ? (
+                <Card>
+                  <CardContent className="text-center py-12">
+                    <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600 mb-4">No designs yet. Upload your first design!</p>
+                    <Button onClick={() => setShowUploadForm(true)} className="bg-red-600 hover:bg-red-700">
+                      <PlusCircle className="w-5 h-5 mr-2" />
+                      Upload Design
+                    </Button>
+                  </CardContent>
+                </Card>
               ) : (
                 <div className="space-y-4">
-                  {myProducts.map(product => (
-                    <Card key={product.id} className="border-2">
+                  {products.map(product => (
+                    <Card key={product.id} className={`border-2 ${
+                      product.status === 'rejected' ? 'border-red-300 bg-red-50' : ''
+                    }`}>
                       <CardContent className="p-6">
                         <div className="flex gap-4">
                           {product.images?.[0] && (
-                            <img 
-                              src={product.images[0]} 
-                              alt={product.name}
-                              className="w-24 h-24 object-cover rounded"
-                            />
+                            <img src={product.images[0]} alt={product.name} className="w-24 h-24 object-cover rounded" />
                           )}
                           <div className="flex-1">
                             <div className="flex justify-between items-start mb-2">
-                              <div>
+                              <div className="flex-1">
                                 <h3 className="font-bold text-lg">{product.name}</h3>
                                 <p className="text-sm text-gray-600 mt-1">{product.description}</p>
+                                {product.status === 'rejected' && product.admin_feedback && (
+                                  <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded">
+                                    <p className="text-sm font-semibold text-red-800">Declined Reason:</p>
+                                    <p className="text-sm text-red-700 mt-1">{product.admin_feedback}</p>
+                                  </div>
+                                )}
                               </div>
-                              <Badge className={
-                                product.status === 'active' ? 'bg-green-500' :
-                                product.status === 'pending' ? 'bg-yellow-500' :
-                                'bg-gray-500'
-                              }>
-                                {product.status}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Badge className={
+                                  product.status === 'active' ? 'bg-green-500' :
+                                  product.status === 'pending' ? 'bg-yellow-500' :
+                                  product.status === 'rejected' ? 'bg-red-500' :
+                                  'bg-red-500'
+                                }>
+                                  {product.status === 'rejected' ? 'Declined' : product.status}
+                                </Badge>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => handleEditProduct(product)}
+                                >
+                                  <Pencil className="w-4 h-4 mr-2" />
+                                  {product.status === 'rejected' ? 'Edit & Resubmit' : 'Edit'}
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => setDeletingProduct(product)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
-                            <div className="grid grid-cols-4 gap-4 text-sm mt-3">
-                              <div>
-                                <span className="text-gray-600">Price:</span>
-                                <p className="font-semibold">${product.price?.toFixed(2)}</p>
+                            {product.status !== 'rejected' && (
+                              <div className="grid grid-cols-3 gap-4 mt-4">
+                                <div className="flex items-center gap-2">
+                                  <Eye className="w-4 h-4 text-blue-500" />
+                                  <div>
+                                    <p className="text-xs text-gray-500">Views</p>
+                                    <p className="font-bold">{product.view_count || 0}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <ShoppingCart className="w-4 h-4 text-green-500" />
+                                  <div>
+                                    <p className="text-xs text-gray-500">Sales</p>
+                                    <p className="font-bold">{product.sales_count || 0}</p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <DollarSign className="w-4 h-4 text-teal-500" />
+                                  <div>
+                                    <p className="text-xs text-gray-500">Earned</p>
+                                    <p className="font-bold">${((product.sales_count || 0) * product.price * 0.10).toFixed(2)}</p>
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <span className="text-gray-600">Views:</span>
-                                <p className="font-semibold">{product.view_count || 0}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Sales:</span>
-                                <p className="font-semibold">{product.sales_count || 0}</p>
-                              </div>
-                              <div>
-                                <span className="text-gray-600">Your Earnings:</span>
-                                <p className="font-semibold text-red-600">${((product.price * (product.sales_count || 0)) * 0.10).toFixed(2)}</p>
-                              </div>
-                            </div>
+                            )}
                           </div>
                         </div>
                       </CardContent>
@@ -264,41 +295,35 @@ export default function DesignerDashboard() {
                   ))}
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </>
+          )}
         </TabsContent>
 
         <TabsContent value="financial">
-          <Card>
-            <CardHeader>
-              <CardTitle>Financial Information</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage your banking information for receiving payouts
-              </p>
-            </CardHeader>
-            <CardContent>
-              <BankInfoManager user={user} onUpdate={loadDashboard} />
-            </CardContent>
-          </Card>
+          <BankInfoManager userId={user.id} userRole="designer" />
+        </TabsContent>
+
+        <TabsContent value="branding">
+          <BrandingKit userRole="designer" />
         </TabsContent>
       </Tabs>
 
-      <Dialog open={showProductForm} onOpenChange={setShowProductForm}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Upload New Design</DialogTitle>
-          </DialogHeader>
-          <DesignerProductForm
-            designerId={user?.designer_id}
-            designerName={user?.full_name}
-            onSuccess={() => {
-              setShowProductForm(false);
-              loadDashboard();
-            }}
-            onCancel={() => setShowProductForm(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      <AlertDialog open={!!deletingProduct} onOpenChange={() => setDeletingProduct(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Product</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingProduct?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
