@@ -54,10 +54,36 @@ export default function DesignerApplicationsSection() {
         currentRoles.push('designer');
       }
 
+      // Generate unique designer ID
+      const designerId = `designer_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
       await base44.entities.User.update(application.user_id, {
         business_roles: currentRoles,
-        designer_application_status: 'approved'
+        designer_application_status: 'approved',
+        designer_id: designerId
       });
+
+      // Send approval email
+      try {
+        await base44.integrations.Core.SendEmail({
+          to: application.email,
+          subject: 'Designer Application Approved! - EX3D Prints',
+          body: `Hi ${application.full_name},
+
+Congratulations! Your designer application has been approved!
+
+You can now access your Designer Dashboard and start uploading your 3D designs to earn 10% royalties on every sale.
+
+Designer Name: ${application.designer_name}
+
+Log in to your account to get started.
+
+Best regards,
+The EX3D Team`
+        });
+      } catch (emailError) {
+        console.error('Failed to send approval email:', emailError);
+      }
 
       toast({ title: "Designer application approved!" });
       setSelectedApp(null);
