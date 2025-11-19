@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -105,7 +104,7 @@ export default function ModelManagementSection() {
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
       case 'newest':
-        return new Date(b.created_at || 0) - new Date(a.created_at || 0);
+        return new Date(b.created_date || 0) - new Date(a.created_date || 0);
       case 'most_rejected':
         return (b.rejection_count || 0) - (a.rejection_count || 0);
       case 'most_viewed':
