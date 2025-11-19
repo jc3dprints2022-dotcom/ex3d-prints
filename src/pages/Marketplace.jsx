@@ -85,6 +85,7 @@ export default function Marketplace() {
     const searchParam = urlParams.get('search');
     const categoryParam = urlParams.get('category');
     const viewAllParam = urlParams.get('viewAll');
+    const sortByParam = urlParams.get('sortBy');
     
     if (searchParam) {
       setSearchQuery(searchParam);
@@ -98,6 +99,10 @@ export default function Marketplace() {
     
     if (viewAllParam === 'true') {
       setViewMode("filtered");
+    }
+
+    if (sortByParam) {
+      setFilters(prev => ({ ...prev, sortBy: sortByParam }));
     }
   }, []);
 
@@ -288,7 +293,7 @@ export default function Marketplace() {
               <HorizontalProductSection
                 title="Most Popular"
                 products={getMostPopular()}
-                viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true`}
+                viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`}
               />
 
               {/* Category Sections - Only show categories with products */}

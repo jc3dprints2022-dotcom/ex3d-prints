@@ -107,10 +107,10 @@ Deno.serve(async (req) => {
                     payout_date: lastDayOfMonth.toISOString()
                 });
 
-                // Update maker's payout date to last day of next month
-                const nextMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+                // Update maker's payout date to last day of current month
+                const currentMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 await base44.asServiceRole.entities.User.update(makerId, {
-                    payout_date: nextMonthLastDay.toISOString().split('T')[0]
+                    payout_date: currentMonthLastDay.toISOString().split('T')[0]
                 });
 
                 payoutRecords.push(payout);
@@ -137,10 +137,10 @@ Deno.serve(async (req) => {
                     payout_date: lastDayOfMonth.toISOString()
                 });
 
-                // Update designer's payout date to last day of next month
-                const nextMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 2, 0);
+                // Update designer's payout date to last day of current month
+                const currentMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
                 await base44.asServiceRole.entities.User.update(designerId, {
-                    payout_date: nextMonthLastDay.toISOString().split('T')[0]
+                    payout_date: currentMonthLastDay.toISOString().split('T')[0]
                 });
 
                 payoutRecords.push(payout);

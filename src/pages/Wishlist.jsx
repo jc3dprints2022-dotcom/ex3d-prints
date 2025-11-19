@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { base44 } from "@/api/base44Client";
 import ProductCard from "../components/marketplace/ProductCard";
 import { Button } from '@/components/ui/button';
-import { Heart, Loader2, Share2 } from 'lucide-react';
+import { Heart, Loader2 } from 'lucide-react';
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '@/utils';
@@ -63,12 +62,7 @@ export default function Wishlist() {
     setLoading(false);
   };
 
-  const handleShare = () => {
-    // User is guaranteed to be logged in at this point
-    const shareUrl = `${window.location.origin}${createPageUrl("Wishlist")}?user=${user.id}`;
-    navigator.clipboard.writeText(shareUrl);
-    toast({ title: "Link Copied!", description: "Your wishlist link is copied to the clipboard." });
-  };
+
 
   if (loading) {
     return <div className="flex justify-center items-center h-96"><Loader2 className="w-8 h-8 animate-spin" /></div>;
@@ -84,12 +78,6 @@ export default function Wishlist() {
           <h1 className="text-4xl font-bold text-slate-900">
             My Wishlist
           </h1>
-          {wishlistProducts.length > 0 && (
-            <Button variant="outline" onClick={handleShare}>
-              <Share2 className="w-4 h-4 mr-2" />
-              Share Wishlist
-            </Button>
-          )}
         </div>
 
         {wishlistProducts.length > 0 ? (
