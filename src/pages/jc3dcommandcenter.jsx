@@ -22,6 +22,7 @@ import MakerToolsSection from "../components/commandcenter/MakerToolsSection";
 import SystemSettingsSection from "../components/commandcenter/SystemSettingsSection";
 import MakerApplicationsSection from "../components/commandcenter/MakerApplicationsSection";
 import DesignerApplicationsSection from "../components/commandcenter/DesignerApplicationsSection";
+import DesignerProductsSection from "../components/commandcenter/DesignerProductsSection";
 import CustomRequestManagement from "../components/commandcenter/CustomRequestManagement";
 import AnnouncementsSection from "../components/commandcenter/AnnouncementsSection";
 import CabinetStatusSection from "../components/commandcenter/CabinetStatusSection";
@@ -94,6 +95,7 @@ export default function JC3DCommandCenter() {
     { value: "makers", label: "🔧 Maker Tools" },
     { value: "applications", label: "📝 Maker Applications" },
     { value: "designer-applications", label: "🎨 Designer Applications" },
+    { value: "designer-products", label: "🖼️ Designer Products Review" },
     { value: "custom-requests", label: "🎯 Custom Print Requests" },
     { value: "announcements", label: "📢 Announcements" },
     { value: "marketing", label: "🎨 Marketing Resources" },
@@ -133,6 +135,8 @@ export default function JC3DCommandCenter() {
         return <MakerApplicationsSection />;
       case "designer-applications":
         return <DesignerApplicationsSection />;
+      case "designer-products":
+        return <DesignerProductsSection />;
       case "custom-requests":
         return <CustomRequestManagement />;
       case "announcements":
