@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Palette, DollarSign, Globe, Shield, TrendingUp, Users } from "lucide-react";
+import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2 } from "lucide-react";
 
 export default function ForDesigners() {
   const [totalEarnings, setTotalEarnings] = useState(null);
