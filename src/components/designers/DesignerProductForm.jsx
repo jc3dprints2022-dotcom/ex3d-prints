@@ -251,13 +251,13 @@ export default function DesignerProductForm({ designerId, designerName, existing
       };
 
       if (existingProduct) {
-        // For updates, create new version with pending status
+        // For updates, update with pending status to trigger re-review
         await base44.entities.Product.update(existingProduct.id, {
           ...productData,
-          version_of: existingProduct.id,
-          status: 'pending'
+          status: 'pending',
+          admin_feedback: null // Clear previous feedback
         });
-        toast({ title: "Changes submitted for review!" });
+        toast({ title: existingProduct.status === 'rejected' ? "Design resubmitted for review!" : "Changes submitted for review!" });
       } else {
         await base44.entities.Product.create(productData);
         toast({ title: "Product submitted for review!" });
