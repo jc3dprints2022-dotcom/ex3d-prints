@@ -22,6 +22,16 @@ export default function ReviewModal({ isOpen, onClose, order, reviewType, onSucc
       return;
     }
 
+    // Verify order has been delivered/completed
+    if (!['delivered', 'dropped_off', 'completed'].includes(order.status)) {
+      toast({ 
+        title: "Cannot leave review yet", 
+        description: "You can only leave a review after your order is delivered.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (reviewType === 'product' && order.items && order.items.length > 0) {
