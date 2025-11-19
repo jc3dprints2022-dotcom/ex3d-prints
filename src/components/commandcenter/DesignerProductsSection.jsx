@@ -287,42 +287,56 @@ The EX3D Team`
           ) : (
             <div className="space-y-4">
               {approvedProducts.map(product => (
-                <div key={product.id} className="p-4 bg-slate-800 rounded-lg border border-green-500/20">
-                  <div className="flex gap-4">
-                    {product.images?.[0] && (
-                      <img src={product.images[0]} alt={product.name} className="w-20 h-20 object-cover rounded flex-shrink-0" />
-                    )}
-                    <div className="flex-1 min-w-0">
+              <div key={product.id} className="p-4 bg-slate-800 rounded-lg border border-green-500/20">
+              <div className="flex gap-4">
+                {product.images?.[0] && (
+                  <img src={product.images[0]} alt={product.name} className="w-20 h-20 object-cover rounded flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex justify-between items-start mb-2">
+                    <div>
                       <h3 className="font-semibold text-white">{product.name}</h3>
                       <p className="text-xs text-gray-400 mt-1">Designer: {product.designer_name}</p>
-                      
-                      {/* Stats */}
-                      <div className="grid grid-cols-3 gap-4 mt-3">
-                        <div className="flex items-center gap-2">
-                          <Eye className="w-4 h-4 text-blue-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Views</p>
-                            <p className="font-bold text-white">{product.stats.views}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <ShoppingCart className="w-4 h-4 text-green-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Sales</p>
-                            <p className="font-bold text-white">{product.stats.sales}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <DollarSign className="w-4 h-4 text-teal-400" />
-                          <div>
-                            <p className="text-xs text-gray-400">Designer Profit</p>
-                            <p className="font-bold text-white">${product.stats.profit.toFixed(2)}</p>
-                          </div>
-                        </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setReviewingProduct(product)}
+                        className="text-yellow-400 border-yellow-500/30 hover:bg-yellow-500/10"
+                      >
+                        Review/Edit
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Stats */}
+                  <div className="grid grid-cols-3 gap-4 mt-3">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4 text-blue-400" />
+                      <div>
+                        <p className="text-xs text-gray-400">Views</p>
+                        <p className="font-bold text-white">{product.stats.views}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ShoppingCart className="w-4 h-4 text-green-400" />
+                      <div>
+                        <p className="text-xs text-gray-400">Sales</p>
+                        <p className="font-bold text-white">{product.stats.sales}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-teal-400" />
+                      <div>
+                        <p className="text-xs text-gray-400">Designer Profit</p>
+                        <p className="font-bold text-white">${product.stats.profit.toFixed(2)}</p>
                       </div>
                     </div>
                   </div>
                 </div>
+              </div>
+              </div>
               ))}
             </div>
           )}
@@ -430,22 +444,35 @@ The EX3D Team`
             >
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={() => handleReject(reviewingProduct)}
-              disabled={processing}
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
-              Reject
-            </Button>
-            <Button
-              onClick={() => handleApprove(reviewingProduct)}
-              disabled={processing}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
-              Approve
-            </Button>
+            {reviewingProduct?.status === 'active' ? (
+              <Button
+                variant="destructive"
+                onClick={() => handleReject(reviewingProduct)}
+                disabled={processing}
+              >
+                {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+                Decline/Remove
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="destructive"
+                  onClick={() => handleReject(reviewingProduct)}
+                  disabled={processing}
+                >
+                  {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <XCircle className="w-4 h-4 mr-2" />}
+                  Reject
+                </Button>
+                <Button
+                  onClick={() => handleApprove(reviewingProduct)}
+                  disabled={processing}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {processing ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                  Approve
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
