@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -44,13 +43,22 @@ export default function Layout({ children, currentPageName }) {
   };
 
   useEffect(() => {
-    loadUserData();
-    checkForNewAnnouncements(); // Added this call
+    let isMounted = true;
+    
+    const initLayout = async () => {
+      if (isMounted) {
+        await loadUserData();
+        await checkForNewAnnouncements();
+      }
+    };
+    
+    initLayout();
 
     window.addEventListener('cartUpdated', loadUserData);
     window.addEventListener('wishlistUpdated', loadUserData);
 
     return () => {
+      isMounted = false;
       window.removeEventListener('cartUpdated', loadUserData);
       window.removeEventListener('wishlistUpdated', loadUserData);
     };
@@ -188,28 +196,39 @@ export default function Layout({ children, currentPageName }) {
         page_url: location.pathname,
         timestamp: new Date().toISOString(),
         session_id: sessionId
+      }).catch(err => {
+        // Silently catch PageView errors - non-critical
+        console.log('PageView tracking skipped:', err.message);
       });
     } catch (error) {
-      console.error('Failed to track page view:', error);
+      // Silently catch all tracking errors
+      console.log('Page tracking skipped');
     }
   };
 
   const loadUserData = async () => {
     try {
-      const userData = await base44.auth.me();
+      const userData = await base44.auth.me().catch(() => null);
+      if (!userData) {
+        setUser(null);
+        const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
+        setCartCount(localCart.length);
+        const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
+        setWishlistCount(localWishlist.length);
+        return;
+      }
+      
       setUser(userData);
 
-      const cartItems = await base44.entities.Cart.filter({ user_id: userData.id });
+      const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
       setCartCount(cartItems.length);
 
       setWishlistCount(userData.wishlist?.length || 0);
     } catch (error) {
       // Not logged in - this is fine for public pages
       setUser(null);
-
       const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
       setCartCount(localCart.length);
-
       const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
       setWishlistCount(localWishlist.length);
     }
