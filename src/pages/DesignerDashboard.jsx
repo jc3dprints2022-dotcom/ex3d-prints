@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
 import BankInfoManager from "../components/shared/BankInfoManager";
 import BrandingKit from "../components/makers/BrandingKit";
