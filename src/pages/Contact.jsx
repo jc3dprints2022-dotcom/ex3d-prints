@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -162,15 +161,23 @@ export default function Contact() {
                   </div>
 
                   <div>
-                    <Label htmlFor="message">Message *</Label>
+                    <Label htmlFor="message">Message * (Max 500 words)</Label>
                     <Textarea
                       id="message"
                       value={formData.message}
-                      onChange={(e) => handleInputChange('message', e.target.value)}
+                      onChange={(e) => {
+                        const words = e.target.value.trim().split(/\s+/);
+                        if (words.length <= 500 || e.target.value === '') {
+                          handleInputChange('message', e.target.value);
+                        }
+                      }}
                       placeholder="Please provide as much detail as possible..."
                       rows={6}
                       required
                     />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {formData.message ? formData.message.trim().split(/\s+/).filter(w => w).length : 0} / 500 words
+                    </p>
                   </div>
 
                   <Button 

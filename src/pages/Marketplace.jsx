@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,9 @@ const CATEGORIES = [
   { value: "art", label: "Art"},
   { value: "fashion", label: "Fashion"},
   { value: "gadgets", label: "Gadgets"},
-  { value: "toys&games", label: "Toys&Games"},
+  { value: "toys_and_games", label: "Toys & Games"},
+  { value: "thanksgiving", label: "Thanksgiving"},
+  { value: "christmas", label: "Christmas"},
   { value: "holidays", label: "Holidays"},
   { value: "misc", label: "Misc" }
 ];
@@ -290,10 +291,9 @@ export default function Marketplace() {
                 viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true`}
               />
 
-              {/* Category Sections */}
-              {CATEGORIES.map(category => {
+              {/* Category Sections - Only show categories with products */}
+              {CATEGORIES.filter(category => getProductsByCategory(category.value).length > 0).map(category => {
                 const categoryProducts = getProductsByCategory(category.value);
-                if (categoryProducts.length === 0) return null;
                 
                 return (
                   <HorizontalProductSection
@@ -369,7 +369,7 @@ export default function Marketplace() {
                     Category {filters.category && <Badge variant="secondary" className="ml-2">1</Badge>}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
-                    {CATEGORIES.map(cat => (
+                    {CATEGORIES.filter(cat => getProductsByCategory(cat.value).length > 0).map(cat => (
                       <DropdownMenuItem 
                         key={cat.value} 
                         onClick={() => handleFilterChange('category', cat.value)}

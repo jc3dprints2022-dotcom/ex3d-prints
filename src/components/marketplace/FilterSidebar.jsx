@@ -16,7 +16,9 @@ const CATEGORIES = [
   { value: "art", label: "Art"},
   { value: "fashion", label: "Fashion"},
   { value: "gadgets", label: "Gadgets"},
-  { value: "toys&games", label: "Toys&Games"},
+  { value: "toys_and_games", label: "Toys & Games"},
+  { value: "thanksgiving", label: "Thanksgiving"},
+  { value: "christmas", label: "Christmas"},
   { value: "holidays", label: "Holidays"},
   { value: "misc", label: "Misc" }
 ];

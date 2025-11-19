@@ -20,7 +20,7 @@ import AdminPortalJC3D from './pages/AdminPortalJC3D';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
 import FAQ from './pages/FAQ';
 import PaymentSuccess from './pages/PaymentSuccess';
-import Layout from './Layout.jsx';
+import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -51,5 +51,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
-    Layout: Layout,
+    Layout: __Layout,
 };
