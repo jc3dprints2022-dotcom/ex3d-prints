@@ -245,7 +245,13 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = async () => {
-    await base44.auth.redirectToLogin(window.location.href);
+    try {
+      await base44.auth.redirectToLogin(window.location.href);
+    } catch (error) {
+      console.error('Login redirect error:', error);
+      // Fallback: redirect to SSO provider directly if configured
+      window.location.href = '/api/auth/login';
+    }
   };
 
   const getDashboardUrl = () => {
@@ -394,11 +400,23 @@ export default function Layout({ children, currentPageName }) {
                   <DropdownMenuItem asChild>
                     <Link to={createPageUrl("DesignerHowItWorks")} onClick={scrollToTop}>How It Works</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
-                      <span className="text-red-600 font-semibold">Apply Now</span>
-                    </Link>
-                  </DropdownMenuItem>
+                  {user && user.designer_id && user.business_roles?.includes('designer') ? (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("DesignerDashboard")} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Designer Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  ) : (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                        <span className="text-red-600 font-semibold">Apply Now</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </nav>

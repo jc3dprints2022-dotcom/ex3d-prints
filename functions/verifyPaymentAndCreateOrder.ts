@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 import Stripe from 'npm:stripe@14.11.0';
 
@@ -124,7 +123,7 @@ Deno.serve(async (req) => {
                         unit_price: item.unit_price,
                         total_price: item.total_price,
                         multi_color_selections: item.multi_color_selections,
-                        print_file_scale: item.print_file_scale || 100,
+                        print_file_scale: product.custom_scale || item.print_file_scale || 100,
                         print_files: product.print_files || [],
                         print_time_hours: product.print_time_hours,
                         weight_grams: product.weight_grams,

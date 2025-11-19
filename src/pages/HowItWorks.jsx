@@ -155,7 +155,7 @@ export default function HowItWorks() {
                 Browse Marketplace
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline" className="text-white border-white border-2 hover:bg-teal-600">
+            <Button asChild size="lg" variant="outline" className="bg-transparent text-white border-white border-2 hover:bg-white/10 hover:text-white">
               <Link to={createPageUrl("MakerSignup")}>
                 Become a Maker
               </Link>
