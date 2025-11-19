@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -100,14 +99,28 @@ export default function ProductCard({ product }) {
     }
 
     try {
-      const updatedWishlist = isInWishlist
-        ? (user.wishlist || []).filter(pid => pid !== product.id)
-        : [...(user.wishlist || []), product.id];
+      // Fetch latest user data to ensure we have the most current wishlist
+      const currentUser = await base44.auth.me();
+      const currentWishlist = currentUser.wishlist || [];
+      
+      // Check if product is already in wishlist
+      const productInWishlist = currentWishlist.includes(product.id);
+      
+      const updatedWishlist = productInWishlist
+        ? currentWishlist.filter(pid => pid !== product.id)
+        : [...currentWishlist, product.id];
 
       await base44.auth.updateMe({ wishlist: updatedWishlist, wishlist_last_updated: new Date().toISOString() });
-      setIsInWishlist(!isInWishlist);
-      toast({ title: isInWishlist ? "Removed from wishlist" : "Added to wishlist ❤️" });
+      
+      // Update local state
+      setUser(prev => ({ ...prev, wishlist: updatedWishlist }));
+      setIsInWishlist(!productInWishlist);
+      
+      toast({ title: productInWishlist ? "Removed from wishlist" : "Added to wishlist ❤️" });
       window.dispatchEvent(new Event('wishlistUpdated'));
+      
+      // Reload user data to sync
+      await loadUser();
     } catch (error) {
       toast({ title: "Failed to update wishlist", variant: "destructive" });
     }
