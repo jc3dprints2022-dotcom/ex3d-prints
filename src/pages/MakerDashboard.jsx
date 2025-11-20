@@ -516,6 +516,10 @@ The EX3D Team`
             <TrendingUp className="w-4 h-4 mr-2" />
             Branding Kit
           </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="orders">
@@ -901,6 +905,47 @@ The EX3D Team`
 
         <TabsContent value="branding">
           <BrandingKit />
+        </TabsContent>
+
+        <TabsContent value="settings">
+          <Card>
+            <CardHeader>
+              <CardTitle>Maker Settings</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Configure your availability and preferences
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between p-4 border rounded-lg">
+                <div>
+                  <h3 className="font-semibold">Vacation Mode</h3>
+                  <p className="text-sm text-gray-600">
+                    When enabled, you won't receive new order assignments. Existing orders remain active.
+                  </p>
+                </div>
+                <Button
+                  variant={user?.vacation_mode ? "destructive" : "default"}
+                  onClick={async () => {
+                    try {
+                      await base44.auth.updateMe({ vacation_mode: !user?.vacation_mode });
+                      toast({
+                        title: user?.vacation_mode ? "Vacation mode disabled" : "Vacation mode enabled",
+                        description: user?.vacation_mode ? "You will now receive order assignments" : "You won't receive new orders while on vacation"
+                      });
+                      await loadDashboard();
+                    } catch (error) {
+                      toast({
+                        title: "Failed to update vacation mode",
+                        variant: "destructive"
+                      });
+                    }
+                  }}
+                >
+                  {user?.vacation_mode ? "Disable Vacation Mode" : "Enable Vacation Mode"}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
     </div>

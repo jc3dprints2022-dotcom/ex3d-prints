@@ -298,19 +298,31 @@ export default function Marketplace() {
                 viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`}
               />
 
-              {/* Category Sections - Only show categories with products */}
-              {CATEGORIES.filter(category => getProductsByCategory(category.value).length > 0).map(category => {
-                const categoryProducts = getProductsByCategory(category.value);
-                
-                return (
-                  <HorizontalProductSection
-                    key={category.value}
-                    title={category.label}
-                    products={categoryProducts}
-                    viewAllUrl={`${createPageUrl("Marketplace")}?category=${category.value}`}
-                  />
-                );
-              })}
+              {/* Holidays Section - Shown after Most Popular */}
+              {getProductsByCategory('holidays').length > 0 && (
+                <HorizontalProductSection
+                  title="Holidays"
+                  products={getProductsByCategory('holidays')}
+                  viewAllUrl={`${createPageUrl("Marketplace")}?category=holidays`}
+                />
+              )}
+
+              {/* Category Sections - Exclude embry_riddle, halloween, and holidays (already shown) */}
+              {CATEGORIES
+                .filter(category => !['embry_riddle', 'halloween', 'holidays'].includes(category.value))
+                .filter(category => getProductsByCategory(category.value).length > 0)
+                .map(category => {
+                  const categoryProducts = getProductsByCategory(category.value);
+
+                  return (
+                    <HorizontalProductSection
+                      key={category.value}
+                      title={category.label}
+                      products={categoryProducts}
+                      viewAllUrl={`${createPageUrl("Marketplace")}?category=${category.value}`}
+                    />
+                  );
+                })}
             </div>
           )}
         </div>
