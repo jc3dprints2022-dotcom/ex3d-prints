@@ -150,7 +150,9 @@ export default function DesignerProductForm({ designerId, designerName, existing
   const handleSelectAllColors = (checked) => {
     setFormData(prev => ({
       ...prev,
-      colors: checked ? COLORS : []
+      colors: checked ? ["Shown Colors", ...COLORS] : [],
+      use_shown_colors: checked,
+      shown_color_specs: checked ? prev.shown_color_specs : []
     }));
   };
 
@@ -466,12 +468,26 @@ export default function DesignerProductForm({ designerId, designerName, existing
           <div className="flex items-center space-x-2 mb-3">
             <Checkbox
               id="select-all-colors"
-              checked={formData.colors.length === COLORS.length && COLORS.every(c => formData.colors.includes(c))}
+              checked={formData.colors.length === COLORS.length + 1 && formData.colors.includes("Shown Colors") && COLORS.every(c => formData.colors.includes(c))}
               onCheckedChange={handleSelectAllColors}
             />
             <Label htmlFor="select-all-colors" className="font-bold cursor-pointer">Select All Colors</Label>
           </div>
           <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="color-shown-colors"
+                checked={formData.colors.includes("Shown Colors")}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setFormData(prev => ({...prev, colors: ["Shown Colors", ...prev.colors], use_shown_colors: true}));
+                  } else {
+                    setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== "Shown Colors"), use_shown_colors: false, shown_color_specs: []}));
+                  }
+                }}
+              />
+              <Label htmlFor="color-shown-colors" className="text-sm font-bold cursor-pointer text-blue-600">Shown Colors</Label>
+            </div>
             {COLORS.map(color => (
               <div key={color} className="flex items-center space-x-2">
                 <Checkbox
@@ -488,16 +504,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
                 <Label htmlFor={`color-${color}`} className="text-sm font-normal cursor-pointer">{color}</Label>
               </div>
             ))}
-          </div>
-          <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
-            <Checkbox
-              id="use_shown_colors"
-              checked={formData.use_shown_colors}
-              onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
-            />
-            <Label htmlFor="use_shown_colors" className="font-medium cursor-pointer">
-              Use Shown Colors (print with exact colors shown in listing images)
-            </Label>
           </div>
         </div>
       </div>

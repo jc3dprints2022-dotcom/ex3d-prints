@@ -233,7 +233,9 @@ export default function ModelManagementSection() {
   const handleSelectAllColors = (checked) => {
     setFormData(prev => ({
       ...prev,
-      colors: checked ? COLORS.filter(c => !c.includes('Color-Change')) : []
+      colors: checked ? ["Shown Colors", ...COLORS.filter(c => !c.includes('Color-Change'))] : [],
+      use_shown_colors: checked,
+      shown_color_specs: checked ? prev.shown_color_specs : []
     }));
   };
 
@@ -674,12 +676,26 @@ export default function ModelManagementSection() {
                   <div className="flex items-center space-x-2 mb-3">
                     <Checkbox
                       id="select-all-colors"
-                      checked={formData.colors.length === COLORS.filter(c => !c.includes('Color-Change')).length && COLORS.filter(c => !c.includes('Color-Change')).every(c => formData.colors.includes(c))}
+                      checked={formData.colors.length === COLORS.filter(c => !c.includes('Color-Change')).length + 1 && formData.colors.includes("Shown Colors") && COLORS.filter(c => !c.includes('Color-Change')).every(c => formData.colors.includes(c))}
                       onCheckedChange={handleSelectAllColors}
                     />
                     <Label htmlFor="select-all-colors" className="font-bold cursor-pointer text-white">Select All Colors</Label>
                   </div>
                   <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="color-shown-colors"
+                        checked={formData.colors.includes("Shown Colors")}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setFormData(prev => ({...prev, colors: ["Shown Colors", ...prev.colors], use_shown_colors: true}));
+                          } else {
+                            setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== "Shown Colors"), use_shown_colors: false, shown_color_specs: []}));
+                          }
+                        }}
+                      />
+                      <Label htmlFor="color-shown-colors" className="text-sm font-bold cursor-pointer text-cyan-400">Shown Colors</Label>
+                    </div>
                     {COLORS.filter(c => !c.includes('Color-Change')).map(color => (
                       <div key={color} className="flex items-center space-x-2">
                         <Checkbox
@@ -696,16 +712,6 @@ export default function ModelManagementSection() {
                         <Label htmlFor={`color-${color}`} className="text-sm text-white font-normal cursor-pointer">{color}</Label>
                       </div>
                     ))}
-                  </div>
-                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-lg border border-blue-500/30">
-                    <Checkbox
-                      id="use_shown_colors"
-                      checked={formData.use_shown_colors}
-                      onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
-                    />
-                    <Label htmlFor="use_shown_colors" className="text-white font-medium cursor-pointer">
-                      Use Shown Colors (print with exact colors shown in listing images)
-                    </Label>
                   </div>
                 </div>
               </div>
