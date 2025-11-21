@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,13 +83,13 @@ export default function ExpRedeemTab({ user, onUpdate }) {
         // Reset quantity to 1
         setQuantities(prev => ({ ...prev, [tier.value]: 1 }));
         
-        // Reload transactions without navigating away
-        await loadTransactions();
-        
         // Update user data in parent component (just for EXP balance display)
         if (onUpdate) {
           await onUpdate();
         }
+        
+        // Reload transactions without navigating away
+        await loadTransactions();
       } else {
         throw new Error(data?.error || 'Redemption failed');
       }

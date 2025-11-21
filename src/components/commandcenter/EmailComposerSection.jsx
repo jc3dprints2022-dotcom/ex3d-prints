@@ -287,17 +287,21 @@ export default function EmailComposerSection() {
             if (recentProducts.length > 0) {
               const productsHTML = `
                 <div style="margin: 20px 0; padding: 20px; background: #f9fafb; border-radius: 8px;">
-                  <h3 style="margin: 0 0 16px 0; color: #111827;">Products You Viewed</h3>
-                  <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
-                    ${recentProducts.map(p => `
-                      <div style="width: 120px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb;">
-                        ${p.images?.[0] ? `<img src="${p.images[0]}" alt="${p.name}" style="width: 100%; height: 90px; object-fit: cover; border-radius: 6px; margin-bottom: 6px;" />` : ''}
-                        <h4 style="margin: 0 0 4px 0; font-size: 12px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</h4>
-                        <p style="margin: 0 0 6px 0; font-size: 14px; font-weight: bold; color: #14b8a6;">$${p.price.toFixed(2)}</p>
-                        <a href="${window.location.origin}/ProductDetail?id=${p.id}" style="display: inline-block; padding: 4px 8px; background: #14b8a6; color: white; text-decoration: none; border-radius: 6px; font-size: 11px; font-weight: 500;">View</a>
-                      </div>
-                    `).join('')}
-                  </div>
+                  <h3 style="margin: 0 0 16px 0; color: #111827; text-align: center;">Products You Viewed</h3>
+                  <table style="width: 100%; max-width: 100%; border-collapse: collapse;">
+                    <tr>
+                      ${recentProducts.map(p => `
+                        <td style="padding: 10px; text-align: center; vertical-align: top; width: ${Math.floor(100 / recentProducts.length)}%;">
+                          <div style="background: white; padding: 10px; border-radius: 8px; border: 1px solid #e5e7eb; display: inline-block; max-width: 160px;">
+                            ${p.images?.[0] ? `<img src="${p.images[0]}" alt="${p.name}" style="width: 100%; max-width: 140px; height: auto; max-height: 100px; object-fit: cover; border-radius: 6px; margin-bottom: 8px; display: block;" />` : ''}
+                            <h4 style="margin: 0 0 6px 0; font-size: 13px; font-weight: 600; color: #111827; line-height: 1.3; min-height: 32px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${p.name}</h4>
+                            <p style="margin: 0 0 8px 0; font-size: 16px; font-weight: bold; color: #14b8a6;">$${p.price.toFixed(2)}</p>
+                            <a href="${window.location.origin}/ProductDetail?id=${p.id}" style="display: inline-block; padding: 6px 12px; background: #14b8a6; color: white; text-decoration: none; border-radius: 6px; font-size: 12px; font-weight: 500;">View</a>
+                          </div>
+                        </td>
+                      `).join('')}
+                    </tr>
+                  </table>
                 </div>
               `;
               finalMessage += productsHTML;
