@@ -276,188 +276,46 @@ Deno.serve(async (req) => {
             console.error('⚠️ Maker assignment failed:', assignError);
         }
 
-        // Send confirmation email to customer
+        // Send confirmation email
         try {
             console.log('Sending confirmation email...');
             const itemsList = enrichedItems.map((item, idx) => 
-                `<tr style="page-break-inside: avoid;">
-                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; vertical-align: top;">
-                        <strong style="display: block; margin-bottom: 4px;">${item.product_name}</strong>
-                        <span style="color: #6b7280; font-size: 14px; display: block;">Qty: ${item.quantity} | ${item.selected_material} / ${item.selected_color}</span>
-                        ${item.custom_request_id ? '<span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 12px; margin-top: 4px;">Custom Quote</span>' : ''}
-                    </td>
-                    <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right; vertical-align: top; white-space: nowrap;">
-                        $${item.total_price.toFixed(2)}
-                    </td>
-                </tr>`
-            ).join('');
+                `${idx + 1}. ${item.product_name} (x${item.quantity}) - ${item.selected_material} / ${item.selected_color}${item.custom_request_id ? ' [Custom Quote]' : ''}`
+            ).join('\n');
 
-            const discountRow = session.total_details?.amount_discount 
-                ? `<tr>
-                    <td style="padding: 12px; color: #059669;"><strong>Discount Applied</strong></td>
-                    <td style="padding: 12px; text-align: right; color: #059669;"><strong>-$${(session.total_details.amount_discount / 100).toFixed(2)}</strong></td>
-                </tr>`
+            const discountInfo = session.total_details?.amount_discount 
+                ? `\nDiscount Applied: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
                 : '';
 
-            const priorityBanner = isPriority ? `
-                <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                    <h2 style="margin: 0; font-size: 24px;">⚡ PRIORITY OVERNIGHT DELIVERY</h2>
-                    <p style="margin: 10px 0 0 0; font-size: 16px;">Your order will be completed by the next day!</p>
-                </div>` : '';
-
-            const expBonuses = [];
-            if (isFirstOrder) expBonuses.push('🎉 First Order Bonus: +250 EXP');
-            if (hasReferral && isFirstOrder) expBonuses.push('🎉 Referral Bonus: +250 EXP');
-            const expBonusSection = expBonuses.length > 0 ? `
-                <div style="background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px;">
-                    ${expBonuses.map(b => `<p style="margin: 5px 0; color: #065f46; font-weight: 600;">${b}</p>`).join('')}
-                </div>` : '';
+            const priorityInfo = isPriority ? '\n\n⚡ PRIORITY OVERNIGHT DELIVERY\nYour order will be completed by the next day!' : '';
 
             await base44.integrations.Core.SendEmail({
                 to: user.email,
                 subject: `Order Confirmation${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
-                body: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9fafb;">
-                    <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <div style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 30px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 32px;">Thank You for Your Order!</h1>
-                            <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Order #${newOrder.id.slice(-8)}</p>
-                        </div>
-                        
-                        ${priorityBanner}
-                        
-                        <div style="padding: 30px;">
-                            <p style="font-size: 16px; color: #374151; margin: 0 0 20px 0;">
-                                Hi ${user.full_name},
-                            </p>
-                            <p style="font-size: 14px; color: #6b7280; margin: 0 0 30px 0;">
-                                Your payment has been processed successfully. We're excited to bring your prints to life!
-                            </p>
-                            
-                            <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                                ${itemsList}
-                                ${discountRow}
-                                <tr style="border-top: 2px solid #14b8a6;">
-                                    <td style="padding: 16px; font-size: 18px; font-weight: bold;">Total Paid</td>
-                                    <td style="padding: 16px; text-align: right; font-size: 18px; font-weight: bold; color: #14b8a6;">$${totalAmount.toFixed(2)}</td>
-                                </tr>
-                            </table>
-                            
-                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px;">
-                                <p style="margin: 0; color: #92400e; font-weight: 600;">🌟 EXP Earned: ${totalExpAwarded} EXP</p>
-                                <p style="margin: 5px 0 0 0; color: #78350f; font-size: 14px;">You earn 5 EXP for every dollar spent!</p>
-                            </div>
-                            
-                            ${expBonusSection}
-                            
-                            <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">📍 Pickup Information</h3>
-                                <p style="margin: 0; color: #1e3a8a; font-size: 14px;">
-                                    Contact: <strong>labaghr@my.erau.edu</strong> or <strong>610-858-3200</strong>
-                                </p>
-                            </div>
-                            
-                            <p style="font-size: 14px; color: #6b7280; margin: 30px 0 0 0;">
-                                We'll notify you when your order is ready for pickup!
-                            </p>
-                            
-                            <div style="text-align: center; margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                                    Best regards,<br/>
-                                    <strong style="color: #14b8a6;">The EX3D Team</strong>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>`
+                body: `Hi ${user.full_name},
+
+Thank you for your order! Your payment has been processed successfully.${priorityInfo}
+
+Order #${newOrder.id.slice(-8)}
+
+Items:
+${itemsList}
+${discountInfo}
+Total Paid: $${totalAmount.toFixed(2)}
+
+EXP Earned: ${totalExpAwarded} EXP
+${isFirstOrder ? '🎉 First Order Bonus: +250 EXP!\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP!\n' : ''}
+
+Pickup Location: Contact: labaghr@my.erau.edu or 610-858-3200
+
+We will notify you when your order is ready for pickup.
+
+Best regards,
+The EX3D Team`
             });
-            console.log('✅ Confirmation email sent to customer');
+            console.log('✅ Confirmation email sent');
         } catch (emailError) {
             console.error('⚠️ Failed to send confirmation email:', emailError);
-        }
-
-        // Send notification email to maker
-        try {
-            console.log('Sending new order notification to maker...');
-            if (newOrder.maker_id) {
-                const maker = await base44.asServiceRole.entities.User.get(newOrder.maker_id);
-                if (maker?.email) {
-                    const itemsList = enrichedItems.map((item, idx) => 
-                        `<tr>
-                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb;">
-                                <strong>${item.product_name}</strong><br/>
-                                <span style="color: #6b7280; font-size: 14px;">Qty: ${item.quantity} | ${item.selected_material} / ${item.selected_color}</span>
-                            </td>
-                            <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: right;">
-                                ${item.print_time_hours ? `${item.print_time_hours}h` : 'N/A'}
-                            </td>
-                        </tr>`
-                    ).join('');
-
-                    const priorityBanner = isPriority ? `
-                        <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
-                            <h2 style="margin: 0; font-size: 24px;">⚡ PRIORITY OVERNIGHT ORDER</h2>
-                            <p style="margin: 10px 0 0 0; font-size: 16px;">This order must be completed by the next day!</p>
-                        </div>` : '';
-
-                    await base44.integrations.Core.SendEmail({
-                        to: maker.email,
-                        subject: `${isPriority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
-                        body: `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9fafb;">
-                            <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                                <div style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 30px; text-align: center;">
-                                    <h1 style="margin: 0; font-size: 32px;">New Order Assigned!</h1>
-                                    <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">Order #${newOrder.id.slice(-8)}</p>
-                                </div>
-                                
-                                ${priorityBanner}
-                                
-                                <div style="padding: 30px;">
-                                    <p style="font-size: 16px; color: #374151; margin: 0 0 20px 0;">
-                                        Hi ${maker.full_name},
-                                    </p>
-                                    <p style="font-size: 14px; color: #6b7280; margin: 0 0 30px 0;">
-                                        A new order has been assigned to you. Please review the details below and start printing!
-                                    </p>
-                                    
-                                    <div style="background: #eff6ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                        <h3 style="margin: 0 0 10px 0; color: #1e40af; font-size: 16px;">👤 Customer</h3>
-                                        <p style="margin: 0; color: #1e3a8a; font-size: 14px;">
-                                            ${user.full_name}<br/>
-                                            ${user.email}
-                                        </p>
-                                    </div>
-                                    
-                                    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
-                                        <tr style="background: #f9fafb;">
-                                            <th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Item</th>
-                                            <th style="padding: 12px; text-align: right; border-bottom: 2px solid #e5e7eb;">Print Time</th>
-                                        </tr>
-                                        ${itemsList}
-                                    </table>
-                                    
-                                    <div style="text-align: center; margin: 30px 0;">
-                                        <a href="${window.location.origin}/MakerDashboard" style="display: inline-block; background: linear-gradient(135deg, #f97316 0%, #ea580c 100%); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                                            View in Dashboard
-                                        </a>
-                                    </div>
-                                    
-                                    <div style="text-align: center; margin-top: 30px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
-                                        <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                                            Best regards,<br/>
-                                            <strong style="color: #f97316;">The EX3D Team</strong>
-                                        </p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>`
-                    });
-                    console.log('✅ New order notification sent to maker');
-                }
-            }
-        } catch (makerEmailError) {
-            console.error('⚠️ Failed to send maker notification:', makerEmailError);
         }
 
         // Clear user's cart

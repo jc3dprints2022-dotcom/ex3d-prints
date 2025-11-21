@@ -69,11 +69,9 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
           description: data.message 
         });
         setSelectedReward(null);
+        await onUpdate();
         await loadRewards();
         await loadMyRedemptions();
-        if (onUpdate) {
-          await onUpdate();
-        }
       } else {
         throw new Error(data?.error || 'Redemption failed');
       }

@@ -75,89 +75,49 @@ Deno.serve(async (req) => {
             stripe_coupon_id: coupon.id
         });
 
-        // Send formatted HTML email to customer with coupon code
+        // Send formatted email to customer with coupon code
         try {
             await base44.integrations.Core.SendEmail({
                 to: user.email,
                 subject: '🎉 Your EXP Redemption Coupon - EX3D Prints',
-                body: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9fafb;">
-                    <div style="background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                        <div style="background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 40px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 36px;">🎉 Congratulations!</h1>
-                            <p style="margin: 10px 0 0 0; font-size: 18px; opacity: 0.9;">Your EXP has been redeemed</p>
-                        </div>
-                        
-                        <div style="padding: 30px;">
-                            <p style="font-size: 16px; color: #374151; margin: 0 0 30px 0;">
-                                Hi ${user.full_name},
-                            </p>
-                            
-                            <div style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); padding: 30px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                                <p style="margin: 0 0 10px 0; color: rgba(255,255,255,0.9); font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">Your Coupon Code</p>
-                                <p style="margin: 0; font-size: 32px; font-weight: bold; color: white; letter-spacing: 2px; font-family: monospace;">${couponCode}</p>
-                                <p style="margin: 15px 0 0 0; font-size: 20px; font-weight: bold; color: white;">Save $${(totalDiscountAmount / 100).toFixed(2)}</p>
-                            </div>
-                            
-                            <div style="background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                                <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 16px;">📊 Redemption Details</h3>
-                                <table style="width: 100%; border-collapse: collapse;">
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #6b7280;">EXP Redeemed:</td>
-                                        <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #374151;">${totalExpCost} EXP</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #6b7280;">Quantity:</td>
-                                        <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #374151;">${quantity}x ${selectedTier.label}</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="padding: 8px 0; color: #6b7280;">Discount Value:</td>
-                                        <td style="padding: 8px 0; text-align: right; font-weight: 600; color: #10b981;">$${(totalDiscountAmount / 100).toFixed(2)}</td>
-                                    </tr>
-                                </table>
-                            </div>
-                            
-                            <div style="background: #dbeafe; border-left: 4px solid #3b82f6; padding: 20px; margin: 20px 0; border-radius: 4px;">
-                                <h3 style="margin: 0 0 12px 0; color: #1e40af; font-size: 16px;">📋 How to Use Your Coupon</h3>
-                                <ol style="margin: 0; padding-left: 20px; color: #1e3a8a;">
-                                    <li style="margin-bottom: 8px;">Add items to your cart</li>
-                                    <li style="margin-bottom: 8px;">Proceed to checkout</li>
-                                    <li style="margin-bottom: 8px;">Enter coupon code: <strong>${couponCode}</strong></li>
-                                    <li style="margin-bottom: 8px;">Your discount will be applied automatically!</li>
-                                </ol>
-                            </div>
-                            
-                            <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px;">
-                                <h3 style="margin: 0 0 10px 0; color: #92400e; font-size: 14px;">⚠️ Important Notes</h3>
-                                <ul style="margin: 0; padding-left: 20px; color: #78350f; font-size: 13px;">
-                                    <li style="margin-bottom: 5px;">This coupon can only be used ONCE</li>
-                                    <li style="margin-bottom: 5px;">Valid for 90 days from today</li>
-                                    <li style="margin-bottom: 5px;">Cannot be combined with other offers</li>
-                                    <li style="margin-bottom: 5px;">Non-transferable</li>
-                                </ul>
-                            </div>
-                            
-                            <div style="text-align: center; margin: 30px 0;">
-                                <a href="${window.location?.origin || 'https://ex3dprints.com'}/Marketplace" style="display: inline-block; background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); color: white; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600;">
-                                    Shop Now
-                                </a>
-                            </div>
-                            
-                            <div style="text-align: center; margin-top: 40px; padding-top: 30px; border-top: 1px solid #e5e7eb;">
-                                <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
-                                    Thank you for being a valued member!
-                                </p>
-                                <p style="margin: 0; color: #6b7280; font-size: 14px;">
-                                    Best regards,<br/>
-                                    <strong style="color: #14b8a6;">The EX3D Team</strong>
-                                </p>
-                                <p style="margin: 15px 0 0 0; color: #9ca3af; font-size: 12px;">
-                                    Need help? Email us at support@ex3dprints.com
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>`
+                body: `Hi ${user.full_name},
+
+Congratulations! You've successfully redeemed your EXP points for a discount coupon.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   🎁 YOUR COUPON DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Coupon Code:     ${couponCode}
+Discount Value:  $${(totalDiscountAmount / 100).toFixed(2)}
+EXP Redeemed:    ${totalExpCost} EXP
+Quantity:        ${quantity}x ${selectedTier.label}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📋 HOW TO USE YOUR COUPON
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. Add items to your cart
+2. Proceed to checkout
+3. Enter coupon code: ${couponCode}
+4. Your discount will be applied automatically!
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⚠️ IMPORTANT NOTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+• This coupon can only be used ONCE
+• Valid for 90 days from today
+• Cannot be combined with other offers
+• Non-transferable
+
+Thank you for being a valued member of EX3D Prints!
+
+Best regards,
+The EX3D Team
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Need help? Email us at support@ex3dprints.com`
             });
         } catch (emailError) {
             console.error('Failed to send customer email:', emailError);
