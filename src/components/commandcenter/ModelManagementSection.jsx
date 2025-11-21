@@ -484,7 +484,7 @@ export default function ModelManagementSection() {
                     value={formData.name}
                     onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
-                    className = "text-white"
+                    className="text-white bg-black"
                   />
                 </div>
                 <div className="flex flex-col">
@@ -528,7 +528,7 @@ export default function ModelManagementSection() {
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                   rows={4}
                   required
-                  className = "text-white"
+                  className="text-white bg-black"
                 />
               </div>
 

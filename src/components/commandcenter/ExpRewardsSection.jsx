@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -254,11 +253,12 @@ export default function ExpRewardsSection() {
         </Button>
       </div>
 
-      {/* Separate tabs for consumer and maker redemptions */}
+      {/* Separate tabs for consumer, maker, and designer redemptions */}
       <Tabs defaultValue="consumer_redemptions" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-slate-900 border-slate-700">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-900 border-slate-700">
           <TabsTrigger value="consumer_redemptions" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">Consumer Redemptions</TabsTrigger>
           <TabsTrigger value="maker_redemptions" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">Maker Redemptions</TabsTrigger>
+          <TabsTrigger value="designer_redemptions" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">Designer Rewards</TabsTrigger>
           <TabsTrigger value="manage_rewards" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">Manage Rewards</TabsTrigger>
         </TabsList>
 
@@ -324,6 +324,129 @@ export default function ExpRewardsSection() {
                   )}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Designer Rewards Tab */}
+        <TabsContent value="designer_redemptions">
+          <Card className="bg-slate-800 border-cyan-500/30">
+            <CardHeader>
+              <CardTitle className="text-white">Designer EXP Rewards</CardTitle>
+              <p className="text-sm text-slate-400">Special rewards and boosts for designers</p>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Boost Posts Section */}
+                <div className="p-6 bg-gradient-to-br from-red-900/30 to-pink-900/30 rounded-lg border border-red-500/30">
+                  <h3 className="text-xl font-bold text-white mb-2 flex items-center gap-2">
+                    <Gift className="w-5 h-5 text-red-400" />
+                    Boost Product Posts
+                  </h3>
+                  <p className="text-slate-300 mb-4">
+                    Designers can use EXP to boost their product visibility and get featured placement in the marketplace.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div className="p-4 bg-slate-900/50 rounded-lg">
+                      <h4 className="font-semibold text-red-400 mb-2">Homepage Featured (7 days)</h4>
+                      <p className="text-sm text-slate-400 mb-3">Get your product featured on the homepage for 1 week</p>
+                      <Badge className="bg-red-500">500 EXP</Badge>
+                    </div>
+                    <div className="p-4 bg-slate-900/50 rounded-lg">
+                      <h4 className="font-semibold text-red-400 mb-2">Category Pin (14 days)</h4>
+                      <p className="text-sm text-slate-400 mb-3">Pin product to top of category for 2 weeks</p>
+                      <Badge className="bg-red-500">750 EXP</Badge>
+                    </div>
+                    <div className="p-4 bg-slate-900/50 rounded-lg">
+                      <h4 className="font-semibold text-red-400 mb-2">Priority Review</h4>
+                      <p className="text-sm text-slate-400 mb-3">Get new designs reviewed within 24 hours</p>
+                      <Badge className="bg-red-500">300 EXP</Badge>
+                    </div>
+                    <div className="p-4 bg-slate-900/50 rounded-lg">
+                      <h4 className="font-semibold text-red-400 mb-2">Marketing Bundle</h4>
+                      <p className="text-sm text-slate-400 mb-3">Featured email to all customers + homepage spot</p>
+                      <Badge className="bg-red-500">1200 EXP</Badge>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-4">
+                    Note: These are promotional options. Implement redemption flow in Designer Dashboard for designers to use.
+                  </p>
+                </div>
+
+                {/* Designer-Specific Rewards */}
+                <div className="p-6 bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-lg border border-purple-500/30">
+                  <h3 className="text-xl font-bold text-white mb-2">Exclusive Designer Perks</h3>
+                  <p className="text-slate-300 mb-4">
+                    Special rewards available only to designers for their contribution to the platform.
+                  </p>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded">
+                      <div>
+                        <p className="font-medium text-white">Design Software License (1 month)</p>
+                        <p className="text-sm text-slate-400">Access to premium 3D design tools</p>
+                      </div>
+                      <Badge className="bg-purple-500">2000 EXP</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded">
+                      <div>
+                        <p className="font-medium text-white">Professional Portfolio Review</p>
+                        <p className="text-sm text-slate-400">Get feedback from industry experts</p>
+                      </div>
+                      <Badge className="bg-purple-500">800 EXP</Badge>
+                    </div>
+                    <div className="flex justify-between items-center p-3 bg-slate-900/50 rounded">
+                      <div>
+                        <p className="font-medium text-white">Collaboration Opportunity</p>
+                        <p className="text-sm text-slate-400">Featured designer collaboration project</p>
+                      </div>
+                      <Badge className="bg-purple-500">1500 EXP</Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Recent Designer Redemptions */}
+                <div>
+                  <h3 className="text-lg font-semibold text-white mb-3">Recent Designer Redemptions</h3>
+                  {loadingRedemptions ? (
+                    <div className="text-center py-8">
+                      <Loader2 className="w-6 h-6 animate-spin mx-auto text-cyan-400" />
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      {redemptions
+                        .filter(r => {
+                          const reward = rewards.find(rw => rw.id === r.reward_id);
+                          return reward?.reward_type === 'designer';
+                        })
+                        .slice(0, 5)
+                        .map(redemption => {
+                          const reward = rewards.find(r => r.id === redemption.reward_id);
+                          const user = users.find(u => u.id === redemption.user_id);
+
+                          return (
+                            <div key={redemption.id} className="p-3 bg-slate-900 rounded border border-slate-700">
+                              <div className="flex justify-between items-start">
+                                <div>
+                                  <p className="text-white font-medium">{redemption.reward_name}</p>
+                                  <p className="text-sm text-slate-400">{user?.full_name || 'Unknown'} - {new Date(redemption.created_date).toLocaleDateString()}</p>
+                                </div>
+                                <Badge className={redemption.status === 'fulfilled' ? 'bg-green-500' : 'bg-yellow-500'}>
+                                  {redemption.status}
+                                </Badge>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      {redemptions.filter(r => {
+                        const reward = rewards.find(rw => rw.id === r.reward_id);
+                        return reward?.reward_type === 'designer';
+                      }).length === 0 && (
+                        <p className="text-center text-slate-400 py-8">No designer redemptions yet</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -542,6 +665,7 @@ export default function ExpRewardsSection() {
                   <SelectContent className="bg-slate-800 border-slate-700">
                     <SelectItem value="consumer" className="text-white">Consumer</SelectItem>
                     <SelectItem value="maker" className="text-white">Maker</SelectItem>
+                    <SelectItem value="designer" className="text-white">Designer</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
