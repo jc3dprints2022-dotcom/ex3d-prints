@@ -105,7 +105,7 @@ export default function BankInfoManager({ user, onUpdate }) {
         <Alert>
           <Shield className="w-4 h-4" />
           <AlertDescription className="text-gray-900">
-            Your financial information is encrypted and secure. We use bank-level security to protect your data.
+            Please expect an email from us with information to setup a payment account. Your financial information will be encrypted and secure.
           </AlertDescription>
         </Alert>
 

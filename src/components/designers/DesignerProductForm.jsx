@@ -54,6 +54,8 @@ export default function DesignerProductForm({ designerId, designerName, existing
           multi_color: existingProduct.multi_color || false,
           number_of_colors: existingProduct.number_of_colors || 2,
           custom_scale: existingProduct.custom_scale || null,
+          use_shown_colors: existingProduct.use_shown_colors || false,
+          shown_color_specs: existingProduct.shown_color_specs || [],
         }
       : {
           name: '',
@@ -70,6 +72,8 @@ export default function DesignerProductForm({ designerId, designerName, existing
           multi_color: false,
           number_of_colors: 2,
           custom_scale: null,
+          use_shown_colors: false,
+          shown_color_specs: [],
         }
   );
 
@@ -243,6 +247,8 @@ export default function DesignerProductForm({ designerId, designerName, existing
         multi_color: formData.multi_color,
         number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
         custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
+        use_shown_colors: formData.use_shown_colors,
+        shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
         rating: 0,
         review_count: 0,
         view_count: 0,
@@ -483,6 +489,17 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </Label>
       </div>
 
+      <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg border border-blue-200">
+        <Checkbox
+          id="use_shown_colors"
+          checked={formData.use_shown_colors}
+          onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
+        />
+        <Label htmlFor="use_shown_colors" className="font-medium cursor-pointer">
+          Use Shown Colors (print with exact colors shown in listing images)
+        </Label>
+      </div>
+
       {formData.multi_color && (
         <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
           <Label htmlFor="number_of_colors">
@@ -501,6 +518,56 @@ export default function DesignerProductForm({ designerId, designerName, existing
           <p className="text-xs text-gray-600 mt-2">
             Customers will need to select exactly this many colors when ordering
           </p>
+        </div>
+      )}
+
+      {formData.use_shown_colors && (
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <Label className="mb-3 block">Specify Colors for Each File *</Label>
+          <p className="text-xs text-gray-600 mb-3">
+            Map each print file to a specific color and quantity. File names will help makers identify which color to use.
+          </p>
+          {formData.print_files.map((file, idx) => (
+            <div key={idx} className="mb-3 p-3 bg-white rounded border">
+              <p className="text-sm font-medium mb-2">File {idx + 1}: {file.split('/').pop()}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor={`color-spec-${idx}`} className="text-xs">Color</Label>
+                  <Select
+                    value={formData.shown_color_specs[idx]?.color || ''}
+                    onValueChange={(value) => {
+                      const newSpecs = [...formData.shown_color_specs];
+                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, color: value, quantity: newSpecs[idx]?.quantity || 1 };
+                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                    }}
+                  >
+                    <SelectTrigger id={`color-spec-${idx}`}>
+                      <SelectValue placeholder="Select color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLORS.map(color => (
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor={`qty-spec-${idx}`} className="text-xs">Quantity</Label>
+                  <Input
+                    id={`qty-spec-${idx}`}
+                    type="number"
+                    min="1"
+                    value={formData.shown_color_specs[idx]?.quantity || 1}
+                    onChange={(e) => {
+                      const newSpecs = [...formData.shown_color_specs];
+                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, quantity: parseInt(e.target.value) || 1 };
+                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
 

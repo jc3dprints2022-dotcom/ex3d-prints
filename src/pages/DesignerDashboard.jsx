@@ -32,6 +32,7 @@ export default function DesignerDashboard() {
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
+    { value: 'guide', label: 'Designer Guide', icon: TrendingUp },
     { value: 'financial', label: 'Financial Info', icon: DollarSign },
     { value: 'branding', label: 'Branding Kit', icon: Palette },
   ];
@@ -302,10 +303,97 @@ export default function DesignerDashboard() {
           <BankInfoManager userId={user.id} userRole="designer" />
         </TabsContent>
 
+        <TabsContent value="guide">
+          <Card>
+            <CardHeader>
+              <CardTitle>Designer Guide</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Essential information for uploading and managing your designs
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">📐 File Naming for "Shown Colors" Mode</h3>
+                  <p className="text-sm text-gray-700 mb-3">
+                    When you enable "Use Shown Colors" for a design (perfect for multi-part models like rockets and spacecraft), 
+                    you can specify exactly which color each file should be printed in. Here's how to make it easy for makers:
+                  </p>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <p className="text-sm font-semibold mb-2">File Naming Best Practices:</p>
+                    <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
+                      <li><strong>Include color in filename:</strong> "Starship_Booster_White.stl" or "SLS_Core_Orange.stl"</li>
+                      <li><strong>Indicate quantity if multiple:</strong> "Wing_Red_x2.stl" means print 2 copies in red</li>
+                      <li><strong>Be descriptive:</strong> "Rocket_Fins_Black_x4.stl" tells makers exactly what to do</li>
+                      <li><strong>Number parts:</strong> "Part1_Body_White.stl", "Part2_Nose_Red.stl", etc.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">🎨 When to Use "Shown Colors"</h3>
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <p className="text-sm text-gray-700 mb-2"><strong>Perfect for:</strong></p>
+                    <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                      <li>Multi-part models with specific color schemes (SpaceX Starship, NASA SLS, etc.)</li>
+                      <li>Designs where colors are essential to the final look</li>
+                      <li>Models that need specific color combinations to look accurate</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">📊 Pricing Formula</h3>
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <p className="text-sm text-gray-700 mb-2">
+                      Your designs are automatically priced using this formula:
+                    </p>
+                    <code className="block bg-white p-3 rounded text-sm">
+                      Price = (((weight_grams / 1000) × 20) + 1 + (print_hours / 5)) × 4
+                    </code>
+                    <p className="text-sm text-gray-700 mt-2">
+                      This ensures fair pricing based on material cost and print time. You earn 10% of each sale!
+                    </p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">✅ Design Upload Checklist</h3>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <ul className="text-sm text-gray-700 space-y-2">
+                      <li>✓ Clear, high-quality images showing the finished print</li>
+                      <li>✓ Accurate print time and weight measurements</li>
+                      <li>✓ Correct dimensions (L × W × H in mm)</li>
+                      <li>✓ All 3D files uploaded (.stl, .obj, or .3mf)</li>
+                      <li>✓ Descriptive name and detailed description</li>
+                      <li>✓ Appropriate category selected</li>
+                      <li>✓ License verification (must allow commercial use)</li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="font-semibold text-lg mb-2">💡 Tips for Success</h3>
+                  <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
+                    <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
+                      <li>Test print your designs before uploading to ensure quality</li>
+                      <li>Use clear, well-lit photos that show the print from multiple angles</li>
+                      <li>Write detailed descriptions explaining assembly if needed</li>
+                      <li>Select all compatible materials and colors to increase sales</li>
+                      <li>Tag your designs appropriately for better discoverability</li>
+                      <li>Respond to feedback and update designs based on user reviews</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="branding">
           <BrandingKit userRole="designer" />
         </TabsContent>
-      </Tabs>
+        </Tabs>
 
       <AlertDialog open={!!deletingProduct} onOpenChange={() => setDeletingProduct(null)}>
         <AlertDialogContent>
