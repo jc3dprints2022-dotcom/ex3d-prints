@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -42,8 +41,10 @@ export default function OrderRoutingSection() {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedOrder, setSelectedOrder] = useState(null);
-  const [reassigning, setReassigning] = useState(false); // New state for reassigning
-  const [selectedMakerId, setSelectedMakerId] = useState(""); // New state for selected maker for reassignment
+  const [reassigning, setReassigning] = useState(false);
+  const [selectedMakerId, setSelectedMakerId] = useState("");
+  const [splitMode, setSplitMode] = useState(false);
+  const [makerSplits, setMakerSplits] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -83,28 +84,98 @@ export default function OrderRoutingSection() {
   };
 
   const handleReassignOrder = async () => {
-    if (!selectedMakerId || !selectedOrder) {
-      toast({ title: "Please select a maker", variant: "destructive" });
-      return;
-    }
+    if (splitMode) {
+      // Validate splits
+      if (makerSplits.length === 0) {
+        toast({ title: "Add at least one maker split", variant: "destructive" });
+        return;
+      }
 
-    setReassigning(true);
-    try {
-      // Assuming order.maker_id stores the user.maker_id value for makers
-      await base44.entities.Order.update(selectedOrder.id, {
-        maker_id: selectedMakerId, // selectedMakerId comes from maker.maker_id
-        status: 'pending' // As per outline
-      });
+      const totalSplitQuantity = makerSplits.reduce((sum, split) => sum + (split.quantity || 0), 0);
+      const orderTotalQuantity = selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0);
 
-      toast({ title: "Order reassigned successfully" });
-      setSelectedOrder(null);
-      setSelectedMakerId("");
-      loadData();
-    } catch (error) {
-      console.error('Failed to reassign order:', error);
-      toast({ title: "Failed to reassign order", variant: "destructive" });
+      if (totalSplitQuantity !== orderTotalQuantity) {
+        toast({ 
+          title: "Quantity mismatch", 
+          description: `Total split quantity (${totalSplitQuantity}) must equal order quantity (${orderTotalQuantity})`,
+          variant: "destructive" 
+        });
+        return;
+      }
+
+      setReassigning(true);
+      try {
+        // Create split order items with maker assignments
+        const splitItems = [];
+        for (const split of makerSplits) {
+          for (const item of selectedOrder.items) {
+            const itemQuantityShare = Math.floor((split.quantity / orderTotalQuantity) * item.quantity);
+            if (itemQuantityShare > 0) {
+              splitItems.push({
+                ...item,
+                quantity: itemQuantityShare,
+                assigned_maker_id: split.maker_id,
+                total_price: (item.unit_price * itemQuantityShare)
+              });
+            }
+          }
+        }
+
+        await base44.entities.Order.update(selectedOrder.id, {
+          items: splitItems,
+          assigned_to_makers: makerSplits.map(s => s.maker_id),
+          status: 'pending'
+        });
+
+        toast({ title: "Order split and assigned successfully!" });
+        setSelectedOrder(null);
+        setSelectedMakerId("");
+        setSplitMode(false);
+        setMakerSplits([]);
+        loadData();
+      } catch (error) {
+        console.error('Failed to split order:', error);
+        toast({ title: "Failed to split order", variant: "destructive" });
+      }
+      setReassigning(false);
+    } else {
+      // Single maker assignment
+      if (!selectedMakerId || !selectedOrder) {
+        toast({ title: "Please select a maker", variant: "destructive" });
+        return;
+      }
+
+      setReassigning(true);
+      try {
+        await base44.entities.Order.update(selectedOrder.id, {
+          maker_id: selectedMakerId,
+          status: 'pending'
+        });
+
+        toast({ title: "Order reassigned successfully" });
+        setSelectedOrder(null);
+        setSelectedMakerId("");
+        loadData();
+      } catch (error) {
+        console.error('Failed to reassign order:', error);
+        toast({ title: "Failed to reassign order", variant: "destructive" });
+      }
+      setReassigning(false);
     }
-    setReassigning(false);
+  };
+
+  const addMakerSplit = () => {
+    setMakerSplits([...makerSplits, { maker_id: "", quantity: 0 }]);
+  };
+
+  const removeMakerSplit = (index) => {
+    setMakerSplits(makerSplits.filter((_, i) => i !== index));
+  };
+
+  const updateMakerSplit = (index, field, value) => {
+    const updated = [...makerSplits];
+    updated[index][field] = field === 'quantity' ? parseInt(value) || 0 : value;
+    setMakerSplits(updated);
   };
 
   const filteredOrders = orders.filter(order => {
@@ -510,35 +581,153 @@ export default function OrderRoutingSection() {
                       </p>
                     </div>
                   )}
-                  <div>
-                    <Label className="text-white mb-2 block">Select New Maker</Label>
-                    <Select value={selectedMakerId} onValueChange={setSelectedMakerId}>
-                      <SelectTrigger className="bg-slate-900 border-cyan-500/30 text-white">
-                        <SelectValue placeholder="Choose a maker..." />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-cyan-500/30">
-                        {makers.map(maker => (
-                          <SelectItem key={maker.maker_id} value={maker.maker_id} className="text-white">
-                            {maker.full_name} ({maker.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+
+                  {/* Total Quantity Display */}
+                  <div className="bg-slate-800 p-3 rounded border border-slate-700">
+                    <p className="text-sm text-slate-400">
+                      <strong className="text-white">Total Order Quantity:</strong> {selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0)} units
+                    </p>
                   </div>
-                  <Button
-                    onClick={handleReassignOrder}
-                    disabled={reassigning || !selectedMakerId}
-                    className="w-full bg-cyan-600 hover:bg-cyan-700"
-                  >
-                    {reassigning ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Reassigning...
-                      </>
-                    ) : (
-                      'Reassign Order'
-                    )}
-                  </Button>
+
+                  {/* Toggle Split Mode */}
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="splitMode"
+                      checked={splitMode}
+                      onChange={(e) => {
+                        setSplitMode(e.target.checked);
+                        if (!e.target.checked) {
+                          setMakerSplits([]);
+                        }
+                      }}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="splitMode" className="text-white cursor-pointer">
+                      Split order among multiple makers by quantity
+                    </Label>
+                  </div>
+
+                  {!splitMode ? (
+                    /* Single Maker Assignment */
+                    <>
+                      <div>
+                        <Label className="text-white mb-2 block">Select New Maker</Label>
+                        <Select value={selectedMakerId} onValueChange={setSelectedMakerId}>
+                          <SelectTrigger className="bg-slate-900 border-cyan-500/30 text-white">
+                            <SelectValue placeholder="Choose a maker..." />
+                          </SelectTrigger>
+                          <SelectContent className="bg-slate-800 border-cyan-500/30">
+                            {makers.map(maker => (
+                              <SelectItem key={maker.maker_id} value={maker.maker_id} className="text-white">
+                                {maker.full_name} ({maker.email})
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button
+                        onClick={handleReassignOrder}
+                        disabled={reassigning || !selectedMakerId}
+                        className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      >
+                        {reassigning ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Reassigning...
+                          </>
+                        ) : (
+                          'Reassign Order'
+                        )}
+                      </Button>
+                    </>
+                  ) : (
+                    /* Split Mode - Multiple Makers */
+                    <>
+                      <div className="space-y-3">
+                        <Label className="text-white">Assign Quantities to Makers</Label>
+                        {makerSplits.map((split, index) => (
+                          <div key={index} className="flex gap-2 items-end">
+                            <div className="flex-1">
+                              <Label className="text-slate-400 text-xs">Maker</Label>
+                              <Select
+                                value={split.maker_id}
+                                onValueChange={(value) => updateMakerSplit(index, 'maker_id', value)}
+                              >
+                                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                                  <SelectValue placeholder="Choose maker..." />
+                                </SelectTrigger>
+                                <SelectContent className="bg-slate-800 border-cyan-500/30">
+                                  {makers.map(maker => (
+                                    <SelectItem key={maker.maker_id} value={maker.maker_id} className="text-white">
+                                      {maker.full_name}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="w-32">
+                              <Label className="text-slate-400 text-xs">Quantity</Label>
+                              <Input
+                                type="number"
+                                min="1"
+                                value={split.quantity}
+                                onChange={(e) => updateMakerSplit(index, 'quantity', e.target.value)}
+                                className="bg-slate-800 border-slate-700 text-white"
+                                placeholder="0"
+                              />
+                            </div>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => removeMakerSplit(index)}
+                              className="bg-red-900 text-white border-red-700 hover:bg-red-800"
+                            >
+                              Remove
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          onClick={addMakerSplit}
+                          className="w-full bg-slate-700 text-white border-slate-600"
+                        >
+                          + Add Maker
+                        </Button>
+                      </div>
+
+                      {/* Quantity Summary */}
+                      {makerSplits.length > 0 && (
+                        <div className="bg-slate-800 p-3 rounded border border-slate-700">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-400">Assigned:</span>
+                            <span className={`font-semibold ${
+                              makerSplits.reduce((sum, s) => sum + (s.quantity || 0), 0) === selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0)
+                                ? 'text-green-400'
+                                : 'text-yellow-400'
+                            }`}>
+                              {makerSplits.reduce((sum, s) => sum + (s.quantity || 0), 0)} / {selectedOrder.items.reduce((sum, item) => sum + item.quantity, 0)} units
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      <Button
+                        onClick={handleReassignOrder}
+                        disabled={reassigning || makerSplits.length === 0}
+                        className="w-full bg-cyan-600 hover:bg-cyan-700"
+                      >
+                        {reassigning ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Splitting Order...
+                          </>
+                        ) : (
+                          'Split & Assign Order'
+                        )}
+                      </Button>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
