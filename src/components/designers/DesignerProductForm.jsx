@@ -530,7 +530,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
 
       {formData.use_shown_colors && (
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <Label className="mb-3 block">Specify Colors for Each File (Optional)</Label>
+          <Label className="mb-3 block">Specify Colors for Each File</Label>
           <p className="text-xs text-gray-600 mb-3">
             Map each print file to a specific color and quantity. File names will help makers identify which color to use.
           </p>
