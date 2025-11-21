@@ -98,14 +98,14 @@ export default function BankInfoManager({ user, onUpdate }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-gray-900">
           <CreditCard className="w-5 h-5" />
-          Payment Information for Payouts
+          Payment Account Setup
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <Alert>
           <Shield className="w-4 h-4" />
           <AlertDescription className="text-gray-900">
-            Please expect an email from us with information to setup a payment account. Your financial information will be encrypted and secure.
+            Please expect an email from us with information to setup a payment account.
           </AlertDescription>
         </Alert>
 

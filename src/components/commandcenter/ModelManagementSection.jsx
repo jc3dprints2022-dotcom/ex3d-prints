@@ -697,6 +697,16 @@ export default function ModelManagementSection() {
                       </div>
                     ))}
                   </div>
+                  <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-lg border border-blue-500/30">
+                    <Checkbox
+                      id="use_shown_colors"
+                      checked={formData.use_shown_colors}
+                      onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
+                    />
+                    <Label htmlFor="use_shown_colors" className="text-white font-medium cursor-pointer">
+                      Use Shown Colors (print with exact colors shown in listing images)
+                    </Label>
+                  </div>
                 </div>
               </div>
 
@@ -708,17 +718,6 @@ export default function ModelManagementSection() {
                 />
                 <Label htmlFor="multi_color" className="text-white font-medium cursor-pointer">
                   This design requires multi-color printing
-                </Label>
-              </div>
-
-              <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-lg border border-blue-500/30">
-                <Checkbox
-                  id="use_shown_colors"
-                  checked={formData.use_shown_colors}
-                  onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
-                />
-                <Label htmlFor="use_shown_colors" className="text-white font-medium cursor-pointer">
-                  Use Shown Colors (print with exact colors shown in listing images)
                 </Label>
               </div>
 

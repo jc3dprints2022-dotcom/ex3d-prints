@@ -114,8 +114,29 @@ export default function DesignerDashboard() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Designer Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {user?.full_name}!</p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Designer Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {user?.full_name}!</p>
+          </div>
+          <Card className="bg-blue-50 border-blue-200">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-blue-600" />
+                <div>
+                  <p className="text-sm text-gray-600">Next Payout</p>
+                  <p className="font-semibold text-blue-900">
+                    {(() => {
+                      const today = new Date();
+                      const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                      return lastDayOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    })()}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -339,21 +360,6 @@ export default function DesignerDashboard() {
                       <li>Designs where colors are essential to the final look</li>
                       <li>Models that need specific color combinations to look accurate</li>
                     </ul>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">📊 Pricing Formula</h3>
-                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <p className="text-sm text-gray-700 mb-2">
-                      Your designs are automatically priced using this formula:
-                    </p>
-                    <code className="block bg-white p-3 rounded text-sm">
-                      Price = (((weight_grams / 1000) × 20) + 1 + (print_hours / 5)) × 4
-                    </code>
-                    <p className="text-sm text-gray-700 mt-2">
-                      This ensures fair pricing based on material cost and print time. You earn 10% of each sale!
-                    </p>
                   </div>
                 </div>
 
