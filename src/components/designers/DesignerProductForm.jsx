@@ -217,6 +217,20 @@ export default function DesignerProductForm({ designerId, designerName, existing
       }
     }
 
+    if (formData.use_shown_colors) {
+      const hasAllSpecs = formData.print_files.every((_, idx) => 
+        formData.shown_color_specs[idx] && formData.shown_color_specs[idx].color
+      );
+      if (!hasAllSpecs) {
+        toast({ 
+          title: "Missing color specifications", 
+          description: "Please specify color and quantity for each file when using 'Shown Colors' mode",
+          variant: "destructive" 
+        });
+        return;
+      }
+    }
+
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
     const rawPrice = (((grams / 1000) * 20) + 1 + (printTime / 5)) * 4;

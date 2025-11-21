@@ -72,6 +72,8 @@ export default function ModelManagementSection() {
     multi_color: false,
     number_of_colors: 2,
     custom_scale: null, // Added custom_scale field
+    use_shown_colors: false,
+    shown_color_specs: [],
     // 'status' removed from formData as it's hardcoded to 'active' in handleSubmit
   };
 
@@ -253,6 +255,8 @@ export default function ModelManagementSection() {
       multi_color: product.multi_color || false,
       number_of_colors: product.number_of_colors || 2,
       custom_scale: product.custom_scale || null, // Populate custom_scale
+      use_shown_colors: product.use_shown_colors || false,
+      shown_color_specs: product.shown_color_specs || [],
       // Status not needed here as it's hardcoded to 'active' on save
     });
     setLicenseVerified(true); // Assume verified for existing products
@@ -371,6 +375,8 @@ export default function ModelManagementSection() {
         multi_color: formData.multi_color,
         number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
         custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null, // Include custom_scale
+        use_shown_colors: formData.use_shown_colors,
+        shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
         rating: editingProduct ? editingProduct.rating : 0, // Preserve rating on update
         review_count: editingProduct ? editingProduct.review_count : 0, // Preserve on update
         view_count: editingProduct ? editingProduct.view_count : 0, // Preserve on update
@@ -705,6 +711,17 @@ export default function ModelManagementSection() {
                 </Label>
               </div>
 
+              <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-blue-900/50 to-cyan-900/50 rounded-lg border border-blue-500/30">
+                <Checkbox
+                  id="use_shown_colors"
+                  checked={formData.use_shown_colors}
+                  onCheckedChange={(checked) => setFormData(prev => ({...prev, use_shown_colors: checked}))}
+                />
+                <Label htmlFor="use_shown_colors" className="text-white font-medium cursor-pointer">
+                  Use Shown Colors (print with exact colors shown in listing images)
+                </Label>
+              </div>
+
               {formData.multi_color && (
                 <div className="p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
                   <Label htmlFor="number_of_colors" className="text-white">
@@ -723,6 +740,57 @@ export default function ModelManagementSection() {
                   <p className="text-xs text-purple-300 mt-2">
                     Customers will need to select exactly this many colors when ordering
                   </p>
+                </div>
+              )}
+
+              {formData.use_shown_colors && (
+                <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
+                  <Label className="mb-3 block text-white">Specify Colors for Each File *</Label>
+                  <p className="text-xs text-blue-300 mb-3">
+                    Map each print file to a specific color and quantity. File names will help makers identify which color to use.
+                  </p>
+                  {formData.print_files.map((file, idx) => (
+                    <div key={idx} className="mb-3 p-3 bg-slate-800 rounded border border-blue-500/20">
+                      <p className="text-sm font-medium text-white mb-2">File {idx + 1}: {file.split('/').pop()}</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <Label htmlFor={`color-spec-${idx}`} className="text-xs text-white">Color</Label>
+                          <Select
+                            value={formData.shown_color_specs[idx]?.color || ''}
+                            onValueChange={(value) => {
+                              const newSpecs = [...formData.shown_color_specs];
+                              newSpecs[idx] = { ...newSpecs[idx], file_index: idx, color: value, quantity: newSpecs[idx]?.quantity || 1 };
+                              setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                            }}
+                          >
+                            <SelectTrigger id={`color-spec-${idx}`} className="bg-slate-700 text-white">
+                              <SelectValue placeholder="Select color" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-gray-900 text-white border border-gray-700">
+                              {COLORS.map(color => (
+                                <SelectItem key={color} value={color} className="text-white focus:text-white hover:text-white">{color}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor={`qty-spec-${idx}`} className="text-xs text-white">Quantity</Label>
+                          <Input
+                            id={`qty-spec-${idx}`}
+                            type="number"
+                            min="1"
+                            value={formData.shown_color_specs[idx]?.quantity || 1}
+                            onChange={(e) => {
+                              const newSpecs = [...formData.shown_color_specs];
+                              newSpecs[idx] = { ...newSpecs[idx], file_index: idx, quantity: parseInt(e.target.value) || 1 };
+                              setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                            }}
+                            className="bg-slate-700 text-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
