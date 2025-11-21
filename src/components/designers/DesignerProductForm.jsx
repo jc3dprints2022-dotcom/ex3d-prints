@@ -219,19 +219,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
       }
     }
 
-    if (formData.use_shown_colors) {
-      const hasAllSpecs = formData.print_files.every((_, idx) => 
-        formData.shown_color_specs[idx] && formData.shown_color_specs[idx].color
-      );
-      if (!hasAllSpecs) {
-        toast({ 
-          title: "Missing color specifications", 
-          description: "Please specify color and quantity for each file when using 'Shown Colors' mode",
-          variant: "destructive" 
-        });
-        return;
-      }
-    }
+
 
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
@@ -542,7 +530,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
 
       {formData.use_shown_colors && (
         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <Label className="mb-3 block">Specify Colors for Each File *</Label>
+          <Label className="mb-3 block">Specify Colors for Each File (Optional)</Label>
           <p className="text-xs text-gray-600 mb-3">
             Map each print file to a specific color and quantity. File names will help makers identify which color to use.
           </p>
