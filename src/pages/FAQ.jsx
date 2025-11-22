@@ -77,7 +77,7 @@ export default function FAQ() {
         {
           id: "payout-date",
           question: "When do I get paid?",
-          answer: "You will get paid on November 14th."
+          answer: "You will get paid on November 30th."
         },
         {
           id: "download-design",
