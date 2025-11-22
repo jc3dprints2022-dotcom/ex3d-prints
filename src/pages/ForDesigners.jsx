@@ -79,7 +79,7 @@ export default function ForDesigners() {
               </div>
               <h3 className="text-2xl font-bold mb-3">Global Reach</h3>
               <p className="text-pink-100">
-                Your designs reach thousands worldwide
+                Your designs reach thousands
               </p>
             </CardContent>
           </Card>
