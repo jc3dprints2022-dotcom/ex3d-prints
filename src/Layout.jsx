@@ -260,6 +260,7 @@ export default function Layout({ children, currentPageName }) {
     if (user.role === 'admin') return createPageUrl("jc3dcommandcenter");
 
     const roles = user.business_roles || [];
+    if (roles.includes('campus_manager')) return createPageUrl("CampusManagementCenter");
     if (roles.includes('maker')) return createPageUrl("MakerDashboard");
     return createPageUrl("ConsumerDashboard");
   };
@@ -270,6 +271,7 @@ export default function Layout({ children, currentPageName }) {
     if (user.role === 'admin') return "Admin Command Center";
 
     const roles = user.business_roles || [];
+    if (roles.includes('campus_manager')) return "Campus Management";
     if (roles.includes('maker')) return "Maker Dashboard";
     return "My Dashboard";
   };
@@ -285,6 +287,11 @@ export default function Layout({ children, currentPageName }) {
     // Show maker dashboard if user is a maker
     if (user.maker_id && user.business_roles?.includes('maker')) {
       dashboards.push({ name: 'Maker Dashboard', url: createPageUrl("MakerDashboard") });
+    }
+
+    // Show campus management center if user is a campus manager
+    if (user.business_roles?.includes('campus_manager') && user.managed_campus) {
+      dashboards.push({ name: 'Campus Management', url: createPageUrl("CampusManagementCenter") });
     }
 
     // Show admin command center if user is admin
