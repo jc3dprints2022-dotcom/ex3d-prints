@@ -33,6 +33,7 @@ import EmailAutomationSection from "../components/commandcenter/EmailAutomationS
 import ExpRewardsSection from "../components/commandcenter/ExpRewardsSection";
 import ExpProductsSection from "../components/commandcenter/ExpProductsSection";
 import ExpRewardOrdersSection from "../components/commandcenter/ExpRewardOrdersSection";
+import CampusManagerSection from "../components/commandcenter/CampusManagerSection";
 
 export default function JC3DCommandCenter() {
   const [user, setUser] = useState(null);
@@ -93,6 +94,7 @@ export default function JC3DCommandCenter() {
     { value: "automation", label: "🤖 Email Automation" },
     { value: "security", label: "🔒 Security & Audit Logs" },
     { value: "makers", label: "🔧 Maker Tools" },
+    { value: "campus-managers", label: "🏫 Campus Managers" },
     { value: "applications", label: "📝 Maker Applications" },
     { value: "designer-applications", label: "🎨 Designer Applications" },
     { value: "designer-products", label: "🖼️ Designer Products Review" },
@@ -131,6 +133,8 @@ export default function JC3DCommandCenter() {
         return <SecurityDRMSection />;
       case "makers":
         return <MakerToolsSection />;
+      case "campus-managers":
+        return <CampusManagerSection />;
       case "applications":
         return <MakerApplicationsSection />;
       case "designer-applications":
