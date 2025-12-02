@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -20,6 +19,12 @@ const availableMaterials = [
   { value: "tpu", label: "TPU (Flexible)" },
 ];
 
+const CAMPUS_LOCATIONS = [
+  { value: "erau_prescott", label: "ERAU Prescott" },
+  { value: "erau_daytona", label: "ERAU Daytona" },
+  { value: "arizona_state", label: "Arizona State University" },
+];
+
 export default function MakerSignup() {
   const [user, setUser] = useState(null);
   const [formState, setFormState] = useState('form'); // 'form', 'submitting', 'submitted', 'already_maker', 'rejected_maker'
@@ -29,7 +34,8 @@ export default function MakerSignup() {
     phone: '',
     experience_level: '',
     weekly_capacity: '',
-    materials: [], // New field for selected materials
+    campus_location: '',
+    materials: [],
     agree_terms: false
   });
   const [loading, setLoading] = useState(true);
@@ -58,8 +64,9 @@ export default function MakerSignup() {
                 phone: existingApplication.phone || '',
                 experience_level: existingApplication.experience_level || '',
                 weekly_capacity: existingApplication.weekly_capacity ? String(existingApplication.weekly_capacity) : '',
+                campus_location: existingApplication.campus_location || '',
                 materials: existingApplication.materials || [],
-                agree_terms: false // User must re-agree on re-submission if re-applying
+                agree_terms: false
               }));
 
               if (existingApplication.status === 'rejected') {
@@ -161,6 +168,10 @@ export default function MakerSignup() {
       toast({ title: "Materials required", description: "Please select at least one material you can print with.", variant: "destructive" });
       return;
     }
+    if (!formData.campus_location) {
+      toast({ title: "Campus Location required", description: "Please select your campus location.", variant: "destructive" });
+      return;
+    }
     
     setFormState('submitting');
     try {
@@ -171,6 +182,7 @@ export default function MakerSignup() {
         phone: formData.phone,
         experience_level: formData.experience_level,
         weekly_capacity: parseInt(formData.weekly_capacity, 10),
+        campus_location: formData.campus_location,
         materials: formData.materials,
         status: 'pending'
       };
@@ -207,6 +219,7 @@ We've received your application to become a maker on EX3D Prints.
 Your application is currently under review. Our team will carefully review your information and get back to you within 2-3 business days.
 
 Application Details:
+- Campus Location: ${CAMPUS_LOCATIONS.find(c => c.value === formData.campus_location)?.label || formData.campus_location}
 - Experience Level: ${formData.experience_level}
 - Weekly Capacity: ${formData.weekly_capacity} hours
 - Materials: ${formData.materials.join(', ')}
@@ -308,6 +321,19 @@ The EX3D Team`
                   required
                 />
                 <p className="text-xs text-slate-500 mt-1">10-digit phone number</p>
+              </div>
+
+              {/* Campus Location */}
+              <div>
+                <Label htmlFor="campus_location">Campus Location *</Label>
+                <Select required value={formData.campus_location} onValueChange={(value) => handleInputChange('campus_location', value)}>
+                  <SelectTrigger><SelectValue placeholder="Select your campus" /></SelectTrigger>
+                  <SelectContent>
+                    {CAMPUS_LOCATIONS.map(campus => (
+                      <SelectItem key={campus.value} value={campus.value}>{campus.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Experience & Capacity */}
