@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 
 Deno.serve(async (req) => {
@@ -16,6 +15,10 @@ Deno.serve(async (req) => {
         if (!order) {
             return Response.json({ error: 'Order not found' }, { status: 404 });
         }
+
+        // Get order's campus location
+        const orderCampusLocation = order.campus_location || 'erau_prescott';
+        console.log('Order campus location:', orderCampusLocation);
 
         // Calculate total print time and check requirements
         let totalPrintTime = 0;
@@ -64,8 +67,12 @@ Deno.serve(async (req) => {
             u.account_status === 'active' && 
             u.business_roles?.includes('maker') &&
             u.id !== order.customer_id &&
-            !excludedMakerIds.includes(u.maker_id)
+            !excludedMakerIds.includes(u.maker_id) &&
+            // FIRST REQUIREMENT: Maker must be at the same campus as the order
+            (u.campus_location || 'erau_prescott') === orderCampusLocation
         );
+
+        console.log(`Makers at campus ${orderCampusLocation}: ${makers.length}`);
 
         // Filter makers based on requirements
         const eligibleMakers = [];
