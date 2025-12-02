@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -7,7 +6,14 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users } from "lucide-react";
+import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users, Building } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+const CAMPUS_LOCATIONS = [
+  { value: "erau_prescott", label: "ERAU Prescott" },
+  { value: "erau_daytona", label: "ERAU Daytona" },
+  { value: "arizona_state", label: "Arizona State University" },
+];
 
 export default function Checkout() {
   const [user, setUser] = useState(null);
@@ -20,6 +26,7 @@ export default function Checkout() {
   const [referralCode, setReferralCode] = useState("");
   const [isPriority, setIsPriority] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [campusLocation, setCampusLocation] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -37,6 +44,10 @@ export default function Checkout() {
         return;
       }
       setUser(currentUser);
+      // Pre-fill campus location if user has one
+      if (currentUser.campus_location) {
+        setCampusLocation(currentUser.campus_location);
+      }
       await loadCart(currentUser.id);
     } catch (error) {
       console.error("Auth error:", error);
@@ -136,6 +147,11 @@ export default function Checkout() {
       return;
     }
 
+    if (!campusLocation) {
+      toast({ title: "Campus location required", description: "Please select your campus location for pickup.", variant: "destructive" });
+      return;
+    }
+
     setProcessing(true);
     
     try {
@@ -170,7 +186,8 @@ export default function Checkout() {
         cancelUrl: `${window.location.origin}/Checkout?payment=cancelled`,
         couponCode: couponCode.trim() || undefined,
         referralCode: referralCode.trim().toUpperCase() || undefined,
-        isPriority: isPriority
+        isPriority: isPriority,
+        campusLocation: campusLocation
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -280,13 +297,36 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
+                {/* Campus Location Selection */}
+                <div className="mb-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
+                  <Label className="flex items-center gap-2 mb-2 font-medium text-blue-900">
+                    <Building className="w-4 h-4" />
+                    Campus Location *
+                  </Label>
+                  <Select value={campusLocation} onValueChange={setCampusLocation} required>
+                    <SelectTrigger className="bg-white border-blue-300">
+                      <SelectValue placeholder="Select your campus" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CAMPUS_LOCATIONS.map(campus => (
+                        <SelectItem key={campus.value} value={campus.value}>
+                          {campus.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-blue-700 mt-2">
+                    Your order will be fulfilled by a maker at your campus
+                  </p>
+                </div>
+
                 <RadioGroup value={deliveryOption} onValueChange={setDeliveryOption}>
                   <div className="flex items-center space-x-3 p-4 border rounded-lg">
                     <RadioGroupItem value="campus_pickup" id="campus_pickup" />
                     <Label htmlFor="campus_pickup" className="cursor-pointer flex-1">
                       <p className="font-medium">Campus Pickup</p>
                       <p className="text-sm text-gray-600">
-                        Collect your items from a designated pickup point.
+                        Collect your items from a designated pickup point at your campus.
                       </p>
                     </Label>
                   </div>
