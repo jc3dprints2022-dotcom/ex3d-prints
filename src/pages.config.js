@@ -25,6 +25,7 @@ import ForDesigners from './pages/ForDesigners';
 import DesignerHowItWorks from './pages/DesignerHowItWorks';
 import DesignerSignup from './pages/DesignerSignup';
 import DesignerDashboard from './pages/DesignerDashboard';
+import CampusManagementCenter from './pages/CampusManagementCenter';
 import __Layout from './Layout.jsx';
 
 
@@ -56,6 +57,7 @@ export const PAGES = {
     "DesignerHowItWorks": DesignerHowItWorks,
     "DesignerSignup": DesignerSignup,
     "DesignerDashboard": DesignerDashboard,
+    "CampusManagementCenter": CampusManagementCenter,
 }
 
 export const pagesConfig = {
