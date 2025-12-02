@@ -164,6 +164,14 @@ Deno.serve(async (req) => {
         // Create the order
         console.log('Creating order...');
         const isPriority = session.metadata.is_priority === 'true';
+        const campusLocation = session.metadata.campus_location || 'erau_prescott';
+        
+        // Update user's campus location if not set
+        if (!user.campus_location && campusLocation) {
+            await base44.asServiceRole.entities.User.update(user.id, {
+                campus_location: campusLocation
+            });
+        }
         
         const newOrder = await base44.asServiceRole.entities.Order.create({
             customer_id: user.id,
@@ -175,7 +183,8 @@ Deno.serve(async (req) => {
             payment_status: 'paid',
             payment_intent_id: session.payment_intent,
             stripe_session_id: sessionId,
-            is_priority: isPriority
+            is_priority: isPriority,
+            campus_location: campusLocation
         });
 
         console.log('✅ Order created:', newOrder.id);

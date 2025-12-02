@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 import Stripe from 'npm:stripe@14.11.0';
 
@@ -13,7 +12,7 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority } = await req.json();
+        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation } = await req.json();
 
         if (!cartItems || cartItems.length === 0) {
             return Response.json({ error: 'Cart is empty' }, { status: 400 });
@@ -109,7 +108,8 @@ Deno.serve(async (req) => {
                 user_id: user.id,
                 referrer_id: referralValidation?.referrer_id || '',
                 has_referral: referralValidation?.valid ? 'true' : 'false',
-                is_priority: isPriority ? 'true' : 'false'
+                is_priority: isPriority ? 'true' : 'false',
+                campus_location: campusLocation || ''
             },
         };
 
