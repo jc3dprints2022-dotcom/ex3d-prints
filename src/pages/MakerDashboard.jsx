@@ -8,8 +8,16 @@ import { Badge } from "@/components/ui/badge";
 import {
   Loader2, Package, DollarSign, Clock, CheckCircle,
   Printer, Settings, FileText, TrendingUp, AlertCircle,
-  Download, Mail, Plus, Calendar, Star
+  Download, Mail, Plus, Calendar, Star, MapPin
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+
+const CAMPUS_LOCATIONS = [
+  { value: "erau_prescott", label: "ERAU Prescott" },
+  { value: "erau_daytona", label: "ERAU Daytona" },
+  { value: "arizona_state", label: "Arizona State University" },
+];
 import {
   Dialog,
   DialogContent,
@@ -916,6 +924,40 @@ The EX3D Team`
               </p>
             </CardHeader>
             <CardContent className="space-y-6">
+              {/* Campus Location */}
+              <div className="p-4 border rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <h3 className="font-semibold">Campus Location</h3>
+                </div>
+                <p className="text-sm text-gray-600 mb-3">
+                  You will only receive orders from customers at your campus.
+                </p>
+                <Select 
+                  value={user?.campus_location || ''} 
+                  onValueChange={async (value) => {
+                    try {
+                      await base44.auth.updateMe({ campus_location: value });
+                      toast({ title: "Campus location updated!" });
+                      await loadDashboard();
+                    } catch (error) {
+                      toast({ title: "Failed to update campus", variant: "destructive" });
+                    }
+                  }}
+                >
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Select your campus" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CAMPUS_LOCATIONS.map(campus => (
+                      <SelectItem key={campus.value} value={campus.value}>
+                        {campus.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
               <div className="flex items-center justify-between p-4 border rounded-lg">
                 <div>
                   <h3 className="font-semibold">Vacation Mode</h3>
