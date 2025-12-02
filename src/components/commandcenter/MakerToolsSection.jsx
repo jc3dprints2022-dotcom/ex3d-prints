@@ -3,7 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, Package, Printer, AlertCircle } from "lucide-react";
+import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -12,6 +15,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const CAMPUS_LOCATIONS = [
+  { value: "erau_prescott", label: "ERAU Prescott" },
+  { value: "erau_daytona", label: "ERAU Daytona" },
+  { value: "arizona_state", label: "Arizona State University" },
+];
+
 export default function MakerToolsSection() {
   const [makers, setMakers] = useState([]);
   const [printers, setPrinters] = useState([]);
@@ -19,6 +28,8 @@ export default function MakerToolsSection() {
   const [loading, setLoading] = useState(true);
   const [selectedMaker, setSelectedMaker] = useState(null);
   const [showMakerDialog, setShowMakerDialog] = useState(false);
+  const [updatingCampus, setUpdatingCampus] = useState(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     loadMakers();
@@ -59,6 +70,23 @@ export default function MakerToolsSection() {
     setShowMakerDialog(true);
   };
 
+  const handleUpdateCampus = async (makerId, newCampus) => {
+    setUpdatingCampus(makerId);
+    try {
+      await base44.entities.User.update(makerId, { campus_location: newCampus });
+      toast({ title: "Campus location updated" });
+      loadMakers();
+    } catch (error) {
+      console.error("Failed to update campus:", error);
+      toast({ title: "Failed to update campus", variant: "destructive" });
+    }
+    setUpdatingCampus(null);
+  };
+
+  const getCampusLabel = (value) => {
+    return CAMPUS_LOCATIONS.find(c => c.value === value)?.label || value || 'Not Set';
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -91,6 +119,29 @@ export default function MakerToolsSection() {
                             {maker.phone}
                           </div>
                         )}
+                        <div className="flex items-center gap-2 text-sm mt-1">
+                          <MapPin className="w-4 h-4 text-blue-600" />
+                          <Select
+                            value={maker.campus_location || ''}
+                            onValueChange={(value) => handleUpdateCampus(maker.id, value)}
+                            disabled={updatingCampus === maker.id}
+                          >
+                            <SelectTrigger className="h-7 w-48 text-xs">
+                              {updatingCampus === maker.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <SelectValue placeholder="Set campus" />
+                              )}
+                            </SelectTrigger>
+                            <SelectContent>
+                              {CAMPUS_LOCATIONS.map(campus => (
+                                <SelectItem key={campus.value} value={campus.value}>
+                                  {campus.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
                       <Button
                         size="sm"
@@ -198,6 +249,7 @@ export default function MakerToolsSection() {
                   <p><strong>Email:</strong> {selectedMaker.email}</p>
                   {selectedMaker.phone && <p><strong>Phone:</strong> {selectedMaker.phone}</p>}
                   <p><strong>Maker ID:</strong> {selectedMaker.maker_id}</p>
+                  <p><strong>Campus:</strong> {getCampusLabel(selectedMaker.campus_location)}</p>
                 </div>
               </div>
 
