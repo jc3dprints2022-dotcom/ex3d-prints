@@ -609,7 +609,7 @@ The EX3D Team`
 
                               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600">
                                 <div>
-                                  <span className="font-medium">Material:</span> {item.material}
+                                  <span className="font-medium">Material:</span> {item.material_preference}
                                 </div>
                                 <div>
                                   <span className="font-medium">Quantity:</span> {item.quantity}
@@ -628,7 +628,7 @@ The EX3D Team`
                                   </div>
                                 ) : (
                                   <div>
-                                    <span className="font-medium">Color:</span> {item.color}
+                                    <span className="font-medium">Color:</span> {item.color_preference}
                                   </div>
                                 )}
 
