@@ -657,6 +657,12 @@ The EX3D Team`
                                     </Badge>
                                   </div>
                                 )}
+                                
+                                {item.description && (
+                                  <div>
+                                    <span className="font-medium">Description:</span> {item.description}
+                                  </div>
+                                )}
                               </div>
 
                               {item.print_files && item.print_files.length > 0 && (
