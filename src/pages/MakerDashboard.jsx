@@ -587,6 +587,7 @@ The EX3D Team`
                       </div>
                     )}
                   </CardHeader>
+                  console.log("DEBUG ORDER:", item);
                   <CardContent className="p-6">
                     <div className="space-y-4">
                       {order.items.map((item, idx) => (
