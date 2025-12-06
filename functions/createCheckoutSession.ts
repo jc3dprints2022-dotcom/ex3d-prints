@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
 import Stripe from 'npm:stripe@14.11.0';
 
 Deno.serve(async (req) => {
@@ -13,6 +13,9 @@ Deno.serve(async (req) => {
         }
 
         const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation } = await req.json();
+        
+        console.log('📦 isPriority received:', isPriority);
+        console.log('📦 isPriority type:', typeof isPriority);
 
         if (!cartItems || cartItems.length === 0) {
             return Response.json({ error: 'Cart is empty' }, { status: 400 });
@@ -81,8 +84,11 @@ Deno.serve(async (req) => {
             quantity: item.quantity,
         }));
 
+        console.log('📦 Line items before priority:', lineItems.length);
+
         // Add priority fee if selected
-        if (isPriority) {
+        if (isPriority === true || isPriority === 'true') {
+            console.log('✅ Adding priority fee to line items');
             lineItems.push({
                 price_data: {
                     currency: 'usd',
@@ -94,6 +100,9 @@ Deno.serve(async (req) => {
                 },
                 quantity: 1,
             });
+            console.log('✅ Priority fee added. Total line items:', lineItems.length);
+        } else {
+            console.log('❌ Priority NOT added. isPriority value:', isPriority);
         }
 
         // Prepare session data with referral metadata
@@ -146,9 +155,13 @@ Deno.serve(async (req) => {
         }
 
         // Create Stripe checkout session
+        console.log('📦 Creating session with line items count:', lineItems.length);
+        console.log('📦 Full session data:', JSON.stringify(sessionData, null, 2));
+        
         const session = await stripe.checkout.sessions.create(sessionData);
 
         console.log('✅ Checkout session created:', session.id);
+        console.log('✅ Session line items count:', session.line_items?.data?.length || 'unknown');
         if (referralValidation?.valid) {
             console.log('✅ Referral code attached to session');
         }
