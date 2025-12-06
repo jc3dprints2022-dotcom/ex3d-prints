@@ -503,7 +503,9 @@ export default function OrderRoutingSection() {
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-2">
                             <p className="text-white font-semibold text-lg">{item.product_name}</p>
-                            {item.product_id && (
+                            {item.custom_request_id ? (
+                              <Badge className="bg-blue-600 text-white">Custom Order</Badge>
+                            ) : item.product_id && (
                               <a
                                 href={`${window.location.origin}/ProductDetail?id=${item.product_id}`}
                                 target="_blank"
@@ -514,6 +516,11 @@ export default function OrderRoutingSection() {
                               </a>
                             )}
                           </div>
+                          {item.custom_request_id && selectedOrder.customer_username && (
+                            <div className="mb-2">
+                              <Badge className="bg-teal-600 text-white">Deliver To: @{selectedOrder.customer_username}</Badge>
+                            </div>
+                          )}
                           <div className="grid grid-cols-2 gap-2 text-sm">
                             <div>
                               <span className="text-slate-400">Material:</span>
@@ -557,7 +564,29 @@ export default function OrderRoutingSection() {
                                 <p className="text-white">{item.print_files.length} file(s)</p>
                               </div>
                             )}
+                            {item.description && (
+                              <div className="col-span-2">
+                                <span className="text-slate-400">Description:</span>
+                                <p className="text-white">{item.description}</p>
+                              </div>
+                            )}
+                            {item.special_requirements && (
+                              <div className="col-span-2">
+                                <span className="text-slate-400">Special Requirements:</span>
+                                <p className="text-white">{item.special_requirements}</p>
+                              </div>
+                            )}
                           </div>
+                          {item.images && item.images.length > 0 && (
+                            <div className="mt-3">
+                              <p className="text-sm font-medium text-slate-400 mb-2">Images:</p>
+                              <div className="flex gap-2 flex-wrap">
+                                {item.images.map((img, imgIdx) => (
+                                  <img key={imgIdx} src={img} alt={`Item ${idx + 1} - Image ${imgIdx + 1}`} className="w-20 h-20 object-cover rounded border border-slate-600" />
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
