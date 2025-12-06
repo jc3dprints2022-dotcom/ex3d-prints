@@ -595,7 +595,11 @@ The EX3D Team`
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-2">
                                 <h4 className="font-semibold text-lg">{item.product_name}</h4>
-                                {item.product_id && (
+                                {item.custom_request_id ? (
+                                  <Badge variant="outline" className="bg-blue-50 text-blue-700">
+                                    Custom Order
+                                  </Badge>
+                                ) : item.product_id && (
                                   <a
                                     href={`${createPageUrl("ProductDetail")}?id=${item.product_id}`}
                                     target="_blank"
@@ -609,7 +613,7 @@ The EX3D Team`
 
                               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600">
                                 <div>
-                                  <span className="font-medium">Material:</span> {item.material_preference}
+                                  <span className="font-medium">Material:</span> {item.selected_material}
                                 </div>
                                 <div>
                                   <span className="font-medium">Quantity:</span> {item.quantity}
@@ -628,7 +632,7 @@ The EX3D Team`
                                   </div>
                                 ) : (
                                   <div>
-                                    <span className="font-medium">Color:</span> {item.color_preference}
+                                    <span className="font-medium">Color:</span> {item.selected_color}
                                   </div>
                                 )}
 
@@ -659,8 +663,14 @@ The EX3D Team`
                                 )}
                                 
                                 {item.description && (
-                                  <div>
+                                  <div className="col-span-2">
                                     <span className="font-medium">Description:</span> {item.description}
+                                  </div>
+                                )}
+                                
+                                {item.custom_request_id && order.customer_username && (
+                                  <div className="col-span-2">
+                                    <span className="font-medium">Deliver To:</span> <Badge variant="outline" className="bg-teal-50 text-teal-700">@{order.customer_username}</Badge>
                                   </div>
                                 )}
                               </div>
