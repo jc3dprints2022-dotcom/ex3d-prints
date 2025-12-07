@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2 } from "lucide-react";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2, FileText, Upload } from "lucide-react";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
 import BankInfoManager from "../components/shared/BankInfoManager";
 import BrandingKit from "../components/makers/BrandingKit";
@@ -28,10 +28,12 @@ export default function DesignerDashboard() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
+  const [uploadingGuide, setUploadingGuide] = useState(false);
   const { toast } = useToast();
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
+    { value: 'assembly', label: 'Assembly Guides', icon: FileText },
     { value: 'guide', label: 'Designer Guide', icon: TrendingUp },
     { value: 'financial', label: 'Financial Info', icon: DollarSign },
     { value: 'branding', label: 'Branding Kit', icon: Palette },
@@ -322,6 +324,126 @@ export default function DesignerDashboard() {
 
         <TabsContent value="financial">
           <BankInfoManager userId={user.id} userRole="designer" />
+        </TabsContent>
+
+        <TabsContent value="assembly">
+          <Card>
+            <CardHeader>
+              <CardTitle>Assembly Guides</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Upload PDF assembly guides for your designs to help customers build complex models
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Upload Assembly Guide</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Upload a PDF, Word document, or image file with assembly instructions
+                </p>
+                <input
+                  type="file"
+                  id="assembly-guide-upload"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
+                  className="hidden"
+                  disabled={uploadingGuide}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+
+                    setUploadingGuide(true);
+                    try {
+                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                      
+                      // Store the guide URL in user profile
+                      const currentGuides = user.assembly_guides || [];
+                      await base44.auth.updateMe({
+                        assembly_guides: [...currentGuides, { 
+                          file_url, 
+                          file_name: file.name,
+                          uploaded_at: new Date().toISOString()
+                        }]
+                      });
+
+                      toast({ title: "Assembly guide uploaded successfully!" });
+                      await loadDashboardData();
+                    } catch (error) {
+                      console.error("Upload failed:", error);
+                      toast({ 
+                        title: "Upload failed", 
+                        description: error.message,
+                        variant: "destructive" 
+                      });
+                    } finally {
+                      setUploadingGuide(false);
+                      e.target.value = '';
+                    }
+                  }}
+                />
+                <Button
+                  onClick={() => document.getElementById('assembly-guide-upload').click()}
+                  disabled={uploadingGuide}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  {uploadingGuide ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Choose File
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              {user?.assembly_guides && user.assembly_guides.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold">Your Assembly Guides</h3>
+                  {user.assembly_guides.map((guide, index) => (
+                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
+                      <div className="flex items-center gap-3">
+                        <FileText className="w-5 h-5 text-red-600" />
+                        <div>
+                          <p className="font-medium">{guide.file_name}</p>
+                          <p className="text-xs text-gray-500">
+                            Uploaded {new Date(guide.uploaded_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => window.open(guide.file_url, '_blank')}
+                        >
+                          View
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={async () => {
+                            try {
+                              const updatedGuides = user.assembly_guides.filter((_, i) => i !== index);
+                              await base44.auth.updateMe({ assembly_guides: updatedGuides });
+                              toast({ title: "Assembly guide deleted" });
+                              await loadDashboardData();
+                            } catch (error) {
+                              toast({ title: "Delete failed", variant: "destructive" });
+                            }
+                          }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="guide">

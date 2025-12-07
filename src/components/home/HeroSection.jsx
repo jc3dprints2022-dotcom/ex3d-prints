@@ -228,18 +228,6 @@ export default function HeroSection() {
                 Shop 3D Prints Now
               </Link>
             </Button>
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              onClick={scrollToTop}
-              className="h-14 px-8 border-2 border-orange-400 bg-orange-500/90 text-white hover:bg-orange-500 backdrop-blur-sm"
-            >
-              <Link to={createPageUrl("ForMakers")}>
-                <DollarSign className="w-5 h-5 mr-2" />
-                Start Printing
-              </Link>
-            </Button>
           </div>
 
           {/* Slideshow Dots */}
