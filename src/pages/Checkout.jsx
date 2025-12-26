@@ -131,9 +131,7 @@ export default function Checkout() {
 
   const calculateTotal = () => {
     let total = calculateSubtotal();
-    if (isPriority) {
-      total += 4; // Add $4 for priority
-    }
+    // Priority fee is now added as a separate cart item, not here
     return total;
   };
 
@@ -161,8 +159,24 @@ export default function Checkout() {
       console.log('Referral code:', referralCode);
       console.log('Is priority:', isPriority);
       
+      // Add priority delivery as a cart item if selected
+      let finalCartItems = [...cartItems];
+      if (isPriority) {
+        finalCartItems.push({
+          product_id: 'PRIORITY_DELIVERY',
+          product_name: '⚡ Priority Overnight Delivery',
+          quantity: 1,
+          unit_price: 4,
+          total_price: 4,
+          selected_material: 'N/A',
+          selected_color: 'N/A',
+          is_priority_fee: true
+        });
+        console.log('✅ Added priority delivery item to cart');
+      }
+      
       // Validate cart items have required fields
-      const invalidItems = cartItems.filter(item => 
+      const invalidItems = finalCartItems.filter(item => 
         !item.product_id || 
         !item.product_name || 
         item.unit_price === undefined || 
@@ -177,7 +191,7 @@ export default function Checkout() {
       }
       
       const checkoutData = {
-        cartItems: cartItems.map(item => ({
+        cartItems: finalCartItems.map(item => ({
           ...item,
           // Ensure custom request items have proper identification
           custom_request_id: item.custom_request_id || (item.is_custom_request ? item.product_id : undefined)
@@ -408,16 +422,16 @@ export default function Checkout() {
                   <span>Subtotal</span>
                   <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Pickup</span>
-                  <span className="text-green-600 font-semibold">FREE</span>
-                </div>
                 {isPriority && (
                   <div className="flex justify-between text-orange-600">
                     <span>⚡ Priority Overnight</span>
                     <span>+$4.00</span>
                   </div>
                 )}
+                <div className="flex justify-between text-gray-600">
+                  <span>Pickup</span>
+                  <span className="text-green-600 font-semibold">FREE</span>
+                </div>
                 {couponCode && (
                   <div className="flex justify-between text-green-600 text-sm">
                     <span>Coupon: {couponCode}</span>
