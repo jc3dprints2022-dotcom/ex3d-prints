@@ -236,54 +236,98 @@ export default function CampusManagementCenter() {
                   <p className="text-gray-400 text-center py-8">No orders for this campus yet</p>
                 ) : (
                   <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                    {orders.map(order => (
-                      <div key={order.id} className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                        <div className="flex justify-between items-start mb-3">
-                          <div>
-                            <h3 className="font-semibold text-white">Order #{order.id.slice(-8)}</h3>
-                            <p className="text-sm text-gray-400">
-                              {new Date(order.created_date).toLocaleString()}
-                            </p>
+                    {orders.map(order => {
+                      const makerEarnings = ((order.total_amount || 0) * 0.7) - 0.30 + (order.is_priority ? 2.80 : 0);
+                      const orderMaker = makers.find(m => m.maker_id === order.maker_id);
+                      
+                      return (
+                        <div key={order.id} className="p-4 bg-slate-900 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-semibold text-white">Order #{order.id.slice(-8)}</h3>
+                              <p className="text-sm text-gray-400">
+                                {new Date(order.created_date).toLocaleString()}
+                              </p>
+                              {order.payment_status && (
+                                <Badge className={order.payment_status === 'paid' ? 'bg-green-600 mt-1' : 'bg-yellow-600 mt-1'}>
+                                  {order.payment_status}
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={getStatusBadgeColor(order.status)}>
+                                {order.status}
+                              </Badge>
+                              {order.is_priority && (
+                                <Badge className="bg-orange-500">⚡ Priority</Badge>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <Badge className={getStatusBadgeColor(order.status)}>
-                              {order.status}
-                            </Badge>
-                            {order.is_priority && (
-                              <Badge className="bg-orange-500">⚡ Priority</Badge>
-                            )}
+                          
+                          {/* Items List */}
+                          <div className="mb-3 p-3 bg-slate-950 rounded border border-slate-700">
+                            <p className="text-xs text-gray-400 mb-2 font-semibold">ORDER ITEMS:</p>
+                            {order.items?.map((item, idx) => (
+                              <div key={idx} className="text-xs text-gray-300 mb-1">
+                                • {item.product_name} x{item.quantity} - {item.selected_material} ({item.selected_color})
+                              </div>
+                            ))}
                           </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm mb-3">
+                            <div>
+                              <span className="text-gray-400">Items:</span>
+                              <span className="text-white ml-2">
+                                {order.items?.length || 0} item(s)
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Total:</span>
+                              <span className="text-cyan-400 font-semibold ml-2">
+                                ${order.total_amount?.toFixed(2)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Maker Earnings:</span>
+                              <span className="text-green-400 font-semibold ml-2">
+                                ${makerEarnings.toFixed(2)}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Delivery:</span>
+                              <span className="text-white ml-2">
+                                {order.delivery_option === 'campus_pickup' ? 'Campus Pickup' : order.delivery_option}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-4 text-sm pt-3 border-t border-slate-700">
+                            <div>
+                              <span className="text-gray-400">Maker:</span>
+                              <span className="text-white ml-2">
+                                {orderMaker ? 
+                                  `${orderMaker.full_name} (${orderMaker.email})` 
+                                  : order.assigned_to_makers?.length > 0 ? 
+                                    `${order.assigned_to_makers.length} maker(s) pending` 
+                                    : 'Unassigned'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Customer:</span>
+                              <span className="text-white ml-2">
+                                {customers.find(c => c.id === order.customer_id)?.full_name || 'Unknown'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {order.notes && (
+                            <div className="mt-3 p-2 bg-yellow-900/20 border border-yellow-700/30 rounded">
+                              <p className="text-xs text-yellow-300">📝 {order.notes}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-400">Items:</span>
-                            <span className="text-white ml-2">
-                              {order.items?.length || 0} item(s)
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Total:</span>
-                            <span className="text-cyan-400 font-semibold ml-2">
-                              ${order.total_amount?.toFixed(2)}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Maker:</span>
-                            <span className="text-white ml-2">
-                              {order.maker_id ? 
-                                makers.find(m => m.maker_id === order.maker_id)?.full_name || 'Assigned' 
-                                : 'Unassigned'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Customer:</span>
-                            <span className="text-white ml-2">
-                              {customers.find(c => c.id === order.customer_id)?.full_name || 'Unknown'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
@@ -300,51 +344,86 @@ export default function CampusManagementCenter() {
                   <p className="text-gray-400 text-center py-8">No makers at this campus yet</p>
                 ) : (
                   <div className="space-y-4">
-                    {makers.map(maker => (
-                      <div key={maker.id} className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h3 className="font-semibold text-white">{maker.full_name}</h3>
-                            <p className="text-sm text-gray-400">{maker.email}</p>
-                            {maker.phone && (
-                              <p className="text-sm text-gray-400">{maker.phone}</p>
-                            )}
+                    {makers.map(maker => {
+                      const makerOrders = orders.filter(o => o.maker_id === maker.maker_id);
+                      const completedOrders = makerOrders.filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status));
+                      const totalEarnings = completedOrders.reduce((sum, o) => {
+                        const baseEarning = ((o.total_amount * 0.7) - 0.30);
+                        const priorityEarning = o.is_priority ? 2.80 : 0;
+                        return sum + baseEarning + priorityEarning;
+                      }, 0);
+                      
+                      return (
+                        <div key={maker.id} className="p-4 bg-slate-900 rounded-lg border border-slate-700">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h3 className="font-semibold text-white">{maker.full_name}</h3>
+                              <p className="text-sm text-gray-400">{maker.email}</p>
+                              {maker.phone && (
+                                <p className="text-sm text-gray-400">📞 {maker.phone}</p>
+                              )}
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <Badge className={
+                                maker.account_status === 'active' ? 'bg-green-600' :
+                                maker.account_status === 'suspended' ? 'bg-red-600' :
+                                'bg-gray-600'
+                              }>
+                                {maker.account_status}
+                              </Badge>
+                              {maker.vacation_mode && (
+                                <Badge className="bg-yellow-600">On Vacation</Badge>
+                              )}
+                            </div>
                           </div>
-                          <div className="flex flex-col items-end gap-2">
-                            <Badge className={
-                              maker.account_status === 'active' ? 'bg-green-600' :
-                              maker.account_status === 'suspended' ? 'bg-red-600' :
-                              'bg-gray-600'
-                            }>
-                              {maker.account_status}
-                            </Badge>
-                            {maker.vacation_mode && (
-                              <Badge className="bg-yellow-600">On Vacation</Badge>
-                            )}
+                          
+                          {/* Performance Stats */}
+                          <div className="mb-3 p-3 bg-slate-950 rounded border border-slate-700">
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                              <div>
+                                <span className="text-gray-400">Total Orders:</span>
+                                <span className="text-white font-semibold ml-2">{makerOrders.length}</span>
+                              </div>
+                              <div>
+                                <span className="text-gray-400">Completed:</span>
+                                <span className="text-green-400 font-semibold ml-2">{completedOrders.length}</span>
+                              </div>
+                              <div className="col-span-2">
+                                <span className="text-gray-400">Total Earnings:</span>
+                                <span className="text-teal-400 font-bold ml-2">${totalEarnings.toFixed(2)}</span>
+                              </div>
+                            </div>
                           </div>
+
+                          <div className="grid grid-cols-3 gap-4 text-sm">
+                            <div>
+                              <span className="text-gray-400">Hours This Week:</span>
+                              <span className="text-white ml-2">
+                                {maker.hours_printed_this_week || 0}h / {maker.max_hours_per_week || 40}h
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Experience:</span>
+                              <span className="text-white ml-2 capitalize">
+                                {maker.experience_level || 'N/A'}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-400">Filament Budget:</span>
+                              <span className="text-white ml-2">
+                                {maker.open_to_unowned_filaments ? '✓ Open' : '✗ Own only'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {maker.bank_account_last4 && (
+                            <div className="mt-3 text-xs text-gray-400">
+                              💳 Bank: ****{maker.bank_account_last4}
+                            </div>
+                          )}
                         </div>
-                        <div className="mt-3 grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-gray-400">Hours This Week:</span>
-                            <span className="text-white ml-2">
-                              {maker.hours_printed_this_week || 0}h / {maker.max_hours_per_week || 40}h
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Experience:</span>
-                            <span className="text-white ml-2 capitalize">
-                              {maker.experience_level || 'N/A'}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-gray-400">Weekly Capacity:</span>
-                            <span className="text-white ml-2">
-                              {maker.weekly_capacity || 'N/A'}h
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </CardContent>
