@@ -138,35 +138,6 @@ export default function MakerDashboard() {
         maker_id: user.maker_id // Assign single maker on accept
       });
 
-      // Send email notification to customer
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        try {
-          const customer = await base44.entities.User.get(order.customer_id);
-          await base44.functions.invoke('sendEmail', {
-            to: customer.email,
-            subject: 'Your Order Has Been Accepted! - EX3D Prints',
-            body: `Hi ${customer.full_name},
-
-Great news! Your order #${orderId.slice(-8)} has been accepted by our maker and is being prepared for printing.
-
-Order Details:
-${order.items.map(item => `- ${item.product_name} (x${item.quantity})`).join('\n')}
-
-Total: $${order.total_amount.toFixed(2)}
-
-We'll keep you updated as your order progresses through the printing process.
-
-Thank you for choosing EX3D Prints!
-
-Best regards,
-The EX3D Team`
-          });
-        } catch (emailError) {
-          console.error('Failed to send acceptance email:', emailError);
-        }
-      }
-
       toast({ title: "Order accepted successfully!" });
       await loadDashboard();
     } catch (error) {
@@ -183,36 +154,7 @@ The EX3D Team`
     setUpdatingOrder(orderId);
     try {
       await base44.entities.Order.update(orderId, { status: 'printing' });
-      
-      // Send email notification to customer
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        try {
-          const customer = await base44.entities.User.get(order.customer_id);
-          await base44.functions.invoke('sendEmail', {
-            to: customer.email,
-            subject: 'Your Order is Now Printing! - EX3D Prints',
-            body: `Hi ${customer.full_name},
 
-Your order #${orderId.slice(-8)} is now being printed!
-
-Order Details:
-${order.items.map(item => `- ${item.product_name} (x${item.quantity})`).join('\n')}
-
-Estimated completion time: ${order.items.reduce((sum, item) => sum + (item.print_time_hours || 0), 0).toFixed(1)} hours
-
-We'll notify you when your print is completed and ready for pickup.
-
-Thank you for your patience!
-
-Best regards,
-The EX3D Team`
-          });
-        } catch (emailError) {
-          console.error('Failed to send printing email:', emailError);
-        }
-      }
-      
       toast({ title: "Order marked as printing" });
       await loadDashboard();
     } catch (error) {
@@ -232,33 +174,6 @@ The EX3D Team`
         status: 'completed'
       });
 
-      // Send email to customer about completion
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        try {
-          const customer = await base44.entities.User.get(order.customer_id);
-          await base44.functions.invoke('sendEmail', {
-            to: customer.email,
-            subject: 'Your Print is Complete! - EX3D Prints',
-            body: `Hi ${customer.full_name},
-
-Great news! Your order #${orderId.slice(-8)} has been completed!
-
-Order Details:
-${order.items.map(item => `- ${item.product_name} (x${item.quantity})`).join('\n')}
-
-Your order is ready for pickup. We'll notify you with pickup instructions shortly.
-
-Thank you for choosing EX3D Prints!
-
-Best regards,
-The EX3D Team`
-          });
-        } catch (emailError) {
-          console.error('Failed to send completion email:', emailError);
-        }
-      }
-      
       toast({
         title: "Order marked as completed!",
         description: "Please contact Jacob at labaghr@my.erau.edu or 610-858-3200 for drop-off."

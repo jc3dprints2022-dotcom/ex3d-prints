@@ -24,10 +24,19 @@ export default function Checkout() {
   // const [pickupLocation, setPickupLocation] = useState("Student Union"); // Removed as per changes
   const [couponCode, setCouponCode] = useState("");
   const [referralCode, setReferralCode] = useState("");
-  const [isPriority, setIsPriority] = useState(false);
+  const [isPriority, setIsPriority] = useState(() => {
+    // Load priority state from localStorage
+    const saved = localStorage.getItem('checkout_priority');
+    return saved === 'true';
+  });
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [campusLocation, setCampusLocation] = useState("");
   const { toast } = useToast();
+
+  // Persist priority state to localStorage
+  useEffect(() => {
+    localStorage.setItem('checkout_priority', isPriority.toString());
+  }, [isPriority]);
 
   useEffect(() => {
     (async () => {
@@ -131,7 +140,10 @@ export default function Checkout() {
 
   const calculateTotal = () => {
     let total = calculateSubtotal();
-    // Priority fee is now added as a separate cart item, not here
+    // Add priority fee for display purposes on checkout page
+    if (isPriority) {
+      total += 4;
+    }
     return total;
   };
 
