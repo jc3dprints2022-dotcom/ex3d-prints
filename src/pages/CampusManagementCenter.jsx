@@ -7,8 +7,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Loader2, Package, Users, DollarSign, TrendingUp,
-  Building, Printer, ShoppingCart, AlertCircle, CheckCircle
+  Building, Printer, ShoppingCart, AlertCircle, CheckCircle, Settings, Target
 } from "lucide-react";
+
+import CampusCustomRequestManagement from "../components/campus/CampusCustomRequestManagement";
+import CampusOrderRoutingSection from "../components/campus/CampusOrderRoutingSection";
+import CampusMakerToolsSection from "../components/campus/CampusMakerToolsSection";
 
 const CAMPUS_LOCATIONS = [
   { value: "erau_prescott", label: "ERAU Prescott" },
@@ -216,9 +220,17 @@ export default function CampusManagementCenter() {
               <Package className="w-4 h-4 mr-2" />
               Orders
             </TabsTrigger>
+            <TabsTrigger value="order-routing" className="data-[state=active]:bg-cyan-600">
+              <Target className="w-4 h-4 mr-2" />
+              Order Management
+            </TabsTrigger>
+            <TabsTrigger value="custom-requests" className="data-[state=active]:bg-cyan-600">
+              <Settings className="w-4 h-4 mr-2" />
+              Custom Requests
+            </TabsTrigger>
             <TabsTrigger value="makers" className="data-[state=active]:bg-cyan-600">
               <Printer className="w-4 h-4 mr-2" />
-              Makers
+              Maker Tools
             </TabsTrigger>
             <TabsTrigger value="customers" className="data-[state=active]:bg-cyan-600">
               <Users className="w-4 h-4 mr-2" />
@@ -334,7 +346,15 @@ export default function CampusManagementCenter() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="makers">
+          <TabsContent value="order-routing">
+            <CampusOrderRoutingSection campusLocation={campus} />
+          </TabsContent>
+
+          <TabsContent value="custom-requests">
+            <CampusCustomRequestManagement campusLocation={campus} />
+          </TabsContent>
+
+          <TabsContent value="customers">
             <Card className="bg-slate-800 border-cyan-500/30">
               <CardHeader>
                 <CardTitle className="text-white">Campus Makers ({makers.length})</CardTitle>
