@@ -76,13 +76,15 @@ export default function MakerDashboard() {
       const allOrders = await base44.entities.Order.list();
       const myOrders = allOrders.filter(order => {
         // Show orders where:
-        // 1. I'm the assigned maker (single assignment)
+        // 1. I'm the assigned maker (single assignment with maker_id set)
         // 2. OR I'm in the assigned_to_makers array AND the order is still pending
-        //    (once accepted by someone, it should disappear from others' dashboards)
+        //    (once accepted by someone else, status changes and it disappears)
         const isAssignedMaker = order.maker_id === currentUser.maker_id;
-        const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && order.status === 'pending';
-        
-        return isAssignedMaker || isInMultiAssignment || order.status === 'cancelled'; // Show cancelled orders always
+        const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && 
+                                   order.status === 'pending' && 
+                                   !order.maker_id; // maker_id is null when pending multi-assignment
+
+        return isAssignedMaker || isInMultiAssignment;
       });
 
       setOrders(myOrders.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));

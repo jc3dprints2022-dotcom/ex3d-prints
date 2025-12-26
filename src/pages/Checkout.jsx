@@ -20,8 +20,6 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
-  const [deliveryOption, setDeliveryOption] = useState("campus_pickup");
-  // const [pickupLocation, setPickupLocation] = useState("Student Union"); // Removed as per changes
   const [couponCode, setCouponCode] = useState("");
   const [referralCode, setReferralCode] = useState("");
   const [isPriority, setIsPriority] = useState(() => {
@@ -318,15 +316,15 @@ export default function Checkout() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Delivery Options
+                  <Building className="w-5 h-5" />
+                  Campus Selection
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {/* Campus Location Selection */}
                 <div className="mb-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
                   <Label className="flex items-center gap-2 mb-2 font-medium text-blue-900">
-                    <Building className="w-4 h-4" />
+                    <MapPin className="w-4 h-4" />
                     Campus Location *
                   </Label>
                   <Select value={campusLocation} onValueChange={setCampusLocation} required>
@@ -346,21 +344,8 @@ export default function Checkout() {
                   </p>
                 </div>
 
-                <RadioGroup value={deliveryOption} onValueChange={setDeliveryOption}>
-                  <div className="flex items-center space-x-3 p-4 border rounded-lg">
-                    <RadioGroupItem value="campus_pickup" id="campus_pickup" />
-                    <Label htmlFor="campus_pickup" className="cursor-pointer flex-1">
-                      <p className="font-medium">Campus Pickup</p>
-                      <p className="text-sm text-gray-600">
-                        Collect your items from a designated pickup point at your campus.
-                      </p>
-                    </Label>
-                  </div>
-                </RadioGroup>
-
-                {/* The pickupLocation input and label were removed here */}
                 {/* Priority Option */}
-                <div className="mt-4 border rounded-lg p-4 bg-orange-50 border-orange-200">
+                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
                   <div className="flex items-center space-x-3">
                     <input
                       type="checkbox"

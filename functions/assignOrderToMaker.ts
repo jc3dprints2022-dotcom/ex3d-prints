@@ -208,8 +208,9 @@ Deno.serve(async (req) => {
         })));
         
         if (assignToMultiple) {
-            // Assign to up to 5 makers
-            const makersToAssign = eligibleMakers.slice(0, 5);
+            // Assign to 1-3 makers depending on how many are available
+            const numMakersToAssign = Math.min(3, eligibleMakers.length);
+            const makersToAssign = eligibleMakers.slice(0, numMakersToAssign);
             const assignedMakerIds = makersToAssign.map(m => m.maker.maker_id);
             
             await base44.asServiceRole.entities.Order.update(orderId, {
@@ -292,6 +293,7 @@ The EX3D Team`
                 success: true,
                 assignedToMultiple: true,
                 makerCount: assignedMakerIds.length,
+                message: `Order assigned to ${assignedMakerIds.length} maker(s). First to accept gets the order.`,
                 makers: makersToAssign.map(m => ({
                     maker_id: m.maker.maker_id,
                     full_name: m.maker.full_name,
