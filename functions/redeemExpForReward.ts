@@ -1,3 +1,4 @@
+
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 
 Deno.serve(async (req) => {
@@ -145,46 +146,6 @@ Deno.serve(async (req) => {
                     message: 'Redemption successful! An admin will process your reward soon.'
                 });
             }
-        }
-
-        // Send confirmation email for non-print rewards
-        try {
-            await base44.integrations.Core.SendEmail({
-                to: user.email,
-                subject: '🎉 EXP Reward Redemption Confirmed - EX3D Prints',
-                body: `Hi ${user.full_name},
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   ✅ REDEMPTION CONFIRMED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-You've successfully redeemed your EXP points!
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   🎁 REWARD DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Reward:           ${reward.name}
-${reward.description ? `Description:      ${reward.description}\n` : ''}EXP Redeemed:     ${reward.exp_cost} EXP
-Remaining EXP:    ${user.exp_points - reward.exp_cost} EXP
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   📍 NEXT STEPS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-An admin will process your reward fulfillment soon. You'll receive an update via email once your reward is ready.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-Thank you for being a valued member of EX3D Prints!
-
-Best regards,
-The EX3D Team
-
-Need help? Contact us at labaghr@my.erau.edu or 610-858-3200`
-            });
-        } catch (emailError) {
-            console.error('Failed to send confirmation email:', emailError);
         }
 
         // For maker rewards (non-print) - just create redemption for admin fulfillment
