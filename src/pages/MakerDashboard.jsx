@@ -75,16 +75,16 @@ export default function MakerDashboard() {
       // Load orders assigned to this maker
       const allOrders = await base44.entities.Order.list();
       const myOrders = allOrders.filter(order => {
-        // Show orders where:
-        // 1. I'm the assigned maker (single assignment with maker_id set)
-        // 2. OR I'm in the assigned_to_makers array AND the order is still pending
-        //    (once accepted by someone else, status changes and it disappears)
-        const isAssignedMaker = order.maker_id === currentUser.maker_id;
-        const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && 
-                                   order.status === 'pending' && 
-                                   !order.maker_id; // maker_id is null when pending multi-assignment
-
-        return isAssignedMaker || isInMultiAssignment;
+        // Show if directly assigned to this maker
+        if (order.maker_id === currentUser.maker_id) return true;
+        
+        // Show if in multi-assignment array AND order hasn't been accepted by someone else yet
+        if (order.assigned_to_makers?.includes(currentUser.maker_id)) {
+          // Only show if order is still pending (not accepted by another maker)
+          return !order.maker_id || order.maker_id === currentUser.maker_id;
+        }
+        
+        return false;
       });
 
       setOrders(myOrders.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
@@ -459,10 +459,24 @@ The EX3D Team`
                 </CardContent>
               </Card>
             ) : (
-              orders.map(order => (
-                <Card key={order.id} className="overflow-hidden">
-                  <CardHeader className={getOrderCardHeaderClass(order.status, order.is_priority)}>
-                    <div className="flex justify-between items-start">
+              orders.map(order => {
+                const isCancelled = order.status === 'cancelled';
+                const isPriority = order.is_priority;
+                return (
+                  <Card key={order.id} className={`border-2 ${isCancelled ? 'bg-red-50 border-red-300' : isPriority ? 'bg-amber-50 border-amber-400' : ''}`}>
+                    {isPriority && (
+                      <div className="p-3 bg-gradient-to-r from-amber-100 to-yellow-100 border-b-2 border-amber-500">
+                        <div className="flex items-center gap-2 text-amber-900">
+                          <span className="text-2xl">⚡</span>
+                          <div>
+                            <p className="font-bold text-lg">PRIORITY OVERNIGHT ORDER</p>
+                            <p className="text-sm">This order must be completed by the next day! +$2.80 bonus earnings</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    <CardHeader className="bg-gray-50">
+                      <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg flex items-center gap-2">
                           Order #{order.id.slice(-8)}
@@ -726,7 +740,8 @@ The EX3D Team`
                     </div>
                   </CardContent>
                 </Card>
-              ))
+              );
+            })
             )}
           </div>
         </TabsContent>
