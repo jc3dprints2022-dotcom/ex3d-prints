@@ -288,9 +288,9 @@ Deno.serve(async (req) => {
             console.error('⚠️ Maker assignment failed:', assignError);
         }
 
-        // Send confirmation email
+        // Send confirmation email to customer
         try {
-            console.log('Sending confirmation email...');
+            console.log('Sending confirmation email to customer...');
             const itemsList = enrichedItems.map((item, idx) => 
                 `${idx + 1}. ${item.product_name} (x${item.quantity}) - ${item.selected_material} / ${item.selected_color}${item.custom_request_id ? ' [Custom Quote]' : ''}`
             ).join('\n');
@@ -303,10 +303,10 @@ Deno.serve(async (req) => {
 
             await base44.integrations.Core.SendEmail({
                 to: user.email,
-                subject: `Order Confirmation${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
+                subject: `Order Confirmed${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
                 body: `Hi ${user.full_name},
 
-Thank you for your order! Your payment has been processed successfully.${priorityInfo}
+Thank you for your order! Your payment has been processed successfully and your order has been sent to a maker on your campus.${priorityInfo}
 
 Order #${newOrder.id.slice(-8)}
 
@@ -318,14 +318,16 @@ Total Paid: $${totalAmount.toFixed(2)}
 EXP Earned: ${totalExpAwarded} EXP
 ${isFirstOrder ? '🎉 First Order Bonus: +250 EXP!\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP!\n' : ''}
 
-Pickup Location: Contact: labaghr@my.erau.edu or 610-858-3200
+Your order is now being prepared by a maker at your campus. We will notify you with updates as your order progresses.
 
-We will notify you when your order is ready for pickup.
+Pickup: Contact labaghr@my.erau.edu or 610-858-3200
+
+Thank you for choosing EX3D Prints!
 
 Best regards,
 The EX3D Team`
             });
-            console.log('✅ Confirmation email sent');
+            console.log('✅ Confirmation email sent to customer');
         } catch (emailError) {
             console.error('⚠️ Failed to send confirmation email:', emailError);
         }
