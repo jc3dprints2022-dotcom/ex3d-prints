@@ -407,8 +407,10 @@ The EX3D Team`
     return colors[status] || 'bg-gray-100 text-gray-900';
   };
 
-  const getOrderCardHeaderClass = (status) => {
-    return status === 'cancelled' ? 'bg-red-100 border-b-2 border-red-500' : 'bg-gray-50';
+  const getOrderCardHeaderClass = (status, isPriority) => {
+    if (status === 'cancelled') return 'bg-red-100 border-b-2 border-red-500';
+    if (isPriority) return 'bg-gradient-to-r from-yellow-100 to-amber-100 border-b-2 border-yellow-500';
+    return 'bg-gray-50';
   };
 
   if (loading) {
@@ -542,11 +544,14 @@ The EX3D Team`
             ) : (
               orders.map(order => (
                 <Card key={order.id} className="overflow-hidden">
-                  <CardHeader className={getOrderCardHeaderClass(order.status)}>
+                  <CardHeader className={getOrderCardHeaderClass(order.status, order.is_priority)}>
                     <div className="flex justify-between items-start">
                       <div>
                         <CardTitle className="text-lg flex items-center gap-2">
                           Order #{order.id.slice(-8)}
+                          {order.is_priority && order.status !== 'cancelled' && (
+                            <span className="text-orange-600 text-sm font-bold">⚡ PRIORITY - Next Day Completion</span>
+                          )}
                           {order.status === 'cancelled' && (
                             <span className="text-red-600 text-sm font-normal">❌ CANCELLED</span>
                           )}

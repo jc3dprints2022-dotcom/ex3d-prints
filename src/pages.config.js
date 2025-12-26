@@ -1,63 +1,63 @@
-import Home from './pages/Home';
-import Marketplace from './pages/Marketplace';
-import ProductDetail from './pages/ProductDetail';
-import Wishlist from './pages/Wishlist';
-import Cart from './pages/Cart';
-import ForMakers from './pages/ForMakers';
-import HowItWorks from './pages/HowItWorks';
-import Checkout from './pages/Checkout';
-import MakerSignup from './pages/MakerSignup';
-import Contact from './pages/Contact';
-import Privacy from './pages/Privacy';
-import Terms from './pages/Terms';
-import ConsumerDashboard from './pages/ConsumerDashboard';
-import MakerDashboard from './pages/MakerDashboard';
-import CustomPrintRequest from './pages/CustomPrintRequest';
-import SystemDebug from './pages/SystemDebug';
-import FixMakers from './pages/FixMakers';
+import AccountInfo from './pages/AccountInfo';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
-import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import FAQ from './pages/FAQ';
-import PaymentSuccess from './pages/PaymentSuccess';
-import AccountInfo from './pages/AccountInfo';
-import ForDesigners from './pages/ForDesigners';
+import CampusManagementCenter from './pages/CampusManagementCenter';
+import Cart from './pages/Cart';
+import Checkout from './pages/Checkout';
+import ConsumerDashboard from './pages/ConsumerDashboard';
+import Contact from './pages/Contact';
+import CustomPrintRequest from './pages/CustomPrintRequest';
+import DesignerDashboard from './pages/DesignerDashboard';
 import DesignerHowItWorks from './pages/DesignerHowItWorks';
 import DesignerSignup from './pages/DesignerSignup';
-import DesignerDashboard from './pages/DesignerDashboard';
-import CampusManagementCenter from './pages/CampusManagementCenter';
+import FAQ from './pages/FAQ';
+import FixMakers from './pages/FixMakers';
+import ForDesigners from './pages/ForDesigners';
+import ForMakers from './pages/ForMakers';
+import Home from './pages/Home';
+import HowItWorks from './pages/HowItWorks';
+import MakerDashboard from './pages/MakerDashboard';
+import MakerSignup from './pages/MakerSignup';
+import Marketplace from './pages/Marketplace';
+import PaymentSuccess from './pages/PaymentSuccess';
+import Privacy from './pages/Privacy';
+import ProductDetail from './pages/ProductDetail';
+import SystemDebug from './pages/SystemDebug';
+import Terms from './pages/Terms';
+import Wishlist from './pages/Wishlist';
+import jc3dcommandcenter from './pages/jc3dcommandcenter';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
-    "Home": Home,
-    "Marketplace": Marketplace,
-    "ProductDetail": ProductDetail,
-    "Wishlist": Wishlist,
-    "Cart": Cart,
-    "ForMakers": ForMakers,
-    "HowItWorks": HowItWorks,
-    "Checkout": Checkout,
-    "MakerSignup": MakerSignup,
-    "Contact": Contact,
-    "Privacy": Privacy,
-    "Terms": Terms,
-    "ConsumerDashboard": ConsumerDashboard,
-    "MakerDashboard": MakerDashboard,
-    "CustomPrintRequest": CustomPrintRequest,
-    "SystemDebug": SystemDebug,
-    "FixMakers": FixMakers,
+    "AccountInfo": AccountInfo,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
-    "jc3dcommandcenter": jc3dcommandcenter,
-    "FAQ": FAQ,
-    "PaymentSuccess": PaymentSuccess,
-    "AccountInfo": AccountInfo,
-    "ForDesigners": ForDesigners,
+    "CampusManagementCenter": CampusManagementCenter,
+    "Cart": Cart,
+    "Checkout": Checkout,
+    "ConsumerDashboard": ConsumerDashboard,
+    "Contact": Contact,
+    "CustomPrintRequest": CustomPrintRequest,
+    "DesignerDashboard": DesignerDashboard,
     "DesignerHowItWorks": DesignerHowItWorks,
     "DesignerSignup": DesignerSignup,
-    "DesignerDashboard": DesignerDashboard,
-    "CampusManagementCenter": CampusManagementCenter,
+    "FAQ": FAQ,
+    "FixMakers": FixMakers,
+    "ForDesigners": ForDesigners,
+    "ForMakers": ForMakers,
+    "Home": Home,
+    "HowItWorks": HowItWorks,
+    "MakerDashboard": MakerDashboard,
+    "MakerSignup": MakerSignup,
+    "Marketplace": Marketplace,
+    "PaymentSuccess": PaymentSuccess,
+    "Privacy": Privacy,
+    "ProductDetail": ProductDetail,
+    "SystemDebug": SystemDebug,
+    "Terms": Terms,
+    "Wishlist": Wishlist,
+    "jc3dcommandcenter": jc3dcommandcenter,
 }
 
 export const pagesConfig = {

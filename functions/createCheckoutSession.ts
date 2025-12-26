@@ -12,10 +12,14 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation } = await req.json();
+        const body = await req.json();
+        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation } = body;
         
+        console.log('📦 Full request body:', JSON.stringify(body, null, 2));
         console.log('📦 isPriority received:', isPriority);
         console.log('📦 isPriority type:', typeof isPriority);
+        console.log('📦 isPriority === true:', isPriority === true);
+        console.log('📦 isPriority === "true":', isPriority === 'true');
 
         if (!cartItems || cartItems.length === 0) {
             return Response.json({ error: 'Cart is empty' }, { status: 400 });

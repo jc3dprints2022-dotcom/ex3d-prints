@@ -51,6 +51,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           tags: existingProduct.tags || [],
           images: existingProduct.images || [],
           print_files: existingProduct.print_files || [],
+          assembly_instructions: existingProduct.assembly_instructions || [],
           multi_color: existingProduct.multi_color || false,
           number_of_colors: existingProduct.number_of_colors || 2,
           custom_scale: existingProduct.custom_scale || null,
@@ -69,6 +70,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           tags: [],
           images: [],
           print_files: [],
+          assembly_instructions: [],
           multi_color: false,
           number_of_colors: 2,
           custom_scale: null,
@@ -140,6 +142,32 @@ export default function DesignerProductForm({ designerId, designerName, existing
       }));
 
       toast({ title: `${files.length} 3D file(s) uploaded successfully` });
+      e.target.value = null;
+    } catch (error) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    }
+    setSaving(false);
+  };
+
+  const handleAssemblyInstructionsUpload = async (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+
+    setSaving(true);
+    try {
+      const uploadPromises = files.map(file => base44.integrations.Core.UploadFile({ file }));
+      const results = await Promise.all(uploadPromises);
+      const instructionFiles = results.map((res, idx) => ({
+        file_url: res.file_url,
+        file_name: files[idx].name
+      }));
+
+      setFormData(prev => ({
+        ...prev,
+        assembly_instructions: [...prev.assembly_instructions, ...instructionFiles]
+      }));
+
+      toast({ title: `${files.length} instruction file(s) uploaded successfully` });
       e.target.value = null;
     } catch (error) {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
@@ -245,6 +273,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         tags: formData.tags.map(tag => tag.trim()).filter(tag => tag.length > 0),
         images: formData.images,
         print_files: formData.print_files,
+        assembly_instructions: formData.assembly_instructions,
         designer_id: designerId,
         designer_name: designerName,
         status: 'pending',
@@ -642,6 +671,36 @@ export default function DesignerProductForm({ designerId, designerName, existing
                 <button
                   type="button"
                   onClick={() => setFormData(prev => ({...prev, print_files: prev.print_files.filter((_, i) => i !== idx)}))}
+                  className="ml-2 text-red-500 hover:text-red-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <Label htmlFor="assembly_instructions">Assembly/Print Instructions (Optional)</Label>
+        <Input
+          id="assembly_instructions"
+          type="file"
+          accept=".pdf,.doc,.docx,.txt,image/*"
+          multiple
+          onChange={handleAssemblyInstructionsUpload}
+          disabled={saving}
+          className="mb-2"
+        />
+        <p className="text-xs text-gray-500 mb-2">Upload PDFs, documents, or images with assembly instructions</p>
+        {formData.assembly_instructions.length > 0 && (
+          <div className="space-y-2">
+            {formData.assembly_instructions.map((instruction, idx) => (
+              <div key={idx} className="flex items-center justify-between p-2 bg-blue-50 rounded border border-blue-200">
+                <span className="text-sm truncate flex-1">{instruction.file_name}</span>
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({...prev, assembly_instructions: prev.assembly_instructions.filter((_, i) => i !== idx)}))}
                   className="ml-2 text-red-500 hover:text-red-700"
                 >
                   <X className="w-4 h-4" />
