@@ -306,7 +306,15 @@ Deno.serve(async (req) => {
                 subject: `Order Confirmed${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
                 body: `Hi ${user.full_name},
 
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ✅ ORDER CONFIRMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
 Thank you for your order! Your payment has been processed successfully and your order has been sent to a maker on your campus.${priorityInfo}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📦 ORDER DETAILS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Order #${newOrder.id.slice(-8)}
 
@@ -315,12 +323,23 @@ ${itemsList}
 ${discountInfo}
 Total Paid: $${totalAmount.toFixed(2)}
 
-EXP Earned: ${totalExpAwarded} EXP
-${isFirstOrder ? '🎉 First Order Bonus: +250 EXP!\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP!\n' : ''}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⭐ EXP POINTS EARNED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${isFirstOrder ? '🎉 First Order Bonus: +250 EXP\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP\n' : ''}Purchase Reward: +${expFromPurchase} EXP
+────────────────────────
+Total EXP Earned: ${totalExpAwarded} EXP
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   📍 PICKUP INFORMATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Your order is now being prepared by a maker at your campus. We will notify you with updates as your order progresses.
 
-Pickup: Contact labaghr@my.erau.edu or 610-858-3200
+Contact: labaghr@my.erau.edu or 610-858-3200
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 Thank you for choosing EX3D Prints!
 
