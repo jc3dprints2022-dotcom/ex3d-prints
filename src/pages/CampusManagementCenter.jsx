@@ -232,10 +232,6 @@ export default function CampusManagementCenter() {
               <Printer className="w-4 h-4 mr-2" />
               Maker Tools
             </TabsTrigger>
-            <TabsTrigger value="customers" className="data-[state=active]:bg-cyan-600">
-              <Users className="w-4 h-4 mr-2" />
-              Customers
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders">
@@ -450,40 +446,7 @@ export default function CampusManagementCenter() {
             </Card>
           </TabsContent>
 
-          <TabsContent value="customers">
-            <Card className="bg-slate-800 border-cyan-500/30">
-              <CardHeader>
-                <CardTitle className="text-white">Campus Customers ({customers.length})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {customers.length === 0 ? (
-                  <p className="text-gray-400 text-center py-8">No customers have ordered from this campus yet</p>
-                ) : (
-                  <div className="space-y-3">
-                    {customers.map(customer => {
-                      const customerOrders = orders.filter(o => o.customer_id === customer.id);
-                      const totalSpent = customerOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-                      
-                      return (
-                        <div key={customer.id} className="p-4 bg-slate-900 rounded-lg border border-slate-700">
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <h3 className="font-semibold text-white">{customer.full_name}</h3>
-                              <p className="text-sm text-gray-400">{customer.email}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm text-gray-400">{customerOrders.length} order(s)</p>
-                              <p className="text-cyan-400 font-semibold">${totalSpent.toFixed(2)} total</p>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+
         </Tabs>
       </div>
     </div>
