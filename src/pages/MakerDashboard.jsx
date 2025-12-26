@@ -133,23 +133,24 @@ export default function MakerDashboard() {
   };
 
   const handleAcceptOrder = async (orderId) => {
-    setUpdatingOrder(orderId);
-    try {
-      await base44.entities.Order.update(orderId, {
-        status: 'accepted',
-        maker_id: user.maker_id // Assign single maker on accept
-      });
+      setUpdatingOrder(orderId);
+      try {
+          await base44.entities.Order.update(orderId, {
+              status: 'accepted',
+              maker_id: user.maker_id, // Assign single maker on accept
+              assigned_to_makers: [] // Clear multi-assignment array
+          });
 
-      toast({ title: "Order accepted successfully!" });
-      await loadDashboard();
-    } catch (error) {
-      toast({
-        title: "Failed to accept order",
-        description: error.message,
-        variant: "destructive"
-      });
-    }
-    setUpdatingOrder(null);
+          toast({ title: "Order accepted successfully!" });
+          await loadDashboard();
+      } catch (error) {
+          toast({
+              title: "Failed to accept order",
+              description: error.message,
+              variant: "destructive"
+          });
+      }
+      setUpdatingOrder(null);
   };
 
   const handleMarkPrinting = async (orderId) => {

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -562,7 +561,7 @@ export default function ConsumerDashboard() {
                                     Confirm I Picked This Up
                                   </Button>
                                 )}
-                                {(order.status === 'pending' || order.status === 'accepted') && (
+                                {(order.status === 'pending' || order.status === 'accepted') && order.payment_status === 'paid' && (
                                   <Button 
                                     size="sm" 
                                     variant="outline"
@@ -570,7 +569,7 @@ export default function ConsumerDashboard() {
                                     className="border-red-500 text-red-500 hover:bg-red-50"
                                   >
                                     <X className="w-4 h-4 mr-2" />
-                                    Cancel & Refund
+                                    Cancel Order
                                   </Button>
                                 )}
                               </div>
