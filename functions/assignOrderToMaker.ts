@@ -252,19 +252,32 @@ Deno.serve(async (req) => {
 
                         await base44.asServiceRole.functions.invoke('sendEmail', {
                             to: maker.email,
-                            subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
-                            body: `Hello ${maker.full_name},
+                            subject: `🔔 New Order Received${order.is_priority ? ' - ⚡ PRIORITY OVERNIGHT ⚡' : ''} - EX3D Prints`,
+                            body: `Hi ${maker.full_name},
 
-You have a new order assigned to you!${priorityText}
+You have received a new order that needs to be printed!${priorityText}
 
-Order ID: ${order.id.slice(-8)}
-Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${earningsCalculation.toFixed(2)}${earningsNote}
+📦 ORDER #${order.id.slice(-8)}
 
-Order Details:
+💰 PAYMENT BREAKDOWN:
+Order Total: $${order.total_amount?.toFixed(2)}
+Platform Fee (30%): -$${(order.total_amount * 0.30).toFixed(2)}
+Stripe Fee: -$0.30${order.is_priority ? '\nPriority Bonus: +$2.80' : ''}
+────────────────────────
+YOUR EARNINGS: $${earningsCalculation.toFixed(2)}
+
+📦 ITEMS TO PRINT:
 ${itemsDetails}
 
-Please log in to your Maker Dashboard to view and accept this order.
+📍 NEXT STEPS:
+1. Log in to your Maker Dashboard to review the full order details
+2. Accept or reject the order
+3. Download the print files
+4. Start printing!${order.is_priority ? '\n5. ⚡ PRIORITY: Complete by next day!' : ''}
+
+🖥️  Check your Maker Dashboard for complete order information and files.
+
+Need help? Contact support at labaghr@my.erau.edu or 610-858-3200
 
 Best regards,
 The EX3D Team`
@@ -326,19 +339,32 @@ The EX3D Team`
 
                 await base44.asServiceRole.functions.invoke('sendEmail', {
                     to: maker.email,
-                    subject: `${order.is_priority ? '⚡ PRIORITY ' : ''}New Order Assigned - EX3D Prints`,
-                    body: `Hello ${maker.full_name},
+                    subject: `🔔 New Order Received${order.is_priority ? ' - ⚡ PRIORITY OVERNIGHT ⚡' : ''} - EX3D Prints`,
+                    body: `Hi ${maker.full_name},
 
-You have a new order assigned to you!${priorityText}
+You have received a new order that needs to be printed!${priorityText}
 
-Order ID: ${order.id.slice(-8)}
-Total: $${order.total_amount?.toFixed(2)}
-Your Earnings: $${earningsCalculation.toFixed(2)}${earningsNote}
+📦 ORDER #${order.id.slice(-8)}
 
-Order Details:
+💰 PAYMENT BREAKDOWN:
+Order Total: $${order.total_amount?.toFixed(2)}
+Platform Fee (30%): -$${(order.total_amount * 0.30).toFixed(2)}
+Stripe Fee: -$0.30${order.is_priority ? '\nPriority Bonus: +$2.80' : ''}
+────────────────────────
+YOUR EARNINGS: $${earningsCalculation.toFixed(2)}
+
+📦 ITEMS TO PRINT:
 ${itemsDetails}
 
-Please log in to your Maker Dashboard to view and accept this order.
+📍 NEXT STEPS:
+1. Log in to your Maker Dashboard to review the full order details
+2. Accept or reject the order
+3. Download the print files
+4. Start printing!${order.is_priority ? '\n5. ⚡ PRIORITY: Complete by next day!' : ''}
+
+🖥️  Check your Maker Dashboard for complete order information and files.
+
+Need help? Contact support at labaghr@my.erau.edu or 610-858-3200
 
 Best regards,
 The EX3D Team`
