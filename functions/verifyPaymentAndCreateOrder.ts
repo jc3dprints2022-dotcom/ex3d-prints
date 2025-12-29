@@ -292,98 +292,40 @@ Deno.serve(async (req) => {
         try {
             console.log('Sending confirmation email to customer...');
             const itemsList = enrichedItems.map((item, idx) => 
-                `<tr>
-                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${idx + 1}. ${item.product_name}${item.custom_request_id ? ' <span style="color: #3b82f6;">[Custom Quote]</span>' : ''}</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: center;">x${item.quantity}</td>
-                    <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">${item.selected_material} / ${item.selected_color}</td>
-                </tr>`
-            ).join('');
+                `${idx + 1}. ${item.product_name} (x${item.quantity}) - ${item.selected_material} / ${item.selected_color}${item.custom_request_id ? ' [Custom Quote]' : ''}`
+            ).join('\n');
 
-            const discountRow = session.total_details?.amount_discount 
-                ? `<tr><td colspan="2" style="padding: 10px; text-align: right; color: #16a34a; font-weight: bold;">Discount Applied:</td><td style="padding: 10px; color: #16a34a; font-weight: bold;">-$${(session.total_details.amount_discount / 100).toFixed(2)}</td></tr>`
+            const discountInfo = session.total_details?.amount_discount 
+                ? `\nDiscount Applied: -$${(session.total_details.amount_discount / 100).toFixed(2)}`
                 : '';
 
-            const priorityBanner = isPriority ? `<div style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: #78350f; padding: 20px; text-align: center; border-radius: 8px; margin: 20px 0;">
-                <h2 style="margin: 0; font-size: 24px;">⚡ PRIORITY OVERNIGHT DELIVERY ⚡</h2>
-                <p style="margin: 10px 0 0 0;">Your order will be completed by the next day!</p>
-            </div>` : '';
+            const priorityInfo = isPriority ? '\n\n⚡ PRIORITY OVERNIGHT DELIVERY\nYour order will be completed by the next day!' : '';
 
             await base44.integrations.Core.SendEmail({
                 to: user.email,
                 subject: `Order Confirmed${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
-                body: `<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
-        .container { padding: 20px; background: #f9fafb; }
-        .header { background: linear-gradient(135deg, #14b8a6 0%, #0891b2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .order-box { background: #f3f4f6; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .total-row { background: #f3f4f6; font-weight: bold; font-size: 18px; }
-        .exp-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border: 2px solid #f59e0b; padding: 15px; border-radius: 8px; margin: 20px 0; }
-        .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 style="margin: 0;">🎉 Order Confirmed!</h1>
-            <p style="margin: 10px 0 0 0;">Thank you for your purchase</p>
-        </div>
-        
-        <div class="content">
-            <p>Hi ${user.full_name},</p>
-            <p>Your payment has been processed successfully and your order has been sent to a maker on your campus!</p>
-            
-            ${priorityBanner}
-            
-            <div class="order-box">
-                <h3 style="margin-top: 0; color: #111827;">📦 Order #${newOrder.id.slice(-8)}</h3>
-                <table>
-                    <thead>
-                        <tr style="background: #e5e7eb;">
-                            <th style="padding: 10px; text-align: left;">Item</th>
-                            <th style="padding: 10px; text-align: center;">Qty</th>
-                            <th style="padding: 10px; text-align: left;">Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${itemsList}
-                    </tbody>
-                    <tfoot>
-                        ${discountRow}
-                        <tr class="total-row">
-                            <td colspan="2" style="padding: 15px; text-align: right;">Total Paid:</td>
-                            <td style="padding: 15px;">$${totalAmount.toFixed(2)}</td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-            
-            <div class="exp-box">
-                <h3 style="margin-top: 0; color: #92400e;">⭐ EXP Points Earned</h3>
-                <p style="margin: 0; font-size: 24px; font-weight: bold; color: #92400e;">${totalExpAwarded} EXP</p>
-                ${isFirstOrder ? '<p style="margin: 10px 0 0 0; color: #92400e;">🎉 Includes First Order Bonus: +250 EXP!</p>' : ''}
-                ${hasReferral && isFirstOrder ? '<p style="margin: 5px 0 0 0; color: #92400e;">🎉 Includes Referral Bonus: +250 EXP!</p>' : ''}
-            </div>
-            
-            <div style="background: #f0fdfa; border-left: 4px solid #14b8a6; padding: 15px; margin: 20px 0;">
-                <p style="margin: 0;"><strong>📍 Pickup Information:</strong></p>
-                <p style="margin: 5px 0 0 0;">Contact: labaghr@my.erau.edu or 610-858-3200</p>
-            </div>
-            
-            <p style="margin-top: 30px;">Your order is now being prepared by a maker at your campus. We'll notify you with updates as your order progresses.</p>
-            
-            <div class="footer">
-                <p><strong>Best regards,</strong><br>The EX3D Team</p>
-                <p>Thank you for choosing EX3D Prints!</p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>`
+                body: `Hi ${user.full_name},
+
+Thank you for your order! Your payment has been processed successfully and your order has been sent to a maker on your campus.${priorityInfo}
+
+Order #${newOrder.id.slice(-8)}
+
+Items:
+${itemsList}
+${discountInfo}
+Total Paid: $${totalAmount.toFixed(2)}
+
+EXP Earned: ${totalExpAwarded} EXP
+${isFirstOrder ? '🎉 First Order Bonus: +250 EXP!\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP!\n' : ''}
+
+Your order is now being prepared by a maker at your campus. We will notify you with updates as your order progresses.
+
+Pickup: Contact labaghr@my.erau.edu or 610-858-3200
+
+Thank you for choosing EX3D Prints!
+
+Best regards,
+The EX3D Team`
             });
             console.log('✅ Confirmation email sent to customer');
         } catch (emailError) {
