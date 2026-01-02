@@ -50,9 +50,29 @@ Deno.serve(async (req) => {
             });
 
             for (const user of newUsers) {
+                // Award 120 EXP signup bonus
+                try {
+                    await base44.entities.User.update(user.id, {
+                        exp_points: (user.exp_points || 0) + 120,
+                        total_exp_earned: (user.total_exp_earned || 0) + 120
+                    });
+                    
+                    await base44.entities.ExpTransaction.create({
+                        user_id: user.id,
+                        action: 'earned',
+                        amount: 120,
+                        source: 'signup_bonus',
+                        description: 'Welcome bonus for signing up'
+                    });
+                    
+                    console.log(`✅ Awarded 120 EXP signup bonus to ${user.email}`);
+                } catch (expError) {
+                    console.error(`Failed to award EXP to ${user.email}:`, expError);
+                }
+
                 let emailBody = campaign.email_body
                     .replace(/\{user\.full_name\}/g, user.full_name || 'Valued Customer')
-                    .replace(/\{user\.exp_points\}/g, (user.exp_points || 0).toString());
+                    .replace(/\{user\.exp_points\}/g, ((user.exp_points || 0) + 120).toString());
 
                 const productIds = [];
                 
