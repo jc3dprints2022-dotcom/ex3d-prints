@@ -74,10 +74,10 @@ Deno.serve(async (req) => {
     console.log(`✅ Found ${fileUrls.length} downloadable files`);
 
     // -----------------------------
-    //   Upload ALL Images to Base44
+    //   Upload Images to Base44
     // -----------------------------
     const uploadedImages = [];
-    for (const imageUrl of imageUrls) {
+    for (const imageUrl of imageUrls.slice(0, 20)) {
       try {
         const r = await fetch(imageUrl);
         if (r.ok) {
