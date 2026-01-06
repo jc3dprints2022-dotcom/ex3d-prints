@@ -861,13 +861,23 @@ export default function ModelManagementSection() {
                     {formData.print_files.map((url, idx) => (
                       <div key={idx} className="flex items-center justify-between p-2 bg-gray-100 rounded">
                         <span className="text-sm truncate flex-1">{url.split('/').pop()}</span>
-                        <button
-                          type="button"
-                          onClick={() => setFormData(prev => ({...prev, print_files: prev.print_files.filter((_, i) => i !== idx)}))}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
+                        <div className="flex gap-2">
+                          <a
+                            href={url}
+                            download
+                            className="text-cyan-600 hover:text-cyan-700"
+                            title="Download file"
+                          >
+                            <Upload className="w-4 h-4 rotate-180" />
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => setFormData(prev => ({...prev, print_files: prev.print_files.filter((_, i) => i !== idx)}))}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
