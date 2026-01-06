@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -535,7 +536,7 @@ export default function ConsumerDashboard() {
                                   </div>
                                 </div>
                               </div>
-                              <div className="flex gap-2 flex-wrap">
+                              <div className="flex gap-2">
                                 {(order.status === 'delivered' || order.status === 'dropped_off') && !order.review_submitted && (
                                   <Button 
                                     size="sm"
@@ -561,7 +562,7 @@ export default function ConsumerDashboard() {
                                     Confirm I Picked This Up
                                   </Button>
                                 )}
-                                {(order.status === 'pending' || order.status === 'accepted') && order.payment_status === 'paid' && (
+                                {(order.status === 'pending' || order.status === 'accepted') && (
                                   <Button 
                                     size="sm" 
                                     variant="outline"

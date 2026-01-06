@@ -304,72 +304,28 @@ Deno.serve(async (req) => {
             await base44.integrations.Core.SendEmail({
                 to: user.email,
                 subject: `Order Confirmed${isPriority ? ' - PRIORITY OVERNIGHT' : ''} - EX3D Prints`,
-                body: `
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; }
-        .container { padding: 20px; background: #f9fafb; }
-        .header { background: linear-gradient(135deg, #14b8a6 0%, #0891b2 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
-        .content { background: white; padding: 30px; border-radius: 0 0 8px 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .order-box { background: #f0fdfa; border: 2px solid #14b8a6; padding: 20px; border-radius: 8px; margin: 20px 0; }
-        .items-list { background: #f9fafb; padding: 15px; border-radius: 6px; margin: 15px 0; }
-        .item { padding: 8px 0; border-bottom: 1px solid #e5e7eb; }
-        .item:last-child { border-bottom: none; }
-        .exp-box { background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 4px solid #f59e0b; padding: 15px; margin: 20px 0; border-radius: 6px; }
-        .footer { text-align: center; color: #6b7280; font-size: 12px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; }
-        .priority-banner { background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%); color: white; padding: 15px; text-align: center; font-weight: bold; border-radius: 6px; margin: 15px 0; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h1 style="margin: 0;">🎉 Order Confirmed!</h1>
-            <p style="margin: 10px 0 0 0; font-size: 16px;">Thank you for your purchase</p>
-        </div>
-        
-        <div class="content">
-            <p>Hi ${user.full_name},</p>
-            <p>Your payment has been processed successfully and your order has been sent to a maker on your campus!</p>
-            ${isPriority ? '<div class="priority-banner">⚡ PRIORITY OVERNIGHT DELIVERY ⚡<br>Your order will be completed by the next day!</div>' : ''}
-            
-            <div class="order-box">
-                <h3 style="margin-top: 0; color: #0f766e;">Order #${newOrder.id.slice(-8)}</h3>
-                
-                <div class="items-list">
-                    <strong>Items Ordered:</strong>
-                    ${itemsList.split('\n').map(item => `<div class="item">${item}</div>`).join('')}
-                </div>
-                
-                ${discountInfo ? `<p style="color: #059669; font-weight: 600;">${discountInfo.trim()}</p>` : ''}
-                <p style="font-size: 18px; font-weight: bold; color: #111827; margin: 15px 0;">Total Paid: $${totalAmount.toFixed(2)}</p>
-            </div>
-            
-            <div class="exp-box">
-                <strong style="color: #92400e;">🌟 EXP Points Earned: ${totalExpAwarded} EXP</strong>
-                ${isFirstOrder ? '<p style="margin: 5px 0; color: #92400e;">🎉 First Order Bonus: +250 EXP!</p>' : ''}
-                ${hasReferral && isFirstOrder ? '<p style="margin: 5px 0; color: #92400e;">🎉 Referral Bonus: +250 EXP!</p>' : ''}
-            </div>
-            
-            <p>Your order is now being prepared by a maker at your campus. We will notify you with updates as your order progresses.</p>
-            
-            <div style="background: #eff6ff; padding: 15px; border-radius: 6px; margin: 20px 0;">
-                <strong style="color: #1e40af;">📍 Pickup Information:</strong>
-                <p style="margin: 5px 0; color: #1e3a8a;">Contact: labaghr@my.erau.edu or 610-858-3200</p>
-            </div>
-            
-            <p style="margin-top: 30px;">Thank you for choosing EX3D Prints!</p>
-            
-            <div class="footer">
-                <p><strong>Best regards,</strong><br>The EX3D Team</p>
-                <p>Need help? Contact us at labaghr@my.erau.edu or 610-858-3200</p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-                `
+                body: `Hi ${user.full_name},
+
+Thank you for your order! Your payment has been processed successfully and your order has been sent to a maker on your campus.${priorityInfo}
+
+Order #${newOrder.id.slice(-8)}
+
+Items:
+${itemsList}
+${discountInfo}
+Total Paid: $${totalAmount.toFixed(2)}
+
+EXP Earned: ${totalExpAwarded} EXP
+${isFirstOrder ? '🎉 First Order Bonus: +250 EXP!\n' : ''}${hasReferral && isFirstOrder ? '🎉 Referral Bonus: +250 EXP!\n' : ''}
+
+Your order is now being prepared by a maker at your campus. We will notify you with updates as your order progresses.
+
+Pickup: Contact labaghr@my.erau.edu or 610-858-3200
+
+Thank you for choosing EX3D Prints!
+
+Best regards,
+The EX3D Team`
             });
             console.log('✅ Confirmation email sent to customer');
         } catch (emailError) {
