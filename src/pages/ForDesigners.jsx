@@ -4,7 +4,8 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2 } from "lucide-react";
+import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2, Upload } from "lucide-react";
+import DesignersRequirementsSection from "../components/designers/DesignersRequirementsSection";
 
 export default function ForDesigners() {
   const [totalEarnings, setTotalEarnings] = useState(null);
@@ -39,127 +40,142 @@ export default function ForDesigners() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-gradient-to-r from-red-600 to-red-700 text-white py-16">
+    <div className="min-h-screen">
+      /* New Code Based on Maker's Hero Section */  
+      <section className="relative z-0 py-20 bg-gradient-to-br from-slate-100 via-white to-red-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h1 className="text-5xl font-bold mb-4">
-              For Designers
-            </h1>
-            <p className="text-xl text-red-100 max-w-3xl mx-auto mb-8">
-              Share your 3D designs with the world and earn from every print. Join our creative community today!
-            </p>
-            <Link to={createPageUrl("DesignerSignup")}>
-              <Button size="lg" className="bg-white text-red-600 hover:bg-red-50 text-lg px-8 py-6 font-bold">
-                Apply as a Designer
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left: Text Content */}
+            <div>
+              <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
+                Turn Your Ideas Into
+                <span className="text-red-500"> Real Money</span>
+              </h1>
+              
+              <p className="text-xl text-slate-600 mb-8 leading-relaxed">
+                Join our designer community earning royalties from their 3D CAD models. 
+                No marketing needed - we bring the customers to you.
+              </p>
+
+              <div className="grid grid-cols-2 gap-4 mb-8">
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
+                  <p className="text-2xl font-bold text-slate-900">10%</p>
+                  <p className="text-sm text-slate-600">Royalties for each of your prints sold</p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-md">
+                  <DollarSign className="w-8 h-8 text- -600 mb-2" />
+                  <p className="text-2xl font-bold text-slate-900">Monthly</p>
+                  <p className="text-sm text-slate-600">Royalty Payouts</p>
+                </div>
+              </div>
+
+              <Button size="lg" className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-orange-600 hover:to-red-700 h-14 px-8">
+                <Link to={createPageUrl("DesignerSignup")}>
+                  Start Earning Today
+                </Link>
               </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
-          <Card className="bg-gradient-to-br from-red-500 to-red-600 text-white border-0">
-            <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <DollarSign className="w-10 h-10" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">10% Royalties</h3>
-              <p className="text-red-100">
-                Earn on every sale with transparent tracking
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-pink-500 to-pink-600 text-white border-0">
-            <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Users className="w-10 h-10" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">Wide Reach</h3>
-              <p className="text-pink-100">
-                Your designs reach thousands
-              </p>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-gradient-to-br from-purple-500 to-purple-600 text-white border-0">
-            <CardContent className="p-8 text-center">
-              <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Shield className="w-10 h-10" />
-              </div>
-              <h3 className="text-2xl font-bold mb-3">Protected</h3>
-              <p className="text-purple-100">
-                Your IP secured with DRM protection
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-xl p-12 mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">How It Works</h2>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-lg">
-                1
-              </div>
-              <h3 className="text-lg font-bold mb-2">Apply</h3>
-              <p className="text-sm text-gray-600">Submit your designer application with portfolio</p>
             </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-lg">
-                2
-              </div>
-              <h3 className="text-lg font-bold mb-2">Upload</h3>
-              <p className="text-sm text-gray-600">Upload your 3D designs to our marketplace</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-lg">
-                3
-              </div>
-              <h3 className="text-lg font-bold mb-2">Sell</h3>
-              <p className="text-sm text-gray-600">Customers discover and order your designs</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold shadow-lg">
-                4
-              </div>
-              <h3 className="text-lg font-bold mb-2">Earn</h3>
-              <p className="text-sm text-gray-600">Get paid monthly for every print</p>
+
+            {/* Right: Paid to Designers Card with Red Background */}
+            <div className="flex items-center justify-center">
+              <Card 
+                className="text-white shadow-2xl w-full max-w-sm text-center bg-red-500"
+              >
+                <CardContent className="p-8">
+                  <DollarSign className="w-12 h-12 mx-auto mb-4"/>
+                  <p className="text-lg font-medium">Total Designer Revenue</p>
+                  {loading ? <Loader2 className="w-10 h-10 mx-auto mt-2 animate-spin"/> : (
+                    <p className="text-5xl font-bold mt-2">${totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
+      </section>
 
-        <Card className="bg-gradient-to-br from-red-600 to-red-700 text-white border-0 mb-16">
-          <CardContent className="p-12 text-center">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6">
-              <DollarSign className="w-12 h-12" />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Designer Earnings</h2>
-            {loading ? (
-              <Loader2 className="w-12 h-12 animate-spin mx-auto mb-4" />
-            ) : (
-              <p className="text-6xl font-bold mb-4">
-                ${totalEarnings?.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) || '0.00'}
-              </p>
-            )}
-            <p className="text-xl text-red-100">Total earned by our designers</p>
-          </CardContent>
-        </Card>
+      <DesignersRequirementsSection />
 
-        <div className="text-center bg-white rounded-2xl shadow-xl p-12">
-          <h2 className="text-3xl font-bold mb-4">Ready to Share Your Designs?</h2>
-          <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
-            Join our community of talented designers and start earning passive income from your creative work
+      {/* Why Choose Us Section */}
+      <section className="py-20 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+              Benefits of Choosing EX3D Prints
+            </h2>
+            <p className="text-xl text-slate-600">
+              Join our successful designers building profitable businesses
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="text-center border-none shadow-lg">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <TrendingUp className="w-8 h-8 text-green-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Consistent Sales</h3>
+                <p className="text-slate-600">
+                  Our growing customer base means reliable sales for dedicated designers. Earn 10% per sale of your design.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-none shadow-lg">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Shield className="w-8 h-8 text-blue-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Secure Payments</h3>
+                <p className="text-slate-600">
+                  Get paid quickly and securely through our platform. Monthly payouts directly to your account.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-none shadow-lg">
+              <CardContent className="p-8">
+                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Users className="w-8 h-8 text-purple-600" />
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Community Support</h3>
+                <p className="text-slate-600">
+                  Connect with other designers, share tips, and grow your skills in our supportive community.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section with Orange Background and Orange Button Text */}
+      <section className="py-20 bg-red-500 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+            Ready to Turn Your Designs Into Profit?
+          </h2>
+          <p className="text-xl mb-8">
+            Join our designer community and start earning money doing what you love.
           </p>
-          <Link to={createPageUrl("DesignerSignup")}>
-            <Button size="lg" className="bg-red-600 hover:bg-red-700 text-lg px-8 py-6">
-              Apply Now
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-white border-white text-red-500 hover:bg-slate-300">
+              <Link to={createPageUrl("DesignerSignup")}>
+                <Upload className="w-5 h-5 mr-2" />
+                Start Making Money
+              </Link>
             </Button>
-          </Link>
+            <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
+              <Link to={createPageUrl("HowItWorks")}>
+                <span className="text-orange-500">Learn How It Works</span>
+                <ArrowRight className="w-5 h-5 ml-2 text-red-500" />
+              </Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
+
