@@ -64,7 +64,7 @@ export default function ForDesigners() {
                   <p className="text-sm text-slate-600">Royalties for each of your prints sold</p>
                 </div>
                 <div className="bg-white p-4 rounded-lg shadow-md">
-                  <DollarSign className="w-8 h-8 text- -600 mb-2" />
+                  <DollarSign className="w-8 h-8 text-red-600 mb-2" />
                   <p className="text-2xl font-bold text-slate-900">Monthly</p>
                   <p className="text-sm text-slate-600">Royalty Payouts</p>
                 </div>
