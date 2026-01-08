@@ -56,7 +56,7 @@ export default function DesignersRequirementsSection() {
               </div>
               <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
               <p className="text-gray-600">
-                Earn 250 EXP for using a referral code on your first order. Redeem EXP for rewards, filament, and equipment!
+                Earn 250 EXP for sharing a referral code with your friends. Redeem EXP for real rewards on your dashboard!
               </p>
             </CardContent>
           </Card>
