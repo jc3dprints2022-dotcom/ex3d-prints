@@ -82,9 +82,9 @@ export default function RequirementsSection() {
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Star className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Sell Designs Faster</h3>
+              <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
               <p className="text-gray-600">
-                Designs with detailed descriptions, multiple high-quality photos, and assembly instructions tend to sell better!
+                Earn 250 EXP for every new user you refer to the website who purchases. Redeem EXP on your dashboard for real rewards. 
               </p>
             </CardContent>
           </Card>
