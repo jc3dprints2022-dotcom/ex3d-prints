@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2, Upload } from "lucide-react";
+import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2, Upload, ArrowRight } from "lucide-react";
 import DesignersRequirementsSection from "../components/designers/DesignersRequirementsSection";
 
 export default function ForDesigners() {
