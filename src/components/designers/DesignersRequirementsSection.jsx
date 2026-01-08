@@ -69,7 +69,7 @@ export default function DesignersRequirementsSection() {
                 <Star className="w-8 h-8 text-blue-600" />
               </div>
               <h3 className="text-xl font-semibold mb-4 flex items-center">Sell Designs Faster</h3>
-              <p className="text-gray-600 flex item-center">
+              <p className="text-gray-600 flex items-center">
                 Designs with detailed descriptions, multiple high-quality photos, and assembly instructions tend to sell better!
               </p>
             </CardContent>
