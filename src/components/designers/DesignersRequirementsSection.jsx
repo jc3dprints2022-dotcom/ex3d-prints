@@ -1,6 +1,9 @@
 import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Star } from "lucide-react";
 
 export default function DesignersRequirementsSection() {
   const requirements = [
@@ -11,37 +14,55 @@ export default function DesignersRequirementsSection() {
     "Designs that are commercially licensable"
   ];
 
+  const benefits = [
+    "High royalty rates",
+    "We handle customer service",
+    "Upload on your own terms",
+    "Monthly payouts",
+    "Growing customer base"
+  ];
+
   return (
-    <section className="py-20 bg-white">
+    <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Designer Requirements
+            Maker Requirements
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            We welcome all skill levels! Here's what you need to start selling your designs
+          <p className="text-xl text-gray-600">
+            Here's what you need to become an EX3D maker
           </p>
         </div>
 
-        <Card className="max-w-3xl mx-auto shadow-lg border-red-200">
-          <CardContent className="p-8">
-            <ul className="space-y-4">
-              {requirements.map((requirement, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <CheckCircle className="w-6 h-6 text-red-600 flex-shrink-0 mt-0.5" />
-                  <span className="text-lg text-gray-700">{requirement}</span>
-                </li>
-              ))}
-            </ul>
+        <div className="grid md:grid-cols-3 gap-8">
+          <Card className="shadow-xl">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Requirements</h3>
+              <ul className="space-y-4">
+                {requirements.map((req, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="w-6 h-6 text-green-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-lg">{req}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
 
-            <div className="mt-8 p-6 bg-red-50 rounded-lg border border-red-200">
-              <h4 className="font-bold text-red-900 mb-2">💡 Pro Tip</h4>
-              <p className="text-red-800">
-                Designs with detailed descriptions, multiple high-quality photos, and assembly instructions tend to sell better!
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+          <Card className="shadow-xl">
+            <CardContent className="p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Benefits</h3>
+              <ul className="space-y-4">
+                {benefits.map((benefit, index) => (
+                  <li key={index} className="flex items-start">
+                    <CheckCircle className="w-6 h-6 text-blue-600 mr-3 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-lg">{benefit}</span>
+                  </li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </section>
   );
