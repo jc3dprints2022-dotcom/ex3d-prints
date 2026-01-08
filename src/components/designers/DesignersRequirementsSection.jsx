@@ -22,15 +22,23 @@ export default function DesignersRequirementsSection() {
     "Growing customer base"
   ];
 
+    const steps = [
+    "Name your new design and select a category",
+    "Add a product description",
+    "Enter stats about the product",
+    "Attach the files and pictures ",
+    "Add assembly instructions if necessary"
+  ];
+
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Maker Requirements
+            Designer Requirements
           </h2>
           <p className="text-xl text-gray-600">
-            Here's what you need to become an EX3D maker
+            Here's what you need to become an EX3D designer
           </p>
         </div>
 
@@ -63,17 +71,20 @@ export default function DesignersRequirementsSection() {
             </CardContent>
           </Card>
 
-          <Card className="text-center border-none shadow-lg">
+          <Card className="shadow-xl">
             <CardContent className="p-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Star className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Sell Designs Faster</h3>
-              <p className="text-gray-600">
-                Designs with detailed descriptions, multiple high-quality photos, and assembly instructions tend to sell better!
-              </p>
+              <h3 className="text-2xl font-bold text-gray-900 mb-6">Steps for Upload</h3>
+
+              <ol className="space-y-4 list-decimal list-inside">
+                {steps.map((step, index) => (
+                  <li key={index} className="text-gray-700 text-lg">
+                    {step}
+                  </li>
+                ))}
+              </ol>
             </CardContent>
           </Card>
+
         </div>
       </div>
     </section>
