@@ -84,7 +84,7 @@ export default function RequirementsSection() {
               </div>
               <h3 className="text-xl font-semibold mb-4">Sell Designs Faster</h3>
               <p className="text-gray-600">
-                Designs with more documentation and high quality images sell more quickly. Remember, the more people buy the product, the more you earn!
+                Designs with detailed descriptions, multiple high-quality photos, and assembly instructions tend to sell better!
               </p>
             </CardContent>
           </Card>
