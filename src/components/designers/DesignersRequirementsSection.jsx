@@ -11,7 +11,6 @@ export default function DesignersRequirementsSection() {
     "High-quality STL, OBJ, or 3MF files",
     "Clear product images showing the finished print",
     "Accurate specifications (dimensions, print time, weight)",
-    "Designs that are commercially licensable"
   ];
 
   const benefits = [
@@ -22,13 +21,6 @@ export default function DesignersRequirementsSection() {
     "Growing customer base"
   ];
 
-    const steps = [
-    "Name your new design and select a category",
-    "Add a product description",
-    "Enter stats about the product",
-    "Attach the files and pictures ",
-    "Add assembly instructions if necessary"
-  ];
 
   return (
     <section className="py-20 bg-gray-50">
@@ -57,6 +49,18 @@ export default function DesignersRequirementsSection() {
             </CardContent>
           </Card>
 
+          <Card className="text-center border-none shadow-lg">
+            <CardContent className="p-8">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Star className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
+              <p className="text-gray-600">
+                Earn 250 EXP for using a referral code on your first order. Redeem EXP for rewards, filament, and equipment!
+              </p>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-xl">
             <CardContent className="p-8">
               <h3 className="text-2xl font-bold text-gray-900 mb-6">Benefits</h3>
@@ -68,20 +72,6 @@ export default function DesignersRequirementsSection() {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-xl">
-            <CardContent className="p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Steps for Upload</h3>
-
-              <ol className="space-y-4 list-decimal list-inside">
-                {steps.map((step, index) => (
-                  <li key={index} className="text-gray-700 text-lg">
-                    {step}
-                  </li>
-                ))}
-              </ol>
             </CardContent>
           </Card>
 
