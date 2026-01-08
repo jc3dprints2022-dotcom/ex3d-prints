@@ -20,7 +20,7 @@ export default function HorizontalProductSection({ title, products, viewAllUrl }
   }
 
   return (
-    <div className="mb-12">
+    <div className="mb-2">
       {/* Section Header */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">{title}</h2>
