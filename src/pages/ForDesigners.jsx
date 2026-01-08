@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Palette, DollarSign, Globe, Shield, TrendingUp, Users, Loader2, Upload } from "lucide-react";
+import { Palette, DollarSign, Globe, Shield, TrendingUp, Usersa, Loader2, Upload } from "lucide-react";
 import DesignersRequirementsSection from "../components/designers/DesignersRequirementsSection";
 
 export default function ForDesigners() {
@@ -41,7 +41,7 @@ export default function ForDesigners() {
 
   return (
     <div className="min-h-screen">
-      /* New Code Based on Maker's Hero Section */  
+      {/* New Code Based on Maker's Hero Section */}  
       <section className="relative z-0 py-20 bg-gradient-to-br from-slate-100 via-white to-red-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
