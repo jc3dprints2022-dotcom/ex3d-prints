@@ -11,8 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 
 const CAMPUS_LOCATIONS = [
   { value: "erau_prescott", label: "ERAU Prescott" },
-  { value: "erau_daytona", label: "ERAU Daytona" },
-  { value: "arizona_state", label: "Arizona State University" },
 ];
 
 export default function Checkout() {
