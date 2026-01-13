@@ -74,59 +74,13 @@ export default function HeroSection() {
     }
   };
 
-const SYNONYMS = {
-  phone: ["iphone", "android", "mobile"],
-  stand: ["mount", "holder", "dock"],
-  case: ["cover", "shell"],
-  camera: ["gopro", "dslr"],
-};
-
-const normalize = (str) =>
-  str
-    .toLowerCase()
-    .replace(/[^a-z0-9\s]/g, "")
-    .replace(/\s+/g, " ")
-    .trim();
-
-const tokenize = (str) => normalize(str).split(" ").filter(Boolean);
-
-const expandToken = (token) => {
-  const set = new Set([token]);
-
-  if (token.endsWith("s")) set.add(token.slice(0, -1));
-  else set.add(`${token}s`);
-
-  Object.entries(SYNONYMS).forEach(([key, values]) => {
-    if (key === token || values.includes(token)) {
-      set.add(key);
-      values.forEach(v => set.add(v));
-    }
-  });
-
-  return [...set];
-};
-
-  const smartQueryTransform = (query) => {
-    if (!query) return "";
-    const tokens = tokenize(query);
-    const expanded = new Set();
-    tokens.forEach(t =>
-      expandToken(t).forEach(e => expanded.add(e))
-    );
-    return [...expanded].join(" ");
-  };
-
   const handleSearch = () => {
-    const smartQuery = smartQueryTransform(searchQuery);
-
-    if (smartQuery) {
-      window.location.href =
-        `${createPageUrl("Marketplace")}?search=${encodeURIComponent(smartQuery)}`;
+    if (searchQuery.trim()) {
+      window.location.href = `${createPageUrl("Marketplace")}?search=${encodeURIComponent(searchQuery)}`;
     } else {
       window.location.href = createPageUrl("Marketplace");
     }
   };
-
 
   const handleImageClick = () => {
     if (products[currentImageIndex]) {
