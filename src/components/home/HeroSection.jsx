@@ -3,98 +3,22 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, ShoppingBag, Upload } from "lucide-react";
+import { Search, ShoppingBag, DollarSign, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
 
 export default function HeroSection() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [products, setProducts] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [nextImageIndex, setNextImageIndex] = useState(1);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [preloadedImages, setPreloadedImages] = useState(new Set());
 
-  /* ============================
-     SMART SEARCH (MAX MODE)
-     ============================ */
-
-  const SYNONYMS = {
-    phone: ["iphone", "android", "mobile"],
-    stand: ["mount", "holder", "dock"],
-    case: ["cover", "shell"],
-    camera: ["gopro", "dslr"],
-    tool: ["utility", "device"],
-  };
-
-  const normalize = (str) =>
-    str
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .replace(/\s+/g, " ")
-      .trim();
-
-  const tokenize = (str) => normalize(str).split(" ").filter(Boolean);
-
-  // Levenshtein distance for typo tolerance
-  const levenshtein = (a, b) => {
-    const matrix = Array.from({ length: a.length + 1 }, () =>
-      Array(b.length + 1).fill(0)
-    );
-
-    for (let i = 0; i <= a.length; i++) matrix[i][0] = i;
-    for (let j = 0; j <= b.length; j++) matrix[0][j] = j;
-
-    for (let i = 1; i <= a.length; i++) {
-      for (let j = 1; j <= b.length; j++) {
-        matrix[i][j] = Math.min(
-          matrix[i - 1][j] + 1,
-          matrix[i][j - 1] + 1,
-          matrix[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1)
-        );
-      }
-    }
-    return matrix[a.length][b.length];
-  };
-
-  const expandToken = (token) => {
-    const expansions = new Set([token]);
-
-    // plural normalization
-    if (token.endsWith("s")) expansions.add(token.slice(0, -1));
-    else expansions.add(`${token}s`);
-
-    // synonyms
-    Object.entries(SYNONYMS).forEach(([key, values]) => {
-      if (key === token || values.includes(token)) {
-        expansions.add(key);
-        values.forEach(v => expansions.add(v));
-      }
-    });
-
-    return [...expansions];
-  };
-
-  const smartQueryTransform = (query) => {
-    if (!query) return "";
-
-    const tokens = tokenize(query);
-    const expanded = new Set();
-
-    tokens.forEach(token => {
-      expandToken(token).forEach(t => expanded.add(t));
-    });
-
-    return [...expanded].join(" ");
-  };
-
-  /* ============================
-     DATA LOADING
-     ============================ */
-
   useEffect(() => {
     loadProducts();
   }, []);
 
+  // Preload all images when products are loaded
   useEffect(() => {
     if (products.length > 0) {
       products.forEach((product, index) => {
@@ -110,10 +34,12 @@ export default function HeroSection() {
   useEffect(() => {
     if (products.length > 1 && preloadedImages.size > 0) {
       const interval = setInterval(() => {
+        // Only transition if next image is preloaded
         const nextIndex = (currentImageIndex + 1) % products.length;
         if (preloadedImages.has(nextIndex)) {
           setNextImageIndex(nextIndex);
           setIsTransitioning(true);
+          
           setTimeout(() => {
             setCurrentImageIndex(nextIndex);
             setIsTransitioning(false);
@@ -127,75 +53,248 @@ export default function HeroSection() {
 
   const loadProducts = async () => {
     try {
-      const featured = await base44.entities.HomepageFeatured.filter({ is_active: true });
-      if (featured.length) {
-        featured.sort((a, b) => a.display_order - b.display_order);
-        const data = await Promise.all(
-          featured.map(f => base44.entities.Product.get(f.product_id).catch(() => null))
+      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
+      if (featuredList.length > 0) {
+        featuredList.sort((a, b) => a.display_order - b.display_order);
+        const productPromises = featuredList.map(f =>
+          base44.entities.Product.get(f.product_id).catch(() => null)
         );
-        setProducts(data.filter(p => p?.images?.length));
-        return;
+        const productsData = await Promise.all(productPromises);
+        const validProducts = productsData.filter(p => p && p.images && p.images.length > 0);
+        if (validProducts.length > 0) {
+          setProducts(validProducts);
+          return;
+        }
       }
-
-      const all = await base44.entities.Product.filter({ status: "active" });
-      setProducts(all.filter(p => p.images?.length).slice(0, 10));
-    } catch (e) {
-      console.error(e);
+      const allProducts = await base44.entities.Product.filter({ status: 'active' });
+      const productsWithImages = allProducts.filter(p => p.images && p.images.length > 0);
+      setProducts(productsWithImages.slice(0, 10));
+    } catch (error) {
+      console.error("Failed to load products for slideshow:", error);
     }
   };
 
-  /* ============================
-     SEARCH HANDLER
-     ============================ */
+const SYNONYMS = {
+  phone: ["iphone", "android", "mobile"],
+  stand: ["mount", "holder", "dock"],
+  case: ["cover", "shell"],
+  camera: ["gopro", "dslr"],
+};
+
+const normalize = (str) =>
+  str
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const tokenize = (str) => normalize(str).split(" ").filter(Boolean);
+
+const expandToken = (token) => {
+  const set = new Set([token]);
+
+  if (token.endsWith("s")) set.add(token.slice(0, -1));
+  else set.add(`${token}s`);
+
+  Object.entries(SYNONYMS).forEach(([key, values]) => {
+    if (key === token || values.includes(token)) {
+      set.add(key);
+      values.forEach(v => set.add(v));
+    }
+  });
+
+  return [...set];
+};
+
+  const smartQueryTransform = (query) => {
+    if (!query) return "";
+    const tokens = tokenize(query);
+    const expanded = new Set();
+    tokens.forEach(t =>
+      expandToken(t).forEach(e => expanded.add(e))
+    );
+    return [...expanded].join(" ");
+  };
 
   const handleSearch = () => {
     const smartQuery = smartQueryTransform(searchQuery);
 
-    window.location.href = smartQuery
-      ? `${createPageUrl("Marketplace")}?search=${encodeURIComponent(smartQuery)}`
-      : createPageUrl("Marketplace");
+    if (smartQuery) {
+      window.location.href =
+        `${createPageUrl("Marketplace")}?search=${encodeURIComponent(smartQuery)}`;
+    } else {
+      window.location.href = createPageUrl("Marketplace");
+    }
   };
 
-  /* ============================
-     RENDER
-     ============================ */
+
+  const handleImageClick = () => {
+    if (products[currentImageIndex]) {
+      window.location.href = `${createPageUrl("ProductDetail")}?id=${products[currentImageIndex].id}`;
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDotClick = (index) => {
+    if (preloadedImages.has(index) && index !== currentImageIndex) {
+      setNextImageIndex(index);
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentImageIndex(index);
+        setIsTransitioning(false);
+      }, 800);
+    }
+  };
 
   return (
-    <section className="relative py-20 bg-gradient-to-br from-slate-50 via-white to-teal-50">
-      <div className="relative max-w-7xl mx-auto px-6 text-center">
-        <h1 className="text-5xl font-bold text-white mb-6">
-          Fast, Affordable <span className="text-teal-400">3D Printing</span>
-        </h1>
-
-        <div className="max-w-2xl mx-auto mb-6">
-          <div className="flex gap-3">
-            <div className="flex-1 relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-              <Input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                placeholder="Search models, designs, categories…"
-                className="pl-12 h-14 text-lg"
+    <section
+      className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50 py-20 overflow-hidden"
+      style={{ minHeight: "600px" }}
+    >
+      {/* Background Slideshow */}
+      <div className="absolute inset-0">
+        {products.length > 0 && preloadedImages.size > 0 && (
+          <>
+            {/* Current Image - Always visible when not transitioning */}
+            <div
+              className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
+              style={{
+                opacity: isTransitioning ? 0 : 1,
+                zIndex: 10,
+                pointerEvents: isTransitioning ? "none" : "auto",
+              }}
+              onClick={handleImageClick}
+            >
+              <img
+                src={products[currentImageIndex]?.images?.[0]}
+                alt="Featured product"
+                className="w-full h-full object-cover"
+                style={{
+                  filter: "brightness(0.4)",
+                  transform: "translateZ(0)",
+                  backfaceVisibility: "hidden",
+                }}
+                draggable={false}
               />
             </div>
-            <Button onClick={handleSearch} size="lg" className="h-14 px-8 bg-teal-500">
-              Search
+
+            {/* Next Image - Only visible during transition and if preloaded */}
+            {/*
+            {preloadedImages.has(nextImageIndex) && (
+              <div
+                className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
+                style={{
+                  opacity: isTransitioning ? 1 : 0,
+                  zIndex: 20,
+                  pointerEvents: isTransitioning ? "auto" : "none",
+                }}
+                onClick={handleImageClick}
+              >
+                <img
+                  src={products[nextImageIndex]?.images?.[0]}
+                  alt="Featured product"
+                  className="w-full h-full object-cover"
+                  style={{
+                    filter: "brightness(0.4)",
+                    transform: "translateZ(0)",
+                    backfaceVisibility: "hidden",
+                  }}
+                  draggable={false}
+                />
+              </div>
+            )}
+            */}
+
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 pointer-events-none" style={{ zIndex: 30 }} />
+          </>
+        )}
+      </div>
+
+      {/* Main Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
+            Fast, Affordable, On-Campus <br />
+            <span className="text-teal-400">3D Printing</span>
+          </h1>
+
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+            Order locally. Printed on campus. Picked up in days
+          </p>
+
+          {/* Search Bar */}
+          <div className="max-w-2xl mx-auto mb-6">
+            <div className="flex gap-3">
+              <div className="flex-1 relative">
+                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Input
+                  placeholder="Search for 3D models, designs, or categories..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
+                  className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-teal-500 bg-white/95"
+                />
+              </div>
+              <Button
+                onClick={handleSearch}
+                size="lg"
+                className="h-14 px-8 bg-teal-500 hover:bg-teal-600"
+              >
+                Search
+              </Button>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <Button
+              asChild
+              variant="outline"
+              size="lg"
+              onClick={scrollToTop}
+              className="h-14 px-8 border-2 border-red-400 bg-red-500/90 text-white hover:bg-red-500 backdrop-blur-sm"
+            >
+              <Link to={createPageUrl("CustomPrintRequest")}>
+                <Upload className="w-5 h-5 mr-2" />
+                Upload Custom Files
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              onClick={scrollToTop}
+              className="h-14 px-8 bg-teal-500 hover:bg-teal-600 text-white"
+            >
+              <Link to={createPageUrl("Marketplace")}>
+                <ShoppingBag className="w-5 h-5 mr-2" />
+                Shop 3D Prints Now
+              </Link>
             </Button>
           </div>
-        </div>
 
-        <div className="flex gap-4 justify-center">
-          <Button asChild size="lg">
-            <Link to={createPageUrl("Marketplace")}>
-              <ShoppingBag className="mr-2" /> Shop Prints
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to={createPageUrl("CustomPrintRequest")}>
-              <Upload className="mr-2" /> Upload Files
-            </Link>
-          </Button>
+          {/* Slideshow Dots */}
+          {products.length > 1 && (
+            <div className="flex justify-center gap-2">
+              {products.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleDotClick(index)}
+                  disabled={!preloadedImages.has(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    index === currentImageIndex
+                      ? "bg-teal-400 w-8"
+                      : preloadedImages.has(index)
+                      ? "bg-white/50 hover:bg-white/80"
+                      : "bg-white/20"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </section>
