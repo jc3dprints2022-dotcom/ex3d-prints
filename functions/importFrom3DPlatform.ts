@@ -56,14 +56,26 @@ Deno.serve(async (req) => {
         let imageUrls = new Set();
         let fileUrls = new Set();
 
-        // Get title and description
+        // Get title and description - platform specific
         title = $('h1').first().text().trim() || 
                $('meta[property="og:title"]').attr('content') || 
                $('title').text().trim() || '';
 
-        description = $('meta[property="og:description"]').attr('content') || 
-                     $('meta[name="description"]').attr('content') || 
-                     $('.description').first().text().trim() || '';
+        // Platform-specific description extraction
+        if (platform === 'printables') {
+            description = $('[class*="description" i], [class*="Description" i], .about-text, .print-description').first().text().trim() ||
+                         $('meta[property="og:description"]').attr('content') ||
+                         $('meta[name="description"]').attr('content') || '';
+        } else if (platform === 'thingiverse') {
+            description = $('.thing-description, .description-text, #thing-description').first().text().trim() ||
+                         $('meta[property="og:description"]').attr('content') || '';
+        } else {
+            description = $('meta[property="og:description"]').attr('content') || 
+                         $('meta[name="description"]').attr('content') || 
+                         $('.description, .product-description, .model-description').first().text().trim() || '';
+        }
+        
+        console.log(`Description length: ${description.length} chars`);
 
         // Extract designer/author name based on platform
         if (platform === 'thingiverse') {
@@ -110,86 +122,58 @@ Deno.serve(async (req) => {
 
         console.log(`Description includes attribution`);
 
-        // Platform-specific image collection
-        if (platform === 'printables') {
-            // For Printables, target the gallery/carousel specifically
-            $('.gallery img, .carousel img, .image-gallery img, [class*="gallery"] img, [class*="Gallery"] img').each((i, elem) => {
-                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
-                if (src && src.startsWith('http')) {
-                    // Get full resolution
-                    const fullRes = src.replace(/\/thumbnails\//, '/images/')
-                                      .replace(/\/thumb\//, '/images/')
-                                      .replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/, '.$1');
-                    imageUrls.add(fullRes);
-                }
-            });
+        // Collect images - only from main content area, exclude recommendations/related
+        $('img').each((i, elem) => {
+            const $elem = $(elem);
+            const src = $elem.attr('src') || $elem.attr('data-src') || $elem.attr('data-lazy-src');
             
-            // Also check for picture elements in the gallery
-            $('.gallery picture source, .carousel picture source, [class*="gallery"] picture source').each((i, elem) => {
-                const srcset = $(elem).attr('srcset');
-                if (srcset) {
-                    const urls = srcset.split(',').map(s => s.trim().split(' ')[0]);
-                    urls.forEach(url => {
-                        if (url && url.startsWith('http')) {
-                            imageUrls.add(url);
-                        }
-                    });
-                }
+            if (!src || !src.startsWith('http')) return;
+            
+            // Get all parent classes to check context
+            let parentClasses = '';
+            $elem.parents().each((_, parent) => {
+                parentClasses += ' ' + ($(parent).attr('class') || '');
             });
-        } else if (platform === 'thingiverse') {
-            // For Thingiverse, target the thing-image-container
-            $('.thing-image-container img, .thing-gallery img, .image-gallery img').each((i, elem) => {
-                const src = $(elem).attr('src') || $(elem).attr('data-src');
-                if (src && src.startsWith('http') && src.includes('thingiverse')) {
-                    const fullRes = src.replace(/\/\d+x\d+\//, '/original/')
-                                      .replace('/small/', '/original/')
-                                      .replace('/medium/', '/original/')
-                                      .replace('/large/', '/original/');
-                    imageUrls.add(fullRes);
+            parentClasses = parentClasses.toLowerCase();
+            
+            // EXCLUDE images from these sections
+            const excludeKeywords = ['related', 'recommendation', 'other-print', 'sidebar', 'footer', 
+                                    'header', 'navigation', 'nav-', 'menu', 'ad-', 'ads', 
+                                    'user-card', 'profile-card', 'creator-card', 'similar'];
+            
+            const isExcluded = excludeKeywords.some(keyword => parentClasses.includes(keyword));
+            
+            // Skip icons and UI elements
+            const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
+                               src.includes('favicon') || src.includes('button') || src.includes('badge') ||
+                               src.includes('/icons/') || src.includes('/ui/');
+            
+            if (!isExcluded && !isSmallIcon) {
+                // Get highest resolution version
+                let finalSrc = src;
+                
+                if (platform === 'printables') {
+                    finalSrc = src.replace(/\/thumbnails\//, '/images/')
+                                 .replace(/\/thumb\//, '/images/')
+                                 .replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/, '.$1');
+                } else if (platform === 'thingiverse') {
+                    finalSrc = src.replace(/\/\d+x\d+\//, '/original/')
+                                 .replace('/small/', '/original/')
+                                 .replace('/medium/', '/original/')
+                                 .replace('/large/', '/original/');
                 }
-            });
-        } else {
-            // For other platforms, be more selective
-            $('.gallery img, .product-images img, .model-images img, [class*="gallery"] img, [class*="Gallery"] img').each((i, elem) => {
-                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
-                if (src && src.startsWith('http')) {
-                    const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
-                                       src.includes('favicon') || src.includes('button') || src.includes('badge');
-                    if (!isSmallIcon) {
-                        imageUrls.add(src);
-                    }
-                }
-            });
-        }
+                
+                imageUrls.add(finalSrc);
+                console.log(`Found image: ${finalSrc.substring(0, 80)}...`);
+            }
+        });
 
-        // Add Open Graph image as priority if gallery images not found
+        // Prioritize Open Graph image at the front
         const ogImage = $('meta[property="og:image"]').attr('content');
         if (ogImage && ogImage.startsWith('http')) {
-            const tempSet = new Set([ogImage, ...Array.from(imageUrls)]);
-            imageUrls = tempSet;
-        }
-        
-        // If still no images found, fallback to more general search but exclude obvious non-product images
-        if (imageUrls.size === 0) {
-            $('img').each((i, elem) => {
-                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
-                const parentClass = $(elem).parent().attr('class') || '';
-                const grandParentClass = $(elem).parent().parent().attr('class') || '';
-                
-                // Skip images in sidebars, recommendations, ads, and UI elements
-                const isInExcludedSection = parentClass.includes('sidebar') || parentClass.includes('recommendation') ||
-                                           parentClass.includes('related') || parentClass.includes('ad-') ||
-                                           grandParentClass.includes('sidebar') || grandParentClass.includes('recommendation') ||
-                                           grandParentClass.includes('related') || grandParentClass.includes('ad-');
-                
-                if (src && src.startsWith('http') && !isInExcludedSection) {
-                    const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
-                                       src.includes('favicon') || src.includes('button') || src.includes('badge');
-                    if (!isSmallIcon) {
-                        imageUrls.add(src);
-                    }
-                }
-            });
+            console.log(`OG Image: ${ogImage}`);
+            const tempArray = [ogImage, ...Array.from(imageUrls).filter(url => url !== ogImage)];
+            imageUrls = new Set(tempArray);
         }
 
         console.log(`Found ${imageUrls.size} potential image URLs`);
