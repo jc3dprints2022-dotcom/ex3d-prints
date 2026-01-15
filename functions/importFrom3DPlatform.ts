@@ -1,28 +1,28 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 import * as cheerio from 'npm:cheerio@1.0.0-rc.12';
 
-Deno.serve(async (req) => {
-    try {
-        const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
+async function handleSingleImport(base44, user, url) {
+    const platform = url.includes('printables.com') ? 'printables' : 
+                    url.includes('thingiverse.com') ? 'thingiverse' : 'unknown';
 
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const { url } = await req.json();
-
-        if (!url) {
-            return Response.json({ error: 'URL is required' }, { status: 400 });
-        }
-
-        // Detect platform
+        // Detect platform and type (single model or collection/wishlist)
         let platform = 'unknown';
-        if (url.includes('thingiverse.com')) platform = 'thingiverse';
-        else if (url.includes('printables.com')) platform = 'printables';
-        else if (url.includes('myminifactory.com')) platform = 'myminifactory';
-        else if (url.includes('cults3d.com')) platform = 'cults3d';
-        else if (url.includes('thangs.com')) platform = 'thangs';
+        let isCollection = false;
+        
+        if (url.includes('thingiverse.com')) {
+            platform = 'thingiverse';
+            isCollection = url.includes('/collections/') || url.includes('/list/');
+        } else if (url.includes('printables.com')) {
+            platform = 'printables';
+            isCollection = url.includes('/collection/') || url.includes('/@') && url.includes('/collections');
+        } else if (url.includes('myminifactory.com')) {
+            platform = 'myminifactory';
+            isCollection = url.includes('/collection/');
+        } else if (url.includes('cults3d.com')) {
+            platform = 'cults3d';
+        } else if (url.includes('thangs.com')) {
+            platform = 'thangs';
+        }
 
         if (platform === 'unknown') {
             return Response.json({ 
@@ -30,7 +30,97 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        console.log(`Importing from ${platform}: ${url}`);
+        // If it's a collection/wishlist, extract all model URLs and import each
+        if (isCollection) {
+            console.log(`Importing collection from ${platform}: ${url}`);
+            const response = await fetch(url, {
+                headers: {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+                }
+            });
+
+            if (!response.ok) {
+                return Response.json({ error: `Failed to fetch collection. Status: ${response.status}` }, { status: 400 });
+            }
+
+            const html = await response.text();
+            const $ = cheerio.load(html);
+            const modelUrls = new Set();
+
+            // Extract model URLs based on platform
+            if (platform === 'printables') {
+                $('a[href*="/model/"]').each((i, elem) => {
+                    const href = $(elem).attr('href');
+                    if (href && href.includes('/model/') && !href.includes('/collection/')) {
+                        const fullUrl = href.startsWith('http') ? href : `https://www.printables.com${href.split('?')[0]}`;
+                        modelUrls.add(fullUrl);
+                    }
+                });
+            } else if (platform === 'thingiverse') {
+                $('a[href*="/thing:"]').each((i, elem) => {
+                    const href = $(elem).attr('href');
+                    if (href && href.includes('/thing:')) {
+                        const fullUrl = href.startsWith('http') ? href : `https://www.thingiverse.com${href.split('?')[0]}`;
+                        modelUrls.add(fullUrl);
+                    }
+                });
+            }
+
+            console.log(`Found ${modelUrls.size} models in collection`);
+
+            // Import each model
+            const results = [];
+            for (const modelUrl of Array.from(modelUrls).slice(0, 20)) { // Limit to 20 to avoid timeouts
+                try {
+                    console.log(`Importing: ${modelUrl}`);
+                    const importReq = new Request('http://dummy', {
+                        method: 'POST',
+                        headers: req.headers,
+                        body: JSON.stringify({ url: modelUrl })
+                    });
+                    
+                    // Recursively call this function for each model
+                    const modelResult = await handleSingleImport(base44, user, modelUrl);
+                    results.push(modelResult);
+                } catch (error) {
+                    console.error(`Failed to import ${modelUrl}:`, error.message);
+                    results.push({ error: error.message, url: modelUrl });
+                }
+            }
+
+            return Response.json({
+                success: true,
+                collection: true,
+                data: results,
+                stats: {
+                    total_models: modelUrls.size,
+                    imported: results.filter(r => r.success).length,
+                    failed: results.filter(r => r.error).length
+                }
+            });
+        }
+
+        console.log(`Importing single model from ${platform}: ${url}`);
+        
+        const result = await handleSingleImport(base44, user, url);
+        return Response.json({ success: true, data: result });
+
+    } catch (error) {
+        console.error('Import error:', error);
+        return Response.json({ 
+            error: error.message || 'Failed to import from platform',
+            details: error.stack
+        }, { status: 500 });
+    }
+});
+
+async function handleSingleImportFull(base44, user, url) {
+        const platform = url.includes('printables.com') ? 'printables' : 
+                        url.includes('thingiverse.com') ? 'thingiverse' : 
+                        url.includes('myminifactory.com') ? 'myminifactory' :
+                        url.includes('cults3d.com') ? 'cults3d' :
+                        url.includes('thangs.com') ? 'thangs' : 'unknown';
 
         // Fetch the page
         const response = await fetch(url, {
@@ -232,9 +322,9 @@ Deno.serve(async (req) => {
         const imageUrlArray = Array.from(imageUrls);
         const fileUrlArray = Array.from(fileUrls);
 
-        // Download and upload images (up to 20)
+        // Download and upload ALL images (up to 50)
         const uploadedImages = [];
-        const imageLimit = Math.min(imageUrlArray.length, 20);
+        const imageLimit = Math.min(imageUrlArray.length, 50);
         
         for (let i = 0; i < imageLimit; i++) {
             const imageUrl = imageUrlArray[i];
@@ -346,28 +436,33 @@ Deno.serve(async (req) => {
 
         console.log(`Successfully uploaded ${uploadedFiles.length} files`);
 
-        return Response.json({
+        return {
             success: true,
-            data: {
-                platform,
-                title: title || 'Untitled Design',
-                description: description || 'No description available',
-                images: uploadedImages,
-                print_files: uploadedFiles,
-                stats: {
-                    images_found: imageUrlArray.length,
-                    images_uploaded: uploadedImages.length,
-                    files_found: fileUrlArray.length,
-                    files_uploaded: uploadedFiles.length
-                }
+            platform,
+            title: title || 'Untitled Design',
+            description: description || 'No description available',
+            images: uploadedImages,
+            print_files: uploadedFiles,
+            stats: {
+                images_found: imageUrlArray.length,
+                images_uploaded: uploadedImages.length,
+                files_found: fileUrlArray.length,
+                files_uploaded: uploadedFiles.length
             }
-        });
+        };
+}
 
-    } catch (error) {
-        console.error('Import error:', error);
-        return Response.json({ 
-            error: error.message || 'Failed to import from platform',
-            details: error.stack
-        }, { status: 500 });
-    }
-});
+Deno.serve(async (req) => {
+    try {
+        const base44 = createClientFromRequest(req);
+        const user = await base44.auth.me();
+
+        if (!user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
+        }
+
+        const { url } = await req.json();
+
+        if (!url) {
+            return Response.json({ error: 'URL is required' }, { status: 400 });
+        }
