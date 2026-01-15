@@ -110,50 +110,86 @@ Deno.serve(async (req) => {
 
         console.log(`Description includes attribution`);
 
-        // AGGRESSIVELY collect ALL images from the page
-        $('img').each((i, elem) => {
-            const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
-            const srcset = $(elem).attr('srcset');
+        // Platform-specific image collection
+        if (platform === 'printables') {
+            // For Printables, target the gallery/carousel specifically
+            $('.gallery img, .carousel img, .image-gallery img, [class*="gallery"] img, [class*="Gallery"] img').each((i, elem) => {
+                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
+                if (src && src.startsWith('http')) {
+                    // Get full resolution
+                    const fullRes = src.replace(/\/thumbnails\//, '/images/')
+                                      .replace(/\/thumb\//, '/images/')
+                                      .replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/, '.$1');
+                    imageUrls.add(fullRes);
+                }
+            });
             
-            // Process src
-            if (src && src.startsWith('http')) {
-                // Skip tiny images, icons, and obvious UI elements
-                const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
-                                   src.includes('favicon') || src.includes('button') || src.includes('badge');
-                
-                if (!isSmallIcon) {
-                    // For Thingiverse, get the full resolution
-                    if (platform === 'thingiverse' && src.includes('thingiverse')) {
-                        const fullRes = src.replace(/\/\d+x\d+\//, '/original/')
-                                          .replace('/small/', '/original/')
-                                          .replace('/medium/', '/original/')
-                                          .replace('/large/', '/original/');
-                        imageUrls.add(fullRes);
-                    } else {
+            // Also check for picture elements in the gallery
+            $('.gallery picture source, .carousel picture source, [class*="gallery"] picture source').each((i, elem) => {
+                const srcset = $(elem).attr('srcset');
+                if (srcset) {
+                    const urls = srcset.split(',').map(s => s.trim().split(' ')[0]);
+                    urls.forEach(url => {
+                        if (url && url.startsWith('http')) {
+                            imageUrls.add(url);
+                        }
+                    });
+                }
+            });
+        } else if (platform === 'thingiverse') {
+            // For Thingiverse, target the thing-image-container
+            $('.thing-image-container img, .thing-gallery img, .image-gallery img').each((i, elem) => {
+                const src = $(elem).attr('src') || $(elem).attr('data-src');
+                if (src && src.startsWith('http') && src.includes('thingiverse')) {
+                    const fullRes = src.replace(/\/\d+x\d+\//, '/original/')
+                                      .replace('/small/', '/original/')
+                                      .replace('/medium/', '/original/')
+                                      .replace('/large/', '/original/');
+                    imageUrls.add(fullRes);
+                }
+            });
+        } else {
+            // For other platforms, be more selective
+            $('.gallery img, .product-images img, .model-images img, [class*="gallery"] img, [class*="Gallery"] img').each((i, elem) => {
+                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
+                if (src && src.startsWith('http')) {
+                    const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
+                                       src.includes('favicon') || src.includes('button') || src.includes('badge');
+                    if (!isSmallIcon) {
                         imageUrls.add(src);
                     }
                 }
-            }
-            
-            // Process srcset
-            if (srcset) {
-                const urls = srcset.split(',').map(s => s.trim().split(' ')[0]);
-                urls.forEach(url => {
-                    if (url && url.startsWith('http')) {
-                        const isSmallIcon = url.includes('icon') || url.includes('logo') || url.includes('avatar');
-                        if (!isSmallIcon) {
-                            imageUrls.add(url);
-                        }
-                    }
-                });
-            }
-        });
+            });
+        }
 
-        // Add Open Graph image as priority
+        // Add Open Graph image as priority if gallery images not found
         const ogImage = $('meta[property="og:image"]').attr('content');
         if (ogImage && ogImage.startsWith('http')) {
             const tempSet = new Set([ogImage, ...Array.from(imageUrls)]);
             imageUrls = tempSet;
+        }
+        
+        // If still no images found, fallback to more general search but exclude obvious non-product images
+        if (imageUrls.size === 0) {
+            $('img').each((i, elem) => {
+                const src = $(elem).attr('src') || $(elem).attr('data-src') || $(elem).attr('data-lazy-src');
+                const parentClass = $(elem).parent().attr('class') || '';
+                const grandParentClass = $(elem).parent().parent().attr('class') || '';
+                
+                // Skip images in sidebars, recommendations, ads, and UI elements
+                const isInExcludedSection = parentClass.includes('sidebar') || parentClass.includes('recommendation') ||
+                                           parentClass.includes('related') || parentClass.includes('ad-') ||
+                                           grandParentClass.includes('sidebar') || grandParentClass.includes('recommendation') ||
+                                           grandParentClass.includes('related') || grandParentClass.includes('ad-');
+                
+                if (src && src.startsWith('http') && !isInExcludedSection) {
+                    const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
+                                       src.includes('favicon') || src.includes('button') || src.includes('badge');
+                    if (!isSmallIcon) {
+                        imageUrls.add(src);
+                    }
+                }
+            });
         }
 
         console.log(`Found ${imageUrls.size} potential image URLs`);
