@@ -56,25 +56,41 @@ Deno.serve(async (req) => {
         let imageUrls = new Set();
         let fileUrls = new Set();
 
-        // Get title and description - platform specific
-        title = $('h1').first().text().trim() || 
-               $('meta[property="og:title"]').attr('content') || 
+        // Get title (prioritize meta tags for SPAs like Printables)
+        title = $('meta[property="og:title"]').attr('content') ||
+               $('h1').first().text().trim() || 
                $('title').text().trim() || '';
 
-        // Platform-specific description extraction
-        if (platform === 'printables') {
-            description = $('[class*="description" i], [class*="Description" i], .about-text, .print-description').first().text().trim() ||
-                         $('meta[property="og:description"]').attr('content') ||
-                         $('meta[name="description"]').attr('content') || '';
-        } else if (platform === 'thingiverse') {
-            description = $('.thing-description, .description-text, #thing-description').first().text().trim() ||
-                         $('meta[property="og:description"]').attr('content') || '';
-        } else {
-            description = $('meta[property="og:description"]').attr('content') || 
-                         $('meta[name="description"]').attr('content') || 
-                         $('.description, .product-description, .model-description').first().text().trim() || '';
+        // Get description (prioritize meta tags for SPAs)
+        description = $('meta[property="og:description"]').attr('content') || 
+                     $('meta[name="description"]').attr('content') || '';
+        
+        // Try to extract from JSON-LD structured data
+        if (!description || description.length < 50) {
+            $('script[type="application/ld+json"]').each((i, elem) => {
+                try {
+                    const jsonData = JSON.parse($(elem).html());
+                    if (jsonData.description) {
+                        description = jsonData.description;
+                    }
+                } catch (e) {
+                    // Ignore invalid JSON
+                }
+            });
         }
         
+        // Fallback to text content
+        if (!description || description.length < 50) {
+            if (platform === 'printables') {
+                description = $('[class*="description" i], [class*="Description" i]').first().text().trim() || description;
+            } else if (platform === 'thingiverse') {
+                description = $('.thing-description, .description-text').first().text().trim() || description;
+            } else {
+                description = $('.description, .product-description').first().text().trim() || description;
+            }
+        }
+        
+        console.log(`Title: ${title}`);
         console.log(`Description length: ${description.length} chars`);
 
         // Extract designer/author name based on platform
@@ -122,59 +138,72 @@ Deno.serve(async (req) => {
 
         console.log(`Description includes attribution`);
 
-        // Collect images - only from main content area, exclude recommendations/related
+        // Primary: Get Open Graph image (most reliable for SPAs)
+        const ogImage = $('meta[property="og:image"]').attr('content');
+        if (ogImage && ogImage.startsWith('http')) {
+            // For Printables, get full resolution from OG image
+            let fullOgImage = ogImage;
+            if (platform === 'printables') {
+                fullOgImage = ogImage.replace(/\/thumbnails\//, '/images/')
+                                    .replace(/\/thumb\//, '/images/')
+                                    .replace(/_\d+x\d+(\.(jpg|jpeg|png|webp))/, '$1');
+            }
+            imageUrls.add(fullOgImage);
+            console.log(`OG Image: ${fullOgImage}`);
+        }
+        
+        // Try to find images in JSON-LD structured data
+        $('script[type="application/ld+json"]').each((i, elem) => {
+            try {
+                const jsonData = JSON.parse($(elem).html());
+                if (jsonData.image) {
+                    const images = Array.isArray(jsonData.image) ? jsonData.image : [jsonData.image];
+                    images.forEach(img => {
+                        const imgUrl = typeof img === 'string' ? img : img.url;
+                        if (imgUrl && imgUrl.startsWith('http')) {
+                            imageUrls.add(imgUrl);
+                            console.log(`JSON-LD image: ${imgUrl}`);
+                        }
+                    });
+                }
+            } catch (e) {
+                // Ignore invalid JSON
+            }
+        });
+        
+        // Secondary: Collect from main content (exclude sidebars/recommendations)
         $('img').each((i, elem) => {
             const $elem = $(elem);
             const src = $elem.attr('src') || $elem.attr('data-src') || $elem.attr('data-lazy-src');
             
             if (!src || !src.startsWith('http')) return;
             
-            // Get all parent classes to check context
+            // Check if in excluded section
             let parentClasses = '';
             $elem.parents().each((_, parent) => {
-                parentClasses += ' ' + ($(parent).attr('class') || '');
+                const cls = $(parent).attr('class') || '';
+                const id = $(parent).attr('id') || '';
+                parentClasses += ' ' + cls + ' ' + id;
             });
             parentClasses = parentClasses.toLowerCase();
             
-            // EXCLUDE images from these sections
-            const excludeKeywords = ['related', 'recommendation', 'other-print', 'sidebar', 'footer', 
-                                    'header', 'navigation', 'nav-', 'menu', 'ad-', 'ads', 
-                                    'user-card', 'profile-card', 'creator-card', 'similar'];
+            const excludeKeywords = ['related', 'recommendation', 'similar', 'other', 'sidebar', 
+                                    'footer', 'header', 'nav', 'menu', 'ad', 'user-card', 'creator'];
             
-            const isExcluded = excludeKeywords.some(keyword => parentClasses.includes(keyword));
+            const isExcluded = excludeKeywords.some(kw => parentClasses.includes(kw));
+            const isIcon = src.includes('/icon') || src.includes('/logo') || src.includes('/avatar') || 
+                          src.includes('/ui/') || src.includes('/badge');
             
-            // Skip icons and UI elements
-            const isSmallIcon = src.includes('icon') || src.includes('logo') || src.includes('avatar') || 
-                               src.includes('favicon') || src.includes('button') || src.includes('badge') ||
-                               src.includes('/icons/') || src.includes('/ui/');
-            
-            if (!isExcluded && !isSmallIcon) {
-                // Get highest resolution version
+            if (!isExcluded && !isIcon && imageUrls.size < 15) {
                 let finalSrc = src;
-                
                 if (platform === 'printables') {
                     finalSrc = src.replace(/\/thumbnails\//, '/images/')
                                  .replace(/\/thumb\//, '/images/')
-                                 .replace(/_\d+x\d+\.(jpg|jpeg|png|webp)/, '.$1');
-                } else if (platform === 'thingiverse') {
-                    finalSrc = src.replace(/\/\d+x\d+\//, '/original/')
-                                 .replace('/small/', '/original/')
-                                 .replace('/medium/', '/original/')
-                                 .replace('/large/', '/original/');
+                                 .replace(/_\d+x\d+(\.(jpg|jpeg|png|webp))/, '$1');
                 }
-                
                 imageUrls.add(finalSrc);
-                console.log(`Found image: ${finalSrc.substring(0, 80)}...`);
             }
         });
-
-        // Prioritize Open Graph image at the front
-        const ogImage = $('meta[property="og:image"]').attr('content');
-        if (ogImage && ogImage.startsWith('http')) {
-            console.log(`OG Image: ${ogImage}`);
-            const tempArray = [ogImage, ...Array.from(imageUrls).filter(url => url !== ogImage)];
-            imageUrls = new Set(tempArray);
-        }
 
         console.log(`Found ${imageUrls.size} potential image URLs`);
 
