@@ -17,6 +17,7 @@ import ForMakers from './pages/ForMakers';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
 import MakerDashboard from './pages/MakerDashboard';
+import MakerHowItWorks from './pages/MakerHowItWorks';
 import MakerSignup from './pages/MakerSignup';
 import Marketplace from './pages/Marketplace';
 import PaymentSuccess from './pages/PaymentSuccess';
@@ -26,7 +27,6 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import MakerHowItWorks from './pages/MakerHowItWorks';
 import __Layout from './Layout.jsx';
 
 
@@ -50,6 +50,7 @@ export const PAGES = {
     "Home": Home,
     "HowItWorks": HowItWorks,
     "MakerDashboard": MakerDashboard,
+    "MakerHowItWorks": MakerHowItWorks,
     "MakerSignup": MakerSignup,
     "Marketplace": Marketplace,
     "PaymentSuccess": PaymentSuccess,
@@ -59,7 +60,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "MakerHowItWorks": MakerHowItWorks,
 }
 
 export const pagesConfig = {

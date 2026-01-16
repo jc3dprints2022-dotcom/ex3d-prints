@@ -168,13 +168,22 @@ export default function EmailAutomationSection() {
 
   const toggleCampaignStatus = async (campaign) => {
     try {
+      const updatedIsActive = !campaign.is_active;
       await base44.entities.EmailCampaign.update(campaign.id, {
-        is_active: !campaign.is_active
+        is_active: updatedIsActive
       });
-      toast({ title: campaign.is_active ? "Campaign paused" : "Campaign activated" });
+      toast({ 
+        title: updatedIsActive ? "Campaign activated successfully!" : "Campaign paused",
+        description: updatedIsActive ? "The campaign is now running and will send emails automatically." : undefined
+      });
       await loadData();
     } catch (error) {
-      toast({ title: "Failed to update campaign status", variant: "destructive" });
+      console.error('Toggle campaign error:', error);
+      toast({ 
+        title: "Failed to update campaign status", 
+        description: error.message || "Please try again",
+        variant: "destructive" 
+      });
     }
   };
 

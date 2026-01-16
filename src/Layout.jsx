@@ -49,6 +49,7 @@ export default function Layout({ children, currentPageName }) {
       if (isMounted) {
         await loadUserData();
         await checkForNewAnnouncements();
+        await checkNewUserWelcome();
       }
     };
     
@@ -68,6 +69,44 @@ export default function Layout({ children, currentPageName }) {
   useEffect(() => {
     trackPageView();
   }, [location.pathname]);
+
+  const checkNewUserWelcome = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      if (!currentUser) return;
+
+      // Check if user was just created (within last 10 seconds) and hasn't received welcome bonus
+      const userCreatedAt = new Date(currentUser.created_date);
+      const now = new Date();
+      const timeSinceCreation = (now - userCreatedAt) / 1000; // seconds
+
+      // Check localStorage to see if we already sent the welcome email
+      const welcomeSentKey = `welcome_sent_${currentUser.id}`;
+      const welcomeAlreadySent = localStorage.getItem(welcomeSentKey);
+
+      if (timeSinceCreation < 10 && !welcomeAlreadySent) {
+        // New user - trigger welcome email and EXP bonus
+        try {
+          await base44.functions.invoke('onUserSignup', { userId: currentUser.id });
+          localStorage.setItem(welcomeSentKey, 'true');
+          
+          // Reload user data to show updated EXP
+          setTimeout(() => {
+            loadUserData();
+            toast({
+              title: "Welcome to EX3D Prints! 🎉",
+              description: "You've received 120 EXP as a welcome bonus! Check your email.",
+              duration: 8000
+            });
+          }, 1000);
+        } catch (error) {
+          console.error('Failed to send welcome email:', error);
+        }
+      }
+    } catch (error) {
+      // User not logged in or other error - ignore
+    }
+  };
 
   const checkForNewAnnouncements = async () => {
     try {
