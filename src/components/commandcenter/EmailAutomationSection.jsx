@@ -170,6 +170,7 @@ export default function EmailAutomationSection() {
     try {
       const updatedIsActive = !campaign.is_active;
       await base44.entities.EmailCampaign.update(campaign.id, {
+        ...campaign,
         is_active: updatedIsActive
       });
       toast({ 
