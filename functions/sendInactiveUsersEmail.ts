@@ -1,4 +1,3 @@
-
 import { createClient } from 'npm:@base44/sdk@0.7.1';
 
 Deno.serve(async (req) => {
@@ -158,6 +157,7 @@ Deno.serve(async (req) => {
 
                     await base44.entities.EmailCampaign.update(campaign.id, {
                         emails_sent: (campaign.emails_sent || 0) + 1,
+                        emails_sent_last_24h: ((campaign.emails_sent_last_24h || 0) + 1),
                         last_run: new Date().toISOString()
                     });
                 } catch (emailError) {
