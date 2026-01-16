@@ -134,11 +134,24 @@ export default function Marketplace() {
     // Search filter
     if (searchQuery) {
       const searchTerm = searchQuery.toLowerCase();
-      tempProducts = tempProducts.filter(p => 
-        p.name.toLowerCase().includes(searchTerm) ||
-        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+      
+      // Check if search term matches a category
+      const matchedCategory = CATEGORIES.find(cat => 
+        cat.label.toLowerCase().includes(searchTerm) || 
+        cat.value.toLowerCase().includes(searchTerm)
       );
+      
+      if (matchedCategory) {
+        // If searching for a category, show all products in that category
+        tempProducts = tempProducts.filter(p => p.category === matchedCategory.value);
+      } else {
+        // Otherwise search in name, description, and tags
+        tempProducts = tempProducts.filter(p => 
+          p.name.toLowerCase().includes(searchTerm) ||
+          (p.description && p.description.toLowerCase().includes(searchTerm)) ||
+          (p.tags && p.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
+        );
+      }
     }
     
     // Category filter
