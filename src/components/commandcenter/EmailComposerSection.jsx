@@ -220,13 +220,12 @@ export default function EmailComposerSection() {
         }
 
         await base44.entities.EmailCampaign.create({
-          subject: subject,
-          body: message,
-          recipient_type: recipient === "FILTERED_USERS" ? "bulk" : "individual",
-          recipient_ids: targetUsers.map(u => u.id),
-          audience_filter: audienceFilter,
-          scheduled_date: scheduledDateTime.toISOString(),
-          status: "scheduled"
+          name: `Scheduled: ${subject}`,
+          trigger_type: "manual",
+          target_audience: audienceFilter,
+          email_subject: subject,
+          email_body: message,
+          is_active: false
         });
 
         toast({ title: "Email scheduled successfully!", description: `Will be sent on ${scheduledDateTime.toLocaleString()}` });
