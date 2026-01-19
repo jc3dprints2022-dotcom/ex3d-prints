@@ -7,7 +7,7 @@ Deno.serve(async (req) => {
         const base44 = createClientFromRequest(req);
 
         // Check for active campaigns
-        const campaigns = await base44.entities.EmailCampaign.filter({ is_active: true });
+        const campaigns = await base44.asServiceRole.entities.EmailCampaign.filter({ is_active: true });
 
         if (campaigns.length === 0) {
             console.log('No active campaigns found');
