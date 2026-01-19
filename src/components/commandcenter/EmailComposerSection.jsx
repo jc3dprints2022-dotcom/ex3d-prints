@@ -36,8 +36,6 @@ export default function EmailComposerSection() {
   const [uploadedImages, setUploadedImages] = useState([]);
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [scheduleTime, setScheduleTime] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -199,53 +197,6 @@ export default function EmailComposerSection() {
       return;
     }
 
-    // Check if scheduling
-    if (scheduleDate && scheduleTime) {
-      const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
-      if (scheduledDateTime <= new Date()) {
-        toast({ title: "Scheduled time must be in the future", variant: "destructive" });
-        return;
-      }
-
-      // Save as scheduled email campaign
-      try {
-        let targetUsers = [];
-        if (recipient === "FILTERED_USERS") {
-          targetUsers = filteredUsers;
-        } else {
-          const singleUser = users.find(u => u.id === recipient);
-          if (singleUser) {
-            targetUsers = [singleUser];
-          }
-        }
-
-        await base44.entities.EmailCampaign.create({
-          name: `Scheduled: ${subject}`,
-          trigger_type: "manual",
-          target_audience: audienceFilter,
-          email_subject: subject,
-          email_body: message,
-          is_active: false
-        });
-
-        toast({ title: "Email scheduled successfully!", description: `Will be sent on ${scheduledDateTime.toLocaleString()}` });
-        
-        // Reset form
-        setRecipient("");
-        setSubject("");
-        setMessage("");
-        setUploadedImages([]);
-        setAudienceFilter("all");
-        setScheduleDate("");
-        setScheduleTime("");
-        return;
-      } catch (error) {
-        console.error("Schedule error:", error);
-        toast({ title: "Failed to schedule email", description: error.message, variant: "destructive" });
-        return;
-      }
-    }
-
     setSending(true);
     try {
       let targetUsers = [];
@@ -329,8 +280,6 @@ export default function EmailComposerSection() {
       setMessage("");
       setUploadedImages([]);
       setAudienceFilter("all");
-      setScheduleDate("");
-      setScheduleTime("");
     } catch (error) {
       console.error("Send error:", error);
       toast({
@@ -555,34 +504,6 @@ export default function EmailComposerSection() {
                 </div>
               )}
 
-              {/* Schedule Section */}
-              <div className="border-t border-slate-700 pt-4">
-                <Label className="text-white mb-2 block">Schedule Email (Optional)</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="scheduleDate" className="text-slate-400 text-sm">Date</Label>
-                    <Input
-                      id="scheduleDate"
-                      type="date"
-                      value={scheduleDate}
-                      onChange={(e) => setScheduleDate(e.target.value)}
-                      className="bg-slate-900 border-slate-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="scheduleTime" className="text-slate-400 text-sm">Time</Label>
-                    <Input
-                      id="scheduleTime"
-                      type="time"
-                      value={scheduleTime}
-                      onChange={(e) => setScheduleTime(e.target.value)}
-                      className="bg-slate-900 border-slate-700 text-white"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-slate-400 mt-2">Leave empty to send immediately</p>
-              </div>
-
               {/* Send Button */}
               <div className="flex justify-end">
                 <Button
@@ -594,11 +515,6 @@ export default function EmailComposerSection() {
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                       Sending{recipient === "FILTERED_USERS" ? ` to ${filteredUsers.length} users` : ''}...
-                    </>
-                  ) : scheduleDate && scheduleTime ? (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Schedule Email{recipient === "FILTERED_USERS" ? ` to ${filteredUsers.length} Users` : ''}
                     </>
                   ) : (
                     <>
