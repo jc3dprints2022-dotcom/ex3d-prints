@@ -339,13 +339,13 @@ export default function ModelManagementSection() {
       }
     }
 
-    // Auto-calculate price based on formula: (((grams/1000)*20)+1+(print_time/5))*4
+    // Auto-calculate price based on formula: (((grams/1000)*20 + print_time/5))*4.5
     let calculatedPrice = 0;
     if (formData.weight_grams && formData.print_time_hours) {
       const grams = parseFloat(formData.weight_grams);
       const printTime = parseFloat(formData.print_time_hours);
 
-      const rawPrice = (((grams / 1000) * 20) + 1 + (printTime / 5)) * 4;
+      const rawPrice = (grams / 1000 * 20 + printTime / 5) * 4.5;
       calculatedPrice = Math.ceil(rawPrice);
     } else {
         toast({ title: "Weight and Print Time are required for price calculation.", variant: "destructive" });
