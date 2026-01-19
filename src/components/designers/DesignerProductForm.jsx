@@ -251,7 +251,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
 
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
-    const rawPrice = (((grams / 1000) * 20) + 1 + (printTime / 5)) * 4;
+    const rawPrice = (((grams / 1000) * 20) + (printTime / 5)) * 4.5;
     const calculatedPrice = Math.ceil(rawPrice);
 
     setSaving(true);
@@ -414,7 +414,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
             min="0"
             value={
               formData.weight_grams && formData.print_time_hours
-                ? Math.ceil((((parseFloat(formData.weight_grams) / 1000) * 20) + 1 + (parseFloat(formData.print_time_hours) / 5)) * 4)
+                ? Math.ceil((((parseFloat(formData.weight_grams) / 1000) * 20) + (parseFloat(formData.print_time_hours) / 5)) * 4.5)
                 : ''
             }
             readOnly
