@@ -608,7 +608,7 @@ export default function ModelManagementSection() {
                     className="bg-slate-700 border-cyan-500/30 text-white read-only:bg-gray-700 read-only:text-gray-300"
                     placeholder="Auto-calculated from weight and time"
                   />
-                  <p className="text-xs text-gray-400 mt-1">Formula: (((grams/1000)*20)+1+(hrs/5))*4</p>
+                  <p className="text-xs text-gray-400 mt-1">Formula: (((grams/1000)*20)+(hrs/5))*4.5</p>
                 </div>
               </div>
 
