@@ -22,19 +22,19 @@ Deno.serve(async (req) => {
 
         // Call all email campaign functions
         const functionCalls = [
-            base44.functions.invoke('sendCartAbandonmentEmail').catch(err => ({ 
+            base44.asServiceRole.functions.invoke('sendCartAbandonmentEmail').catch(err => ({ 
                 error: err.message, 
                 function: 'Cart Abandonment' 
             })),
-            base44.functions.invoke('sendWishlistReminderEmail').catch(err => ({ 
+            base44.asServiceRole.functions.invoke('sendWishlistReminderEmail').catch(err => ({ 
                 error: err.message, 
                 function: 'Wishlist Reminder' 
             })),
-            base44.functions.invoke('sendInactiveUsersEmail').catch(err => ({ 
+            base44.asServiceRole.functions.invoke('sendInactiveUsersEmail').catch(err => ({ 
                 error: err.message, 
                 function: 'Inactive Users' 
             })),
-            base44.functions.invoke('sendOrderDeliveredEmail').catch(err => ({ 
+            base44.asServiceRole.functions.invoke('sendOrderDeliveredEmail').catch(err => ({ 
                 error: err.message, 
                 function: 'Order Delivered' 
             }))
