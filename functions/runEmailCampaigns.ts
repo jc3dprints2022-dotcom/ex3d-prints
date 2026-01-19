@@ -1,21 +1,10 @@
-import { createClient } from 'npm:@base44/sdk@0.8.6';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 
 Deno.serve(async (req) => {
     console.log('=== Running Email Campaigns ===');
 
-    const BASE44_SUPABASE_URL = Deno.env.get('BASE44_SUPABASE_URL');
-    const BASE44_SUPABASE_SERVICE_KEY = Deno.env.get('BASE44_SUPABASE_SERVICE_KEY');
-
-    if (!BASE44_SUPABASE_URL || !BASE44_SUPABASE_SERVICE_KEY) {
-        console.error('Missing Base44 configuration');
-        return Response.json({ error: 'Server configuration error' }, { status: 500 });
-    }
-
     try {
-        const base44 = createClient({
-            supabaseUrl: BASE44_SUPABASE_URL,
-            supabaseKey: BASE44_SUPABASE_SERVICE_KEY
-        });
+        const base44 = createClientFromRequest(req);
 
         // Check for active campaigns
         const campaigns = await base44.entities.EmailCampaign.filter({ is_active: true });
