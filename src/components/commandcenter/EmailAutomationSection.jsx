@@ -101,8 +101,16 @@ export default function EmailAutomationSection() {
 
     try {
       const campaignData = {
-        ...formData,
-        trigger_condition: getTriggerCondition()
+        name: formData.name,
+        trigger_type: formData.trigger_type,
+        trigger_condition: getTriggerCondition(),
+        target_audience: formData.target_audience,
+        email_subject: formData.email_subject,
+        email_body: formData.email_body,
+        include_dynamic_content: formData.include_dynamic_content,
+        dynamic_content_type: formData.dynamic_content_type,
+        specific_product_id: formData.specific_product_id,
+        is_active: formData.is_active
       };
 
       if (editingCampaign) {
