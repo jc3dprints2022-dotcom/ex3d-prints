@@ -4,7 +4,8 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
 
-        const { orderId, excludedMakerIds = [], assignToMultiple = false } = await req.json();
+        const { orderId, excludedMakerIds = [] } = await req.json();
+        const assignToMultiple = true; // Always assign to multiple makers
         
         if (!orderId) {
             return Response.json({ error: 'Order ID required' }, { status: 400 });
