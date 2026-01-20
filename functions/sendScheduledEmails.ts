@@ -37,7 +37,8 @@ Deno.serve(async (req) => {
                 
                 for (const recipient of recipients) {
                     try {
-                        let finalMessage = scheduledEmail.body;
+                        // Convert newlines to HTML breaks to preserve formatting
+                        let finalMessage = scheduledEmail.body.replace(/\n/g, '<br>');
 
                         // Add product recommendations if user has recently viewed items
                         if (recipient.recently_viewed && recipient.recently_viewed.length > 0) {

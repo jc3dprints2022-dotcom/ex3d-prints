@@ -76,7 +76,8 @@ Deno.serve(async (req) => {
 
                 let emailBody = campaign.email_body
                     .replace(/\{user\.full_name\}/g, user.full_name || 'Valued Customer')
-                    .replace(/\{user\.exp_points\}/g, (user.exp_points || 0).toString());
+                    .replace(/\{user\.exp_points\}/g, (user.exp_points || 0).toString())
+                    .replace(/\n/g, '<br>');
 
                 const productIds = [];
                 
