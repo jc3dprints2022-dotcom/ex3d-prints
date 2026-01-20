@@ -87,7 +87,16 @@ export default function MakerDashboard() {
         return isAssignedMaker || isInMultiAssignment;
       });
 
-      setOrders(myOrders.sort((a, b) => new Date(b.created_date) - new Date(a.created_date)));
+      // Sort orders: priority orders first, then by created date
+      const sortedOrders = myOrders.sort((a, b) => {
+        // Priority orders go first
+        if (a.is_priority && !b.is_priority) return -1;
+        if (!a.is_priority && b.is_priority) return 1;
+        // Then by creation date (newest first)
+        return new Date(b.created_date) - new Date(a.created_date);
+      });
+      
+      setOrders(sortedOrders);
 
       // Load printers
       const allPrinters = await base44.entities.Printer.filter({
@@ -326,7 +335,7 @@ The EX3D Team`
 
   const getOrderCardHeaderClass = (status, isPriority) => {
     if (status === 'cancelled') return 'bg-red-100 border-b-2 border-red-500';
-    if (isPriority) return 'bg-gradient-to-r from-yellow-100 to-amber-100 border-b-2 border-yellow-500';
+    if (isPriority) return 'bg-gradient-to-r from-yellow-200 to-amber-200 border-b-2 border-amber-500';
     return 'bg-gray-50';
   };
 
@@ -464,15 +473,20 @@ The EX3D Team`
                   <CardHeader className={getOrderCardHeaderClass(order.status, order.is_priority)}>
                     <div className="flex justify-between items-start">
                       <div>
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          Order #{order.id.slice(-8)}
+                        <div>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            Order #{order.id.slice(-8)}
+                            {order.status === 'cancelled' && (
+                              <span className="text-red-600 text-sm font-normal">❌ CANCELLED</span>
+                            )}
+                          </CardTitle>
                           {order.is_priority && order.status !== 'cancelled' && (
-                            <span className="text-orange-600 text-sm font-bold">⚡ PRIORITY - Next Day Completion</span>
+                            <div className="mt-2 p-2 bg-amber-500 text-white rounded-md">
+                              <p className="text-sm font-bold">⚡ PRIORITY OVERNIGHT DELIVERY</p>
+                              <p className="text-xs">This order MUST be completed by next day for overnight delivery.</p>
+                            </div>
                           )}
-                          {order.status === 'cancelled' && (
-                            <span className="text-red-600 text-sm font-normal">❌ CANCELLED</span>
-                          )}
-                        </CardTitle>
+                        </div>
                         <p className="text-sm text-gray-600 mt-1">
                           {new Date(order.created_date).toLocaleString()}
                         </p>
