@@ -33,7 +33,7 @@ export default function DesignerDashboard() {
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
-    { value: 'assembly', label: 'Assembly Guides', icon: FileText },
+    /*{ value: 'assembly', label: 'Assembly Guides', icon: FileText },*/
     { value: 'guide', label: 'Designer Guide', icon: TrendingUp },
     { value: 'financial', label: 'Financial Info', icon: DollarSign },
     { value: 'branding', label: 'Branding Kit', icon: Palette },
