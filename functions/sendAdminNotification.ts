@@ -47,10 +47,12 @@ Deno.serve(async (req) => {
         let emailBody = '';
 
         // Build email content based on event type
+        let bodyContent = '';
+        
         switch (event.type) {
             case 'maker_application':
                 emailSubject = `New Maker Application: ${event.data.full_name}`;
-                emailBody = `
+                bodyContent = `
                     <h2>New Maker Application Submitted</h2>
                     <p><strong>Name:</strong> ${event.data.full_name}</p>
                     <p><strong>Email:</strong> ${event.data.email}</p>
@@ -59,13 +61,13 @@ Deno.serve(async (req) => {
                     <p><strong>Experience:</strong> ${event.data.experience_level || 'Not specified'}</p>
                     <p><strong>Weekly Capacity:</strong> ${event.data.weekly_capacity || 'Not specified'} hours</p>
                     <p><strong>Materials:</strong> ${event.data.materials?.join(', ') || 'Not specified'}</p>
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             case 'designer_application':
                 emailSubject = `New Designer Application: ${event.data.designer_name}`;
-                emailBody = `
+                bodyContent = `
                     <h2>New Designer Application Submitted</h2>
                     <p><strong>Designer Name:</strong> ${event.data.designer_name}</p>
                     <p><strong>Real Name:</strong> ${event.data.full_name}</p>
@@ -74,13 +76,13 @@ Deno.serve(async (req) => {
                     <p><strong>Categories:</strong> ${event.data.design_categories?.join(', ') || 'Not specified'}</p>
                     <p><strong>Bio:</strong> ${event.data.bio || 'Not provided'}</p>
                     ${event.data.portfolio_links?.length > 0 ? `<p><strong>Portfolio:</strong> ${event.data.portfolio_links.join(', ')}</p>` : ''}
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             case 'new_order':
                 emailSubject = `New Order #${event.data.id?.slice(0, 8)}: $${event.data.total_amount}`;
-                emailBody = `
+                bodyContent = `
                     <h2>New Order Placed</h2>
                     <p><strong>Order ID:</strong> ${event.data.id}</p>
                     <p><strong>Customer:</strong> ${event.data.customer_username || 'Unknown'}</p>
@@ -94,13 +96,13 @@ Deno.serve(async (req) => {
                             - ${item.product_name} x${item.quantity} ($${item.total_price?.toFixed(2)})
                         </div>
                     `).join('') || ''}
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             case 'custom_request':
                 emailSubject = `New Custom Print Request: ${event.data.title}`;
-                emailBody = `
+                bodyContent = `
                     <h2>New Custom Print Request</h2>
                     <p><strong>Title:</strong> ${event.data.title}</p>
                     <p><strong>Customer ID:</strong> ${event.data.customer_id}</p>
@@ -113,25 +115,25 @@ Deno.serve(async (req) => {
                     ${event.data.is_class_project ? '<p><strong>Class Project:</strong> Yes (25% discount eligible)</p>' : ''}
                     ${event.data.special_requirements ? `<p><strong>Special Requirements:</strong> ${event.data.special_requirements}</p>` : ''}
                     <p><strong>Files Uploaded:</strong> ${event.data.files?.length || 0}</p>
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             case 'order_cancelled':
                 emailSubject = `Order Cancelled #${event.data.id?.slice(0, 8)}`;
-                emailBody = `
+                bodyContent = `
                     <h2>Order Cancelled</h2>
                     <p><strong>Order ID:</strong> ${event.data.id}</p>
                     <p><strong>Customer:</strong> ${event.data.customer_username || 'Unknown'}</p>
                     <p><strong>Total Amount:</strong> $${event.data.total_amount?.toFixed(2)}</p>
                     <p><strong>Reason:</strong> ${event.data.cancellation_reason || 'Not provided'}</p>
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             case 'contact_submission':
                 emailSubject = `New Contact Form: ${event.data.subject}`;
-                emailBody = `
+                bodyContent = `
                     <h2>New Contact Form Submission</h2>
                     <p><strong>Name:</strong> ${event.data.name}</p>
                     <p><strong>Email:</strong> ${event.data.email}</p>
@@ -140,14 +142,31 @@ Deno.serve(async (req) => {
                     <div style="background: #f5f5f5; padding: 15px; border-radius: 5px;">
                         ${event.data.message}
                     </div>
-                    <p><a href="${event.dashboard_url}">View in Admin Dashboard</a></p>
+                    <p><a href="${event.dashboard_url}" style="display: inline-block; background: #14b8a6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; margin-top: 12px; font-weight: 600;">View in Admin Dashboard</a></p>
                 `;
                 break;
 
             default:
                 emailSubject = `New ${event.type} Event`;
-                emailBody = `<h2>New Event: ${event.type}</h2><pre>${JSON.stringify(event.data, null, 2)}</pre>`;
+                bodyContent = `<h2>New Event: ${event.type}</h2><pre>${JSON.stringify(event.data, null, 2)}</pre>`;
         }
+        
+        // Wrap body content in HTML email template
+        const emailBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
+    <div style="border-bottom: 3px solid #14b8a6; margin-bottom: 20px; padding-bottom: 10px;">
+        <h2 style="color: #14b8a6; margin: 0;">EX3D Prints</h2>
+    </div>
+    <div style="color: #374151; font-size: 16px; line-height: 1.6;">
+        ${bodyContent}
+    </div>
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
+        <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+            This is an automated admin notification from EX3D Prints
+        </p>
+    </div>
+</div>
+        `.trim();
 
         // Send email to all admins
         const emailPromises = adminUsers.map(admin => 
