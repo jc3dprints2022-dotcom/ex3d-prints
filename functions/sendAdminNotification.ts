@@ -7,11 +7,26 @@ Deno.serve(async (req) => {
         
         // Handle both direct invocation and entity automation triggers
         let event;
-        if (payload.event) {
+        if (payload.event && payload.event.entity_name) {
+            // Entity automation trigger - map to expected format
+            const entityTypeMap = {
+                'MakerApplication': 'maker_application',
+                'DesignerApplication': 'designer_application',
+                'Order': 'new_order',
+                'CustomPrintRequest': 'custom_request',
+                'ContactSubmission': 'contact_submission'
+            };
+            
+            event = {
+                type: entityTypeMap[payload.event.entity_name] || 'unknown',
+                data: payload.data || {},
+                dashboard_url: 'https://ex3dprints.com/jc3dcommandcenter'
+            };
+        } else if (payload.event) {
             // Direct invocation with event object
             event = payload.event;
         } else {
-            // Entity automation - construct event from automation payload
+            // Fallback
             event = {
                 type: payload.type || 'unknown',
                 data: payload.data || {},
