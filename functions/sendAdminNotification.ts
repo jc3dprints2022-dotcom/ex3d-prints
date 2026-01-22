@@ -3,7 +3,21 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
-        const { event } = await req.json();
+        const payload = await req.json();
+        
+        // Handle both direct invocation and entity automation triggers
+        let event;
+        if (payload.event) {
+            // Direct invocation with event object
+            event = payload.event;
+        } else {
+            // Entity automation - construct event from automation payload
+            event = {
+                type: payload.type || 'unknown',
+                data: payload.data || {},
+                dashboard_url: 'https://ex3dprints.com/jc3dcommandcenter'
+            };
+        }
 
         // Get all admin users
         const allUsers = await base44.asServiceRole.entities.User.list();
