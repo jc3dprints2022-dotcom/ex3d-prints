@@ -37,8 +37,17 @@ Deno.serve(async (req) => {
                 
                 for (const recipient of recipients) {
                     try {
-                        // Convert newlines to HTML breaks to preserve formatting
-                        let finalMessage = scheduledEmail.body.replace(/\n/g, '<br>');
+                        // Format email with proper HTML structure
+                        let bodyContent = scheduledEmail.body.replace(/\n/g, '<br>');
+                        let finalMessage = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
+    <div style="border-bottom: 3px solid #14b8a6; margin-bottom: 20px; padding-bottom: 10px;">
+        <h2 style="color: #14b8a6; margin: 0;">EX3D Prints</h2>
+    </div>
+    <div style="color: #374151; font-size: 16px; line-height: 1.6;">
+        ${bodyContent}
+    </div>
+                        `.trim();
 
                         // Add product recommendations if user has recently viewed items
                         if (recipient.recently_viewed && recipient.recently_viewed.length > 0) {
@@ -64,10 +73,20 @@ Deno.serve(async (req) => {
                                     </div>
                                 `;
                                 finalMessage += productsHTML;
-                            }
-                        }
+                                }
+                                }
 
-                        await base44.asServiceRole.integrations.Core.SendEmail({
+                                // Close HTML wrapper
+                                finalMessage += `
+                                <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
+                                <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+                                Need help? Contact us at <a href="mailto:ex3dprint.@gmail.com" style="color: #14b8a6; text-decoration: none;">ex3dprint.@gmail.com</a>
+                                </p>
+                                </div>
+                                </div>
+                                `.trim();
+
+                                await base44.asServiceRole.integrations.Core.SendEmail({
                             to: recipient.email,
                             subject: scheduledEmail.subject,
                             body: finalMessage,
