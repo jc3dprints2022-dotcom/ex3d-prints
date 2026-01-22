@@ -60,10 +60,20 @@ Deno.serve(async (req) => {
                     continue;
                 }
 
-                let emailBody = campaign.email_body
+                let bodyContent = campaign.email_body
                     .replace(/\{user\.full_name\}/g, user.full_name || 'Valued Customer')
                     .replace(/\{user\.exp_points\}/g, (user.exp_points || 0).toString())
                     .replace(/\n/g, '<br>');
+                
+                let emailBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
+    <div style="border-bottom: 3px solid #14b8a6; margin-bottom: 20px; padding-bottom: 10px;">
+        <h2 style="color: #14b8a6; margin: 0;">EX3D Prints</h2>
+    </div>
+    <div style="color: #374151; font-size: 16px; line-height: 1.6;">
+        ${bodyContent}
+    </div>
+                `.trim();
 
                 const productIds = [];
                 
@@ -90,6 +100,16 @@ Deno.serve(async (req) => {
                     emailBody += '</div></div>';
                 }
 
+                // Close HTML wrapper
+                emailBody += `
+    <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px; text-align: center;">
+        <p style="color: #9ca3af; font-size: 14px; margin: 0;">
+            Need help? Contact us at <a href="mailto:ex3dprint.@gmail.com" style="color: #14b8a6; text-decoration: none;">ex3dprint.@gmail.com</a>
+        </p>
+    </div>
+</div>
+                `.trim();
+                
                 const emailSubject = campaign.email_subject
                     .replace(/\{user\.full_name\}/g, user.full_name || 'Valued Customer')
                     .replace(/\{user\.exp_points\}/g, (user.exp_points || 0).toString());
