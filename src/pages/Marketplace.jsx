@@ -311,19 +311,29 @@ export default function Marketplace() {
                 viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`}
               />
 
-              {/* Holidays Section - Shown after Most Popular */}
-              {getProductsByCategory('holidays').length > 0 && (
-                <HorizontalProductSection
-                  title="Holidays"
-                  products={getProductsByCategory('holidays')}
-                  viewAllUrl={`${createPageUrl("Marketplace")}?category=holidays`}
-                />
-              )}
+              {/* Priority category sections - shown in order: Dorm Essentials, Desk, Holidays, Kit Cards */}
+              {['dorm_essentials', 'desk', 'holidays', 'kit_cards'].map(categoryValue => {
+                const categoryProducts = getProductsByCategory(categoryValue);
+                const category = CATEGORIES.find(c => c.value === categoryValue);
+                
+                // Only show if category has at least 5 products
+                if (categoryProducts.length >= 5 && category) {
+                  return (
+                    <HorizontalProductSection
+                      key={categoryValue}
+                      title={category.label}
+                      products={categoryProducts}
+                      viewAllUrl={`${createPageUrl("Marketplace")}?category=${categoryValue}`}
+                    />
+                  );
+                }
+                return null;
+              })}
 
-              {/* Category Sections - Exclude embry_riddle, halloween, and holidays (already shown) */}
+              {/* Other Category Sections - Exclude priority categories and embry_riddle, halloween */}
               {CATEGORIES
-                .filter(category => !['embry_riddle', 'halloween', 'holidays'].includes(category.value))
-                .filter(category => getProductsByCategory(category.value).length > 0)
+                .filter(category => !['dorm_essentials', 'desk', 'holidays', 'kit_cards', 'embry_riddle', 'halloween'].includes(category.value))
+                .filter(category => getProductsByCategory(category.value).length >= 5)
                 .map(category => {
                   const categoryProducts = getProductsByCategory(category.value);
 
