@@ -55,6 +55,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           multi_color: existingProduct.multi_color || false,
           number_of_colors: existingProduct.number_of_colors || 2,
           custom_scale: existingProduct.custom_scale || null,
+          infill_percentage: existingProduct.infill_percentage || 15,
           use_shown_colors: existingProduct.use_shown_colors || false,
           shown_color_specs: existingProduct.shown_color_specs || [],
         }
@@ -74,6 +75,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           multi_color: false,
           number_of_colors: 2,
           custom_scale: null,
+          infill_percentage: 15,
           use_shown_colors: false,
           shown_color_specs: [],
         }
@@ -280,6 +282,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         multi_color: formData.multi_color,
         number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
         custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
+        infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
         use_shown_colors: formData.use_shown_colors,
         shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
         rating: 0,
@@ -363,7 +366,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div>
           <Label htmlFor="print_time">Print Time (hrs) *</Label>
           <Input
@@ -398,10 +401,24 @@ export default function DesignerProductForm({ designerId, designerName, existing
             type="number"
             step="1"
             min="1"
-            max="1000"
+            max="5000"
             value={formData.custom_scale || ''}
             onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
             placeholder="Optional (default 100)"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="infill">Infill (%)</Label>
+          <Input
+            id="infill"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            value={formData.infill_percentage || 15}
+            onChange={(e) => setFormData({...formData, infill_percentage: e.target.value ? parseFloat(e.target.value) : 15})}
+            placeholder="Default 15%"
           />
         </div>
 
