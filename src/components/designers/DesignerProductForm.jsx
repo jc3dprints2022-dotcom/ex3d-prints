@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Crop } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import ImageCropEditor from "../shared/ImageCropEditor";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
@@ -35,6 +36,8 @@ const COLORS = [
 export default function DesignerProductForm({ designerId, designerName, existingProduct, onSuccess, onCancel }) {
   const [licenseVerified, setLicenseVerified] = useState(!!existingProduct);
   const [saving, setSaving] = useState(false);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
+  const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
   const { toast } = useToast();
 
   const [formData, setFormData] = useState(
@@ -126,6 +129,21 @@ export default function DesignerProductForm({ designerId, designerName, existing
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
+  };
+
+  const handleOpenCropEditor = (imageUrl, index) => {
+    setCurrentCropImage({ url: imageUrl, index });
+    setCropEditorOpen(true);
+  };
+
+  const handleSaveCroppedImage = (newImageUrl) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.map((img, idx) => 
+        idx === currentCropImage.index ? newImageUrl : img
+      )
+    }));
+    setCropEditorOpen(false);
   };
 
   const handlePrintFileUpload = async (e) => {
@@ -313,7 +331,14 @@ export default function DesignerProductForm({ designerId, designerName, existing
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <>
+      <ImageCropEditor
+        isOpen={cropEditorOpen}
+        onClose={() => setCropEditorOpen(false)}
+        imageUrl={currentCropImage.url}
+        onSave={handleSaveCroppedImage}
+      />
+      <form onSubmit={handleSubmit} className="space-y-4">
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <Label htmlFor="name">Product Name *</Label>
@@ -652,7 +677,19 @@ export default function DesignerProductForm({ designerId, designerName, existing
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
             {formData.images.map((img, idx) => (
               <div key={idx} className="relative group">
-                <img src={img} alt={`Product ${idx + 1}`} className="w-full h-24 object-cover rounded border" />
+                <img src={img} alt={`Product ${idx + 1}`} className="w-full h-24 object-cover rounded border cursor-pointer" onClick={() => handleOpenCropEditor(img, idx)} />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="icon"
+                  className="absolute top-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenCropEditor(img, idx);
+                  }}
+                >
+                  <Crop className="w-3 h-3" />
+                </Button>
                 <Button
                   type="button"
                   variant="destructive"
@@ -747,5 +784,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </Button>
       </div>
     </form>
+    </>
   );
 }

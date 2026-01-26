@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { base44 } from "@/api/base44Client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -9,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, Check, X, Download, Trash2 } from "lucide-react"; // Added Trash2
+import { Loader2, Check, X, Download, Trash2, Crop } from "lucide-react";
+import ImageCropEditor from "../shared/ImageCropEditor";
 
 const REJECTION_REASONS = [
   { value: "inappropriate", label: "Inappropriate Content" },
@@ -20,9 +20,12 @@ const REJECTION_REASONS = [
 ];
 
 export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpdate }) {
-  const [editMode, setEditMode] = useState(true); // Added as per outline, but not used in logic
+  const [editMode, setEditMode] = useState(true);
   const [loading, setLoading] = useState(false);
-  const [deleting, setDeleting] = useState(false); // Added
+  const [deleting, setDeleting] = useState(false);
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
+  const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
+  const [productImages, setProductImages] = useState(product.images || []);
   const [formData, setFormData] = useState({
     name: product.name,
     description: product.description,
@@ -74,6 +77,29 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
       toast({ title: "Failed to reject", variant: "destructive" });
     }
     setLoading(false);
+  };
+
+  const handleOpenCropEditor = (imageUrl, index) => {
+    setCurrentCropImage({ url: imageUrl, index });
+    setCropEditorOpen(true);
+  };
+
+  const handleSaveCroppedImage = async (newImageUrl) => {
+    const updatedImages = productImages.map((img, idx) => 
+      idx === currentCropImage.index ? newImageUrl : img
+    );
+    setProductImages(updatedImages);
+    
+    // Update product immediately with new images
+    try {
+      await base44.entities.Product.update(product.id, { images: updatedImages });
+      toast({ title: "Image updated successfully!" });
+      onUpdate();
+    } catch (error) {
+      toast({ title: "Failed to update image", variant: "destructive" });
+    }
+    
+    setCropEditorOpen(false);
   };
 
   const handleUpdate = async () => {
@@ -163,7 +189,14 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <>
+      <ImageCropEditor
+        isOpen={cropEditorOpen}
+        onClose={() => setCropEditorOpen(false)}
+        imageUrl={currentCropImage.url}
+        onSave={handleSaveCroppedImage}
+      />
+      <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Edit Product</DialogTitle> {/* Changed title */}
@@ -291,12 +324,31 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
           </div>
 
           {/* Product Images */}
-          {product.images && product.images.length > 0 && (
+          {productImages && productImages.length > 0 && (
             <div>
-              <Label className="text-gray-900">Images</Label>
-              <div className="flex gap-2 mt-2">
-                {product.images.map((img, idx) => (
-                  <img key={idx} src={img} alt={`Product ${idx + 1}`} className="w-24 h-24 object-cover rounded border" />
+              <Label className="text-gray-900">Images (Click to edit)</Label>
+              <div className="flex gap-2 mt-2 flex-wrap">
+                {productImages.map((img, idx) => (
+                  <div key={idx} className="relative group">
+                    <img 
+                      src={img} 
+                      alt={`Product ${idx + 1}`} 
+                      className="w-24 h-24 object-cover rounded border cursor-pointer hover:opacity-75 transition-opacity" 
+                      onClick={() => handleOpenCropEditor(img, idx)}
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="icon"
+                      className="absolute top-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenCropEditor(img, idx);
+                      }}
+                    >
+                      <Crop className="w-3 h-3" />
+                    </Button>
+                  </div>
                 ))}
               </div>
             </div>
@@ -392,5 +444,6 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
         </DialogFooter>
       </DialogContent>
     </Dialog>
+    </>
   );
 }
