@@ -311,8 +311,8 @@ export default function Marketplace() {
                 viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`}
               />
 
-              {/* Priority category sections - shown in order: Dorm Essentials, Desk, Holidays, Kit Cards */}
-              {['dorm_essentials', 'desk', 'holidays', 'kit_cards'].map(categoryValue => {
+              {/* Priority category sections - shown in order: Dorm Essentials, Desk, Gadgets, Rocket Models, Holidays, Kit Cards */}
+              {['dorm_essentials', 'desk', 'gadgets', 'rocket_models', 'holidays', 'kit_cards'].map(categoryValue => {
                 const categoryProducts = getProductsByCategory(categoryValue);
                 const category = CATEGORIES.find(c => c.value === categoryValue);
                 
@@ -332,7 +332,7 @@ export default function Marketplace() {
 
               {/* Other Category Sections - Exclude priority categories and embry_riddle, halloween */}
               {CATEGORIES
-                .filter(category => !['dorm_essentials', 'desk', 'holidays', 'kit_cards', 'embry_riddle', 'halloween'].includes(category.value))
+                .filter(category => !['dorm_essentials', 'desk', 'gadgets', 'rocket_models', 'holidays', 'kit_cards', 'embry_riddle', 'halloween'].includes(category.value))
                 .filter(category => getProductsByCategory(category.value).length >= 5)
                 .map(category => {
                   const categoryProducts = getProductsByCategory(category.value);
