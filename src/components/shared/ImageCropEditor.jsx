@@ -10,7 +10,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function ImageCropEditor({ isOpen, onClose, imageUrl, onSave }) {
-  const [crop, setCrop] = useState({ unit: "%", width: 90, aspect: undefined });
+  const [crop, setCrop] = useState({ unit: "%", width: 90, aspect: 1 });
   const [completedCrop, setCompletedCrop] = useState(null);
   const [scale, setScale] = useState(1);
   const [rotate, setRotate] = useState(0);
@@ -108,11 +108,13 @@ export default function ImageCropEditor({ isOpen, onClose, imageUrl, onSave }) {
               crop={crop}
               onChange={(c) => setCrop(c)}
               onComplete={(c) => setCompletedCrop(c)}
+              aspect={1}
             >
               <img
                 ref={imgRef}
                 src={imageUrl}
                 alt="Crop preview"
+                crossOrigin="anonymous"
                 style={{
                   transform: `scale(${scale}) rotate(${rotate}deg)`,
                   maxHeight: "500px",
