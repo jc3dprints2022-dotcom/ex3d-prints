@@ -36,7 +36,9 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
     category: product.category,
     status: product.status,
     rejection_reason: product.rejection_reason || '',
-    admin_feedback: product.admin_feedback || ''
+    admin_feedback: product.admin_feedback || '',
+    custom_scale: product.custom_scale || null,
+    infill_percentage: product.infill_percentage || 15
   });
   const { toast } = useToast();
 
@@ -156,7 +158,8 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
         },
         category: formData.category,
         status: formData.status,
-        // Only send rejection_reason and admin_feedback if status is 'rejected'
+        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
+        infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
         rejection_reason: formData.status === 'rejected' ? formData.rejection_reason : null,
         admin_feedback: formData.status === 'rejected' ? formData.admin_feedback : null
       };
@@ -248,7 +251,7 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <div>
               <Label htmlFor="price" className="text-gray-900">Price ($)</Label>
               <Input
@@ -280,6 +283,34 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
                 type="number"
                 value={formData.weight_grams}
                 onChange={(e) => setFormData({...formData, weight_grams: e.target.value})}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="scale" className="text-gray-900">Scale (%)</Label>
+              <Input
+                id="scale"
+                type="number"
+                step="1"
+                min="1"
+                max="5000"
+                value={formData.custom_scale || ''}
+                onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
+                placeholder="Default 100"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="infill" className="text-gray-900">Infill (%)</Label>
+              <Input
+                id="infill"
+                type="number"
+                step="1"
+                min="0"
+                max="100"
+                value={formData.infill_percentage}
+                onChange={(e) => setFormData({...formData, infill_percentage: e.target.value ? parseFloat(e.target.value) : 15})}
+                placeholder="Default 15"
               />
             </div>
           </div>
@@ -326,27 +357,24 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
           {/* Product Images */}
           {productImages && productImages.length > 0 && (
             <div>
-              <Label className="text-gray-900">Images (Click to edit)</Label>
+              <Label className="text-gray-900">Product Images</Label>
               <div className="flex gap-2 mt-2 flex-wrap">
                 {productImages.map((img, idx) => (
-                  <div key={idx} className="relative group">
+                  <div key={idx} className="relative">
                     <img 
                       src={img} 
                       alt={`Product ${idx + 1}`} 
-                      className="w-24 h-24 object-cover rounded border cursor-pointer hover:opacity-75 transition-opacity" 
-                      onClick={() => handleOpenCropEditor(img, idx)}
+                      className="w-24 h-24 object-cover rounded border" 
                     />
                     <Button
                       type="button"
                       variant="secondary"
-                      size="icon"
-                      className="absolute top-1 left-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenCropEditor(img, idx);
-                      }}
+                      size="sm"
+                      className="mt-1 w-24"
+                      onClick={() => handleOpenCropEditor(img, idx)}
                     >
-                      <Crop className="w-3 h-3" />
+                      <Crop className="w-3 h-3 mr-1" />
+                      Crop
                     </Button>
                   </div>
                 ))}
