@@ -8,9 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, X, Package, Link as LinkIcon, PlusCircle, Pencil } from "lucide-react";
+import { Loader2, Upload, X, Package, Link as LinkIcon, PlusCircle, Pencil, Crop } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdminDesignReviewModal from "../admin/AdminDesignReviewModal";
+import ImageCropEditor from "../shared/ImageCropEditor";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
@@ -55,6 +56,8 @@ export default function ModelManagementSection() {
   const [showForm, setShowForm] = useState(false); // To toggle product creation/edit form
   const [editingProduct, setEditingProduct] = useState(null); // Product being edited
   const [saving, setSaving] = useState(false); // Used for any ongoing file ops or form submission
+  const [cropEditorOpen, setCropEditorOpen] = useState(false);
+  const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
 
   const initialFormData = {
     name: '',
@@ -71,10 +74,10 @@ export default function ModelManagementSection() {
     print_files: [],
     multi_color: false,
     number_of_colors: 2,
-    custom_scale: null, // Added custom_scale field
+    custom_scale: null,
+    infill_percentage: 15,
     use_shown_colors: false,
     shown_color_specs: [],
-    // 'status' removed from formData as it's hardcoded to 'active' in handleSubmit
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -206,6 +209,21 @@ export default function ModelManagementSection() {
     }));
   };
 
+  const handleOpenCropEditor = (imageUrl, index) => {
+    setCurrentCropImage({ url: imageUrl, index });
+    setCropEditorOpen(true);
+  };
+
+  const handleSaveCroppedImage = (newImageUrl) => {
+    setFormData(prev => ({
+      ...prev,
+      images: prev.images.map((img, idx) => 
+        idx === currentCropImage.index ? newImageUrl : img
+      )
+    }));
+    setCropEditorOpen(false);
+  };
+
   const handlePrintFileUpload = async (e) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -244,26 +262,25 @@ export default function ModelManagementSection() {
     setFormData({
       name: product.name,
       description: product.description,
-      price: product.price.toString(), // Convert to string for input
+      price: product.price.toString(),
       print_time_hours: product.print_time_hours.toString(),
       weight_grams: product.weight_grams.toString(),
       dimensions: product.dimensions || { length: '', width: '', height: '' },
       category: product.category,
       materials: product.materials || [],
       colors: product.colors || [],
-      tags: product.tags || [], // Preserve tags
+      tags: product.tags || [],
       images: product.images || [],
       print_files: product.print_files || [],
       multi_color: product.multi_color || false,
       number_of_colors: product.number_of_colors || 2,
-      custom_scale: product.custom_scale || null, // Populate custom_scale
+      custom_scale: product.custom_scale || null,
+      infill_percentage: product.infill_percentage || 15,
       use_shown_colors: product.use_shown_colors || false,
       shown_color_specs: product.shown_color_specs || [],
-      // Status not needed here as it's hardcoded to 'active' on save
     });
-    setLicenseVerified(true); // Assume verified for existing products
+    setLicenseVerified(true);
     setShowForm(true);
-    // Scroll to top or to the form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -376,7 +393,8 @@ export default function ModelManagementSection() {
         status: 'active', // Hardcoded status
         multi_color: formData.multi_color,
         number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
-        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null, // Include custom_scale
+        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
+        infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
         use_shown_colors: formData.use_shown_colors,
         shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
         rating: editingProduct ? editingProduct.rating : 0, // Preserve rating on update
@@ -409,7 +427,14 @@ export default function ModelManagementSection() {
   };
 
   return (
-    <div className="space-y-6">
+    <>
+      <ImageCropEditor
+        isOpen={cropEditorOpen}
+        onClose={() => setCropEditorOpen(false)}
+        imageUrl={currentCropImage.url}
+        onSave={handleSaveCroppedImage}
+      />
+      <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-white">Product Management</h2>
         <Button onClick={() => {
@@ -545,8 +570,8 @@ export default function ModelManagementSection() {
                 />
               </div>
 
-              {/* Updated grid for new custom_scale input */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Updated grid for new custom_scale and infill inputs */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <Label htmlFor="print_time" className="text-white">Print Time (hrs) *</Label>
                   <Input
@@ -584,11 +609,26 @@ export default function ModelManagementSection() {
                     type="number"
                     step="1"
                     min="1"
-                    max="1000"
-                    value={formData.custom_scale || ''} // Display empty string for null
+                    max="5000"
+                    value={formData.custom_scale || ''}
                     onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     placeholder="Optional (default 100)"
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="infill" className="text-white">Infill (%)</Label>
+                  <Input
+                    id="infill"
+                    type="number"
+                    step="1"
+                    min="0"
+                    max="100"
+                    value={formData.infill_percentage}
+                    onChange={(e) => setFormData({...formData, infill_percentage: e.target.value ? parseFloat(e.target.value) : 15})}
+                    className="bg-slate-800 border-cyan-500/30 text-white"
+                    placeholder="Default 15"
                   />
                 </div>
 
@@ -827,17 +867,29 @@ export default function ModelManagementSection() {
                 {formData.images.length > 0 && (
                   <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 mt-2">
                     {formData.images.map((img, idx) => (
-                      <div key={idx} className="relative group">
-                        <img src={img} alt={`Product ${idx + 1}`} className="w-full h-24 object-cover rounded border" />
-                        <Button
-                          type="button"
-                          variant="destructive"
-                          size="icon"
-                          className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleRemoveImage(idx)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
+                      <div key={idx} className="relative">
+                        <img src={img} alt={`Product ${idx + 1}`} className="w-full h-24 object-cover rounded border mb-1" />
+                        <div className="flex gap-1">
+                          <Button
+                            type="button"
+                            variant="secondary"
+                            size="sm"
+                            className="flex-1 h-7 text-xs"
+                            onClick={() => handleOpenCropEditor(img, idx)}
+                          >
+                            <Crop className="w-3 h-3 mr-1" />
+                            Crop
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="h-7 px-2"
+                            onClick={() => handleRemoveImage(idx)}
+                          >
+                            <X className="w-3 h-3" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1034,5 +1086,6 @@ export default function ModelManagementSection() {
         />
       )}
     </div>
+    </>
   );
 }
