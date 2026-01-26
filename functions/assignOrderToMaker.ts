@@ -231,8 +231,7 @@ Deno.serve(async (req) => {
    - Material: ${item.selected_material || 'PLA'}
    - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
    - Quantity: ${item.quantity}
-   - Resolution: ${item.selected_resolution || 0.2}mm
-   - Infill: ${item.infill_percentage || 15}%`;
+   - Resolution: ${item.selected_resolution || 0.2}mm`;
                             
                             // Add custom request details if available
                             if (item.custom_request_id && item.description) {
@@ -320,8 +319,7 @@ The EX3D Team`
    - Material: ${item.selected_material || 'PLA'}
    - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
    - Quantity: ${item.quantity}
-   - Resolution: ${item.selected_resolution || 0.2}mm
-   - Infill: ${item.infill_percentage || 15}%`;
+   - Resolution: ${item.selected_resolution || 0.2}mm`;
                     
                     // Add custom request details if available
                     if (item.custom_request_id && item.description) {

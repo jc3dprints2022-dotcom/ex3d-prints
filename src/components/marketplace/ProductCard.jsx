@@ -180,7 +180,7 @@ export default function ProductCard({ product }) {
               <img 
                 src={product.images[currentImageIndex] || product.images[0]} 
                 alt={product.name}
-                className="absolute top-0 left-0 w-full h-full object-contain"
+                className="absolute top-0 left-0 w-full h-full object-cover"
                 key={currentImageIndex}
               />
               {product.images.length > 1 && (
