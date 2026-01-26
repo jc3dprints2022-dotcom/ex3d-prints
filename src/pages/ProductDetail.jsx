@@ -349,7 +349,7 @@ export default function ProductDetail() {
                   <img
                     src={product.images[currentImageIndex]}
                     alt={product.name}
-                    className="absolute top-0 left-0 w-full h-full object-cover"
+                    className="absolute top-0 left-0 w-full h-full object-contain"
                   />
                   {product.images.length > 1 && (
                     <>
@@ -395,7 +395,7 @@ export default function ProductDetail() {
                     }`}
                     style={{ paddingBottom: '66.67%' }}
                   >
-                    <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute top-0 left-0 w-full h-full object-cover" />
+                    <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute top-0 left-0 w-full h-full object-contain" />
                   </button>
                 ))}
               </div>
