@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import NewUserGiftPopup from "@/components/shared/NewUserGiftPopup";
 
 export default function Layout({ children, currentPageName }) {
   const location = useLocation();
@@ -640,6 +641,8 @@ export default function Layout({ children, currentPageName }) {
       <main className="flex-1">
         {children}
       </main>
+
+      <NewUserGiftPopup />
 
       <footer className="bg-slate-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
