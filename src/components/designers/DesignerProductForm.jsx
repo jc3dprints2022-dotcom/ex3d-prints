@@ -275,18 +275,13 @@ export default function DesignerProductForm({ designerId, designerName, existing
     const rawPrice = (((grams / 1000) * 20) + (printTime / 5)) * 4.5;
     const calculatedPrice = Math.ceil(rawPrice);
 
-    // Calculate boost dates if boosting is selected
+    // Store boost intention for post-approval payment (don't activate boost yet)
     let boostData = {};
     if (boostWeeks > 0) {
-      const now = new Date();
-      const endDate = new Date();
-      endDate.setDate(now.getDate() + (boostWeeks * 7));
-      
       boostData = {
-        is_boosted: true,
-        boost_start_date: now.toISOString(),
-        boost_end_date: endDate.toISOString(),
-        boost_duration_weeks: boostWeeks
+        is_boosted: false, // Will be activated after payment
+        boost_duration_weeks: boostWeeks,
+        boost_pending_payment: true
       };
     }
 

@@ -181,16 +181,39 @@ export default function Marketplace() {
       }
     }
     
-    // Sorting
-    if (filters.sortBy === 'newest') {
-      tempProducts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-    } else if (filters.sortBy === 'price_asc') {
-      tempProducts.sort((a, b) => a.price - b.price);
-    } else if (filters.sortBy === 'price_desc') {
-      tempProducts.sort((a, b) => b.price - a.price);
-    } else if (filters.sortBy === 'popular') {
-      tempProducts.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
-    }
+    // Separate boosted and non-boosted products
+    const boostedProducts = tempProducts.filter(p => {
+      if (!p.is_boosted) return false;
+      // Check if boost is still active
+      const now = new Date();
+      const endDate = p.boost_end_date ? new Date(p.boost_end_date) : null;
+      return endDate && endDate > now;
+    });
+    
+    const nonBoostedProducts = tempProducts.filter(p => {
+      if (!p.is_boosted) return true;
+      const now = new Date();
+      const endDate = p.boost_end_date ? new Date(p.boost_end_date) : null;
+      return !endDate || endDate <= now;
+    });
+    
+    // Sorting for each group
+    const sortProducts = (products) => {
+      const sorted = [...products];
+      if (filters.sortBy === 'newest') {
+        sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      } else if (filters.sortBy === 'price_asc') {
+        sorted.sort((a, b) => a.price - b.price);
+      } else if (filters.sortBy === 'price_desc') {
+        sorted.sort((a, b) => b.price - a.price);
+      } else if (filters.sortBy === 'popular') {
+        sorted.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+      }
+      return sorted;
+    };
+    
+    // Boosted products always appear first, then regular products
+    tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
     setFilteredProducts(tempProducts);
   }, [filters, products, searchQuery]);

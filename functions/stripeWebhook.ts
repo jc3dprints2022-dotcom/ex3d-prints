@@ -1,4 +1,3 @@
-
 import { createClient } from 'npm:@base44/sdk@0.7.1';
 import Stripe from 'npm:stripe@14.11.0';
 
@@ -53,6 +52,72 @@ Deno.serve(async (req) => {
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             console.log('Processing completed checkout session:', session.id);
+
+            // Handle listing boost payment
+            if (session.metadata?.boost_type === 'listing_boost') {
+                console.log('Processing listing boost payment');
+                
+                const productId = session.metadata?.product_id;
+                const boostWeeks = parseInt(session.metadata?.boost_weeks || '0');
+                const designerUserId = session.metadata?.designer_user_id;
+                
+                if (!productId || !boostWeeks || !designerUserId) {
+                    console.error('Missing boost metadata');
+                    return Response.json({ error: 'Missing boost metadata' }, { status: 400 });
+                }
+
+                try {
+                    // Activate the boost
+                    const now = new Date();
+                    const endDate = new Date();
+                    endDate.setDate(now.getDate() + (boostWeeks * 7));
+                    
+                    await base44.asServiceRole.entities.Product.update(productId, {
+                        is_boosted: true,
+                        boost_start_date: now.toISOString(),
+                        boost_end_date: endDate.toISOString(),
+                        boost_duration_weeks: boostWeeks
+                    });
+
+                    console.log(`✅ Boost activated for product ${productId} for ${boostWeeks} weeks`);
+
+                    // Get designer info for email
+                    const designer = await base44.asServiceRole.entities.User.get(designerUserId);
+                    const product = await base44.asServiceRole.entities.Product.get(productId);
+                    
+                    if (designer && product) {
+                        // Send confirmation email to designer
+                        await base44.asServiceRole.integrations.Core.SendEmail({
+                            to: designer.email,
+                            subject: '🚀 Your Listing Boost is Active!',
+                            body: `Hi ${designer.full_name},
+
+Great news! Your boost payment has been processed and your listing is now featured.
+
+Product: ${product.name}
+Boost Duration: ${boostWeeks} week${boostWeeks > 1 ? 's' : ''}
+Boost Active Until: ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+
+Your listing will now appear at the top of search results and category pages, giving you maximum visibility and increased sales potential.
+
+Track your boosted listing performance in your Designer Dashboard.
+
+Best regards,
+The EX3D Team`
+                        });
+                        
+                        console.log('✅ Boost confirmation email sent to designer');
+                    }
+
+                    return Response.json({ 
+                        success: true,
+                        message: 'Boost activated successfully'
+                    });
+                } catch (boostError) {
+                    console.error('❌ Failed to activate boost:', boostError);
+                    return Response.json({ error: 'Failed to activate boost' }, { status: 500 });
+                }
+            }
 
             const customerId = session.metadata?.customer_id;
             
