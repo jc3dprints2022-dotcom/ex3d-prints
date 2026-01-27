@@ -13,33 +13,46 @@ import { useToast } from "@/components/ui/use-toast";
 import confetti from "canvas-confetti";
 
 export default function NewUserGiftPopup() {
-  const [showIcon, setShowIcon] = useState(false);
+  const [showIcon, setShowIcon] = useState(true); // Always show to entice signups
   const [showDialog, setShowDialog] = useState(false);
   const [user, setUser] = useState(null);
   const [couponCode, setCouponCode] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    checkNewUser();
+    checkUser();
   }, []);
 
-  const checkNewUser = async () => {
+  const checkUser = async () => {
     try {
       const currentUser = await base44.auth.me();
-      if (!currentUser) return;
+      if (currentUser) {
+        setUser(currentUser);
+        setIsLoggedIn(true);
 
-      setUser(currentUser);
+        // Hide icon if user already claimed or is not new
+        const userCreatedAt = new Date(currentUser.created_date);
+        const now = new Date();
+        const daysSinceCreation = (now - userCreatedAt) / (1000 * 60 * 60 * 24);
 
-      // Check if user is new (created within last 7 days) and hasn't claimed the welcome coupon
-      const userCreatedAt = new Date(currentUser.created_date);
-      const now = new Date();
-      const daysSinceCreation = (now - userCreatedAt) / (1000 * 60 * 60 * 24);
-
-      if (daysSinceCreation <= 7 && !currentUser.welcome_coupon_claimed) {
-        setShowIcon(true);
+        if (currentUser.welcome_coupon_claimed || daysSinceCreation > 7) {
+          setShowIcon(false);
+        }
       }
     } catch (error) {
-      // User not logged in - don't show anything
+      // User not logged in - keep showing icon to entice signup
+      setIsLoggedIn(false);
+    }
+  };
+
+  const handleIconClick = () => {
+    if (!isLoggedIn) {
+      // Show signup prompt for non-logged-in users
+      setShowDialog(true);
+    } else {
+      // Show claim dialog for logged-in new users
+      setShowDialog(true);
     }
   };
 
