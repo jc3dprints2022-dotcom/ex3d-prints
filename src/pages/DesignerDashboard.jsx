@@ -202,22 +202,24 @@ export default function DesignerDashboard() {
         </TabsList>
 
         <TabsContent value="products" className="space-y-6 mt-6">
-          {showUploadForm ? (
-            <Card>
+          {showUploadForm && (
+            <Card className="mb-6">
               <CardHeader>
                 <CardTitle>{editingProduct ? 'Edit Design' : 'Upload New Design'}</CardTitle>
               </CardHeader>
               <CardContent>
                 <DesignerProductForm 
-                  designerId={user.designer_id}
-                  designerName={user.designer_name || user.full_name}
+                  designerId={user?.designer_id}
+                  designerName={user?.designer_name || user?.full_name}
                   existingProduct={editingProduct}
                   onSuccess={handleProductCreated}
                   onCancel={() => { setShowUploadForm(false); setEditingProduct(null); }}
                 />
               </CardContent>
             </Card>
-          ) : (
+          )}
+          
+          {!showUploadForm && (
             <>
               <div className="flex justify-end">
                 <Button onClick={() => setShowUploadForm(true)} className="bg-red-600 hover:bg-red-700">
@@ -320,6 +322,7 @@ export default function DesignerDashboard() {
               )}
             </>
           )}
+          
         </TabsContent>
 
         <TabsContent value="financial">
