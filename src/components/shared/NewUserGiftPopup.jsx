@@ -31,14 +31,13 @@ export default function NewUserGiftPopup() {
         setUser(currentUser);
         setIsLoggedIn(true);
 
-        // Hide icon if user already claimed or is not new
-        const userCreatedAt = new Date(currentUser.created_date);
-        const now = new Date();
-        const daysSinceCreation = (now - userCreatedAt) / (1000 * 60 * 60 * 24);
-
-        if (currentUser.welcome_coupon_claimed || daysSinceCreation > 7) {
+        // Only hide icon if user has already claimed the coupon
+        if (currentUser.welcome_coupon_claimed) {
           setShowIcon(false);
         }
+      } else {
+        // Not logged in - keep showing icon
+        setIsLoggedIn(false);
       }
     } catch (error) {
       // User not logged in - keep showing icon to entice signup
