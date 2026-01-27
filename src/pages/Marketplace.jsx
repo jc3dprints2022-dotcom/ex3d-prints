@@ -244,9 +244,9 @@ export default function Marketplace() {
     return products.filter(p => p.category === categoryValue);
   };
 
-  // Get most popular products
-  const getMostPopular = () => {
-    return [...products].sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+  // Get newest products
+  const getNewestDesigns = () => {
+    return [...products].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
   };
 
   // Browse Mode - Show horizontal scrolling sections
@@ -304,11 +304,11 @@ export default function Marketplace() {
             </div>
           ) : (
             <div className="space-y-8">
-              {/* Most Popular Section */}
+              {/* Newest Designs Section */}
               <HorizontalProductSection
-                title="Most Popular"
-                products={getMostPopular()}
-                viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`}
+                title="Newest Designs"
+                products={getNewestDesigns()}
+                viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`}
               />
 
               {/* Priority category sections - shown in order: Dorm Essentials, Desk, Gadgets, Rocket Models, Holidays, Kit Cards */}
