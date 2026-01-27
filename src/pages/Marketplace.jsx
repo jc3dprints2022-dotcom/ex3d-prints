@@ -346,6 +346,19 @@ export default function Marketplace() {
                     />
                   );
                 })}
+
+              {/* View All Products Button */}
+              <div className="flex justify-center pt-8">
+                <Button 
+                  asChild 
+                  size="lg"
+                  className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 text-lg"
+                >
+                  <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`}>
+                    View All Products
+                  </Link>
+                </Button>
+              </div>
             </div>
           )}
         </div>
