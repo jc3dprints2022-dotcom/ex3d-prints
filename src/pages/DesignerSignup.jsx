@@ -121,15 +121,15 @@ export default function DesignerSignup() {
       });
 
       toast({
-        title: "Application submitted!",
-        description: "We'll review your application and get back to you soon."
+        title: "Sign up submitted!",
+        description: "We'll review your information and get back to you soon."
       });
 
       window.location.href = '/ConsumerDashboard';
     } catch (error) {
-      console.error("Failed to submit application:", error);
+      console.error("Failed to submit sign up:", error);
       toast({
-        title: "Failed to submit application",
+        title: "Failed to submit sign up",
         description: error.message,
         variant: "destructive"
       });
@@ -150,7 +150,7 @@ export default function DesignerSignup() {
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            Become a <span className="text-red-600">Designer</span>
+            <span className="text-red-600">Designer</span> Sign Up
           </h1>
           <p className="text-gray-600">Share your 3D designs with the world and earn from every print</p>
         </div>
@@ -159,7 +159,7 @@ export default function DesignerSignup() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Palette className="w-5 h-5 text-red-600" />
-              Designer Application
+              Designer Sign Up Form
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -275,10 +275,10 @@ export default function DesignerSignup() {
                   {submitting ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Submitting Application...
+                      Submitting Sign Up...
                     </>
                   ) : (
-                    'Submit Application'
+                    'Submit Sign Up'
                   )}
                 </Button>
               </div>
