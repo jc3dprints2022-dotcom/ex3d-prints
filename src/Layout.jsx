@@ -459,7 +459,7 @@ export default function Layout({ children, currentPageName }) {
                   ) : (
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
-                        <span className="text-red-600 font-semibold">Apply Now</span>
+                        <span className="text-red-600 font-semibold">Sign Up Now</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
