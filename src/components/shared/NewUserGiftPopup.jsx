@@ -99,6 +99,15 @@ export default function NewUserGiftPopup() {
     }
   };
 
+  const handleLogin = async () => {
+    try {
+      await base44.auth.redirectToLogin(window.location.href);
+    } catch (error) {
+      console.error('Login redirect error:', error);
+      window.location.href = '/api/auth/login';
+    }
+  };
+
   if (!showIcon && !couponCode) return null;
 
   return (
@@ -106,13 +115,13 @@ export default function NewUserGiftPopup() {
       {/* Floating Gift Icon */}
       {showIcon && (
         <button
-          onClick={() => setShowDialog(true)}
+          onClick={handleIconClick}
           className="fixed bottom-6 right-6 z-50 bg-gradient-to-br from-red-500 to-pink-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform animate-bounce"
           aria-label="Claim your welcome gift"
         >
           <Gift className="w-6 h-6" />
           <span className="absolute -top-1 -right-1 bg-yellow-400 text-red-600 text-xs font-bold px-2 py-1 rounded-full">
-            NEW
+            $3
           </span>
         </button>
       )}
@@ -126,7 +135,9 @@ export default function NewUserGiftPopup() {
               Welcome Gift! 🎉
             </DialogTitle>
             <DialogDescription>
-              {!couponCode ? (
+              {!isLoggedIn ? (
+                "Sign in or create an account to claim your $3 welcome coupon!"
+              ) : !couponCode ? (
                 "As a new member, you get a $3 coupon for your first purchase!"
               ) : (
                 "Your coupon is ready to use!"
@@ -135,7 +146,20 @@ export default function NewUserGiftPopup() {
           </DialogHeader>
 
           <div className="py-4">
-            {!couponCode ? (
+            {!isLoggedIn ? (
+              <div className="text-center space-y-4">
+                <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-lg">
+                  <div className="text-4xl font-bold text-red-600 mb-2">$3 OFF</div>
+                  <p className="text-sm text-gray-600">Your first order</p>
+                </div>
+                <Button
+                  onClick={handleLogin}
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-500 hover:from-red-600 hover:to-pink-600 text-lg py-6"
+                >
+                  Sign In to Claim
+                </Button>
+              </div>
+            ) : !couponCode ? (
               <div className="text-center space-y-4">
                 <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-lg">
                   <div className="text-4xl font-bold text-red-600 mb-2">$3 OFF</div>
