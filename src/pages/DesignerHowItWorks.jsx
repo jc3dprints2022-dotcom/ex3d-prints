@@ -102,6 +102,31 @@ export default function DesignerHowItWorks() {
               </div>
             </CardContent>
           </Card>
+
+          <Card className="border-2 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50">
+            <CardContent className="p-8">
+              <div className="flex items-start gap-6">
+                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <TrendingUp className="w-8 h-8 text-orange-600" />
+                </div>
+                <div className="flex-1">
+                  <h2 className="text-2xl font-bold mb-3">🚀 Boost Your Listings</h2>
+                  <p className="text-gray-600 mb-4">
+                    Want more visibility? Boost your listings to appear at the top of search results and category pages!
+                  </p>
+                  <ul className="list-disc list-inside text-gray-600 space-y-2">
+                    <li><strong>$5 per week</strong> - Flexible duration from 1 week to 1 month</li>
+                    <li>Your design appears first in relevant searches</li>
+                    <li>Increased views and sales potential</li>
+                    <li>Perfect for new launches or seasonal designs</li>
+                  </ul>
+                  <p className="text-sm text-gray-500 mt-3 italic">
+                    Select boost duration when uploading your design. Payment processed after admin approval.
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="text-center">

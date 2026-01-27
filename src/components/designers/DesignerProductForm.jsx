@@ -38,6 +38,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
   const [saving, setSaving] = useState(false);
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
+  const [boostWeeks, setBoostWeeks] = useState(0);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState(
@@ -274,6 +275,21 @@ export default function DesignerProductForm({ designerId, designerName, existing
     const rawPrice = (((grams / 1000) * 20) + (printTime / 5)) * 4.5;
     const calculatedPrice = Math.ceil(rawPrice);
 
+    // Calculate boost dates if boosting is selected
+    let boostData = {};
+    if (boostWeeks > 0) {
+      const now = new Date();
+      const endDate = new Date();
+      endDate.setDate(now.getDate() + (boostWeeks * 7));
+      
+      boostData = {
+        is_boosted: true,
+        boost_start_date: now.toISOString(),
+        boost_end_date: endDate.toISOString(),
+        boost_duration_weeks: boostWeeks
+      };
+    }
+
     setSaving(true);
     try {
       const productData = {
@@ -308,6 +324,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         view_count: 0,
         sales_count: 0,
         rejection_count: 0,
+        ...boostData
       };
 
       if (existingProduct) {
@@ -659,6 +676,47 @@ export default function DesignerProductForm({ designerId, designerName, existing
         <Label htmlFor="license_verified" className="text-sm font-bold cursor-pointer">
           * I verify I have the full right to sell this design (REQUIRED)
         </Label>
+      </div>
+
+      {/* Boost Listing Option */}
+      <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-400">
+        <div className="flex items-start gap-3 mb-3">
+          <TrendingUp className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
+          <div className="flex-1">
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Boost Your Listing 🚀</h3>
+            <p className="text-sm text-gray-700 mb-3">
+              Increase visibility! Boosted listings appear at the top of search results and category pages, helping you get more views and sales.
+            </p>
+            <div className="space-y-2">
+              <Label htmlFor="boost_weeks" className="text-sm font-medium">Boost Duration</Label>
+              <Select
+                value={boostWeeks.toString()}
+                onValueChange={(value) => setBoostWeeks(parseInt(value))}
+              >
+                <SelectTrigger id="boost_weeks">
+                  <SelectValue placeholder="No boost (free)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">No boost (free)</SelectItem>
+                  <SelectItem value="1">1 week - $5</SelectItem>
+                  <SelectItem value="2">2 weeks - $10</SelectItem>
+                  <SelectItem value="3">3 weeks - $15</SelectItem>
+                  <SelectItem value="4">4 weeks (1 month) - $20</SelectItem>
+                </SelectContent>
+              </Select>
+              {boostWeeks > 0 && (
+                <div className="mt-2 p-2 bg-white rounded border border-yellow-300">
+                  <p className="text-sm font-semibold text-orange-600">
+                    Total boost cost: ${boostWeeks * 5}
+                  </p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    Payment will be processed after admin approval
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
       <div>

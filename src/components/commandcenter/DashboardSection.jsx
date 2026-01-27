@@ -14,6 +14,8 @@ export default function DashboardSection() {
   });
   const [viewsData, setViewsData] = useState([]);
   const [viewsTimeRange, setViewsTimeRange] = useState('week');
+  const [visitsData, setVisitsData] = useState([]);
+  const [visitsTimeRange, setVisitsTimeRange] = useState('week');
   const [cartWishlistData, setCartWishlistData] = useState({
     usersWithCarts: 0,
     usersWithWishlists: 0,
@@ -29,6 +31,10 @@ export default function DashboardSection() {
   useEffect(() => {
     loadViewsData();
   }, [viewsTimeRange]);
+
+  useEffect(() => {
+    loadVisitsData();
+  }, [visitsTimeRange]);
 
   const loadStats = async () => {
     try {
@@ -116,6 +122,61 @@ export default function DashboardSection() {
       setViewsData(chartData);
     } catch (error) {
       console.error("Failed to load views data:", error);
+    }
+  };
+
+  const loadVisitsData = async () => {
+    try {
+      const allViews = await base44.entities.PageView.list();
+      
+      const now = new Date();
+      let startDate = new Date();
+      
+      switch(visitsTimeRange) {
+        case 'day':
+          startDate.setDate(now.getDate() - 1);
+          break;
+        case 'week':
+          startDate.setDate(now.getDate() - 7);
+          break;
+        case '30days':
+          startDate.setDate(now.getDate() - 30);
+          break;
+        case '90days':
+          startDate.setDate(now.getDate() - 90);
+          break;
+        default:
+          startDate.setDate(now.getDate() - 7);
+      }
+
+      const filteredViews = allViews.filter(view => {
+        const viewDate = new Date(view.created_date);
+        return viewDate >= startDate && viewDate <= now;
+      });
+
+      // Group by session_id to count unique visits
+      const sessionsByDate = {};
+      
+      filteredViews.forEach(view => {
+        const date = new Date(view.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        if (!sessionsByDate[date]) {
+          sessionsByDate[date] = new Set();
+        }
+        sessionsByDate[date].add(view.session_id);
+      });
+
+      const chartData = Object.entries(sessionsByDate).map(([date, sessions]) => ({
+        date,
+        visits: sessions.size
+      })).sort((a, b) => {
+        const dateA = new Date(a.date + ', 2024');
+        const dateB = new Date(b.date + ', 2024');
+        return dateA - dateB;
+      });
+
+      setVisitsData(chartData);
+    } catch (error) {
+      console.error("Failed to load visits data:", error);
     }
   };
 
@@ -221,6 +282,38 @@ export default function DashboardSection() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Website Visits Chart */}
+      <Card className="bg-slate-900 border-cyan-500/30">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <TrendingUp className="w-5 h-5 text-cyan-400" />
+              Website Visits (Unique Sessions)
+            </CardTitle>
+            <Tabs value={visitsTimeRange} onValueChange={setVisitsTimeRange}>
+              <TabsList className="bg-slate-800">
+                <TabsTrigger value="day" className="data-[state=active]:bg-cyan-600">Last Day</TabsTrigger>
+                <TabsTrigger value="week" className="data-[state=active]:bg-cyan-600">Last Week</TabsTrigger>
+                <TabsTrigger value="30days" className="data-[state=active]:bg-cyan-600">30 Days</TabsTrigger>
+                <TabsTrigger value="90days" className="data-[state=active]:bg-cyan-600">90 Days</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={visitsData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="date" stroke="#94a3b8" />
+              <YAxis stroke="#94a3b8" />
+              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #06b6d4' }} />
+              <Legend />
+              <Line type="monotone" dataKey="visits" stroke="#06b6d4" name="Unique Visits" strokeWidth={2} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
 
       {/* Website Views Chart */}
       <Card className="bg-slate-900 border-cyan-500/30">
