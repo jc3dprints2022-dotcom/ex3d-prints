@@ -1025,9 +1025,33 @@ export default function ModelManagementSection() {
                             <h3 className="font-semibold text-white text-lg truncate">{product.name}</h3>
                             <p className="text-sm text-gray-400 line-clamp-2 mt-1">{product.description}</p>
                           </div>
-                          <Button variant="outline" size="sm" onClick={() => handleEditProduct(product)}>
-                            <Pencil className="w-4 h-4 mr-2" /> Edit
-                          </Button>
+                          <div className="flex gap-2">
+                            {product.status === 'active' && product.boost_pending_payment && product.boost_duration_weeks && (
+                              <Button
+                                variant="default"
+                                size="sm"
+                                className="bg-yellow-600 hover:bg-yellow-700"
+                                onClick={async () => {
+                                  try {
+                                    const { data } = await base44.functions.invoke('createBoostCheckout', {
+                                      productId: product.id,
+                                      boostWeeks: product.boost_duration_weeks
+                                    });
+                                    if (data.url) {
+                                      window.location.href = data.url;
+                                    }
+                                  } catch (error) {
+                                    toast({ title: 'Failed to create checkout', variant: 'destructive' });
+                                  }
+                                }}
+                              >
+                                💳 Pay for Boost (${product.boost_duration_weeks * 5})
+                              </Button>
+                            )}
+                            <Button variant="outline" size="sm" onClick={() => handleEditProduct(product)}>
+                              <Pencil className="w-4 h-4 mr-2" /> Edit
+                            </Button>
+                          </div>
                         </div>
                         
                         <div className="flex flex-wrap gap-2">
