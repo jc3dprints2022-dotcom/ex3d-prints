@@ -262,30 +262,54 @@ export default function DesignerDashboard() {
                                   </div>
                                 )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Badge className={
-                                  product.status === 'active' ? 'bg-green-500' :
-                                  product.status === 'pending' ? 'bg-yellow-500' :
-                                  product.status === 'rejected' ? 'bg-red-500' :
-                                  'bg-red-500'
-                                }>
-                                  {product.status === 'rejected' ? 'Declined' : product.status}
-                                </Badge>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleEditProduct(product)}
-                                >
-                                  <Pencil className="w-4 h-4 mr-2" />
-                                  {product.status === 'rejected' ? 'Edit & Resubmit' : 'Edit'}
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={() => setDeletingProduct(product)}
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </Button>
+                              <div className="flex flex-col gap-2">
+                               <div className="flex items-center gap-2">
+                                 <Badge className={
+                                   product.status === 'active' ? 'bg-green-500' :
+                                   product.status === 'pending' ? 'bg-yellow-500' :
+                                   product.status === 'rejected' ? 'bg-red-500' :
+                                   'bg-red-500'
+                                 }>
+                                   {product.status === 'rejected' ? 'Declined' : product.status}
+                                 </Badge>
+                                 <Button
+                                   variant="outline"
+                                   size="sm"
+                                   onClick={() => handleEditProduct(product)}
+                                 >
+                                   <Pencil className="w-4 h-4 mr-2" />
+                                   {product.status === 'rejected' ? 'Edit & Resubmit' : 'Edit'}
+                                 </Button>
+                                 <Button
+                                   variant="destructive"
+                                   size="sm"
+                                   onClick={() => setDeletingProduct(product)}
+                                 >
+                                   <Trash2 className="w-4 h-4" />
+                                 </Button>
+                               </div>
+                               {product.status === 'active' && product.boost_pending_payment && product.boost_duration_weeks && (
+                                 <Button
+                                   variant="default"
+                                   size="sm"
+                                   className="bg-yellow-600 hover:bg-yellow-700 w-full"
+                                   onClick={async () => {
+                                     try {
+                                       const { data } = await base44.functions.invoke('createBoostCheckout', {
+                                         productId: product.id,
+                                         boostWeeks: product.boost_duration_weeks
+                                       });
+                                       if (data.url) {
+                                         window.location.href = data.url;
+                                       }
+                                     } catch (error) {
+                                       toast({ title: 'Failed to create checkout', variant: 'destructive' });
+                                     }
+                                   }}
+                                 >
+                                   💳 Pay ${product.boost_duration_weeks * 5} to Boost for {product.boost_duration_weeks}w
+                                 </Button>
+                               )}
                               </div>
                             </div>
                             {product.status !== 'rejected' && (
