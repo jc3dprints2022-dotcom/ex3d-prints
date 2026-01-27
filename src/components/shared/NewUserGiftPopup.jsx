@@ -57,14 +57,9 @@ export default function NewUserGiftPopup() {
 
   const handleClaimCoupon = async () => {
     try {
-      // Generate a unique coupon code for this user
-      const code = `WELCOME3-${user.id.slice(0, 8).toUpperCase()}`;
-      
-      // Update user to mark coupon as claimed and store the code
-      await base44.auth.updateMe({
-        welcome_coupon_claimed: true,
-        welcome_coupon_code: code
-      });
+      // Create Stripe coupon via backend function
+      const response = await base44.functions.invoke('createWelcomeCoupon', {});
+      const { couponCode: code } = response.data;
 
       setCouponCode(code);
       setShowIcon(false);
@@ -78,7 +73,7 @@ export default function NewUserGiftPopup() {
 
       toast({
         title: "🎉 Welcome Gift Claimed!",
-        description: `Your $3 coupon code: ${code}`,
+        description: `Your $5 coupon code: ${code} (minimum $10 order)`,
         duration: 10000
       });
     } catch (error) {
@@ -120,7 +115,7 @@ export default function NewUserGiftPopup() {
         >
           <Gift className="w-6 h-6" />
           <span className="absolute -top-1 -right-1 bg-yellow-400 text-red-600 text-xs font-bold px-2 py-1 rounded-full">
-            $3
+            $5
           </span>
         </button>
       )}
@@ -135,9 +130,9 @@ export default function NewUserGiftPopup() {
             </DialogTitle>
             <DialogDescription>
               {!isLoggedIn ? (
-                "Sign in or create an account to claim your $3 welcome coupon!"
+                "Sign in or create an account to claim your $5 welcome coupon!"
               ) : !couponCode ? (
-                "As a new member, you get a $3 coupon for your first purchase!"
+                "As a new member, you get a $5 coupon for your first purchase!"
               ) : (
                 "Your coupon is ready to use!"
               )}
@@ -148,8 +143,9 @@ export default function NewUserGiftPopup() {
             {!isLoggedIn ? (
               <div className="text-center space-y-4">
                 <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-lg">
-                  <div className="text-4xl font-bold text-red-600 mb-2">$3 OFF</div>
+                  <div className="text-4xl font-bold text-red-600 mb-2">$5 OFF</div>
                   <p className="text-sm text-gray-600">Your first order</p>
+                  <p className="text-xs text-gray-500 mt-1">$10 minimum purchase</p>
                 </div>
                 <Button
                   onClick={handleLogin}
@@ -161,8 +157,9 @@ export default function NewUserGiftPopup() {
             ) : !couponCode ? (
               <div className="text-center space-y-4">
                 <div className="bg-gradient-to-br from-red-50 to-pink-50 p-6 rounded-lg">
-                  <div className="text-4xl font-bold text-red-600 mb-2">$3 OFF</div>
+                  <div className="text-4xl font-bold text-red-600 mb-2">$5 OFF</div>
                   <p className="text-sm text-gray-600">Your first order</p>
+                  <p className="text-xs text-gray-500 mt-1">$10 minimum purchase</p>
                 </div>
                 <Button
                   onClick={handleClaimCoupon}
@@ -189,7 +186,7 @@ export default function NewUserGiftPopup() {
                   </Button>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Use this code at checkout to get $3 off your first order!
+                  Use this code at checkout to get $5 off your first order (minimum $10 purchase)!
                 </p>
               </div>
             )}

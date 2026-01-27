@@ -248,15 +248,37 @@ export default function Layout({ children, currentPageName }) {
 
   const loadUserData = async () => {
     try {
+      // Check if we have a cached user in sessionStorage to prevent re-auth on every page change
+      const cachedUser = sessionStorage.getItem('cached_user');
+      const cacheTime = sessionStorage.getItem('user_cache_time');
+      const now = Date.now();
+      
+      // Use cache if less than 30 seconds old
+      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 30000) {
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
+        
+        const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
+        setCartCount(cartItems.length);
+        setWishlistCount(userData.wishlist?.length || 0);
+        return;
+      }
+
       const userData = await base44.auth.me().catch(() => null);
       if (!userData) {
         setUser(null);
+        sessionStorage.removeItem('cached_user');
+        sessionStorage.removeItem('user_cache_time');
         const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
         setCartCount(localCart.length);
         const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
         setWishlistCount(localWishlist.length);
         return;
       }
+      
+      // Cache the user data
+      sessionStorage.setItem('cached_user', JSON.stringify(userData));
+      sessionStorage.setItem('user_cache_time', now.toString());
       
       setUser(userData);
 
@@ -267,6 +289,8 @@ export default function Layout({ children, currentPageName }) {
     } catch (error) {
       // Not logged in - this is fine for public pages
       setUser(null);
+      sessionStorage.removeItem('cached_user');
+      sessionStorage.removeItem('user_cache_time');
       const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
       setCartCount(localCart.length);
       const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
@@ -281,6 +305,8 @@ export default function Layout({ children, currentPageName }) {
     setWishlistCount(0);
     localStorage.removeItem('anonymousCart');
     localStorage.removeItem('anonymousWishlist');
+    sessionStorage.removeItem('cached_user');
+    sessionStorage.removeItem('user_cache_time');
     window.location.href = createPageUrl("Home");
   };
 
