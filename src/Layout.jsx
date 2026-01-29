@@ -762,6 +762,7 @@ export default function Layout({ children, currentPageName }) {
                 <li><Link to={createPageUrl("HowItWorks")} onClick={scrollToTop} className="hover:text-white">How It Works</Link></li>
                 <li><Link to={createPageUrl("FAQ")} onClick={scrollToTop} className="hover:text-white">FAQ</Link></li>
                 <li><Link to={createPageUrl("Contact")} onClick={scrollToTop} className="hover:text-white">Contact Us</Link></li>
+                <li><Link to={createPageUrl("ReportIssue")} onClick={scrollToTop} className="hover:text-white">Report Issue / Feature Request</Link></li>
                 <li><Link to={createPageUrl("Privacy")} onClick={scrollToTop} className="hover:text-white">Privacy Policy</Link></li>
                 <li><Link to={createPageUrl("Terms")} onClick={scrollToTop} className="hover:text-white">Terms of Service</Link></li>
               </ul>
