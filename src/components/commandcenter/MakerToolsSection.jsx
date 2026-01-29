@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2 } from "lucide-react";
+import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2, Trash2 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
@@ -29,6 +29,7 @@ export default function MakerToolsSection() {
   const [selectedMaker, setSelectedMaker] = useState(null);
   const [showMakerDialog, setShowMakerDialog] = useState(false);
   const [updatingCampus, setUpdatingCampus] = useState(null);
+  const [deletingMaker, setDeletingMaker] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -87,6 +88,49 @@ export default function MakerToolsSection() {
     return CAMPUS_LOCATIONS.find(c => c.value === value)?.label || value || 'Not Set';
   };
 
+  const handleDeleteMaker = async (maker) => {
+    if (!confirm(`Are you sure you want to remove maker access from ${maker.full_name}? This will remove their maker role, maker_id, and all associated data.`)) {
+      return;
+    }
+
+    setDeletingMaker(maker.id);
+    try {
+      // Remove maker role and maker_id from user
+      const updatedRoles = (maker.business_roles || []).filter(role => role !== 'maker');
+      
+      await base44.entities.User.update(maker.id, {
+        business_roles: updatedRoles,
+        maker_id: null,
+        campus_location: null,
+        hours_printed_this_week: null,
+        max_hours_per_week: null,
+        weekly_capacity: null,
+        experience_level: null,
+        open_to_unowned_filaments: null,
+        account_status: null
+      });
+
+      // Delete all associated printers
+      const makerPrinters = getMakerPrinters(maker.maker_id);
+      for (const printer of makerPrinters) {
+        await base44.entities.Printer.delete(printer.id);
+      }
+
+      // Delete all associated filaments
+      const makerFilaments = getMakerFilaments(maker.maker_id);
+      for (const filament of makerFilaments) {
+        await base44.entities.Filament.delete(filament.id);
+      }
+
+      toast({ title: "Maker access removed successfully" });
+      loadMakers();
+    } catch (error) {
+      console.error("Failed to delete maker:", error);
+      toast({ title: "Failed to remove maker access", variant: "destructive" });
+    }
+    setDeletingMaker(null);
+  };
+
   return (
     <div className="space-y-6">
       <Card>
@@ -143,12 +187,26 @@ export default function MakerToolsSection() {
                           </Select>
                         </div>
                       </div>
-                      <Button
-                        size="sm"
-                        onClick={() => handleViewMaker(maker)}
-                      >
-                        View Details
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleViewMaker(maker)}
+                        >
+                          View Details
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleDeleteMaker(maker)}
+                          disabled={deletingMaker === maker.id}
+                        >
+                          {deletingMaker === maker.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </Button>
+                      </div>
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t">
