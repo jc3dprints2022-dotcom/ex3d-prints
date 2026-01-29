@@ -528,6 +528,31 @@ export default function DesignerDashboard() {
                 </div>
 
                 <div>
+                  <h3 className="font-semibold text-lg mb-2">🚀 Boost Your Listings</h3>
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <p className="text-sm font-semibold text-purple-900 mb-2">Get More Visibility for Your Designs</p>
+                    <p className="text-sm text-gray-700 mb-3">
+                      Boost your listings to get top placement in the marketplace and priority in search results. 
+                      Boosted listings are displayed first and get significantly more views.
+                    </p>
+                    <div className="bg-white p-3 rounded-lg border border-purple-200 mb-3">
+                      <p className="text-sm font-semibold mb-2">Pricing:</p>
+                      <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                        <li>1 Week Boost: $5</li>
+                        <li>2 Weeks Boost: $10</li>
+                        <li>3 Weeks Boost: $15</li>
+                        <li>4 Weeks Boost: $20</li>
+                      </ul>
+                    </div>
+                    <p className="text-sm text-gray-700">
+                      <strong>How it works:</strong> When uploading a new design, simply check the "Boost this listing" option 
+                      and select your duration. After your design is approved by our team, you'll be able to pay for the boost 
+                      directly from your dashboard. Once paid, your listing will be boosted immediately for the selected duration.
+                    </p>
+                  </div>
+                </div>
+
+                <div>
                   <h3 className="font-semibold text-lg mb-2">💡 Tips for Success</h3>
                   <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
                     <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
@@ -537,6 +562,7 @@ export default function DesignerDashboard() {
                       <li>Select all compatible materials and colors to increase sales</li>
                       <li>Tag your designs appropriately for better discoverability</li>
                       <li>Respond to feedback and update designs based on user reviews</li>
+                      <li>Consider boosting your best-performing designs to maximize visibility</li>
                     </ul>
                   </div>
                 </div>
