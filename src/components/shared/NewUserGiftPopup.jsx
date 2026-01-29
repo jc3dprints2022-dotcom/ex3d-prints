@@ -31,8 +31,13 @@ export default function NewUserGiftPopup() {
         setUser(currentUser);
         setIsLoggedIn(true);
 
-        // Only hide icon if user has already claimed the coupon
-        if (currentUser.welcome_coupon_claimed) {
+        // Check if user is new (account created within last 7 days)
+        const accountAge = Date.now() - new Date(currentUser.created_date).getTime();
+        const sevenDays = 7 * 24 * 60 * 60 * 1000;
+        const isNewUser = accountAge < sevenDays;
+
+        // Hide icon if user has claimed coupon OR if account is older than 7 days
+        if (currentUser.welcome_coupon_claimed || !isNewUser) {
           setShowIcon(false);
         }
       } else {
