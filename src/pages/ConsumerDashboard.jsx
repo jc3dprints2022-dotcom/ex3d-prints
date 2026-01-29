@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
@@ -843,7 +842,10 @@ export default function ConsumerDashboard() {
           </TabsContent>
           
           <TabsContent value="exp" className="mt-6">
-            <ExpRedeemTab user={user} onUpdate={checkAuthAndLoad} />
+            <ExpRedeemTab user={user} onUpdate={async () => {
+              const currentUser = await base44.auth.me();
+              setUser(currentUser);
+            }} />
           </TabsContent>
 
           <TabsContent value="referral" className="mt-6">
