@@ -626,13 +626,79 @@ export default function Layout({ children, currentPageName }) {
               >
                 Marketplace
               </Link>
-              <Link
-                to={createPageUrl("ForMakers")}
-                className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
-                onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-              >
-                For Makers
-              </Link>
+
+              {/* For Makers Section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Makers</p>
+                <Link
+                  to={createPageUrl("ForMakers")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Overview
+                </Link>
+                <Link
+                  to={createPageUrl("MakerHowItWorks")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  How It Works
+                </Link>
+                {user && user.maker_id && user.business_roles?.includes('maker') && (
+                  <Link
+                    to={createPageUrl("MakerDashboard")}
+                    className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Maker Dashboard
+                  </Link>
+                )}
+                {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
+                  <Link
+                    to={createPageUrl("MakerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Get Started
+                  </Link>
+                )}
+              </div>
+
+              {/* For Designers Section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Designers</p>
+                <Link
+                  to={createPageUrl("ForDesigners")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Overview
+                </Link>
+                <Link
+                  to={createPageUrl("DesignerHowItWorks")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  How It Works
+                </Link>
+                {user && user.designer_id && user.business_roles?.includes('designer') ? (
+                  <Link
+                    to={createPageUrl("DesignerDashboard")}
+                    className="block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Designer Dashboard
+                  </Link>
+                ) : (
+                  <Link
+                    to={createPageUrl("DesignerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Get Started
+                  </Link>
+                )}
+              </div>
             </div>
           )}
         </div>
