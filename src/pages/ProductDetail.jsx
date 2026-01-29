@@ -8,10 +8,11 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Truck, Shield, Plus, X, Info } from "lucide-react";
+import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Truck, Shield, Plus, X, Info, Box } from "lucide-react";
 import ReviewList from "../components/shared/ReviewList";
 import RatingDisplay from "../components/shared/RatingDisplay";
 import { Label } from "@/components/ui/label";
+import Model3DViewer from "../components/shared/Model3DViewer";
 import {
   Tooltip,
   TooltipContent,
@@ -49,6 +50,7 @@ export default function ProductDetail() {
   const [user, setUser] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [reviews, setReviews] = useState([]);
+  const [view3D, setView3D] = useState(false);
   
   const [multiColorSelections, setMultiColorSelections] = useState([]);
 
@@ -341,47 +343,76 @@ export default function ProductDetail() {
         </Link>
 
         <div className="grid md:grid-cols-2 gap-12 mb-12">
-          {/* Image Gallery */}
+          {/* Image Gallery / 3D Viewer */}
           <div>
-            <div className="relative bg-white rounded-xl overflow-hidden shadow-lg mb-4" style={{ paddingBottom: '66.67%' }}>
-              {product.images && product.images.length > 0 ? (
-                <>
-                  <img
-                    src={product.images[currentImageIndex]}
-                    alt={product.name}
-                    className="absolute top-0 left-0 w-full h-full object-cover"
-                  />
-                  {product.images.length > 1 && (
+            {/* View Toggle */}
+            {product.print_files && product.print_files.length > 0 && (
+              <div className="flex gap-2 mb-4">
+                <Button
+                  variant={!view3D ? "default" : "outline"}
+                  onClick={() => setView3D(false)}
+                  className="flex-1"
+                >
+                  Photos
+                </Button>
+                <Button
+                  variant={view3D ? "default" : "outline"}
+                  onClick={() => setView3D(true)}
+                  className="flex-1"
+                >
+                  <Box className="w-4 h-4 mr-2" />
+                  3D View
+                </Button>
+              </div>
+            )}
+
+            {!view3D ? (
+              <>
+                <div className="relative bg-white rounded-xl overflow-hidden shadow-lg mb-4" style={{ paddingBottom: '66.67%' }}>
+                  {product.images && product.images.length > 0 ? (
                     <>
-                      <button
-                        onClick={prevImage}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-all"
-                      >
-                        <ChevronLeft className="w-6 h-6" />
-                      </button>
-                      <button
-                        onClick={nextImage}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-all"
-                      >
-                        <ChevronRight className="w-6 h-6" />
-                      </button>
-                      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
-                        {currentImageIndex + 1} / {product.images.length}
-                      </div>
+                      <img
+                        src={product.images[currentImageIndex]}
+                        alt={product.name}
+                        className="absolute top-0 left-0 w-full h-full object-cover"
+                      />
+                      {product.images.length > 1 && (
+                        <>
+                          <button
+                            onClick={prevImage}
+                            className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-all"
+                          >
+                            <ChevronLeft className="w-6 h-6" />
+                          </button>
+                          <button
+                            onClick={nextImage}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 p-2 rounded-full shadow-lg hover:bg-white transition-all"
+                          >
+                            <ChevronRight className="w-6 h-6" />
+                          </button>
+                          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/50 text-white px-3 py-1 rounded-full text-sm">
+                            {currentImageIndex + 1} / {product.images.length}
+                          </div>
+                        </>
+                      )}
                     </>
+                  ) : (
+                    <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-200">
+                      <Package className="w-24 h-24 text-gray-400" />
+                    </div>
                   )}
-                </>
-              ) : (
-                <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-200">
-                  <Package className="w-24 h-24 text-gray-400" />
+                  {product.multi_color && (
+                    <Badge className="absolute top-2 left-2 bg-purple-500 z-10 hover:bg-purple-600">
+                      Multi-Color
+                    </Badge>
+                  )}
                 </div>
-              )}
-              {product.multi_color && (
-                <Badge className="absolute top-2 left-2 bg-purple-500 z-10 hover:bg-purple-600">
-                  Multi-Color
-                </Badge>
-              )}
-            </div>
+              </>
+            ) : (
+              <div className="bg-white rounded-xl overflow-hidden shadow-lg mb-4">
+                <Model3DViewer fileUrl={product.print_files[0]} className="h-96" />
+              </div>
+            )}
             
             {/* Thumbnail Grid */}
             {product.images && product.images.length > 1 && (
