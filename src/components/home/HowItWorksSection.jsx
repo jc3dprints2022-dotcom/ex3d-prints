@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { 
   Search, ShoppingCart, Package, 
   Printer, DollarSign,
-  ArrowRight
+  ArrowRight, Upload, CheckCircle
 } from "lucide-react";
 
 export default function HowItWorksSection() {
@@ -14,7 +14,7 @@ export default function HowItWorksSection() {
     {
       icon: Search,
       title: "Browse & Discover",
-      description: "Explore over a hundred unique 3D designs from talented creators worldwide.",
+      description: "Explore hundreds of unique 3D designs from talented creators worldwide.",
       color: "bg-blue-100 text-blue-600"
     },
     {
@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
     {
       icon: Package,
       title: "Receive Your Print",
-      description: "Student makers print and deliver your print to the Student Union.",
+      description: "Local makers print and deliver your order, which will be delivered within a few days.",
       color: "bg-purple-100 text-purple-600"
     }
   ];
@@ -35,19 +35,40 @@ export default function HowItWorksSection() {
     {
       icon: Printer,
       title: "Register Your Printer",
-      description: "List your 3D printer specifications and set your availability.",
+      description: "Share your printer details and set when you're available to print.",
       color: "bg-orange-100 text-orange-600"
     },
     {
       icon: Package,
-      title: "Accept Orders",
-      description: "Review and accept print jobs that match your capabilities.",
+      title: "Accept Jobs",
+      description: "Receive print orders that match your skills and equipment.",
       color: "bg-teal-100 text-teal-600"
     },
     {
       icon: DollarSign,
       title: "Get Paid",
-      description: "Complete orders and receive payments directly to your account.",
+      description: "Complete the job and get paid directly to your account.",
+      color: "bg-green-100 text-green-600"
+    }
+  ];
+
+  const designerSteps = [
+    {
+      icon: Upload,
+      title: "Sign Up",
+      description: "Create your account, add your details, and connect your bank to get started.",
+      color: "bg-red-100 text-red-600"
+    },
+    {
+      icon: Package,
+      title: "Upload Your Designs",
+      description: "Easily list your designs using our simple upload tools.",
+      color: "bg-purple-100 text-purple-600"
+    },
+    {
+      icon: DollarSign,
+      title: "Earn Money",
+      description: "When someone orders your design, you earn 10% of the profit.",
       color: "bg-green-100 text-green-600"
     }
   ];
@@ -57,10 +78,10 @@ export default function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            How Express3D Prints Works
+            How EX3D Prints Works
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Two simple ways to be part of our 3D printing ecosystem
+            Three easy ways to purchase, print, and earn with 3D printing.
           </p>
         </div>
 
@@ -70,7 +91,7 @@ export default function HowItWorksSection() {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-6">
               <ShoppingCart className="w-8 h-8 text-white"/>
             </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Consumers</h3>
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Shoppers</h3>
             <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
               Get unique 3D printed products with a quick turn around time!
             </p>
@@ -122,8 +143,40 @@ export default function HowItWorksSection() {
             </div>
             
             <Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700">
-              <Link to={createPageUrl("ForMakers")}>
+              <Link to={createPageUrl("MakerSignup")}>
                 Become a Maker
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+
+          {/* For Designers */}
+          <div className="text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl mb-6">
+              <Upload className="w-8 h-8 text-white" />
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Designers</h3>
+            <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
+              Share your designs and earn passive income
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-8 mb-8">
+              {designerSteps.map((step, index) => (
+                <Card key={index} className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
+                  <CardContent className="p-8">
+                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${step.color} mb-4`}>
+                      <step.icon className="w-8 h-8" />
+                    </div>
+                    <h4 className="text-xl font-semibold text-slate-900 mb-2">{step.title}</h4>
+                    <p className="text-slate-600">{step.description}</p>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+            
+            <Button asChild size="lg" className="bg-red-600 hover:bg-red-700">
+              <Link to={createPageUrl("DesignerSignup")}>
+                Become a Designer
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>

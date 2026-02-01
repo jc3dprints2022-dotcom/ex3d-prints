@@ -172,12 +172,12 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Fast, Affordable, On-Campus <br />
-            <span className="text-teal-400">3D Printing</span>
+            Fast, Affordable, <br />
+            <span className="text-teal-400">3D Printed Items</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Order locally. Printed on campus. Picked up in days
+            Order locally, Delivered in days
           </p>
 
           {/* Search Bar */}

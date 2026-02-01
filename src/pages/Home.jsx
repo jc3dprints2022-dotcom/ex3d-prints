@@ -32,7 +32,7 @@ export default function Home() {
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
       const featured = allProducts
         .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
-        .slice(0, 6);
+        .slice(0, 12);
       setProducts(featured);
     } catch (error) {
       console.error("Failed to load featured products:", error);

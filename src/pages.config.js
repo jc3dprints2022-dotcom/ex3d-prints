@@ -72,11 +72,11 @@ import Marketplace from './pages/Marketplace';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Privacy from './pages/Privacy';
 import ProductDetail from './pages/ProductDetail';
+import ReportIssue from './pages/ReportIssue';
 import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import ReportIssue from './pages/ReportIssue';
 import __Layout from './Layout.jsx';
 
 
@@ -106,11 +106,11 @@ export const PAGES = {
     "PaymentSuccess": PaymentSuccess,
     "Privacy": Privacy,
     "ProductDetail": ProductDetail,
+    "ReportIssue": ReportIssue,
     "SystemDebug": SystemDebug,
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "ReportIssue": ReportIssue,
 }
 
 export const pagesConfig = {
