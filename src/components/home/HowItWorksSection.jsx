@@ -20,13 +20,13 @@ export default function HowItWorksSection() {
     {
       icon: ShoppingCart,
       title: "Customize & Order",
-      description: "Choose materials, colors, and quantities. Add items to cart and checkout securely.",
+      description: "Personalize and add items to your cart to checkout securely.",
       color: "bg-green-100 text-green-600"
     },
     {
       icon: Package,
       title: "Receive Your Print",
-      description: "Local makers print and deliver your order, which will be delivered within a few days.",
+      description: "Local makers print and deliver your order within a few days.",
       color: "bg-purple-100 text-purple-600"
     }
   ];
@@ -75,15 +75,17 @@ export default function HowItWorksSection() {
 
   return (
     <section className="py-20 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12 mb-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             How EX3D Prints Works
           </h2>
-          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+          <p className="text-xl text-slate-200 max-w-3xl mx-auto">
             Three easy ways to purchase, print, and earn with 3D printing.
           </p>
         </div>
+      </div>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="space-y-20">
           {/* For Consumers */}
