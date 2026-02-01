@@ -74,8 +74,8 @@ export default function HowItWorksSection() {
   ];
 
   return (
-    <section className="py-20 bg-white">
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12 mb-16">
+    <section className="bg-white">
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
             How EX3D Prints Works
@@ -87,9 +87,9 @@ export default function HowItWorksSection() {
       </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        <div className="space-y-20">
+        <div className="space-y-0">
           {/* For Consumers */}
-          <div className="text-center">
+          <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-6">
               <ShoppingCart className="w-8 h-8 text-white"/>
             </div>
@@ -120,8 +120,11 @@ export default function HowItWorksSection() {
             </Button>
           </div>
 
+          {/* Divider */}
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+
           {/* For Makers */}
-          <div className="text-center">
+          <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl mb-6">
               <Printer className="w-8 h-8 text-white" />
             </div>
@@ -152,8 +155,11 @@ export default function HowItWorksSection() {
             </Button>
           </div>
 
+          {/* Divider */}
+          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+
           {/* For Designers */}
-          <div className="text-center">
+          <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl mb-6">
               <Upload className="w-8 h-8 text-white" />
             </div>

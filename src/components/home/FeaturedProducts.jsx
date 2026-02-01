@@ -14,7 +14,7 @@ export default function FeaturedProducts({ products }) {
     return null;
   }
 
-  const featuredProducts = products.slice(0, 6);
+  const featuredProducts = products.slice(0, 12);
 
   return (
     <section className="py-20 bg-gray-50">
