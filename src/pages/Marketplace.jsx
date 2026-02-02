@@ -52,6 +52,7 @@ const SORT_OPTIONS = [
 export default function Marketplace() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [displayedProducts, setDisplayedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -107,7 +108,7 @@ export default function Marketplace() {
     setLoading(false);
   };
 
-  const applyFilters = useCallback(() => {
+  useEffect(() => {
     let tempProducts = [...products];
 
     if (searchQuery) {
@@ -168,21 +169,32 @@ export default function Marketplace() {
     
     tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
+    setFilteredProducts(tempProducts);
     setDisplayedProducts(tempProducts.slice(0, 20));
     setPage(1);
     setHasMore(tempProducts.length > 20);
-    return tempProducts;
   }, [filters, products, searchQuery]);
-
-  useEffect(() => {
-    applyFilters();
-  }, [applyFilters]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       entries => {
         if (entries[0].isIntersecting && hasMore && !loadingMore) {
-          loadMoreProducts();
+          setLoadingMore(true);
+          setTimeout(() => {
+            const nextPage = page + 1;
+            const startIdx = nextPage * 20;
+            const endIdx = startIdx + 20;
+            const moreProducts = filteredProducts.slice(startIdx, endIdx);
+            
+            if (moreProducts.length > 0) {
+              setDisplayedProducts(prev => [...prev, ...moreProducts]);
+              setPage(nextPage);
+              setHasMore(filteredProducts.length > endIdx);
+            } else {
+              setHasMore(false);
+            }
+            setLoadingMore(false);
+          }, 100);
         }
       },
       { threshold: 0.5 }
@@ -193,27 +205,7 @@ export default function Marketplace() {
     }
 
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, page]);
-
-  const loadMoreProducts = () => {
-    if (loadingMore || !hasMore) return;
-    
-    setLoadingMore(true);
-    const allFiltered = applyFilters();
-    const nextPage = page + 1;
-    const startIdx = nextPage * 20;
-    const endIdx = startIdx + 20;
-    const moreProducts = allFiltered.slice(startIdx, endIdx);
-    
-    if (moreProducts.length > 0) {
-      setDisplayedProducts(prev => [...prev, ...moreProducts]);
-      setPage(nextPage);
-      setHasMore(allFiltered.length > endIdx);
-    } else {
-      setHasMore(false);
-    }
-    setLoadingMore(false);
-  };
+  }, [hasMore, loadingMore, page, filteredProducts]);
 
   const handleMultiFilterToggle = (filterType, value) => {
     setFilters(prev => {
@@ -371,7 +363,7 @@ export default function Marketplace() {
           {/* Main Content */}
           <main className="flex-1">
             <div className="flex justify-between items-center mb-4">
-              <p className="text-sm text-gray-600">{displayedProducts.length} of {applyFilters().length} products</p>
+              <p className="text-sm text-gray-600">{displayedProducts.length} of {filteredProducts.length} products</p>
               <select
                 value={filters.sortBy}
                 onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
