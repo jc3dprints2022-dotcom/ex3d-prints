@@ -457,134 +457,18 @@ export default function EmailComposerSection() {
                 />
               </div>
 
-              {/* Builder Toggle */}
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setUseBuilder(false)}
-                  variant={!useBuilder ? "default" : "outline"}
-                  className={!useBuilder ? "bg-cyan-600" : "border-slate-600 text-white"}
-                >
-                  Text Editor
-                </Button>
-                <Button
-                  onClick={() => setUseBuilder(true)}
-                  variant={useBuilder ? "default" : "outline"}
-                  className={useBuilder ? "bg-cyan-600" : "border-slate-600 text-white"}
-                >
-                  <LayoutGrid className="w-4 h-4 mr-1" />
-                  Visual Builder
-                </Button>
-              </div>
 
-              {useBuilder ? (
-                <div className="border border-slate-700 rounded-lg overflow-hidden">
-                  <EmailBuilder
-                    onSave={(content) => {
-                      setEmailContent(content);
-                      setMessage(content.html);
-                      setUseBuilder(false);
-                      toast({ title: "Email saved to composer!" });
-                    }}
-                    initialContent={emailContent}
-                  />
-                </div>
-              ) : (
-                <>
-                  {/* Formatting Toolbar */}
-                  <div>
-                    <Label className="text-white mb-2 block">Message * (HTML supported)</Label>
-                <div className="flex gap-2 mb-2 flex-wrap">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => formatText('bold')}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    <Bold className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => formatText('italic')}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    <Italic className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => formatText('link')}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    <LinkIcon className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => formatText('h1')}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    H1
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => formatText('h2')}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    H2
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setShowImageDialog(true)}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    <ImageIcon className="w-4 h-4 mr-1" />
-                    Image URL
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => document.getElementById('imageUpload').click()}
-                    disabled={uploading}
-                    className="bg-slate-700 text-white border-slate-600 hover:bg-slate-600"
-                  >
-                    {uploading ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Upload className="w-4 h-4 mr-1" />
-                        Upload
-                      </>
-                    )}
-                  </Button>
-                  <input
-                    id="imageUpload"
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                  />
-                </div>
-                <Textarea
-                  name="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Enter your message... (HTML tags supported)"
-                    rows={10}
-                    className="bg-slate-900 border-slate-700 text-white font-mono text-sm"
-                  />
-                  </div>
-                  </>
-                  )}
+
+              <div className="border border-slate-700 rounded-lg overflow-hidden">
+                 <EmailBuilder
+                   onSave={(content) => {
+                     setEmailContent(content);
+                     setMessage(content.html);
+                     toast({ title: "Email saved to composer!" });
+                   }}
+                   initialContent={emailContent}
+                 />
+               </div>
 
               {/* Uploaded Images */}
               {uploadedImages.length > 0 && (
