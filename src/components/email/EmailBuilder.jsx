@@ -1,8 +1,8 @@
 import React, { useState, useRef } from "react";
+import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -11,20 +11,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Trash2,
   Copy,
-  Plus,
   Upload,
-  Image as ImageIcon,
   Loader2,
   Clock,
   Mail as MailIcon,
@@ -33,30 +24,18 @@ import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import EmailPreview from "./EmailPreview";
 import EmailBlockPanel from "./EmailBlockPanel";
 
-const DEFAULT_BLOCKS = [
-  { id: "text-1", type: "text", content: "Enter your text here", fontSize: 16, color: "#000000", alignment: "left" },
-  { id: "button-1", type: "button", content: "Click Me", link: "#", bgColor: "#14b8a6", textColor: "#ffffff" },
-  { id: "image-1", type: "image", src: "", width: 300, alignment: "center" },
-  { id: "spacer-1", type: "spacer", height: 20 },
-];
-
-export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSetup }) {
+export default function EmailBuilder({ onSave, initialContent }) {
   const [blocks, setBlocks] = useState(initialContent?.blocks || []);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const [showAutomation, setShowAutomation] = useState(false);
-  const [automationName, setAutomationName] = useState("");
-  const [automationSchedule, setAutomationSchedule] = useState("");
-  const [automationAudience, setAutomationAudience] = useState("all");
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
   const handleDragEnd = (result) => {
-    const { source, destination, draggableId, sourceDroppableId } = result;
+    const { source, destination, sourceDroppableId } = result;
     if (!destination) return;
 
-    // Reordering blocks within the preview
     if (sourceDroppableId === "preview-blocks" && destination.droppableId === "preview-blocks") {
       const newBlocks = [...blocks];
       const [removed] = newBlocks.splice(source.index, 1);
@@ -121,14 +100,7 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
       ...(type === "button" && { content: "Button", link: "#", bgColor: "#14b8a6", textColor: "#ffffff" }),
       ...(type === "image" && { src: "", width: 300, alignment: "center" }),
       ...(type === "spacer" && { height: 20 }),
-      ...(type === "hero" && { 
-        bgImage: "", 
-        title: "Your Hero Title", 
-        subtitle: "Your subtitle here",
-        titleColor: "#ffffff",
-        subtitleColor: "#ffffff",
-        height: 300
-      }),
+      ...(type === "hero" && { bgImage: "", title: "Your Hero Title", subtitle: "Your subtitle here", titleColor: "#ffffff", subtitleColor: "#ffffff", height: 300 }),
       ...(type === "divider" && { color: "#e5e7eb", height: 1 }),
     };
     setBlocks((prev) => [...prev, newBlock]);
@@ -174,281 +146,124 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
     `;
   };
 
-  const handleSetupCampaign = async () => {
-    if (!automationName.trim()) {
-      toast({ title: "Please enter a campaign name", variant: "destructive" });
-      return;
-    }
-    if (!automationSchedule) {
-      toast({ title: "Please select a schedule", variant: "destructive" });
-      return;
-    }
-    if (onEmailCampaignSetup) {
-      onEmailCampaignSetup({
-        name: automationName,
-        schedule: automationSchedule,
-        audience: automationAudience,
-        html: getEmailHTML(),
-        blocks: blocks
-      });
-      toast({ title: "Campaign automation set up!" });
-      setShowAutomation(false);
-    }
-  };
-
   return (
-    <div className="grid grid-cols-5 gap-6 h-screen bg-slate-900 p-6">
-      {/* Left Panel - Block Library */}
-      <div className="col-span-1 flex flex-col gap-4 overflow-y-auto max-h-screen">
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Add Blocks</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button onClick={() => addBlock("hero")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Hero Section</Button>
-            <Button onClick={() => addBlock("text")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Text</Button>
-            <Button onClick={() => addBlock("image")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Image</Button>
-            <Button onClick={() => addBlock("button")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Button</Button>
-            <Button onClick={() => addBlock("spacer")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Spacer</Button>
-            <Button onClick={() => addBlock("divider")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Divider</Button>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Image Library</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-              className="w-full bg-cyan-600 hover:bg-cyan-700"
-            >
-              {uploading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Upload className="w-4 h-4 mr-2" />}
-              Upload Image
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-            />
-            {uploadedImages.length > 0 && (
-              <div className="grid grid-cols-2 gap-2 mt-2">
-                {uploadedImages.map((url, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setShowImageLibrary(true)}
-                    className="aspect-square rounded overflow-hidden border border-slate-700 hover:border-cyan-500"
-                  >
-                    <img src={url} alt="" className="w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Middle Panel - Preview/Editor */}
-      <div className="col-span-3 flex flex-col gap-4 h-screen">
-        <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId="preview-blocks">
-            {(provided, snapshot) => (
-              <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden shadow-lg">
-                <CardContent 
-                  className="flex-1 overflow-y-auto p-0"
-                  ref={provided.innerRef}
-                  {...provided.droppableProps}
-                >
-                  {blocks.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400 p-8">
-                      <p>No blocks yet. Add some from the left panel.</p>
-                    </div>
-                  ) : (
-                    <div className="p-8 bg-white">
-                      {blocks.map((block, index) => (
-                        <Draggable key={block.id} draggableId={block.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              className={`${snapshot.isDragging ? "opacity-50 bg-gray-100" : ""}`}
-                            >
-                              <EmailPreview 
-                                blocks={[block]} 
-                                selectedBlockId={selectedBlockId} 
-                                onSelectBlock={setSelectedBlockId}
-                                onUpdateBlock={updateBlock}
-                              />
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                    </div>
-                  )}
-                  {provided.placeholder}
-                </CardContent>
-              </Card>
-            )}
-          </Droppable>
-        </DragDropContext>
-      </div>
-
-      {/* Right Panel - Block List & Settings */}
-      <div className="col-span-1 flex flex-col gap-4 h-screen overflow-y-auto">
-        <Card className="bg-slate-800 border-slate-700 flex-1 flex flex-col overflow-hidden">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Blocks ({blocks.length})</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-y-auto space-y-2 p-3">
-            {blocks.length === 0 ? (
-              <p className="text-slate-400 text-xs text-center py-4">No blocks added yet</p>
-            ) : (
-              blocks.map((block, index) => (
-                <div
-                  key={block.id}
-                  onClick={() => setSelectedBlockId(block.id)}
-                  className={`p-2 rounded border-2 cursor-pointer transition-all text-xs ${
-                    selectedBlockId === block.id
-                      ? "border-cyan-500 bg-cyan-900 text-white"
-                      : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-medium">
-                      {block.type === "text" && "📝"}
-                      {block.type === "image" && "🖼️"}
-                      {block.type === "button" && "🔘"}
-                      {block.type === "spacer" && "⬌"}
-                      {block.type === "hero" && "🎯"}
-                      {block.type === "divider" && "─"}
-                      {" "}{index + 1}
-                    </span>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          duplicateBlock(block.id);
-                        }}
-                        className="text-cyan-400 hover:text-cyan-300"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          deleteBlock(block.id);
-                        }}
-                        className="text-red-400 hover:text-red-300"
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
-
-        {selectedBlockId && (
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Block Settings</CardTitle>
+    <div className="flex flex-col h-screen bg-slate-900">
+      <div className="flex flex-1 gap-6 p-6 overflow-hidden">
+        {/* Left Panel - Blocks */}
+        <div className="w-48 flex flex-col gap-3 overflow-y-auto">
+          <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white text-xs">Add Blocks</CardTitle>
             </CardHeader>
-            <CardContent>
-              <EmailBlockPanel
-                block={blocks.find((b) => b.id === selectedBlockId)}
-                onUpdate={(updates) => updateBlock(selectedBlockId, updates)}
-                uploadedImages={uploadedImages}
-              />
+            <CardContent className="space-y-1">
+              <Button onClick={() => addBlock("hero")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Hero</Button>
+              <Button onClick={() => addBlock("text")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Text</Button>
+              <Button onClick={() => addBlock("image")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Image</Button>
+              <Button onClick={() => addBlock("button")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Button</Button>
+              <Button onClick={() => addBlock("spacer")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Spacer</Button>
+              <Button onClick={() => addBlock("divider")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Divider</Button>
             </CardContent>
           </Card>
-        )}
 
-        <div className="space-y-2">
-          <Button
-            onClick={() => onSave({ blocks, html: getEmailHTML() })}
-            className="w-full bg-green-600 hover:bg-green-700"
-          >
-            Save Email
-          </Button>
-          
-          <Button
-            onClick={() => setShowAutomation(true)}
-            className="w-full bg-teal-600 hover:bg-teal-700"
-          >
-            <MailIcon className="w-4 h-4 mr-2" />
-            Set as Campaign
-          </Button>
+          <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white text-xs">Upload Images</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={uploading}
+                size="sm"
+                className="w-full bg-cyan-600 hover:bg-cyan-700 text-xs h-7"
+              >
+                {uploading ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : <Upload className="w-3 h-3 mr-1" />}
+                Upload
+              </Button>
+              <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+              {uploadedImages.length > 0 && (
+                <div className="grid grid-cols-3 gap-1 mt-2">
+                  {uploadedImages.map((url, idx) => (
+                    <img key={idx} src={url} alt="" className="aspect-square object-cover rounded border border-slate-700" />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
 
-        {showAutomation && (
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white text-sm flex items-center gap-2">
-                <Clock className="w-4 h-4" />
-                Campaign Setup
-              </CardTitle>
+        {/* Middle Panel - Email Preview */}
+        <div className="flex-1 flex flex-col gap-4">
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="preview-blocks">
+              {(provided) => (
+                <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden">
+                  <CardContent className="flex-1 overflow-y-auto p-0" ref={provided.innerRef} {...provided.droppableProps}>
+                    {blocks.length === 0 ? (
+                      <div className="text-center py-12 text-gray-400 p-8">
+                        <p>No blocks yet. Add some from the left panel.</p>
+                      </div>
+                    ) : (
+                      <div className="p-8 bg-white">
+                        {blocks.map((block, index) => (
+                          <Draggable key={block.id} draggableId={block.id} index={index}>
+                            {(provided, snapshot) => (
+                              <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps} className={snapshot.isDragging ? "opacity-50 bg-gray-100" : ""}>
+                                <EmailPreview blocks={[block]} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} onUpdateBlock={updateBlock} />
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                      </div>
+                    )}
+                    {provided.placeholder}
+                  </CardContent>
+                </Card>
+              )}
+            </Droppable>
+          </DragDropContext>
+        </div>
+
+        {/* Right Panel - Settings */}
+        <div className="w-56 flex flex-col gap-3 overflow-y-auto">
+          <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white text-xs">Blocks ({blocks.length})</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div>
-                <Label className="text-white text-xs">Campaign Name</Label>
-                <Input
-                  value={automationName}
-                  onChange={(e) => setAutomationName(e.target.value)}
-                  placeholder="e.g., Summer Sale"
-                  className="bg-slate-900 border-slate-700 text-white mt-1"
-                />
-              </div>
-              <div>
-                <Label className="text-white text-xs">Schedule</Label>
-                <Select value={automationSchedule} onValueChange={setAutomationSchedule}>
-                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white mt-1">
-                    <SelectValue placeholder="Select schedule..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="once">Send Once</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
-                    <SelectItem value="monthly">Monthly</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label className="text-white text-xs">Audience</Label>
-                <Select value={automationAudience} onValueChange={setAutomationAudience}>
-                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white mt-1">
-                    <SelectValue placeholder="Select audience..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="all">All Users</SelectItem>
-                    <SelectItem value="makers">Makers Only</SelectItem>
-                    <SelectItem value="consumers">Consumers Only</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  onClick={() => setShowAutomation(false)}
-                  variant="outline"
-                  className="flex-1 bg-slate-700 text-white border-slate-600"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleSetupCampaign}
-                  className="flex-1 bg-teal-600 hover:bg-teal-700"
-                >
-                  Create
-                </Button>
-              </div>
+            <CardContent className="space-y-2 max-h-40 overflow-y-auto">
+              {blocks.length === 0 ? (
+                <p className="text-slate-400 text-xs text-center py-2">No blocks yet</p>
+              ) : (
+                blocks.map((block, index) => (
+                  <div key={block.id} onClick={() => setSelectedBlockId(block.id)} className={`p-2 rounded border cursor-pointer text-xs transition-all ${selectedBlockId === block.id ? "border-cyan-500 bg-cyan-900 text-white" : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"}`}>
+                    <div className="flex items-center justify-between">
+                      <span>{block.type === "text" && "📝"}{block.type === "image" && "🖼️"}{block.type === "button" && "🔘"}{block.type === "spacer" && "⬌"}{block.type === "hero" && "🎯"}{block.type === "divider" && "─"} {index + 1}</span>
+                      <div className="flex gap-1">
+                        <button onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }} className="text-cyan-400 hover:text-cyan-300"><Copy className="w-3 h-3" /></button>
+                        <button onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }} className="text-red-400 hover:text-red-300"><Trash2 className="w-3 h-3" /></button>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
             </CardContent>
           </Card>
-        )}
+
+          {selectedBlockId && (
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-white text-xs">Block Settings</CardTitle>
+              </CardHeader>
+              <CardContent className="max-h-64 overflow-y-auto">
+                <EmailBlockPanel block={blocks.find((b) => b.id === selectedBlockId)} onUpdate={(updates) => updateBlock(selectedBlockId, updates)} uploadedImages={uploadedImages} />
+              </CardContent>
+            </Card>
+          )}
+
+          <div className="space-y-2 flex-shrink-0">
+            <Button onClick={() => onSave({ blocks, html: getEmailHTML() })} className="w-full bg-green-600 hover:bg-green-700 text-xs h-8">Send</Button>
+            <Button className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-8"><MailIcon className="w-3 h-3 mr-1" />Setup Campaign</Button>
+          </div>
+        </div>
       </div>
     </div>
   );
