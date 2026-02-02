@@ -173,11 +173,12 @@ export default function DesignerSignup() {
         designer_id: application.id
       });
 
-      // Send email to admin
-      await base44.functions.invoke('sendEmail', {
-        to: 'jc3dprints2022@gmail.com',
-        subject: 'New Designer Signup - EX3D Prints',
-        body: `
+      // Send admin notification only (no user confirmation email)
+      try {
+        await base44.functions.invoke('sendEmail', {
+          to: 'jc3dprints2022@gmail.com',
+          subject: 'New Designer Signup - EX3D Prints',
+          body: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #dc2626;">New Designer Signup</h1>
     <h2>Application Details:</h2>
@@ -190,8 +191,11 @@ export default function DesignerSignup() {
     <p><strong>Categories:</strong> ${selectedCategories.join(', ')}</p>
     ${profileImageUrl ? `<p><strong>Profile Image:</strong> <a href="${profileImageUrl}">View Image</a></p>` : ''}
 </div>
-        `.trim()
-      });
+          `.trim()
+        });
+      } catch (emailError) {
+        console.error("Failed to send admin notification:", emailError);
+      }
 
       toast({
         title: "Success!",

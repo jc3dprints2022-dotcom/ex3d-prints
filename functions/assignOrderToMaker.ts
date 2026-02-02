@@ -170,14 +170,26 @@ Deno.serve(async (req) => {
             
             const daysSinceLastOrder = (Date.now() - lastOrderDate.getTime()) / (1000 * 60 * 60 * 24);
             
-            // Scoring algorithm - prioritize makers who haven't had orders recently
-            let score = daysSinceLastOrder * 10; // Heavy weight on fairness
+            // Check if maker is new (no orders yet)
+            const isNewMaker = makerOrders.length === 0;
+            
+            // Scoring algorithm - prioritize by:
+            // 1. Location (already filtered above)
+            // 2. Time since last order (fairness)
+            // 3. New makers
+            let score = daysSinceLastOrder * 15; // Heavy weight on time since last order
+            
+            // Extra boost for new makers
+            if (isNewMaker) {
+                score += 50; // Significant boost for never having received an order
+            }
+            
             score += availableHours * 2; // Available capacity
-            score += makerPrinters.length * 5; // More printers = more reliability
+            score += makerPrinters.length * 3; // More printers = more reliability
             
             // Bonus points if they already have all materials/colors
             if (hasMaterials && hasColors) {
-                score += 20;
+                score += 15;
             }
             
             eligibleMakers.push({

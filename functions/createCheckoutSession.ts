@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json();
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation } = body;
+        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation, shippingFee } = body;
         
         console.log('📦 Full request body:', JSON.stringify(body, null, 2));
         console.log('📦 isPriority received:', isPriority);
@@ -114,6 +114,22 @@ Deno.serve(async (req) => {
             console.log('✅ Priority fee added. Total line items:', lineItems.length);
         } else {
             console.log('❌ Priority NOT added. isPriority value:', isPriority);
+        }
+
+        // Add shipping fee if provided
+        if (shippingFee && shippingFee > 0) {
+            console.log('✅ Adding shipping fee:', shippingFee);
+            lineItems.push({
+                price_data: {
+                    currency: 'usd',
+                    product_data: {
+                        name: '📦 Shipping Fee',
+                        description: 'Shipping fee for orders under $35',
+                    },
+                    unit_amount: Math.round(shippingFee * 100),
+                },
+                quantity: 1,
+            });
         }
 
         // Prepare session data with referral metadata

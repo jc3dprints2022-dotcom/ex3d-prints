@@ -216,9 +216,8 @@ export default function MakerSignup() {
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }
 
-      // Send application received emails
+      // Send admin notification only (no user confirmation email)
       try {
-        // Email to admin
         await base44.functions.invoke('sendEmail', {
           to: 'jc3dprints2022@gmail.com',
           subject: 'New Maker Signup - EX3D Prints',
@@ -236,61 +235,8 @@ export default function MakerSignup() {
 </div>
           `.trim()
         });
-
-        // Email to user
-        const emailResult = await base44.functions.invoke('sendEmail', {
-          to: user.email,
-          subject: 'Maker Application Received - EX3D Prints',
-          body: `
-<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #ffffff;">
-    <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="color: #f97316; font-size: 32px; margin-bottom: 10px;">Maker Application Received ✓</h1>
-        <p style="color: #6b7280; font-size: 18px;">Hi ${user.full_name}!</p>
-    </div>
-
-    <div style="margin-bottom: 30px;">
-        <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            We've received your application to become a maker on EX3D Prints.
-        </p>
-        <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            Your application is currently under review. Our team will carefully review your information and get back to you within <strong>2-3 business days</strong>.
-        </p>
-    </div>
-
-    <div style="background: #fef3f2; border-left: 4px solid #f97316; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
-        <h2 style="color: #111827; font-size: 18px; margin: 0 0 16px 0;">Application Details</h2>
-        <div style="color: #6b7280; font-size: 15px; line-height: 1.8;">
-            <p style="margin: 8px 0;"><strong>Address:</strong> ${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}</p>
-            <p style="margin: 8px 0;"><strong>Experience Level:</strong> ${formData.experience_level}</p>
-            <p style="margin: 8px 0;"><strong>Weekly Capacity:</strong> ${formData.weekly_capacity} hours</p>
-            <p style="margin: 8px 0;"><strong>Materials:</strong> ${formData.materials.join(', ')}</p>
-        </div>
-    </div>
-
-    <div style="margin-bottom: 30px;">
-        <p style="color: #374151; font-size: 16px; line-height: 1.6;">
-            Thank you for your interest in joining our maker community!
-        </p>
-    </div>
-
-    <div style="border-top: 1px solid #e5e7eb; padding-top: 20px; margin-top: 30px;">
-        <p style="color: #9ca3af; font-size: 14px; text-align: center; margin: 0;">
-            Best regards,<br>
-            The EX3D Team<br>
-            <a href="mailto:ex3dprint.@gmail.com" style="color: #f97316; text-decoration: none;">ex3dprint.@gmail.com</a>
-        </p>
-    </div>
-</div>
-          `.trim()
-        });
-
-        console.log('Application email result:', JSON.stringify(emailResult.data));
-        
-        if (!emailResult || !emailResult.data || !emailResult.data.success) {
-          console.error("Application email may have failed or returned unexpected structure:", emailResult);
-        }
       } catch (emailError) {
-        console.error("Failed to send confirmation email:", emailError);
+        console.error("Failed to send admin notification:", emailError);
       }
       
       // Redirect to maker dashboard
