@@ -367,12 +367,86 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
           </Card>
         )}
 
-        <Button
-          onClick={() => onSave({ blocks, html: getEmailHTML() })}
-          className="w-full bg-green-600 hover:bg-green-700"
-        >
-          Save Email
-        </Button>
+        <div className="space-y-2">
+          <Button
+            onClick={() => onSave({ blocks, html: getEmailHTML() })}
+            className="w-full bg-green-600 hover:bg-green-700"
+          >
+            Save Email
+          </Button>
+          
+          <Button
+            onClick={() => setShowAutomation(true)}
+            className="w-full bg-teal-600 hover:bg-teal-700"
+          >
+            <MailIcon className="w-4 h-4 mr-2" />
+            Set as Campaign
+          </Button>
+        </div>
+
+        {showAutomation && (
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white text-sm flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Campaign Setup
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <Label className="text-white text-xs">Campaign Name</Label>
+                <Input
+                  value={automationName}
+                  onChange={(e) => setAutomationName(e.target.value)}
+                  placeholder="e.g., Summer Sale"
+                  className="bg-slate-900 border-slate-700 text-white mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-white text-xs">Schedule</Label>
+                <Select value={automationSchedule} onValueChange={setAutomationSchedule}>
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white mt-1">
+                    <SelectValue placeholder="Select schedule..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="once">Send Once</SelectItem>
+                    <SelectItem value="daily">Daily</SelectItem>
+                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="monthly">Monthly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-white text-xs">Audience</Label>
+                <Select value={automationAudience} onValueChange={setAutomationAudience}>
+                  <SelectTrigger className="bg-slate-900 border-slate-700 text-white mt-1">
+                    <SelectValue placeholder="Select audience..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectItem value="all">All Users</SelectItem>
+                    <SelectItem value="makers">Makers Only</SelectItem>
+                    <SelectItem value="consumers">Consumers Only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setShowAutomation(false)}
+                  variant="outline"
+                  className="flex-1 bg-slate-700 text-white border-slate-600"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSetupCampaign}
+                  className="flex-1 bg-teal-600 hover:bg-teal-700"
+                >
+                  Create
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
