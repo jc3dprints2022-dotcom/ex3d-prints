@@ -1006,44 +1006,6 @@ The EX3D Team`
               </CardContent>
             </Card>
 
-            {/* Campus Location */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Campus Location</CardTitle>
-                <p className="text-sm text-gray-600 mt-1">
-                  You will only receive orders from customers at your campus.
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-blue-600" />
-                  <Select 
-                    value={user?.campus_location || ''} 
-                    onValueChange={async (value) => {
-                      try {
-                        await base44.auth.updateMe({ campus_location: value });
-                        toast({ title: "Campus location updated!" });
-                        await loadDashboard();
-                      } catch (error) {
-                        toast({ title: "Failed to update campus", variant: "destructive" });
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="w-64">
-                      <SelectValue placeholder="Select your campus" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CAMPUS_LOCATIONS.map(campus => (
-                        <SelectItem key={campus.value} value={campus.value}>
-                          {campus.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Vacation Mode */}
             <Card>
               <CardHeader>

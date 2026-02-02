@@ -94,21 +94,11 @@ export default function BankInfoManager({ user, onUpdate }) {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-gray-900">
-          <CreditCard className="w-5 h-5" />
-          Payment Account Setup
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Alert>
-          <Shield className="w-4 h-4" />
-          <AlertDescription className="text-gray-900">
-            Please expect an email from us with information to setup a payment account.
-          </AlertDescription>
-        </Alert>
-      </CardContent>
-    </Card>
+    <Alert>
+      <Shield className="w-4 h-4" />
+      <AlertDescription className="text-gray-900">
+        Please expect an email from us with information to setup a payment account to receive payouts and make payments.
+      </AlertDescription>
+    </Alert>
   );
 }
