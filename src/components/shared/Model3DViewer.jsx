@@ -5,15 +5,39 @@ import { STLLoader } from 'three-stdlib';
 import { OBJLoader } from 'three-stdlib';
 import { Loader2 } from 'lucide-react';
 
-export default function Model3DViewer({ fileUrl, className = "" }) {
+export default function Model3DViewer({ fileUrl, selectedColor = "teal", className = "" }) {
   const mountRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const sceneRef = useRef(null);
+  const modelRef = useRef(null);
+
+  // Color mapping
+  const colorToHex = (colorName) => {
+    const colorMap = {
+      'white': 0xffffff,
+      'black': 0x000000,
+      'gray': 0x808080,
+      'silver': 0xc0c0c0,
+      'gold': 0xffd700,
+      'brown': 0x8b4513,
+      'red': 0xff0000,
+      'blue': 0x0000ff,
+      'yellow': 0xffff00,
+      'green': 0x00ff00,
+      'orange': 0xff8800,
+      'purple': 0x800080,
+      'pink': 0xffc0cb,
+      'copper': 0xb87333,
+      'teal': 0x14b8a6
+    };
+    return colorMap[colorName.toLowerCase()] || 0x14b8a6;
+  };
 
   useEffect(() => {
     if (!fileUrl || !mountRef.current) return;
 
-    let scene, camera, renderer, controls, model;
+    let camera, renderer, controls;
     let animationId;
 
     const init = async () => {
@@ -22,8 +46,9 @@ export default function Model3DViewer({ fileUrl, className = "" }) {
         setError(null);
 
         // Scene setup
-        scene = new THREE.Scene();
+        const scene = new THREE.Scene();
         scene.background = new THREE.Color(0xf5f5f5);
+        sceneRef.current = scene;
 
         // Camera
         camera = new THREE.PerspectiveCamera(
@@ -75,26 +100,55 @@ export default function Model3DViewer({ fileUrl, className = "" }) {
         loader.load(
           fileUrl,
           (geometry) => {
+            const modelColor = colorToHex(selectedColor);
+            let model;
+            
             if (fileExtension === 'stl') {
               const material = new THREE.MeshPhongMaterial({
-                color: 0x14b8a6,
+                color: modelColor,
                 specular: 0x111111,
                 shininess: 200
               });
-              model = new THREE.Mesh(geometry, material);
+              
+              // Add edge for white color
+              if (selectedColor.toLowerCase() === 'white') {
+                const edges = new THREE.EdgesGeometry(geometry);
+                const line = new THREE.LineSegments(
+                  edges, 
+                  new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 })
+                );
+                model = new THREE.Group();
+                const mesh = new THREE.Mesh(geometry, material);
+                model.add(mesh);
+                model.add(line);
+              } else {
+                model = new THREE.Mesh(geometry, material);
+              }
             } else {
-              // OBJ returns a group
               model = geometry;
+              const material = new THREE.MeshPhongMaterial({
+                color: modelColor,
+                specular: 0x111111,
+                shininess: 200
+              });
+              
               model.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
-                  child.material = new THREE.MeshPhongMaterial({
-                    color: 0x14b8a6,
-                    specular: 0x111111,
-                    shininess: 200
-                  });
+                  child.material = material.clone();
+                  
+                  if (selectedColor.toLowerCase() === 'white') {
+                    const edges = new THREE.EdgesGeometry(child.geometry);
+                    const line = new THREE.LineSegments(
+                      edges,
+                      new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 })
+                    );
+                    child.add(line);
+                  }
                 }
               });
             }
+
+            modelRef.current = model;
 
             // Center and scale model
             const box = new THREE.Box3().setFromObject(model);
@@ -154,15 +208,40 @@ export default function Model3DViewer({ fileUrl, className = "" }) {
       if (animationId) {
         cancelAnimationFrame(animationId);
       }
-      if (renderer && mountRef.current) {
+      if (renderer && mountRef.current && renderer.domElement.parentNode === mountRef.current) {
         mountRef.current.removeChild(renderer.domElement);
         renderer.dispose();
       }
       if (controls) {
         controls.dispose();
       }
+      if (sceneRef.current) {
+        sceneRef.current.traverse((object) => {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach(m => m.dispose());
+            } else {
+              object.material.dispose();
+            }
+          }
+        });
+      }
     };
   }, [fileUrl]);
+
+  // Update color when selectedColor changes
+  useEffect(() => {
+    if (!modelRef.current || !sceneRef.current) return;
+
+    const modelColor = colorToHex(selectedColor);
+    
+    modelRef.current.traverse((child) => {
+      if (child instanceof THREE.Mesh && child.material) {
+        child.material.color.setHex(modelColor);
+      }
+    });
+  }, [selectedColor]);
 
   return (
     <div className={`relative ${className}`}>

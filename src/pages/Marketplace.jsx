@@ -251,7 +251,22 @@ export default function Marketplace() {
     window.history.pushState({}, '', createPageUrl("Marketplace"));
   };
 
-  const handleSearch = () => {
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) {
+      setViewMode("filtered");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { products: smartResults } = await base44.functions.invoke('smartSearch', { query: searchQuery });
+      if (smartResults && smartResults.length > 0) {
+        setProducts(smartResults);
+      }
+    } catch (error) {
+      console.error('Smart search error:', error);
+    }
+    setLoading(false);
     setViewMode("filtered");
   };
 

@@ -44,6 +44,7 @@ export default function ProductDetail() {
   const [multiColorSelections, setMultiColorSelections] = useState([]);
   const [designer, setDesigner] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
 
   const { toast } = useToast();
 
@@ -168,10 +169,14 @@ export default function ProductDetail() {
         }
       }
 
+      // Load all active products for carousels
+      const allActiveProducts = await base44.entities.Product.list();
+      const activeProds = allActiveProducts.filter(p => p.status === 'active');
+      setAllProducts(activeProds);
+      
       // Load related products (same category)
-      const allProducts = await base44.entities.Product.list();
-      const related = allProducts
-        .filter(p => p.status === 'active' && p.category === productData.category && p.id !== productData.id)
+      const related = activeProds
+        .filter(p => p.category === productData.category && p.id !== productData.id)
         .slice(0, 10);
       setRelatedProducts(related);
 
@@ -437,7 +442,11 @@ export default function ProductDetail() {
             ) : (
               <div className="space-y-4">
                 <div className="bg-white rounded-xl overflow-hidden shadow-lg">
-                  <Model3DViewer fileUrl={product.print_files[current3DFileIndex]} className="h-96" />
+                  <Model3DViewer 
+                    fileUrl={product.print_files[current3DFileIndex]} 
+                    selectedColor={product.multi_color ? multiColorSelections[0] : selectedColor}
+                    className="h-96" 
+                  />
                 </div>
                 
                 {/* 3D File Thumbnails */}
@@ -711,6 +720,84 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* For You Carousel */}
+        {user && user.recently_viewed && user.recently_viewed.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">For You</h2>
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+                {allProducts
+                  .filter(p => user.recently_viewed.slice(0, 5).some(id => 
+                    allProducts.find(rp => rp.id === id && rp.category === p.category)
+                  ) && p.id !== product.id)
+                  .slice(0, 10)
+                  .map((rec) => (
+                    <div key={rec.id} className="flex-shrink-0" style={{ width: '280px' }}>
+                      <ProductCard product={rec} />
+                    </div>
+                  ))}
+              </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <Button asChild variant="outline">
+                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                  See More
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Popular Products */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Products</h2>
+          <div className="overflow-x-auto pb-4">
+            <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+              {[...allProducts]
+                .filter(p => p.id !== product.id)
+                .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+                .slice(0, 10)
+                .map((pop) => (
+                  <div key={pop.id} className="flex-shrink-0" style={{ width: '280px' }}>
+                    <ProductCard product={pop} />
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Button asChild variant="outline">
+              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                See More
+              </Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Newest Products */}
+        <div className="mt-16">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Newest Products</h2>
+          <div className="overflow-x-auto pb-4">
+            <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+              {[...allProducts]
+                .filter(p => p.id !== product.id)
+                .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
+                .slice(0, 10)
+                .map((newest) => (
+                  <div key={newest.id} className="flex-shrink-0" style={{ width: '280px' }}>
+                    <ProductCard product={newest} />
+                  </div>
+                ))}
+            </div>
+          </div>
+          <div className="flex justify-center mt-6">
+            <Button asChild variant="outline">
+              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                See More
+              </Link>
+            </Button>
+          </div>
+        </div>
+
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div className="mt-16">
@@ -723,6 +810,13 @@ export default function ProductDetail() {
                   </div>
                 ))}
               </div>
+            </div>
+            <div className="flex justify-center mt-6">
+              <Button asChild variant="outline">
+                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+                  See More
+                </Link>
+              </Button>
             </div>
           </div>
         )}
