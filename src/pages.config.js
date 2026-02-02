@@ -58,6 +58,7 @@ import Contact from './pages/Contact';
 import CustomPrintRequest from './pages/CustomPrintRequest';
 import DesignerDashboard from './pages/DesignerDashboard';
 import DesignerHowItWorks from './pages/DesignerHowItWorks';
+import DesignerProfile from './pages/DesignerProfile';
 import DesignerSignup from './pages/DesignerSignup';
 import FAQ from './pages/FAQ';
 import FixMakers from './pages/FixMakers';
@@ -77,7 +78,6 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import DesignerProfile from './pages/DesignerProfile';
 import __Layout from './Layout.jsx';
 
 
@@ -93,6 +93,7 @@ export const PAGES = {
     "CustomPrintRequest": CustomPrintRequest,
     "DesignerDashboard": DesignerDashboard,
     "DesignerHowItWorks": DesignerHowItWorks,
+    "DesignerProfile": DesignerProfile,
     "DesignerSignup": DesignerSignup,
     "FAQ": FAQ,
     "FixMakers": FixMakers,
@@ -112,7 +113,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "DesignerProfile": DesignerProfile,
 }
 
 export const pagesConfig = {

@@ -28,8 +28,6 @@ import {
 } from "@/components/ui/dialog";
 import AddPrinterForm from "../components/makers/AddPrinterForm";
 import FilamentManager from "../components/makers/FilamentManager";
-import HoursTracking from "../components/makers/HoursTracking";
-import BrandingKit from "../components/makers/BrandingKit";
 import BankInfoManager from "../components/shared/BankInfoManager";
 import MakerExpRedeemTab from "../components/makers/MakerExpRedeemTab";
 import { createPageUrl } from "@/utils";
@@ -46,7 +44,14 @@ export default function MakerDashboard() {
     activeOrders: 0,
     completedOrders: 0,
     totalEarnings: 0,
+    monthlyEarnings: 0,
     weeklyHours: 0
+  });
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [infoFormData, setInfoFormData] = useState({
+    email: '',
+    phone: '',
+    address: { street: '', city: '', state: '', zip: '' }
   });
   const [updatingOrder, setUpdatingOrder] = useState(null);
   const { toast } = useToast();
@@ -117,11 +122,34 @@ export default function MakerDashboard() {
           return sum + baseEarning + priorityEarning;
         }, 0);
 
+      // Calculate monthly earnings (orders completed this month)
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const monthlyEarnings = myOrders
+        .filter(o => {
+          if (!['completed', 'dropped_off', 'delivered'].includes(o.status)) return false;
+          const orderDate = new Date(o.updated_date || o.created_date);
+          return orderDate >= firstDayOfMonth;
+        })
+        .reduce((sum, o) => {
+          const baseEarning = ((o.total_amount * 0.7) - 0.30);
+          const priorityEarning = o.is_priority ? 2.80 : 0;
+          return sum + baseEarning + priorityEarning;
+        }, 0);
+
       setStats({
         activeOrders,
         completedOrders,
         totalEarnings,
+        monthlyEarnings,
         weeklyHours: currentUser.hours_printed_this_week || 0
+      });
+
+      // Initialize info form data
+      setInfoFormData({
+        email: currentUser.email || '',
+        phone: currentUser.phone || '',
+        address: currentUser.address || { street: '', city: '', state: '', zip: '' }
       });
 
     } catch (error) {
@@ -413,10 +441,10 @@ The EX3D Team`
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Weekly Hours</p>
-                <p className="text-3xl font-bold text-gray-900">{stats.weeklyHours.toFixed(1)}h</p>
+                <p className="text-sm text-gray-600">Monthly Earnings</p>
+                <p className="text-3xl font-bold text-gray-900">${stats.monthlyEarnings.toFixed(2)}</p>
               </div>
-              <Clock className="w-10 h-10 text-blue-600" />
+              <TrendingUp className="w-10 h-10 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -428,29 +456,13 @@ The EX3D Team`
             <Package className="w-4 h-4 mr-2" />
             Orders
           </TabsTrigger>
-          <TabsTrigger value="printers">
+          <TabsTrigger value="setup">
             <Printer className="w-4 h-4 mr-2" />
-            My Printers
-          </TabsTrigger>
-          <TabsTrigger value="filament">
-            <Settings className="w-4 h-4 mr-2" />
-            Filament
-          </TabsTrigger>
-          <TabsTrigger value="hours">
-            <Clock className="w-4 h-4 mr-2" />
-            Hours Tracking
+            Setup
           </TabsTrigger>
           <TabsTrigger value="exp">
             <Star className="w-4 h-4 mr-2" />
             Redeem EXP
-          </TabsTrigger>
-          <TabsTrigger value="financial">
-            <DollarSign className="w-4 h-4 mr-2" />
-            Financial Info
-          </TabsTrigger>
-          <TabsTrigger value="branding">
-            <TrendingUp className="w-4 h-4 mr-2" />
-            Branding Kit
           </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="w-4 h-4 mr-2" />
@@ -745,7 +757,7 @@ The EX3D Team`
           </div>
         </TabsContent>
 
-        <TabsContent value="printers">
+        <TabsContent value="setup">
           <div className="space-y-6">
             <div className="flex justify-end">
               <Dialog open={showPrinterDialog} onOpenChange={setShowPrinterDialog}>
@@ -837,86 +849,212 @@ The EX3D Team`
           </div>
         </TabsContent>
 
-        <TabsContent value="filament">
-          <FilamentManager makerId={user?.maker_id} />
-        </TabsContent>
-
-        <TabsContent value="hours">
-          <HoursTracking user={user} onUpdate={loadDashboard} />
+            {/* Filament Manager Section */}
+            <div className="mt-8">
+              <FilamentManager makerId={user?.maker_id} />
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="exp">
           <MakerExpRedeemTab user={user} onUpdate={loadDashboard} />
         </TabsContent>
 
-        <TabsContent value="financial">
-          <Card>
-            <CardHeader>
-              <CardTitle>Financial Information</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage your banking information for receiving payouts
-              </p>
-            </CardHeader>
-            <CardContent>
-              <BankInfoManager user={user} onUpdate={loadDashboard} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="branding">
-          <BrandingKit />
-        </TabsContent>
-
         <TabsContent value="settings">
-          <Card>
-            <CardHeader>
-              <CardTitle>Maker Settings</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Configure your availability and preferences
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {/* Campus Location */}
-              <div className="p-4 border rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <MapPin className="w-5 h-5 text-blue-600" />
-                  <h3 className="font-semibold">Campus Location</h3>
+          <div className="space-y-6">
+            {/* Financial Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Financial Information</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Manage your banking information for receiving payouts and making payments
+                </p>
+              </CardHeader>
+              <CardContent>
+                <BankInfoManager user={user} onUpdate={loadDashboard} />
+              </CardContent>
+            </Card>
+
+            {/* Contact Information */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Contact Information</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Your email, phone, and address
+                    </p>
+                  </div>
+                  {!editingInfo && (
+                    <Button variant="outline" onClick={() => setEditingInfo(true)}>
+                      Change Information
+                    </Button>
+                  )}
                 </div>
-                <p className="text-sm text-gray-600 mb-3">
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {!editingInfo ? (
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-medium">{user?.email}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="font-medium">{user?.phone || 'Not set'}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Address</p>
+                      <p className="font-medium">
+                        {user?.address ? (
+                          <>
+                            {user.address.street}<br />
+                            {user.address.city}, {user.address.state} {user.address.zip}
+                          </>
+                        ) : (
+                          'Not set'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={infoFormData.email}
+                        onChange={(e) => setInfoFormData({...infoFormData, email: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone</Label>
+                      <Input
+                        id="phone"
+                        value={infoFormData.phone}
+                        onChange={(e) => setInfoFormData({...infoFormData, phone: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="street">Street Address</Label>
+                      <Input
+                        id="street"
+                        value={infoFormData.address.street}
+                        onChange={(e) => setInfoFormData({...infoFormData, address: {...infoFormData.address, street: e.target.value}})}
+                      />
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="col-span-2">
+                        <Label htmlFor="city">City</Label>
+                        <Input
+                          id="city"
+                          value={infoFormData.address.city}
+                          onChange={(e) => setInfoFormData({...infoFormData, address: {...infoFormData.address, city: e.target.value}})}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State</Label>
+                        <Input
+                          id="state"
+                          value={infoFormData.address.state}
+                          onChange={(e) => setInfoFormData({...infoFormData, address: {...infoFormData.address, state: e.target.value}})}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="zip">ZIP Code</Label>
+                      <Input
+                        id="zip"
+                        value={infoFormData.address.zip}
+                        onChange={(e) => setInfoFormData({...infoFormData, address: {...infoFormData.address, zip: e.target.value}})}
+                      />
+                    </div>
+                    <div className="flex gap-3 pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setEditingInfo(false);
+                          setInfoFormData({
+                            email: user?.email || '',
+                            phone: user?.phone || '',
+                            address: user?.address || { street: '', city: '', state: '', zip: '' }
+                          });
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        onClick={async () => {
+                          try {
+                            await base44.auth.updateMe({
+                              email: infoFormData.email,
+                              phone: infoFormData.phone,
+                              address: infoFormData.address
+                            });
+                            toast({ title: "Contact information updated!" });
+                            setEditingInfo(false);
+                            await loadDashboard();
+                          } catch (error) {
+                            toast({ title: "Failed to update information", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        Submit
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Campus Location */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Campus Location</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
                   You will only receive orders from customers at your campus.
                 </p>
-                <Select 
-                  value={user?.campus_location || ''} 
-                  onValueChange={async (value) => {
-                    try {
-                      await base44.auth.updateMe({ campus_location: value });
-                      toast({ title: "Campus location updated!" });
-                      await loadDashboard();
-                    } catch (error) {
-                      toast({ title: "Failed to update campus", variant: "destructive" });
-                    }
-                  }}
-                >
-                  <SelectTrigger className="w-64">
-                    <SelectValue placeholder="Select your campus" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CAMPUS_LOCATIONS.map(campus => (
-                      <SelectItem key={campus.value} value={campus.value}>
-                        {campus.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="flex items-center justify-between p-4 border rounded-lg">
-                <div>
-                  <h3 className="font-semibold">Vacation Mode</h3>
-                  <p className="text-sm text-gray-600">
-                    When enabled, you won't receive new order assignments. Existing orders remain active.
-                  </p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <Select 
+                    value={user?.campus_location || ''} 
+                    onValueChange={async (value) => {
+                      try {
+                        await base44.auth.updateMe({ campus_location: value });
+                        toast({ title: "Campus location updated!" });
+                        await loadDashboard();
+                      } catch (error) {
+                        toast({ title: "Failed to update campus", variant: "destructive" });
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-64">
+                      <SelectValue placeholder="Select your campus" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CAMPUS_LOCATIONS.map(campus => (
+                        <SelectItem key={campus.value} value={campus.value}>
+                          {campus.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Vacation Mode */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Vacation Mode</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  When enabled, you won't receive new order assignments. Existing orders remain active.
+                </p>
+              </CardHeader>
+              <CardContent>
                 <Button
                   variant={user?.vacation_mode ? "destructive" : "default"}
                   onClick={async () => {
@@ -937,9 +1075,9 @@ The EX3D Team`
                 >
                   {user?.vacation_mode ? "Disable Vacation Mode" : "Enable Vacation Mode"}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

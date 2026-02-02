@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const MATERIAL_TYPES = ["PLA", "PETG", "ABS", "Carbon Fiber", "Nylon", "TPU"];
+const MATERIAL_TYPES = ["PLA", "PETG", "ABS", "TPU"];
 
 export default function AddPrinterForm({ printer, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
@@ -83,27 +83,15 @@ export default function AddPrinterForm({ printer, onClose, onSuccess }) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label htmlFor="name">Printer Name *</Label>
-          <Input
-            id="name"
-            value={formData.name}
-            onChange={(e) => setFormData({...formData, name: e.target.value})}
-            placeholder="e.g., My Ender 3"
-            required
-          />
-        </div>
-        <div>
-          <Label htmlFor="brand">Brand *</Label>
-          <Input
-            id="brand"
-            value={formData.brand}
-            onChange={(e) => setFormData({...formData, brand: e.target.value})}
-            placeholder="e.g., Creality"
-            required
-          />
-        </div>
+      <div>
+        <Label htmlFor="name">Printer Name *</Label>
+        <Input
+          id="name"
+          value={formData.name}
+          onChange={(e) => setFormData({...formData, name: e.target.value})}
+          placeholder="e.g., My Ender 3"
+          required
+        />
       </div>
 
       <div>
@@ -173,21 +161,6 @@ export default function AddPrinterForm({ printer, onClose, onSuccess }) {
             </div>
           ))}
         </div>
-      </div>
-
-      <div>
-        <Label htmlFor="status">Printer Status</Label>
-        <Select value={formData.status} onValueChange={(value) => setFormData(prev => ({...prev, status: value}))}>
-          <SelectTrigger id="status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="printing">Printing</SelectItem>
-            <SelectItem value="maintenance">Maintenance</SelectItem>
-            <SelectItem value="inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <div className="flex items-center space-x-2 p-4 bg-orange-50 rounded-lg border border-orange-200">
