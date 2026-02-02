@@ -281,8 +281,8 @@ export default function Marketplace() {
 
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="flex gap-6">
-          {/* Filters Sidebar */}
-          <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-64 flex-shrink-0`}>
+          {/* Filters Sidebar - Desktop */}
+          <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="bg-white rounded-lg shadow p-4 sticky top-[140px] space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-semibold text-lg">Filters</h3>
@@ -402,7 +402,92 @@ export default function Marketplace() {
         </div>
       </div>
 
-      {/* Mobile Filter Toggle */}
+      {/* Mobile Filter Modal */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50">
+          <div className="fixed right-0 top-0 bottom-0 w-64 bg-white overflow-y-auto">
+            <div className="p-4 border-b flex items-center justify-between">
+              <h3 className="font-semibold text-lg">Filters</h3>
+              <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(false)}>
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            <div className="p-4 space-y-6">
+              <Button variant="outline" size="sm" onClick={clearFilters} className="w-full">Clear Filters</Button>
+
+              {/* Price Range */}
+              <div>
+                <label className="text-sm font-medium mb-3 block">Price Range</label>
+                <Slider
+                  value={filters.priceRange}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                  max={100}
+                  step={5}
+                  className="mb-2"
+                />
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>${filters.priceRange[0]}</span>
+                  <span>${filters.priceRange[1]}</span>
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Materials</label>
+                <div className="space-y-2">
+                  {MATERIALS.map(mat => (
+                    <label key={mat} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.materials.includes(mat)}
+                        onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
+                      />
+                      <span className="text-sm">{mat}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colors */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Colors</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {COLORS.map(color => (
+                    <label key={color} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.colors.includes(color)}
+                        onCheckedChange={() => handleMultiFilterToggle('colors', color)}
+                      />
+                      <span className="text-sm">{color}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Min Rating</label>
+                <div className="space-y-2">
+                  {[4, 3, 2, 1].map(rating => (
+                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.rating === rating}
+                        onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
+                      />
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{rating}+ Stars</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Filter Toggle Button */}
       <Button
         className="lg:hidden fixed bottom-4 right-4 rounded-full shadow-lg z-40"
         onClick={() => setSidebarOpen(!sidebarOpen)}
