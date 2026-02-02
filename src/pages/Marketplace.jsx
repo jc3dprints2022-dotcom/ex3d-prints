@@ -57,6 +57,7 @@ export default function Marketplace() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [availableCategories, setAvailableCategories] = useState([]);
   const observerTarget = useRef(null);
   
   const [filters, setFilters] = useState({
@@ -99,6 +100,11 @@ export default function Marketplace() {
       // Only show active products in marketplace
       const activeProducts = allProducts.filter(p => p.status === 'active');
       setProducts(activeProducts);
+      
+      // Calculate which categories have products
+      const categoriesWithProducts = new Set(activeProducts.map(p => p.category));
+      const filtered = CATEGORIES.filter(cat => categoriesWithProducts.has(cat.value));
+      setAvailableCategories(filtered);
     } catch (error) {
       console.error("Failed to load products:", error);
     }
@@ -264,7 +270,7 @@ export default function Marketplace() {
             >
               All
             </Button>
-            {CATEGORIES.map(cat => (
+            {availableCategories.map(cat => (
               <Button
                 key={cat.value}
                 variant={filters.category === cat.value ? "default" : "ghost"}
