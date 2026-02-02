@@ -120,15 +120,15 @@ export default function EmailBuilder({ onSave, initialContent }) {
     );
   };
 
-  const addBlock = () => {
+  const addBlock = (type) => {
     const newBlock = {
       id: `block-${Date.now()}`,
-      type: blockType,
-      ...(blockType === "text" && { content: "Enter text here", fontSize: 16, color: "#000000", alignment: "left" }),
-      ...(blockType === "button" && { content: "Button", link: "#", bgColor: "#14b8a6", textColor: "#ffffff" }),
-      ...(blockType === "image" && { src: "", width: 300, alignment: "center" }),
-      ...(blockType === "spacer" && { height: 20 }),
-      ...(blockType === "hero" && { 
+      type: type,
+      ...(type === "text" && { content: "Enter text here", fontSize: 16, color: "#000000", alignment: "left" }),
+      ...(type === "button" && { content: "Button", link: "#", bgColor: "#14b8a6", textColor: "#ffffff" }),
+      ...(type === "image" && { src: "", width: 300, alignment: "center" }),
+      ...(type === "spacer" && { height: 20 }),
+      ...(type === "hero" && { 
         bgImage: "", 
         title: "Your Hero Title", 
         subtitle: "Your subtitle here",
@@ -136,11 +136,10 @@ export default function EmailBuilder({ onSave, initialContent }) {
         subtitleColor: "#ffffff",
         height: 300
       }),
-      ...(blockType === "divider" && { color: "#e5e7eb", height: 1 }),
+      ...(type === "divider" && { color: "#e5e7eb", height: 1 }),
     };
     setBlocks((prev) => [...prev, newBlock]);
-    setShowBlockModal(false);
-    toast({ title: `${blockType} block added` });
+    toast({ title: `${type} block added` });
   };
 
   const getEmailHTML = () => {
@@ -191,66 +190,12 @@ export default function EmailBuilder({ onSave, initialContent }) {
             <CardTitle className="text-white text-sm">Add Blocks</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            <Button
-              onClick={() => {
-                setBlockType("hero");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Hero Section
-            </Button>
-            <Button
-              onClick={() => {
-                setBlockType("text");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Text
-            </Button>
-            <Button
-              onClick={() => {
-                setBlockType("image");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Image
-            </Button>
-            <Button
-              onClick={() => {
-                setBlockType("button");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Button
-            </Button>
-            <Button
-              onClick={() => {
-                setBlockType("spacer");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Spacer
-            </Button>
-            <Button
-              onClick={() => {
-                setBlockType("divider");
-                setShowBlockModal(true);
-              }}
-              variant="outline"
-              className="w-full justify-start text-white bg-slate-700 border-slate-600"
-            >
-              Divider
-            </Button>
+            <Button onClick={() => addBlock("hero")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Hero Section</Button>
+            <Button onClick={() => addBlock("text")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Text</Button>
+            <Button onClick={() => addBlock("image")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Image</Button>
+            <Button onClick={() => addBlock("button")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Button</Button>
+            <Button onClick={() => addBlock("spacer")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Spacer</Button>
+            <Button onClick={() => addBlock("divider")} variant="outline" className="w-full justify-start text-white bg-slate-700 border-slate-600">Divider</Button>
           </CardContent>
         </Card>
 
@@ -332,52 +277,28 @@ export default function EmailBuilder({ onSave, initialContent }) {
           <EmailPreview blocks={blocks} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} />
         </div>
 
-      {selectedBlockId && (
-        <Card className="bg-slate-800 border-slate-700">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Block Settings</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <EmailBlockPanel
-              block={blocks.find((b) => b.id === selectedBlockId)}
-              onUpdate={(updates) => updateBlock(selectedBlockId, updates)}
-              uploadedImages={uploadedImages}
-            />
-          </CardContent>
-        </Card>
-      )}
+        {selectedBlockId && (
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white text-sm">Block Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EmailBlockPanel
+                block={blocks.find((b) => b.id === selectedBlockId)}
+                onUpdate={(updates) => updateBlock(selectedBlockId, updates)}
+                uploadedImages={uploadedImages}
+              />
+            </CardContent>
+          </Card>
+        )}
 
-      <Button
-        onClick={() => onSave({ blocks, html: getEmailHTML() })}
-        className="w-full bg-green-600 hover:bg-green-700"
-      >
-        Save Email
-      </Button>
+        <Button
+          onClick={() => onSave({ blocks, html: getEmailHTML() })}
+          className="w-full bg-green-600 hover:bg-green-700"
+        >
+          Save Email
+        </Button>
       </div>
-
-      {/* Add Block Modal */}
-      <Dialog open={showBlockModal} onOpenChange={setShowBlockModal}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
-          <DialogHeader>
-            <DialogTitle>Add {blockType} Block</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-sm text-slate-400">Block will be added to the end of your email.</p>
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowBlockModal(false)}
-              className="bg-slate-700 border-slate-600"
-            >
-              Cancel
-            </Button>
-            <Button onClick={addBlock} className="bg-cyan-600 hover:bg-cyan-700">
-              Add Block
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
