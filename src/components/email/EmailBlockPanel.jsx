@@ -16,35 +16,38 @@ export default function EmailBlockPanel({ block, onUpdate, uploadedImages }) {
   const renderSettings = () => {
     switch (block.type) {
       case "text":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-white text-sm">Content</Label>
-              <Textarea
-                value={block.content}
-                onChange={(e) => onUpdate({ content: e.target.value })}
-                className="bg-slate-900 border-slate-600 text-white text-sm"
-                rows={4}
-              />
-            </div>
-            <div>
-              <Label className="text-white text-sm">Font Size</Label>
-              <Input
-                type="number"
-                value={block.fontSize || 16}
-                onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
-                className="bg-slate-900 border-slate-600 text-white"
-              />
-            </div>
-            <div>
-              <Label className="text-white text-sm">Color</Label>
-              <Input
-                type="color"
-                value={block.color || "#000000"}
-                onChange={(e) => onUpdate({ color: e.target.value })}
-                className="bg-slate-900 border-slate-600 h-10"
-              />
-            </div>
+         return (
+           <div className="space-y-3">
+             <div>
+               <Label className="text-white text-sm">Content</Label>
+               <Textarea
+                 value={block.content}
+                 onChange={(e) => onUpdate({ content: e.target.value })}
+                 className="bg-slate-900 border-slate-600 text-white text-sm"
+                 rows={4}
+               />
+             </div>
+             <div>
+               <Label className="text-white text-sm">Font Size</Label>
+               <Input
+                 type="number"
+                 value={block.fontSize || 16}
+                 onChange={(e) => onUpdate({ fontSize: parseInt(e.target.value) })}
+                 className="bg-slate-900 border-slate-600 text-white"
+               />
+             </div>
+             <div className="flex gap-2 items-center">
+               <div className="flex-1">
+                 <Label className="text-white text-sm">Text Color</Label>
+                 <Input
+                   type="color"
+                   value={block.color || "#000000"}
+                   onChange={(e) => onUpdate({ color: e.target.value })}
+                   className="bg-slate-900 border-slate-600 h-8 cursor-pointer"
+                 />
+               </div>
+               <div style={{ backgroundColor: block.color || "#000000", width: "40px", height: "32px", borderRadius: "4px", marginTop: "20px" }} />
+             </div>
             <div>
               <Label className="text-white text-sm">Alignment</Label>
               <Select value={block.alignment || "left"} onValueChange={(v) => onUpdate({ alignment: v })}>
@@ -180,17 +183,35 @@ export default function EmailBlockPanel({ block, onUpdate, uploadedImages }) {
         );
 
       case "hero":
-        return (
-          <div className="space-y-4">
-            <div>
-              <Label className="text-white text-sm">Background Image</Label>
-              <Input
-                value={block.bgImage || ""}
-                onChange={(e) => onUpdate({ bgImage: e.target.value })}
-                className="bg-slate-900 border-slate-600 text-white"
-                placeholder="https://example.com/bg.jpg"
-              />
-            </div>
+         return (
+           <div className="space-y-3">
+             <div>
+               <Label className="text-white text-sm">Background Image</Label>
+               <Input
+                 value={block.bgImage || ""}
+                 onChange={(e) => onUpdate({ bgImage: e.target.value })}
+                 className="bg-slate-900 border-slate-600 text-white text-xs"
+                 placeholder="URL or select from library"
+               />
+             </div>
+             {uploadedImages.length > 0 && (
+               <div>
+                 <Label className="text-white text-sm">Or select from library</Label>
+                 <div className="grid grid-cols-3 gap-1">
+                   {uploadedImages.map((url, idx) => (
+                     <button
+                       key={idx}
+                       onClick={() => onUpdate({ bgImage: url })}
+                       className={`aspect-square rounded overflow-hidden border-2 ${
+                         block.bgImage === url ? "border-cyan-500" : "border-slate-600"
+                       }`}
+                     >
+                       <img src={url} alt="" className="w-full h-full object-cover" />
+                     </button>
+                   ))}
+                 </div>
+               </div>
+             )}
             <div>
               <Label className="text-white text-sm">Title</Label>
               <Input
@@ -261,10 +282,26 @@ export default function EmailBlockPanel({ block, onUpdate, uploadedImages }) {
           </div>
         );
 
+      case "footer":
+        return (
+          <div className="space-y-3">
+            <div>
+              <Label className="text-white text-sm">Footer Text</Label>
+              <Textarea
+                value={block.content || ""}
+                onChange={(e) => onUpdate({ content: e.target.value })}
+                className="bg-slate-900 border-slate-600 text-white text-xs"
+                rows={3}
+                placeholder="Footer content (auto-formatted as black footer)"
+              />
+            </div>
+          </div>
+        );
+
       default:
         return null;
-    }
-  };
+      }
+      };
 
-  return <div className="space-y-4">{renderSettings()}</div>;
-}
+      return <div className="space-y-3">{renderSettings()}</div>;
+      }
