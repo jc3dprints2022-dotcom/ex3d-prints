@@ -250,32 +250,62 @@ export default function EmailBuilder({ onSave, initialContent }) {
         </Card>
       </div>
 
-      {/* Right Panel - Preview */}
-      <div className="col-span-1 flex flex-col gap-4">
-        <div className="flex gap-2">
-          <Button
-            onClick={() => setPreviewMode("desktop")}
-            variant={previewMode === "desktop" ? "default" : "outline"}
-            className={previewMode === "desktop" ? "bg-cyan-600" : "border-slate-600"}
-          >
-            <Monitor className="w-4 h-4 mr-1" />
-            Desktop
-          </Button>
-          <Button
-            onClick={() => setPreviewMode("mobile")}
-            variant={previewMode === "mobile" ? "default" : "outline"}
-            className={previewMode === "mobile" ? "bg-cyan-600" : "border-slate-600"}
-          >
-            <Smartphone className="w-4 h-4 mr-1" />
-            Mobile
-          </Button>
-        </div>
-
-        <div className={`border border-slate-700 rounded-lg overflow-auto flex-1 bg-white ${
-          previewMode === "mobile" ? "max-w-xs" : ""
-        }`}>
-          <EmailPreview blocks={blocks} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} />
-        </div>
+      {/* Right Panel - Block List & Settings */}
+      <div className="col-span-1 flex flex-col gap-4 max-h-screen overflow-y-auto">
+        <Card className="bg-slate-800 border-slate-700 flex-1 flex flex-col overflow-hidden">
+          <CardHeader>
+            <CardTitle className="text-white text-sm">Blocks ({blocks.length})</CardTitle>
+          </CardHeader>
+          <CardContent className="flex-1 overflow-y-auto space-y-2 p-3">
+            {blocks.length === 0 ? (
+              <p className="text-slate-400 text-xs text-center py-4">No blocks added yet</p>
+            ) : (
+              blocks.map((block, index) => (
+                <div
+                  key={block.id}
+                  onClick={() => setSelectedBlockId(block.id)}
+                  className={`p-2 rounded border-2 cursor-pointer transition-all text-xs ${
+                    selectedBlockId === block.id
+                      ? "border-cyan-500 bg-cyan-900 text-white"
+                      : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">
+                      {block.type === "text" && "📝"}
+                      {block.type === "image" && "🖼️"}
+                      {block.type === "button" && "🔘"}
+                      {block.type === "spacer" && "⬌"}
+                      {block.type === "hero" && "🎯"}
+                      {block.type === "divider" && "─"}
+                      {" "}{index + 1}
+                    </span>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          duplicateBlock(block.id);
+                        }}
+                        className="text-cyan-400 hover:text-cyan-300"
+                      >
+                        <Copy className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteBlock(block.id);
+                        }}
+                        className="text-red-400 hover:text-red-300"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         {selectedBlockId && (
           <Card className="bg-slate-800 border-slate-700">
