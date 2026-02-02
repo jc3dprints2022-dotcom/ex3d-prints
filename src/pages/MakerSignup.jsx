@@ -266,7 +266,8 @@ export default function MakerSignup() {
         console.error("Failed to send confirmation email:", emailError);
       }
       
-      setFormState('submitted');
+      // Redirect to maker dashboard
+      window.location.href = createPageUrl("MakerDashboard");
 
     } catch (error) {
       console.error("Signup error:", error);
