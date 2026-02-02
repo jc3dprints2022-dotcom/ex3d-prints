@@ -5,6 +5,9 @@ import { STLLoader } from 'three-stdlib';
 import { OBJLoader } from 'three-stdlib';
 import { Loader2 } from 'lucide-react';
 
+// Model cache to improve loading times
+const modelCache = new Map();
+
 export default function Model3DViewer({ fileUrl, selectedColor = "black", className = "" }) {
   const mountRef = useRef(null);
   const [loading, setLoading] = useState(true);
@@ -17,18 +20,19 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
     const colorMap = {
       'white': 0xffffff,
       'black': 0x000000,
-      'gray': 0x808080,
-      'silver': 0xc0c0c0,
+      'gray': 0xa0a0a0,
+      'silver': 0xe0e0e0,
       'gold': 0xffd700,
-      'brown': 0x8b4513,
-      'red': 0xff0000,
-      'blue': 0x0000ff,
-      'yellow': 0xffff00,
-      'green': 0x00ff00,
-      'orange': 0xff8800,
-      'purple': 0x800080,
-      'pink': 0xffc0cb,
+      'brown': 0xa0522d,
+      'red': 0xff3333,
+      'blue': 0x3366ff,
+      'yellow': 0xffee33,
+      'green': 0x33ff33,
+      'orange': 0xff9933,
+      'purple': 0x9933ff,
+      'pink': 0xff99cc,
       'copper': 0xb87333,
+      'bronze': 0xcd7f32,
       'teal': 0x14b8a6,
       'marble': 0xffffff,
       'silk rainbow': 0xff0000
@@ -87,21 +91,43 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
         controls.minDistance = 10;
         controls.maxDistance = 500;
 
-        // Load model
+        // Load model with caching
         const fileExtension = fileUrl.split('.').pop().toLowerCase();
-        let loader;
-
-        if (fileExtension === 'stl') {
-          loader = new STLLoader();
-        } else if (fileExtension === 'obj') {
-          loader = new OBJLoader();
+        
+        // Check cache first
+        if (modelCache.has(fileUrl)) {
+          const cachedGeometry = modelCache.get(fileUrl);
+          processModel(cachedGeometry, fileExtension, scene);
         } else {
-          throw new Error('Unsupported file format. Please use STL or OBJ.');
+          let loader;
+
+          if (fileExtension === 'stl') {
+            loader = new STLLoader();
+          } else if (fileExtension === 'obj') {
+            loader = new OBJLoader();
+          } else {
+            throw new Error('Unsupported file format. Please use STL or OBJ.');
+          }
+
+          loader.load(
+            fileUrl,
+            (geometry) => {
+              // Cache the loaded geometry
+              modelCache.set(fileUrl, geometry);
+              processModel(geometry, fileExtension, scene);
+            },
+            (progress) => {
+              // Loading progress
+            },
+            (err) => {
+              console.error('Error loading 3D model:', err);
+              setError('Failed to load 3D model');
+              setLoading(false);
+            }
+          );
         }
 
-        loader.load(
-          fileUrl,
-          (geometry) => {
+        function processModel(geometry, fileExtension, scene) {
             const modelColor = colorToHex(selectedColor);
             const isRainbow = selectedColor.toLowerCase() === 'silk rainbow';
             let model;
@@ -183,16 +209,7 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
 
             scene.add(model);
             setLoading(false);
-          },
-          (progress) => {
-            // Loading progress
-          },
-          (err) => {
-            console.error('Error loading 3D model:', err);
-            setError('Failed to load 3D model');
-            setLoading(false);
-          }
-        );
+        }
 
         // Animation loop
         const animate = () => {
