@@ -101,6 +101,17 @@ export default function HomepageFeaturedSection() {
     try {
       await base44.entities.HomepageFeatured.delete(featuredId);
       toast({ title: "Product removed from homepage" });
+
+      // Reorder remaining products to be sequential
+      const remaining = featuredProducts.filter(f => f.id !== featuredId);
+      for (let i = 0; i < remaining.length; i++) {
+        if (remaining[i].display_order !== i + 1) {
+          await base44.entities.HomepageFeatured.update(remaining[i].id, {
+            display_order: i + 1
+          });
+        }
+      }
+
       loadData();
     } catch (error) {
       toast({
@@ -111,20 +122,19 @@ export default function HomepageFeaturedSection() {
   };
 
   const handleMoveUp = async (featured) => {
-    if (featured.display_order === 1) return;
+    const currentIndex = featuredProducts.findIndex(f => f.id === featured.id);
+    if (currentIndex === 0) return;
 
     try {
-      const prevFeatured = featuredProducts.find(f => f.display_order === featured.display_order - 1);
-      
+      const prevFeatured = featuredProducts[currentIndex - 1];
+
       await base44.entities.HomepageFeatured.update(featured.id, {
-        display_order: featured.display_order - 1
+        display_order: currentIndex
       });
-      
-      if (prevFeatured) {
-        await base44.entities.HomepageFeatured.update(prevFeatured.id, {
-          display_order: prevFeatured.display_order + 1
-        });
-      }
+
+      await base44.entities.HomepageFeatured.update(prevFeatured.id, {
+        display_order: currentIndex + 1
+      });
 
       loadData();
     } catch (error) {
@@ -136,20 +146,19 @@ export default function HomepageFeaturedSection() {
   };
 
   const handleMoveDown = async (featured) => {
-    if (featured.display_order === featuredProducts.length) return;
+    const currentIndex = featuredProducts.findIndex(f => f.id === featured.id);
+    if (currentIndex === featuredProducts.length - 1) return;
 
     try {
-      const nextFeatured = featuredProducts.find(f => f.display_order === featured.display_order + 1);
-      
+      const nextFeatured = featuredProducts[currentIndex + 1];
+
       await base44.entities.HomepageFeatured.update(featured.id, {
-        display_order: featured.display_order + 1
+        display_order: currentIndex + 2
       });
-      
-      if (nextFeatured) {
-        await base44.entities.HomepageFeatured.update(nextFeatured.id, {
-          display_order: nextFeatured.display_order - 1
-        });
-      }
+
+      await base44.entities.HomepageFeatured.update(nextFeatured.id, {
+        display_order: currentIndex + 1
+      });
 
       loadData();
     } catch (error) {
@@ -212,18 +221,18 @@ export default function HomepageFeaturedSection() {
             </div>
           ) : (
             <div className="space-y-4">
-              {featuredProducts.map((featured, index) => {
-                const product = getProductDetails(featured.product_id);
-                if (!product) return null;
+               {featuredProducts.map((featured, index) => {
+                 const product = getProductDetails(featured.product_id);
+                 if (!product) return null;
 
-                return (
-                  <div
-                    key={featured.id}
-                    className="flex items-center gap-4 p-4 bg-slate-900 rounded-lg border border-slate-700"
-                  >
-                    <div className="text-2xl font-bold text-cyan-400 w-8">
-                      #{featured.display_order}
-                    </div>
+                 return (
+                   <div
+                     key={featured.id}
+                     className="flex items-center gap-4 p-4 bg-slate-900 rounded-lg border border-slate-700"
+                   >
+                     <div className="text-2xl font-bold text-cyan-400 w-8">
+                       #{index + 1}
+                     </div>
                     
                     {product.images && product.images[0] && (
                       <img
