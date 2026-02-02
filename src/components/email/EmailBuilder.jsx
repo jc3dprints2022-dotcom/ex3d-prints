@@ -20,6 +20,7 @@ import {
   Mail as MailIcon,
 } from "lucide-react";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { Badge } from "@/components/ui/badge";
 import EmailPreview from "./EmailPreview";
 import EmailBlockPanel from "./EmailBlockPanel";
 
@@ -31,8 +32,25 @@ export default function EmailBuilder({ onSave, initialContent }) {
   const [bgColor, setBgColor] = useState("#ffffff");
   const [bgImage, setBgImage] = useState("");
   const [draggedBlockId, setDraggedBlockId] = useState(null);
+  const [campaigns, setCampaigns] = useState([]);
+  const [loadingCampaigns, setLoadingCampaigns] = useState(false);
   const fileInputRef = useRef(null);
   const { toast } = useToast();
+
+  React.useEffect(() => {
+    loadCampaigns();
+  }, []);
+
+  const loadCampaigns = async () => {
+    setLoadingCampaigns(true);
+    try {
+      const allCampaigns = await base44.entities.EmailCampaign.list();
+      setCampaigns(allCampaigns.sort((a, b) => b.created_date.localeCompare(a.created_date)).slice(0, 5));
+    } catch (error) {
+      console.error('Failed to load campaigns:', error);
+    }
+    setLoadingCampaigns(false);
+  };
 
   const handleDragEnd = (result) => {
     const { source, destination, sourceDroppableId } = result;
@@ -227,7 +245,7 @@ export default function EmailBuilder({ onSave, initialContent }) {
         </div>
 
         {/* Middle Panel - Email Preview */}
-        <div className="flex-1 flex flex-col gap-4">
+        <div className="flex-1 flex flex-col gap-4" style={{ backgroundColor: bgColor, backgroundImage: bgImage ? `url('${bgImage}')` : 'none', backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <DragDropContext onDragEnd={handleDragEnd}>
             <Droppable droppableId="preview-blocks">
               {(provided) => (
@@ -322,6 +340,29 @@ export default function EmailBuilder({ onSave, initialContent }) {
               </CardContent>
             </Card>
           )}
+
+          <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-white text-xs">Recent Campaigns</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-1 max-h-48 overflow-y-auto">
+              {loadingCampaigns ? (
+                <p className="text-slate-400 text-xs text-center py-2">Loading...</p>
+              ) : campaigns.length === 0 ? (
+                <p className="text-slate-400 text-xs text-center py-2">No campaigns yet</p>
+              ) : (
+                campaigns.map((campaign) => (
+                  <div key={campaign.id} className="p-2 rounded border border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600 text-xs cursor-pointer hover:text-white transition-all">
+                    <p className="font-medium truncate">{campaign.name}</p>
+                    <p className="text-slate-500 text-xs truncate">{campaign.email_subject}</p>
+                    <Badge className={campaign.is_active ? 'bg-green-500 text-xs mt-1' : 'bg-gray-500 text-xs mt-1'}>
+                      {campaign.is_active ? 'Active' : 'Paused'}
+                    </Badge>
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
           <div className="space-y-2 flex-shrink-0">
             <Button className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-8"><MailIcon className="w-3 h-3 mr-1" />Setup Campaign</Button>
