@@ -545,13 +545,6 @@ export default function Layout({ children, currentPageName }) {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem asChild>
-                      <Link to={createPageUrl("AccountInfo")} onClick={scrollToTop} className="flex items-center">
-                        <UserIcon className="w-4 h-4 mr-2" />
-                        Account Info
-                      </Link>
-                    </DropdownMenuItem>
-
-                    <DropdownMenuItem asChild>
                       <Link to={getDashboardUrl()} onClick={scrollToTop} className="flex items-center">
                         <Settings className="w-4 h-4 mr-2" />
                         {getDashboardLabel()}
