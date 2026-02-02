@@ -299,52 +299,6 @@ export default function EmailComposerSection() {
                  />
                </div>
 
-              {/* Uploaded Images */}
-              {uploadedImages.length > 0 && (
-                <div>
-                  <Label className="text-white">Uploaded Images (click to insert)</Label>
-                  <div className="grid grid-cols-4 gap-2 mt-2">
-                    {uploadedImages.map((url, index) => (
-                      <button
-                        key={index}
-                        onClick={() => insertUploadedImage(url)}
-                        className="relative aspect-square rounded overflow-hidden border-2 border-slate-700 hover:border-cyan-500 transition-all"
-                      >
-                        <img src={url} alt={`Upload ${index + 1}`} className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Schedule Section */}
-              <div className="border-t border-slate-700 pt-4">
-                <Label className="text-white mb-2 block">Schedule Email (Optional)</Label>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="scheduleDate" className="text-slate-400 text-sm">Date</Label>
-                    <Input
-                      id="scheduleDate"
-                      type="date"
-                      value={scheduleDate}
-                      onChange={(e) => setScheduleDate(e.target.value)}
-                      className="bg-slate-900 border-slate-700 text-white"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="scheduleTime" className="text-slate-400 text-sm">Time</Label>
-                    <Input
-                      id="scheduleTime"
-                      type="time"
-                      value={scheduleTime}
-                      onChange={(e) => setScheduleTime(e.target.value)}
-                      className="bg-slate-900 border-slate-700 text-white"
-                    />
-                  </div>
-                </div>
-                <p className="text-xs text-slate-400 mt-2">Leave empty to send immediately. Scheduled emails are checked every 5 minutes.</p>
-              </div>
-
               {/* Send Button */}
               <div className="flex justify-end">
                 <Button
@@ -375,40 +329,7 @@ export default function EmailComposerSection() {
         </CardContent>
       </Card>
 
-      {/* Image URL Dialog */}
-      <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>
-        <DialogContent className="bg-slate-800 border-cyan-500/30 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-white">Insert Image URL</DialogTitle>
-            <DialogDescription className="text-slate-400">
-              Enter the URL of an image to insert into your email
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-              className="bg-slate-900 border-slate-700 text-white"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowImageDialog(false)}
-              className="bg-slate-700 text-white border-slate-600"
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={insertImage}
-              className="bg-cyan-600 hover:bg-cyan-700"
-            >
-              Insert
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+
     </div>
   );
 }
