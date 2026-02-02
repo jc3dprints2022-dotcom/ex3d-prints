@@ -381,18 +381,6 @@ export default function Layout({ children, currentPageName }) {
 
             <nav className="hidden md:flex items-center space-x-8">
               <Link
-                to={createPageUrl("Home")}
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors hover:text-teal-600 ${
-                  location.pathname === createPageUrl("Home")
-                    ? "text-teal-600"
-                    : "text-slate-600"
-                }`}
-              >
-                Home
-              </Link>
-
-              <Link
                 to={createPageUrl("Marketplace")}
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
@@ -593,13 +581,6 @@ export default function Layout({ children, currentPageName }) {
 
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
-              <Link
-                to={createPageUrl("Home")}
-                className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
-                onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-              >
-                Home
-              </Link>
               <Link
                 to={createPageUrl("Marketplace")}
                 className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
