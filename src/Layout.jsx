@@ -701,13 +701,6 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-2 text-sm text-gray-300">
                 <li><Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hover:text-white">Marketplace</Link></li>
                 <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
-              <ul className="space-y-2 text-sm text-gray-300">
-                <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
                 <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
               </ul>
             </div>
