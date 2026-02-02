@@ -167,9 +167,10 @@ export default function Marketplace() {
     tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
     setFilteredProducts(tempProducts);
-    setDisplayedProducts(tempProducts.slice(0, 20));
+    // Show all products when category is selected
+    setDisplayedProducts(tempProducts);
     setPage(1);
-    setHasMore(tempProducts.length > 20);
+    setHasMore(false);
   }, [filters, products, searchQuery]);
 
   useEffect(() => {

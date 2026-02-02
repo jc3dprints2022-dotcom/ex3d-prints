@@ -17,23 +17,12 @@ import UserManagementSection from "../components/commandcenter/UserManagementSec
 import ModelManagementSection from "../components/commandcenter/ModelManagementSection";
 import OrderRoutingSection from "../components/commandcenter/OrderRoutingSection";
 import PaymentsFinancialsSection from "../components/commandcenter/PaymentsFinancialsSection";
-import SecurityDRMSection from "../components/commandcenter/SecurityDRMSection";
 import MakerToolsSection from "../components/commandcenter/MakerToolsSection";
 import SystemSettingsSection from "../components/commandcenter/SystemSettingsSection";
-import MakerApplicationsSection from "../components/commandcenter/MakerApplicationsSection";
-import DesignerApplicationsSection from "../components/commandcenter/DesignerApplicationsSection";
 import DesignerProductsSection from "../components/commandcenter/DesignerProductsSection";
 import CustomRequestManagement from "../components/commandcenter/CustomRequestManagement";
-import AnnouncementsSection from "../components/commandcenter/AnnouncementsSection";
-import CabinetStatusSection from "../components/commandcenter/CabinetStatusSection";
-import MarketingResourcesSection from "../components/commandcenter/MarketingResourcesSection";
-import HomepageFeaturedSection from "../components/commandcenter/HomepageFeaturedSection";
-import EmailComposerSection from "../components/commandcenter/EmailComposerSection";
-import EmailAutomationSection from "../components/commandcenter/EmailAutomationSection";
-import ExpRewardsSection from "../components/commandcenter/ExpRewardsSection";
-import ExpProductsSection from "../components/commandcenter/ExpProductsSection";
-import ExpRewardOrdersSection from "../components/commandcenter/ExpRewardOrdersSection";
-import CampusManagerSection from "../components/commandcenter/CampusManagerSection";
+import EmailManagementSection from "../components/commandcenter/EmailManagementSection";
+import ExpManagementSection from "../components/commandcenter/ExpManagementSection";
 
 export default function JC3DCommandCenter() {
   const [user, setUser] = useState(null);
@@ -82,26 +71,15 @@ export default function JC3DCommandCenter() {
 
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
-    { value: "homepage", label: "🏠 Homepage Featured" },
     { value: "users", label: "👥 User Management" },
     { value: "models", label: "🎨 Model Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
-    { value: "exp-rewards", label: "🏆 EXP Rewards" },
-    { value: "exp-products", label: "🎁 EXP Products" },
-    { value: "exp-orders", label: "📦 EXP Reward Orders" },
-    { value: "email", label: "📧 Email Composer" },
-    { value: "automation", label: "🤖 Email Automation" },
-    { value: "security", label: "🔒 Security & Audit Logs" },
+    { value: "exp", label: "🏆 EXP Management" },
+    { value: "email", label: "📧 Email Management" },
     { value: "makers", label: "🔧 Maker Tools" },
-    { value: "campus-managers", label: "🏫 Campus Managers" },
-    { value: "applications", label: "📝 Maker Applications" },
-    { value: "designer-applications", label: "🎨 Designer Applications" },
     { value: "designer-products", label: "🖼️ Designer Products Review" },
     { value: "custom-requests", label: "🎯 Custom Print Requests" },
-    { value: "announcements", label: "📢 Announcements" },
-    { value: "marketing", label: "🎨 Marketing Resources" },
-    { value: "cabinets", label: "📫 Pickup Cabinets" },
     { value: "settings", label: "⚙️ System Settings" }
   ];
 
@@ -109,8 +87,6 @@ export default function JC3DCommandCenter() {
     switch (activeSection) {
       case "dashboard":
         return <DashboardSection />;
-      case "homepage":
-        return <HomepageFeaturedSection />;
       case "users":
         return <UserManagementSection />;
       case "models":
@@ -119,36 +95,16 @@ export default function JC3DCommandCenter() {
         return <OrderRoutingSection />;
       case "payments":
         return <PaymentsFinancialsSection />;
-      case "exp-rewards":
-        return <ExpRewardsSection />;
-      case "exp-products":
-        return <ExpProductsSection />;
-      case "exp-orders":
-        return <ExpRewardOrdersSection />;
+      case "exp":
+        return <ExpManagementSection />;
       case "email":
-        return <EmailComposerSection />;
-      case "automation":
-        return <EmailAutomationSection />;
-      case "security":
-        return <SecurityDRMSection />;
+        return <EmailManagementSection />;
       case "makers":
         return <MakerToolsSection />;
-      case "campus-managers":
-        return <CampusManagerSection />;
-      case "applications":
-        return <MakerApplicationsSection />;
-      case "designer-applications":
-        return <DesignerApplicationsSection />;
       case "designer-products":
         return <DesignerProductsSection />;
       case "custom-requests":
         return <CustomRequestManagement />;
-      case "announcements":
-        return <AnnouncementsSection />;
-      case "marketing":
-        return <MarketingResourcesSection />;
-      case "cabinets":
-        return <CabinetStatusSection />;
       case "settings":
         return <SystemSettingsSection />;
       default:

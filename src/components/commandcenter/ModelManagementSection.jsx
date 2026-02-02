@@ -8,24 +8,30 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, X, Package, Link as LinkIcon, PlusCircle, Pencil, Crop } from "lucide-react";
+import { Loader2, Upload, X, Package, Link as LinkIcon, PlusCircle, Pencil, Crop, Home } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import AdminDesignReviewModal from "../admin/AdminDesignReviewModal";
 import ImageCropEditor from "../shared/ImageCropEditor";
+import HomepageFeaturedSection from "./HomepageFeaturedSection";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
-  { value: "plane_models", label: "Plane Models" },
   { value: "rocket_models", label: "Rocket Models" },
   { value: "halloween", label: "Halloween" },
-  { value: "embry_riddle", label: "Embry-Riddle" },
   { value: "dorm_essentials", label: "Dorm Essentials"},
   { value: "desk", label: "Desk"},
   { value: "art", label: "Art"},
-  { value: "fashion", label: "Fashion"},
   { value: "gadgets", label: "Gadgets"},
-  { value: "toys&games", label: "Toys&Games"},
-  { value: "holidays", label: "Holidays"},
+  { value: "toys_and_games", label: "Toys & Games"},
+  { value: "thanksgiving", label: "Thanksgiving"},
+  { value: "christmas", label: "Christmas"},
+  { value: "valentines_day", label: "Valentine's Day"},
   { value: "misc", label: "Misc" }
 ];
 
@@ -49,6 +55,7 @@ export default function ModelManagementSection() {
   const [reviewingProduct, setReviewingProduct] = useState(null);
   const [licenseVerified, setLicenseVerified] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const [showHomepageFeatured, setShowHomepageFeatured] = useState(false);
   const { toast } = useToast();
 
   // New states for dashboard consolidation
@@ -437,16 +444,30 @@ export default function ModelManagementSection() {
       <div className="space-y-6">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold text-white">Product Management</h2>
-        <Button onClick={() => {
-          setShowForm(true);
-          setEditingProduct(null); // Clear editing state when adding new
-          setFormData(initialFormData); // Reset form for new product
-          setLicenseVerified(false);
-          setImportUrl('');
-        }} className="bg-cyan-600 hover:bg-cyan-700 text-white">
-          <PlusCircle className="w-4 h-4 mr-2" /> Add New Product
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={() => setShowHomepageFeatured(true)} variant="outline" className="bg-purple-600 hover:bg-purple-700 text-white border-purple-500">
+            <Home className="w-4 h-4 mr-2" /> Homepage Featured
+          </Button>
+          <Button onClick={() => {
+            setShowForm(true);
+            setEditingProduct(null);
+            setFormData(initialFormData);
+            setLicenseVerified(false);
+            setImportUrl('');
+          }} className="bg-cyan-600 hover:bg-cyan-700 text-white">
+            <PlusCircle className="w-4 h-4 mr-2" /> Add New Product
+          </Button>
+        </div>
       </div>
+
+      <Dialog open={showHomepageFeatured} onOpenChange={setShowHomepageFeatured}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-slate-900 border-cyan-500/30">
+          <DialogHeader>
+            <DialogTitle className="text-white">Homepage Featured Products</DialogTitle>
+          </DialogHeader>
+          <HomepageFeaturedSection />
+        </DialogContent>
+      </Dialog>
 
       <Card className="bg-slate-900 border-cyan-500/30">
         <CardHeader>
