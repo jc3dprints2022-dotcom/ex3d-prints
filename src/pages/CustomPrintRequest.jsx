@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -54,12 +53,10 @@ export default function CustomPrintRequest() {
           description: "You need to be logged in to submit a custom print request.",
           variant: "destructive"
         });
-        await base44.auth.redirectToLogin(window.location.href);
+        base44.auth.redirectToLogin(window.location.href);
         return;
       }
       setUser(currentUser);
-      // Removed loadCustomRequests(currentUser.id) as it was not defined and
-      // loading existing requests doesn't fit the purpose of a submission form.
     } catch (error) {
       console.error("Authentication check failed:", error);
       toast({
@@ -67,8 +64,7 @@ export default function CustomPrintRequest() {
         description: "Please sign in to continue.",
         variant: "destructive"
       });
-      await base44.auth.redirectToLogin(window.location.href);
-      return;
+      base44.auth.redirectToLogin(window.location.href);
     } finally {
       setLoading(false);
     }
