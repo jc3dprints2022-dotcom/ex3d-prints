@@ -318,7 +318,7 @@ export default function Terms() {
               to use, manufacture, market, and fulfill physical‑print orders using the design through the EX3D platform, 
               including the right to create technical derivatives necessary for manufacturing (e.g., mesh repair, orientation, 
               supports, per‑order slicing). This exclusivity applies only to physical manufacturing via EX3D and does not 
-              authorize EX3D to sell or distribute the underlying digital files to consumers.
+              authorize EX3D to sell or distribute the underlying digital files to consumers without expressed permission.
             </p>
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">12.3 Maker Access & File Controls</h3>
