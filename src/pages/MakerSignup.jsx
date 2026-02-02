@@ -168,8 +168,8 @@ export default function MakerSignup() {
       toast({ title: "Materials required", description: "Please select at least one material you can print with.", variant: "destructive" });
       return;
     }
-    if (!formData.campus_location) {
-      toast({ title: "Campus Location required", description: "Please select your campus location.", variant: "destructive" });
+    if (!formData.campus_location || !formData.campus_location.trim()) {
+      toast({ title: "Address required", description: "Please enter your address.", variant: "destructive" });
       return;
     }
     
@@ -195,16 +195,18 @@ export default function MakerSignup() {
       if (user.maker_application_id && formState === 'rejected_maker') {
         currentApplication = await base44.entities.MakerApplication.update(user.maker_application_id, applicationData);
         await base44.auth.updateMe({ 
-          account_status: 'pending_approval' 
+          business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
+          maker_id: currentApplication.id
         });
-        toast({ title: "Application Re-submitted", description: "Your application has been re-submitted for review.", variant: "success" });
+        toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       } else {
         currentApplication = await base44.entities.MakerApplication.create(applicationData);
         await base44.auth.updateMe({ 
           maker_application_id: currentApplication.id,
-          account_status: 'pending_approval' 
+          business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
+          maker_id: currentApplication.id
         });
-        toast({ title: "Application Submitted", description: "Your application has been submitted for review.", variant: "success" });
+        toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }
 
       // Send application received email
@@ -231,7 +233,7 @@ export default function MakerSignup() {
     <div style="background: #fef3f2; border-left: 4px solid #f97316; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
         <h2 style="color: #111827; font-size: 18px; margin: 0 0 16px 0;">Application Details</h2>
         <div style="color: #6b7280; font-size: 15px; line-height: 1.8;">
-            <p style="margin: 8px 0;"><strong>Campus Location:</strong> ${CAMPUS_LOCATIONS.find(c => c.value === formData.campus_location)?.label || formData.campus_location}</p>
+            <p style="margin: 8px 0;"><strong>Address:</strong> ${formData.campus_location}</p>
             <p style="margin: 8px 0;"><strong>Experience Level:</strong> ${formData.experience_level}</p>
             <p style="margin: 8px 0;"><strong>Weekly Capacity:</strong> ${formData.weekly_capacity} hours</p>
             <p style="margin: 8px 0;"><strong>Materials:</strong> ${formData.materials.join(', ')}</p>
@@ -320,7 +322,7 @@ export default function MakerSignup() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl mb-6">
             <Printer className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Maker Application</h1>
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">Become a Maker</h1>
           <p className="text-xl text-slate-600">Join our network of professional 3D printers.</p>
         </div>
 
@@ -348,17 +350,16 @@ export default function MakerSignup() {
                 <p className="text-xs text-slate-500 mt-1">10-digit phone number</p>
               </div>
 
-              {/* Campus Location */}
+              {/* Address */}
               <div>
-                <Label htmlFor="campus_location">Campus Location *</Label>
-                <Select required value={formData.campus_location} onValueChange={(value) => handleInputChange('campus_location', value)}>
-                  <SelectTrigger><SelectValue placeholder="Select your campus" /></SelectTrigger>
-                  <SelectContent>
-                    {CAMPUS_LOCATIONS.map(campus => (
-                      <SelectItem key={campus.value} value={campus.value}>{campus.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="address">Address *</Label>
+                <Input 
+                  id="address" 
+                  value={formData.campus_location} 
+                  onChange={(e) => handleInputChange('campus_location', e.target.value)} 
+                  placeholder="123 Main St, City, State, ZIP"
+                  required
+                />
               </div>
 
               {/* Experience & Capacity */}
@@ -428,7 +429,7 @@ export default function MakerSignup() {
               </div>
 
               <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-orange-500 to-red-600" disabled={formState === 'submitting'}>
-                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting...</> : 'Submit Application'}
+                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting...</> : 'Submit'}
               </Button>
             </form>
           </CardContent>

@@ -8,30 +8,68 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Palette, Plus, X } from "lucide-react";
+import { Loader2, Palette, Upload as UploadIcon, User } from "lucide-react";
+import { createPageUrl } from "@/utils";
 
-const EXPERIENCE_LEVELS = ["Beginner", "Intermediate", "Advanced", "Professional"];
-const DESIGN_CATEGORIES = [
-  "Art & Sculptures",
-  "Fashion & Accessories", 
-  "Home & Garden",
-  "Toys & Games",
-  "Tools & Gadgets",
-  "Educational",
-  "Miniatures",
-  "Other"
+const EXPERIENCE_LEVELS = [
+  { value: "beginner", label: "Beginner (0-1 yrs)" },
+  { value: "intermediate", label: "Intermediate (2-5 yrs)" },
+  { value: "advanced", label: "Advanced (5+ yrs)" }
 ];
+
+const DESIGN_CATEGORIES = [
+  "kit_cards",
+  "plane_models",
+  "rocket_models",
+  "halloween",
+  "embry_riddle",
+  "dorm_essentials",
+  "desk",
+  "art",
+  "fashion",
+  "gadgets",
+  "toys_and_games",
+  "thanksgiving",
+  "christmas",
+  "holidays",
+  "misc"
+];
+
+const getCategoryLabel = (value) => {
+  const labels = {
+    "kit_cards": "Kit Cards",
+    "plane_models": "Plane Models",
+    "rocket_models": "Rocket Models",
+    "halloween": "Halloween",
+    "embry_riddle": "Embry-Riddle",
+    "dorm_essentials": "Dorm Essentials",
+    "desk": "Desk",
+    "art": "Art",
+    "fashion": "Fashion",
+    "gadgets": "Gadgets",
+    "toys_and_games": "Toys & Games",
+    "thanksgiving": "Thanksgiving",
+    "christmas": "Christmas",
+    "holidays": "Holidays",
+    "misc": "Misc"
+  };
+  return labels[value] || value;
+};
 
 export default function DesignerSignup() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [portfolioLinks, setPortfolioLinks] = useState(['']);
   const [selectedCategories, setSelectedCategories] = useState([]);
+  const [profileImage, setProfileImage] = useState(null);
+  const [profileImageUrl, setProfileImageUrl] = useState('');
+  const [uploadingImage, setUploadingImage] = useState(false);
   const [formData, setFormData] = useState({
     designer_name: '',
     bio: '',
-    experience_level: ''
+    experience_level: '',
+    phone: '',
+    agree_terms: false
   });
   const { toast } = useToast();
 
@@ -54,18 +92,21 @@ export default function DesignerSignup() {
     setLoading(false);
   };
 
-  const handleAddPortfolioLink = () => {
-    setPortfolioLinks([...portfolioLinks, '']);
-  };
+  const handleImageUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  const handleRemovePortfolioLink = (index) => {
-    setPortfolioLinks(portfolioLinks.filter((_, i) => i !== index));
-  };
-
-  const handlePortfolioLinkChange = (index, value) => {
-    const updated = [...portfolioLinks];
-    updated[index] = value;
-    setPortfolioLinks(updated);
+    setUploadingImage(true);
+    try {
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      setProfileImageUrl(file_url);
+      setProfileImage(file);
+      toast({ title: "Profile image uploaded!" });
+    } catch (error) {
+      console.error("Failed to upload image:", error);
+      toast({ title: "Failed to upload image", variant: "destructive" });
+    }
+    setUploadingImage(false);
   };
 
   const handleCategoryToggle = (category) => {
@@ -94,6 +135,16 @@ export default function DesignerSignup() {
       return;
     }
 
+    if (!formData.phone || !formData.phone.trim()) {
+      toast({ title: "Please enter your phone number", variant: "destructive" });
+      return;
+    }
+
+    if (!formData.agree_terms) {
+      toast({ title: "Please agree to the terms and conditions", variant: "destructive" });
+      return;
+    }
+
     if (selectedCategories.length === 0) {
       toast({ title: "Please select at least one design category", variant: "destructive" });
       return;
@@ -101,8 +152,6 @@ export default function DesignerSignup() {
 
     setSubmitting(true);
     try {
-      const validLinks = portfolioLinks.filter(link => link.trim());
-
       const application = await base44.entities.DesignerApplication.create({
         user_id: user.id,
         full_name: user.full_name,
@@ -111,25 +160,29 @@ export default function DesignerSignup() {
         bio: formData.bio,
         experience_level: formData.experience_level,
         design_categories: selectedCategories,
-        portfolio_links: validLinks,
-        status: 'pending'
+        portfolio_links: [],
+        status: 'approved'
       });
 
       await base44.auth.updateMe({
         designer_application_id: application.id,
-        designer_application_status: 'pending'
+        designer_name: formData.designer_name,
+        bio: formData.bio,
+        profile_image: profileImageUrl || user.profile_image,
+        business_roles: [...(user.business_roles || []).filter(r => r !== 'designer'), 'designer'],
+        designer_id: application.id
       });
 
       toast({
-        title: "Sign up submitted!",
-        description: "We'll review your information and get back to you soon."
+        title: "Success!",
+        description: "Welcome to the designer network!"
       });
 
-      window.location.href = '/ConsumerDashboard';
+      window.location.href = createPageUrl('DesignerDashboard');
     } catch (error) {
-      console.error("Failed to submit sign up:", error);
+      console.error("Failed to submit:", error);
       toast({
-        title: "Failed to submit sign up",
+        title: "Failed to submit",
         description: error.message,
         variant: "destructive"
       });
@@ -155,15 +208,68 @@ export default function DesignerSignup() {
           <p className="text-gray-600">Share your 3D designs with the world and earn from every print</p>
         </div>
 
-        <Card className="border-2 border-red-200">
+        <Card className="border-2 border-red-200 shadow-2xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Palette className="w-5 h-5 text-red-600" />
-              Designer Sign Up Form
-            </CardTitle>
+            <CardTitle>Tell Us About Yourself</CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Personal Info */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="full_name">Full Name *</Label>
+                  <Input id="full_name" value={user?.full_name || ''} disabled className="bg-gray-50"/>
+                </div>
+                <div>
+                  <Label htmlFor="email">Email Address *</Label>
+                  <Input id="email" type="email" value={user?.email || ''} disabled className="bg-gray-50"/>
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input 
+                  id="phone" 
+                  value={formData.phone} 
+                  onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                  placeholder="(555) 123-4567"
+                  required
+                />
+                <p className="text-xs text-slate-500 mt-1">10-digit phone number</p>
+              </div>
+
+              {/* Profile Image */}
+              <div>
+                <Label>Profile Image</Label>
+                <div className="mt-2 flex items-center gap-4">
+                  {profileImageUrl ? (
+                    <img src={profileImageUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                      <User className="w-12 h-12 text-gray-400" />
+                    </div>
+                  )}
+                  <div>
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                      id="profile-image-upload"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => document.getElementById('profile-image-upload').click()}
+                      disabled={uploadingImage}
+                    >
+                      {uploadingImage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadIcon className="w-4 h-4 mr-2" />}
+                      Upload Photo
+                    </Button>
+                  </div>
+                </div>
+              </div>
+
               <div>
                 <Label htmlFor="designer_name">Designer Name / Brand *</Label>
                 <Input
@@ -200,8 +306,8 @@ export default function DesignerSignup() {
                   </SelectTrigger>
                   <SelectContent>
                     {EXPERIENCE_LEVELS.map((level) => (
-                      <SelectItem key={level} value={level}>
-                        {level}
+                      <SelectItem key={level.value} value={level.value}>
+                        {level.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -222,66 +328,38 @@ export default function DesignerSignup() {
                         htmlFor={`cat-${category}`}
                         className="text-sm font-normal cursor-pointer"
                       >
-                        {category}
+                        {getCategoryLabel(category)}
                       </Label>
                     </div>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <Label>Portfolio Links (Optional)</Label>
-                <p className="text-sm text-gray-600 mb-3">Share links to your portfolio, social media, or previous work</p>
-                <div className="space-y-2">
-                  {portfolioLinks.map((link, index) => (
-                    <div key={index} className="flex gap-2">
-                      <Input
-                        value={link}
-                        onChange={(e) => handlePortfolioLinkChange(index, e.target.value)}
-                        placeholder="https://"
-                      />
-                      {portfolioLinks.length > 1 && (
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleRemovePortfolioLink(index)}
-                        >
-                          <X className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={handleAddPortfolioLink}
-                  className="mt-2"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Another Link
-                </Button>
+              <div className="flex items-start space-x-2 p-4 bg-blue-50 rounded-lg border-2 border-blue-600">
+                <Checkbox 
+                  id="terms" 
+                  checked={formData.agree_terms} 
+                  onCheckedChange={(checked) => setFormData({...formData, agree_terms: checked})}
+                  required
+                  className="mt-1"
+                />
+                <Label htmlFor="terms" className="cursor-pointer text-sm leading-relaxed">
+                  * I agree to the{' '}
+                  <a 
+                    href={createPageUrl("Terms")} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-red-600 hover:text-red-700 underline font-semibold"
+                  >
+                    Terms of Service
+                  </a>
+                  {' '}and understand the requirements for becoming a designer on EX3D Prints.
+                </Label>
               </div>
 
-              <div className="pt-6 border-t">
-                <Button
-                  type="submit"
-                  disabled={submitting}
-                  className="w-full bg-red-600 hover:bg-red-700"
-                  size="lg"
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Submitting Sign Up...
-                    </>
-                  ) : (
-                    'Submit Sign Up'
-                  )}
-                </Button>
-              </div>
+              <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-red-500 to-pink-600" disabled={submitting}>
+                {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting...</> : 'Submit'}
+              </Button>
             </form>
           </CardContent>
         </Card>
