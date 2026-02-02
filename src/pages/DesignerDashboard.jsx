@@ -5,10 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2, FileText, Upload } from "lucide-react";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2, FileText, Upload, Settings, HelpCircle } from "lucide-react";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
 import BankInfoManager from "../components/shared/BankInfoManager";
 import BrandingKit from "../components/makers/BrandingKit";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,14 +31,18 @@ export default function DesignerDashboard() {
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
   const [uploadingGuide, setUploadingGuide] = useState(false);
+  const [editingInfo, setEditingInfo] = useState(false);
+  const [infoFormData, setInfoFormData] = useState({
+    email: '',
+    phone: ''
+  });
   const { toast } = useToast();
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
-    /*{ value: 'assembly', label: 'Assembly Guides', icon: FileText },*/
-    { value: 'guide', label: 'Designer Guide', icon: TrendingUp },
-    { value: 'financial', label: 'Financial Info', icon: DollarSign },
-    { value: 'branding', label: 'Branding Kit', icon: Palette },
+    { value: 'assembly', label: 'Assembly Guides', icon: FileText },
+    { value: 'guide', label: 'Designer Guide', icon: HelpCircle },
+    { value: 'settings', label: 'Settings', icon: Settings },
   ];
 
   useEffect(() => {
@@ -62,6 +68,12 @@ export default function DesignerDashboard() {
       const allProducts = await base44.entities.Product.list();
       const myProducts = allProducts.filter(p => p.designer_id === currentUser.designer_id);
       setProducts(myProducts);
+      
+      // Initialize info form data
+      setInfoFormData({
+        email: currentUser.email || '',
+        phone: currentUser.phone || ''
+      });
     } catch (error) {
       console.error("Failed to load dashboard:", error);
       toast({
@@ -349,10 +361,6 @@ export default function DesignerDashboard() {
           
         </TabsContent>
 
-        <TabsContent value="financial">
-          <BankInfoManager userId={user.id} userRole="designer" />
-        </TabsContent>
-
         <TabsContent value="assembly">
           <Card>
             <CardHeader>
@@ -571,8 +579,103 @@ export default function DesignerDashboard() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="branding">
-          <BrandingKit userRole="designer" />
+        <TabsContent value="settings" className="space-y-6">
+          {/* Financial Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Financial Information</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Manage your banking information for receiving payouts and making payments
+              </p>
+            </CardHeader>
+            <CardContent>
+              <BankInfoManager user={user} onUpdate={loadDashboardData} />
+            </CardContent>
+          </Card>
+
+          {/* Contact Information */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Contact Information</CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Your email and phone number
+                  </p>
+                </div>
+                {!editingInfo && (
+                  <Button variant="outline" onClick={() => setEditingInfo(true)}>
+                    Change Information
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {!editingInfo ? (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Email</p>
+                    <p className="font-medium">{user?.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Phone</p>
+                    <p className="font-medium">{user?.phone || 'Not set'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={infoFormData.email}
+                      onChange={(e) => setInfoFormData({...infoFormData, email: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone</Label>
+                    <Input
+                      id="phone"
+                      value={infoFormData.phone}
+                      onChange={(e) => setInfoFormData({...infoFormData, phone: e.target.value})}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditingInfo(false);
+                        setInfoFormData({
+                          email: user?.email || '',
+                          phone: user?.phone || ''
+                        });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          await base44.auth.updateMe({
+                            email: infoFormData.email,
+                            phone: infoFormData.phone
+                          });
+                          toast({ title: "Contact information updated!" });
+                          setEditingInfo(false);
+                          await loadDashboardData();
+                        } catch (error) {
+                          toast({ title: "Failed to update information", variant: "destructive" });
+                        }
+                      }}
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </TabsContent>
         </Tabs>
 
