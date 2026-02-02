@@ -168,7 +168,7 @@ export default function ForDesigners() {
             </Button>
             <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
               <Link to={createPageUrl("DesignerHowItWorks")}>
-                <span className="text-orange-500">Learn How It Works</span>
+                <span className="text-red-500">Learn How It Works</span>
                 <ArrowRight className="w-5 h-5 ml-2 text-red-500" />
               </Link>
             </Button>
