@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Send, Upload, Bold, Italic, Link as LinkIcon, Image as ImageIcon, Loader2, Users, Filter } from "lucide-react";
+import { Send, Upload, Bold, Italic, Link as LinkIcon, Image as ImageIcon, Loader2, Users, Filter, LayoutGrid } from "lucide-react";
+import EmailBuilder from "../email/EmailBuilder";
 import {
   Select,
   SelectContent,
@@ -38,6 +39,8 @@ export default function EmailComposerSection() {
   const [imageUrl, setImageUrl] = useState("");
   const [scheduleDate, setScheduleDate] = useState("");
   const [scheduleTime, setScheduleTime] = useState("");
+  const [useBuilder, setUseBuilder] = useState(false);
+  const [emailContent, setEmailContent] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -454,9 +457,42 @@ export default function EmailComposerSection() {
                 />
               </div>
 
-              {/* Formatting Toolbar */}
-              <div>
-                <Label className="text-white mb-2 block">Message * (HTML supported)</Label>
+              {/* Builder Toggle */}
+              <div className="flex gap-2">
+                <Button
+                  onClick={() => setUseBuilder(false)}
+                  variant={!useBuilder ? "default" : "outline"}
+                  className={!useBuilder ? "bg-cyan-600" : "border-slate-600 text-white"}
+                >
+                  Text Editor
+                </Button>
+                <Button
+                  onClick={() => setUseBuilder(true)}
+                  variant={useBuilder ? "default" : "outline"}
+                  className={useBuilder ? "bg-cyan-600" : "border-slate-600 text-white"}
+                >
+                  <LayoutGrid className="w-4 h-4 mr-1" />
+                  Visual Builder
+                </Button>
+              </div>
+
+              {useBuilder ? (
+                <div className="border border-slate-700 rounded-lg overflow-hidden">
+                  <EmailBuilder
+                    onSave={(content) => {
+                      setEmailContent(content);
+                      setMessage(content.html);
+                      setUseBuilder(false);
+                      toast({ title: "Email saved to composer!" });
+                    }}
+                    initialContent={emailContent}
+                  />
+                </div>
+              ) : (
+                <>
+                  {/* Formatting Toolbar */}
+                  <div>
+                    <Label className="text-white mb-2 block">Message * (HTML supported)</Label>
                 <div className="flex gap-2 mb-2 flex-wrap">
                   <Button
                     type="button"
@@ -543,10 +579,12 @@ export default function EmailComposerSection() {
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder="Enter your message... (HTML tags supported)"
-                  rows={10}
-                  className="bg-slate-900 border-slate-700 text-white font-mono text-sm"
-                />
-              </div>
+                    rows={10}
+                    className="bg-slate-900 border-slate-700 text-white font-mono text-sm"
+                  />
+                  </div>
+                  </>
+                  )}
 
               {/* Uploaded Images */}
               {uploadedImages.length > 0 && (
