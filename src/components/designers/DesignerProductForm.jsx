@@ -778,44 +778,33 @@ export default function DesignerProductForm({ designerId, designerName, existing
       </div>
 
       {/* Boost Listing Option */}
-      <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border-2 border-yellow-400">
-        <div className="flex items-start gap-3 mb-3">
-          <TrendingUp className="w-6 h-6 text-orange-600 flex-shrink-0 mt-1" />
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-gray-900 mb-2">Boost Your Listing 🚀</h3>
-            <p className="text-sm text-gray-700 mb-3">
-              Increase visibility! Boosted listings appear at the top of search results and category pages, helping you get more views and sales.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="boost_weeks" className="text-sm font-medium">Boost Duration</Label>
-              <Select
-                value={boostWeeks.toString()}
-                onValueChange={(value) => setBoostWeeks(parseInt(value))}
-              >
-                <SelectTrigger id="boost_weeks">
-                  <SelectValue placeholder="No boost (free)" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">No boost (free)</SelectItem>
-                  <SelectItem value="1">1 week - $5</SelectItem>
-                  <SelectItem value="2">2 weeks - $10</SelectItem>
-                  <SelectItem value="3">3 weeks - $15</SelectItem>
-                  <SelectItem value="4">4 weeks (1 month) - $20</SelectItem>
-                </SelectContent>
-              </Select>
-              {boostWeeks > 0 && (
-                <div className="mt-2 p-2 bg-white rounded border border-yellow-300">
-                  <p className="text-sm font-semibold text-orange-600">
-                    Total boost cost: ${boostWeeks * 5}
-                  </p>
-                  <p className="text-xs text-gray-600 mt-1">
-                    Payment will be processed after admin approval
-                  </p>
-                </div>
-              )}
-            </div>
+      <div className="p-3 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-lg border border-yellow-300">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <TrendingUp className="w-5 h-5 text-orange-600" />
+            <Label htmlFor="boost_weeks" className="text-sm font-medium">Boost Your Listing 🚀</Label>
           </div>
+          <Select
+            value={boostWeeks.toString()}
+            onValueChange={(value) => setBoostWeeks(parseInt(value))}
+          >
+            <SelectTrigger id="boost_weeks" className="w-48">
+              <SelectValue placeholder="No boost" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="0">No boost (free)</SelectItem>
+              <SelectItem value="1">1 week - $5</SelectItem>
+              <SelectItem value="2">2 weeks - $10</SelectItem>
+              <SelectItem value="3">3 weeks - $15</SelectItem>
+              <SelectItem value="4">4 weeks - $20</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
+        {boostWeeks > 0 && (
+          <p className="text-xs text-gray-600 mt-2">
+            Total: ${boostWeeks * 5} • Payment after approval
+          </p>
+        )}
       </div>
 
       <div className="flex gap-3 pt-4">

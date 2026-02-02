@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Palette, Pencil, Trash2, FileText, Upload, Settings, HelpCircle } from "lucide-react";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle } from "lucide-react";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
 import BankInfoManager from "../components/shared/BankInfoManager";
-import BrandingKit from "../components/makers/BrandingKit";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,18 +30,20 @@ export default function DesignerDashboard() {
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
-  const [uploadingGuide, setUploadingGuide] = useState(false);
   const [editingInfo, setEditingInfo] = useState(false);
   const [infoFormData, setInfoFormData] = useState({
     email: '',
-    phone: ''
+    phone: '',
+    designer_name: '',
+    bio: '',
+    profile_image: ''
   });
+  const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
   const { toast } = useToast();
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
-    { value: 'assembly', label: 'Assembly Guides', icon: FileText },
-    { value: 'guide', label: 'Designer Guide', icon: HelpCircle },
+    { value: 'guide', label: 'Guide', icon: HelpCircle },
     { value: 'settings', label: 'Settings', icon: Settings },
   ];
 
@@ -72,7 +74,10 @@ export default function DesignerDashboard() {
       // Initialize info form data
       setInfoFormData({
         email: currentUser.email || '',
-        phone: currentUser.phone || ''
+        phone: currentUser.phone || '',
+        designer_name: currentUser.designer_name || '',
+        bio: currentUser.bio || '',
+        profile_image: currentUser.profile_image || ''
       });
     } catch (error) {
       console.error("Failed to load dashboard:", error);
@@ -118,11 +123,20 @@ export default function DesignerDashboard() {
     );
   }
 
+  // Calculate stats
+  const totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
+  const totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * p.price * 0.10), 0);
+  
+  // Calculate monthly revenue
+  const now = new Date();
+  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthlyRevenue = 0; // Would need order history to calculate accurately
+  
   const stats = {
     total: products.length,
-    active: products.filter(p => p.status === 'active').length,
-    pending: products.filter(p => p.status === 'pending').length,
-    rejected: products.filter(p => p.status === 'rejected').length,
+    orders: totalOrders,
+    monthlyRevenue: monthlyRevenue,
+    totalRevenue: totalRevenue,
   };
 
   return (
@@ -170,10 +184,10 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Active</p>
-                <p className="text-3xl font-bold text-green-600">{stats.active}</p>
+                <p className="text-sm text-gray-600">Orders</p>
+                <p className="text-3xl font-bold text-green-600">{stats.orders}</p>
               </div>
-              <TrendingUp className="w-10 h-10 text-green-600" />
+              <ShoppingCart className="w-10 h-10 text-green-600" />
             </div>
           </CardContent>
         </Card>
@@ -182,10 +196,10 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Pending</p>
-                <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
+                <p className="text-sm text-gray-600">Monthly Revenue</p>
+                <p className="text-3xl font-bold text-teal-600">${stats.monthlyRevenue.toFixed(2)}</p>
               </div>
-              <Eye className="w-10 h-10 text-yellow-600" />
+              <TrendingUp className="w-10 h-10 text-teal-600" />
             </div>
           </CardContent>
         </Card>
@@ -194,10 +208,10 @@ export default function DesignerDashboard() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Declined</p>
-                <p className="text-3xl font-bold text-red-600">{stats.rejected}</p>
+                <p className="text-sm text-gray-600">Total Revenue</p>
+                <p className="text-3xl font-bold text-blue-600">${stats.totalRevenue.toFixed(2)}</p>
               </div>
-              <ShoppingCart className="w-10 h-10 text-gray-400" />
+              <DollarSign className="w-10 h-10 text-blue-600" />
             </div>
           </CardContent>
         </Card>
@@ -361,126 +375,6 @@ export default function DesignerDashboard() {
           
         </TabsContent>
 
-        <TabsContent value="assembly">
-          <Card>
-            <CardHeader>
-              <CardTitle>Assembly Guides</CardTitle>
-              <p className="text-sm text-gray-600 mt-2">
-                Upload PDF assembly guides for your designs to help customers build complex models
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Upload Assembly Guide</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Upload a PDF, Word document, or image file with assembly instructions
-                </p>
-                <input
-                  type="file"
-                  id="assembly-guide-upload"
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
-                  className="hidden"
-                  disabled={uploadingGuide}
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-
-                    setUploadingGuide(true);
-                    try {
-                      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                      
-                      // Store the guide URL in user profile
-                      const currentGuides = user.assembly_guides || [];
-                      await base44.auth.updateMe({
-                        assembly_guides: [...currentGuides, { 
-                          file_url, 
-                          file_name: file.name,
-                          uploaded_at: new Date().toISOString()
-                        }]
-                      });
-
-                      toast({ title: "Assembly guide uploaded successfully!" });
-                      await loadDashboardData();
-                    } catch (error) {
-                      console.error("Upload failed:", error);
-                      toast({ 
-                        title: "Upload failed", 
-                        description: error.message,
-                        variant: "destructive" 
-                      });
-                    } finally {
-                      setUploadingGuide(false);
-                      e.target.value = '';
-                    }
-                  }}
-                />
-                <Button
-                  onClick={() => document.getElementById('assembly-guide-upload').click()}
-                  disabled={uploadingGuide}
-                  className="bg-red-600 hover:bg-red-700"
-                >
-                  {uploadingGuide ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Uploading...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4 mr-2" />
-                      Choose File
-                    </>
-                  )}
-                </Button>
-              </div>
-
-              {user?.assembly_guides && user.assembly_guides.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="font-semibold">Your Assembly Guides</h3>
-                  {user.assembly_guides.map((guide, index) => (
-                    <div key={index} className="flex items-center justify-between p-4 border rounded-lg bg-gray-50">
-                      <div className="flex items-center gap-3">
-                        <FileText className="w-5 h-5 text-red-600" />
-                        <div>
-                          <p className="font-medium">{guide.file_name}</p>
-                          <p className="text-xs text-gray-500">
-                            Uploaded {new Date(guide.uploaded_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => window.open(guide.file_url, '_blank')}
-                        >
-                          View
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="destructive"
-                          onClick={async () => {
-                            try {
-                              const updatedGuides = user.assembly_guides.filter((_, i) => i !== index);
-                              await base44.auth.updateMe({ assembly_guides: updatedGuides });
-                              toast({ title: "Assembly guide deleted" });
-                              await loadDashboardData();
-                            } catch (error) {
-                              toast({ title: "Delete failed", variant: "destructive" });
-                            }
-                          }}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
         <TabsContent value="guide">
           <Card>
             <CardHeader>
@@ -580,16 +474,124 @@ export default function DesignerDashboard() {
         </TabsContent>
 
         <TabsContent value="settings" className="space-y-6">
-          {/* Financial Information */}
+          {/* Profile Information */}
           <Card>
             <CardHeader>
-              <CardTitle>Financial Information</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage your banking information for receiving payouts and making payments
-              </p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Profile Information</CardTitle>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Your public profile details
+                  </p>
+                </div>
+                {!editingInfo && (
+                  <Button variant="outline" onClick={() => setEditingInfo(true)}>
+                    Change Information
+                  </Button>
+                )}
+              </div>
             </CardHeader>
-            <CardContent>
-              <BankInfoManager user={user} onUpdate={loadDashboardData} />
+            <CardContent className="space-y-4">
+              {!editingInfo ? (
+                <div className="space-y-3">
+                  <div>
+                    <p className="text-sm text-gray-600">Profile Image</p>
+                    {user?.profile_image ? (
+                      <img src={user.profile_image} alt="Profile" className="w-20 h-20 rounded-full object-cover mt-2" />
+                    ) : (
+                      <p className="font-medium">Not set</p>
+                    )}
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Designer Name</p>
+                    <p className="font-medium">{user?.designer_name || 'Not set'}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Bio</p>
+                    <p className="font-medium">{user?.bio || 'Not set'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="profile_image">Profile Image</Label>
+                    {infoFormData.profile_image && (
+                      <img src={infoFormData.profile_image} alt="Profile" className="w-20 h-20 rounded-full object-cover mt-2 mb-2" />
+                    )}
+                    <Input
+                      id="profile_image"
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingProfileImage}
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        
+                        setUploadingProfileImage(true);
+                        try {
+                          const { file_url } = await base44.integrations.Core.UploadFile({ file });
+                          setInfoFormData({...infoFormData, profile_image: file_url});
+                        } catch (error) {
+                          toast({ title: "Failed to upload image", variant: "destructive" });
+                        }
+                        setUploadingProfileImage(false);
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="designer_name">Designer Name</Label>
+                    <Input
+                      id="designer_name"
+                      value={infoFormData.designer_name}
+                      onChange={(e) => setInfoFormData({...infoFormData, designer_name: e.target.value})}
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="bio">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={infoFormData.bio}
+                      onChange={(e) => setInfoFormData({...infoFormData, bio: e.target.value})}
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setEditingInfo(false);
+                        setInfoFormData({
+                          email: user?.email || '',
+                          phone: user?.phone || '',
+                          designer_name: user?.designer_name || '',
+                          bio: user?.bio || '',
+                          profile_image: user?.profile_image || ''
+                        });
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          await base44.auth.updateMe({
+                            designer_name: infoFormData.designer_name,
+                            bio: infoFormData.bio,
+                            profile_image: infoFormData.profile_image
+                          });
+                          toast({ title: "Profile information updated!" });
+                          setEditingInfo(false);
+                          await loadDashboardData();
+                        } catch (error) {
+                          toast({ title: "Failed to update information", variant: "destructive" });
+                        }
+                      }}
+                    >
+                      Submit
+                    </Button>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -648,7 +650,10 @@ export default function DesignerDashboard() {
                         setEditingInfo(false);
                         setInfoFormData({
                           email: user?.email || '',
-                          phone: user?.phone || ''
+                          phone: user?.phone || '',
+                          designer_name: user?.designer_name || '',
+                          bio: user?.bio || '',
+                          profile_image: user?.profile_image || ''
                         });
                       }}
                     >
@@ -674,6 +679,19 @@ export default function DesignerDashboard() {
                   </div>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Financial Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Financial Information</CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Manage your banking information for receiving payouts and making payments
+              </p>
+            </CardHeader>
+            <CardContent>
+              <BankInfoManager user={user} onUpdate={loadDashboardData} />
             </CardContent>
           </Card>
         </TabsContent>
