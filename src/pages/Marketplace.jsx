@@ -1,24 +1,14 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import ProductGrid from "../components/marketplace/ProductGrid";
-import HorizontalProductSection from "../components/marketplace/HorizontalProductSection";
-import { Search, X, Upload, SlidersHorizontal } from "lucide-react";
+import { Search, X, Upload, SlidersHorizontal, Star, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Slider } from "@/components/ui/slider";
+import ProductCard from "../components/marketplace/ProductCard";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
@@ -62,16 +52,23 @@ const SORT_OPTIONS = [
 export default function Marketplace() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [displayedProducts, setDisplayedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [viewMode, setViewMode] = useState("browse"); // "browse" or "filtered"
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const observerTarget = useRef(null);
+  
   const [filters, setFilters] = useState({
     category: null,
     materials: [], 
     colors: [], 
-    priceRange: null,
-    sortBy: "popular"
+    priceRange: [0, 100],
+    rating: 0,
+    sortBy: "popular",
+    availability: []
   });
 
   useEffect(() => {
@@ -80,30 +77,12 @@ export default function Marketplace() {
   }, []);
 
   useEffect(() => {
-    // Check URL params to determine view mode
     const urlParams = new URLSearchParams(window.location.search);
     const searchParam = urlParams.get('search');
     const categoryParam = urlParams.get('category');
-    const viewAllParam = urlParams.get('viewAll');
-    const sortByParam = urlParams.get('sortBy');
     
-    if (searchParam) {
-      setSearchQuery(searchParam);
-      setViewMode("filtered");
-    }
-    
-    if (categoryParam) {
-      setFilters(prev => ({ ...prev, category: categoryParam }));
-      setViewMode("filtered");
-    }
-    
-    if (viewAllParam === 'true') {
-      setViewMode("filtered");
-    }
-
-    if (sortByParam) {
-      setFilters(prev => ({ ...prev, sortBy: sortByParam }));
-    }
+    if (searchParam) setSearchQuery(searchParam);
+    if (categoryParam) setFilters(prev => ({ ...prev, category: categoryParam }));
   }, []);
 
   const loadUser = async () => {
@@ -131,60 +110,41 @@ export default function Marketplace() {
   const applyFilters = useCallback(() => {
     let tempProducts = [...products];
 
-    // Search filter
     if (searchQuery) {
       const searchTerm = searchQuery.toLowerCase();
-      
-      // Check if search term matches a category
-      const matchedCategory = CATEGORIES.find(cat => 
-        cat.label.toLowerCase().includes(searchTerm) || 
-        cat.value.toLowerCase().includes(searchTerm)
+      tempProducts = tempProducts.filter(p => 
+        p.name.toLowerCase().includes(searchTerm) ||
+        (p.description && p.description.toLowerCase().includes(searchTerm)) ||
+        (p.tags && p.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
       );
-      
-      if (matchedCategory) {
-        // If searching for a category, show all products in that category
-        tempProducts = tempProducts.filter(p => p.category === matchedCategory.value);
-      } else {
-        // Otherwise search in name, description, and tags
-        tempProducts = tempProducts.filter(p => 
-          p.name.toLowerCase().includes(searchTerm) ||
-          (p.description && p.description.toLowerCase().includes(searchTerm)) ||
-          (p.tags && p.tags.some(tag => tag.toLowerCase().includes(searchTerm)))
-        );
-      }
     }
     
-    // Category filter
     if (filters.category) {
       tempProducts = tempProducts.filter(p => p.category === filters.category);
     }
 
-    // Material filter
     if (filters.materials.length > 0) {
       tempProducts = tempProducts.filter(p => 
         p.materials && p.materials.some(mat => filters.materials.includes(mat))
       );
     }
 
-    // Color filter
     if (filters.colors.length > 0) {
       tempProducts = tempProducts.filter(p => 
         p.colors && p.colors.some(color => filters.colors.includes(color))
       );
     }
 
-    // Price range filter
-    if (filters.priceRange) {
-      const range = PRICE_RANGES.find(r => r.value === filters.priceRange);
-      if (range) {
-        tempProducts = tempProducts.filter(p => p.price >= range.min && p.price <= range.max);
-      }
+    tempProducts = tempProducts.filter(p => 
+      p.price >= filters.priceRange[0] && p.price <= filters.priceRange[1]
+    );
+
+    if (filters.rating > 0) {
+      tempProducts = tempProducts.filter(p => (p.rating || 0) >= filters.rating);
     }
     
-    // Separate boosted and non-boosted products
     const boostedProducts = tempProducts.filter(p => {
       if (!p.is_boosted) return false;
-      // Check if boost is still active
       const now = new Date();
       const endDate = p.boost_end_date ? new Date(p.boost_end_date) : null;
       return endDate && endDate > now;
@@ -197,34 +157,62 @@ export default function Marketplace() {
       return !endDate || endDate <= now;
     });
     
-    // Sorting for each group
     const sortProducts = (products) => {
       const sorted = [...products];
-      if (filters.sortBy === 'newest') {
-        sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-      } else if (filters.sortBy === 'price_asc') {
-        sorted.sort((a, b) => a.price - b.price);
-      } else if (filters.sortBy === 'price_desc') {
-        sorted.sort((a, b) => b.price - a.price);
-      } else if (filters.sortBy === 'popular') {
-        sorted.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
-      }
+      if (filters.sortBy === 'newest') sorted.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+      else if (filters.sortBy === 'price_asc') sorted.sort((a, b) => a.price - b.price);
+      else if (filters.sortBy === 'price_desc') sorted.sort((a, b) => b.price - a.price);
+      else if (filters.sortBy === 'popular') sorted.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
       return sorted;
     };
     
-    // Boosted products always appear first, then regular products
     tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
-    setFilteredProducts(tempProducts);
+    setDisplayedProducts(tempProducts.slice(0, 20));
+    setPage(1);
+    setHasMore(tempProducts.length > 20);
+    return tempProducts;
   }, [filters, products, searchQuery]);
 
   useEffect(() => {
     applyFilters();
   }, [applyFilters]);
 
-  const handleFilterChange = (filterType, value) => {
-    setFilters(prev => ({ ...prev, [filterType]: prev[filterType] === value ? null : value }));
-    setViewMode("filtered");
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore) {
+          loadMoreProducts();
+        }
+      },
+      { threshold: 0.5 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, page]);
+
+  const loadMoreProducts = () => {
+    if (loadingMore || !hasMore) return;
+    
+    setLoadingMore(true);
+    const allFiltered = applyFilters();
+    const nextPage = page + 1;
+    const startIdx = nextPage * 20;
+    const endIdx = startIdx + 20;
+    const moreProducts = allFiltered.slice(startIdx, endIdx);
+    
+    if (moreProducts.length > 0) {
+      setDisplayedProducts(prev => [...prev, ...moreProducts]);
+      setPage(nextPage);
+      setHasMore(allFiltered.length > endIdx);
+    } else {
+      setHasMore(false);
+    }
+    setLoadingMore(false);
   };
 
   const handleMultiFilterToggle = (filterType, value) => {
@@ -235,7 +223,6 @@ export default function Marketplace() {
         : [...currentArray, value];
       return { ...prev, [filterType]: newArray };
     });
-    setViewMode("filtered");
   };
 
   const clearFilters = () => {
@@ -243,379 +230,195 @@ export default function Marketplace() {
       category: null,
       materials: [],
       colors: [],
-      priceRange: null,
-      sortBy: "popular"
+      priceRange: [0, 100],
+      rating: 0,
+      sortBy: "popular",
+      availability: []
     });
     setSearchQuery("");
-    setViewMode("browse");
-    window.history.pushState({}, '', createPageUrl("Marketplace"));
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) {
-      setViewMode("filtered");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const { products: smartResults } = await base44.functions.invoke('smartSearch', { query: searchQuery });
-      if (smartResults && smartResults.length > 0) {
-        setProducts(smartResults);
-      }
-    } catch (error) {
-      console.error('Smart search error:', error);
-    }
-    setLoading(false);
-    setViewMode("filtered");
-  };
-
-  const activeFiltersCount = [
-    filters.category ? 1 : 0,
-    filters.materials.length,
-    filters.colors.length,
-    filters.priceRange ? 1 : 0
-  ].reduce((a, b) => a + b, 0);
-
-  // Get products by category
-  const getProductsByCategory = (categoryValue) => {
-    return products.filter(p => p.category === categoryValue);
-  };
-
-  // Get newest products
-  const getNewestDesigns = () => {
-    return [...products].sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
-  };
-
-  // Browse Mode - Show horizontal scrolling sections
-  if (viewMode === "browse" && !searchQuery && !filters.category && activeFiltersCount === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">Marketplace</h1>
-              <p className="text-lg text-gray-600">Discover unique 3D printed designs from talented creators</p>
-            </div>
-            <Button asChild>
-              <Link to={createPageUrl("CustomPrintRequest")}>
-                <Upload className="w-5 h-5 mr-2" />
-                Upload Custom Files
-              </Link>
-            </Button>
-          </div>
-          
-          {/* Search Bar */}
-          <div className="mb-8">
-            <div className="flex gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Search products..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      handleSearch();
-                    }
-                  }}
-                  className="pl-12 pr-12 h-12 text-lg border-gray-300"
-                />
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                  >
-                    <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-                  </button>
-                )}
-              </div>
-              <Button onClick={handleSearch} className="h-12 px-8">
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <p className="text-gray-600">Loading products...</p>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              {/* Newest Designs Section */}
-              <HorizontalProductSection
-                title="Newest Designs"
-                products={getNewestDesigns()}
-                viewAllUrl={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`}
-              />
-
-              {/* Priority category sections - shown in order: Dorm Essentials, Desk, Gadgets, Rocket Models, Holidays, Kit Cards */}
-              {['dorm_essentials', 'desk', 'gadgets', 'rocket_models', 'holidays', 'kit_cards'].map(categoryValue => {
-                const categoryProducts = getProductsByCategory(categoryValue);
-                const category = CATEGORIES.find(c => c.value === categoryValue);
-                
-                // Only show if category has at least 5 products
-                if (categoryProducts.length >= 5 && category) {
-                  return (
-                    <HorizontalProductSection
-                      key={categoryValue}
-                      title={category.label}
-                      products={categoryProducts}
-                      viewAllUrl={`${createPageUrl("Marketplace")}?category=${categoryValue}`}
-                    />
-                  );
-                }
-                return null;
-              })}
-
-              {/* Other Category Sections - Exclude priority categories and embry_riddle, halloween */}
-              {CATEGORIES
-                .filter(category => !['dorm_essentials', 'desk', 'gadgets', 'rocket_models', 'holidays', 'kit_cards', 'embry_riddle', 'halloween'].includes(category.value))
-                .filter(category => getProductsByCategory(category.value).length >= 5)
-                .map(category => {
-                  const categoryProducts = getProductsByCategory(category.value);
-
-                  return (
-                    <HorizontalProductSection
-                      key={category.value}
-                      title={category.label}
-                      products={categoryProducts}
-                      viewAllUrl={`${createPageUrl("Marketplace")}?category=${category.value}`}
-                    />
-                  );
-                })}
-
-              {/* View All Products Button */}
-              <div className="flex justify-center pt-8">
-                <Button 
-                  asChild 
-                  size="lg"
-                  className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 text-lg"
-                >
-                  <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`}>
-                    View All Products
-                  </Link>
-                </Button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
-
-  // Filtered Mode - Show grid with filters (original marketplace view)
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-gray-900">Marketplace</h1>
-            <p className="text-lg text-gray-600">Discover unique 3D printed designs from talented creators</p>
-          </div>
-          <Button asChild>
-            <Link to={createPageUrl("CustomPrintRequest")}>
-              <Upload className="w-5 h-5 mr-2" />
-              Upload Custom Files
-            </Link>
-          </Button>
-        </div>
-        
-        {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
-          <div className="flex gap-3">
+      {/* Top Bar */}
+      <div className="bg-white border-b sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <div className="flex items-center gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-12 pr-12 h-12 text-lg border-gray-300"
+                className="pl-10 h-10"
               />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                >
-                  <X className="w-5 h-5 text-gray-400 hover:text-gray-600" />
-                </button>
-              )}
             </div>
-          </div>
-
-          {/* Filter Dropdowns */}
-          <div className="flex flex-wrap gap-3 items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Filters
-                  {activeFiltersCount > 0 && (
-                    <Badge variant="default" className="ml-1">{activeFiltersCount}</Badge>
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                {/* Category Filter */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    Category {filters.category && <Badge variant="secondary" className="ml-2">1</Badge>}
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {CATEGORIES.filter(cat => getProductsByCategory(cat.value).length > 0).map(cat => (
-                      <DropdownMenuItem 
-                        key={cat.value} 
-                        onClick={() => handleFilterChange('category', cat.value)}
-                        className={filters.category === cat.value ? 'bg-teal-50' : ''}
-                      >
-                        {cat.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Material Filter */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    Material {filters.materials.length > 0 && <Badge variant="secondary" className="ml-2">{filters.materials.length}</Badge>}
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {MATERIALS.map(mat => (
-                      <DropdownMenuItem 
-                        key={mat} 
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          handleMultiFilterToggle('materials', mat);
-                        }}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Checkbox 
-                          checked={filters.materials.includes(mat)}
-                          className="pointer-events-none"
-                        />
-                        <span>{mat}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Color Filter */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    Color {filters.colors.length > 0 && <Badge variant="secondary" className="ml-2">{filters.colors.length}</Badge>}
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent className="max-h-80 overflow-y-auto">
-                    {COLORS.map(color => (
-                      <DropdownMenuItem 
-                        key={color} 
-                        onSelect={(e) => {
-                          e.preventDefault();
-                          handleMultiFilterToggle('colors', color);
-                        }}
-                        className="flex items-center gap-2 cursor-pointer"
-                      >
-                        <Checkbox 
-                          checked={filters.colors.includes(color)}
-                          className="pointer-events-none"
-                        />
-                        <div 
-                          className="w-4 h-4 rounded-full border border-gray-300" 
-                          style={{ backgroundColor: color.toLowerCase().replace(/\s/g, '').replace(/glow-in-the-dark(.*)/, 'lime').replace(/color-change(.*)/, 'purple').replace(/silkrainbow/, 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)') }}
-                        />
-                        <span>{color}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                {/* Price Range Filter */}
-                <DropdownMenuSub>
-                  <DropdownMenuSubTrigger>
-                    Price Range {filters.priceRange && <Badge variant="secondary" className="ml-2">1</Badge>}
-                  </DropdownMenuSubTrigger>
-                  <DropdownMenuSubContent>
-                    {PRICE_RANGES.map(range => (
-                      <DropdownMenuItem 
-                        key={range.value} 
-                        onClick={() => handleFilterChange('priceRange', range.value)}
-                        className={filters.priceRange === range.value ? 'bg-teal-50' : ''}
-                      >
-                        {range.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuSub>
-
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={clearFilters}>
-                  Clear All Filters
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Sort Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  Sort: {SORT_OPTIONS.find(s => s.value === filters.sortBy)?.label}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                {SORT_OPTIONS.map(option => (
-                  <DropdownMenuItem 
-                    key={option.value} 
-                    onClick={() => setFilters(prev => ({ ...prev, sortBy: option.value }))}
-                    className={filters.sortBy === option.value ? 'bg-teal-50' : ''}
-                  >
-                    {option.label}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            {/* Back to Browse Button */}
-            <Button variant="outline" onClick={clearFilters}>
-              Back to Browse
+            <Button asChild variant="outline" size="sm">
+              <Link to={createPageUrl("CustomPrintRequest")}>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload
+              </Link>
             </Button>
-
-            {/* Active Filter Tags */}
-            {filters.category && (
-              <Badge variant="secondary" className="gap-1">
-                {CATEGORIES.find(c => c.value === filters.category)?.label}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => handleFilterChange('category', filters.category)} />
-              </Badge>
-            )}
-            {filters.materials.map(material => (
-              <Badge key={material} variant="secondary" className="gap-1">
-                {material}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', material)} />
-              </Badge>
-            ))}
-            {filters.colors.map(color => (
-              <Badge key={color} variant="secondary" className="gap-1">
-                {color}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => handleMultiFilterToggle('colors', color)} />
-              </Badge>
-            ))}
-            {filters.priceRange && (
-              <Badge variant="secondary" className="gap-1">
-                {PRICE_RANGES.find(r => r.value === filters.priceRange)?.label}
-                <X className="w-3 h-3 cursor-pointer" onClick={() => handleFilterChange('priceRange', filters.priceRange)} />
-              </Badge>
-            )}
           </div>
         </div>
+      </div>
 
-        <div className="flex">
-          <main className="w-full">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-medium text-gray-900">{filteredProducts.length} Products Found</h2>
+      {/* Category Navigation */}
+      <div className="bg-white border-b sticky top-[64px] z-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
+            <Button
+              variant={!filters.category ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setFilters(prev => ({ ...prev, category: null }))}
+            >
+              All
+            </Button>
+            {CATEGORIES.map(cat => (
+              <Button
+                key={cat.value}
+                variant={filters.category === cat.value ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setFilters(prev => ({ ...prev, category: cat.value }))}
+                className="whitespace-nowrap"
+              >
+                {cat.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        <div className="flex gap-6">
+          {/* Filters Sidebar */}
+          <aside className={`${sidebarOpen ? 'block' : 'hidden'} lg:block w-64 flex-shrink-0`}>
+            <div className="bg-white rounded-lg shadow p-4 sticky top-[140px] space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-semibold text-lg">Filters</h3>
+                <Button variant="ghost" size="sm" onClick={clearFilters}>Clear</Button>
+              </div>
+
+              {/* Price Range */}
+              <div>
+                <label className="text-sm font-medium mb-3 block">Price Range</label>
+                <Slider
+                  value={filters.priceRange}
+                  onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
+                  max={100}
+                  step={5}
+                  className="mb-2"
+                />
+                <div className="flex justify-between text-xs text-gray-600">
+                  <span>${filters.priceRange[0]}</span>
+                  <span>${filters.priceRange[1]}</span>
+                </div>
+              </div>
+
+              {/* Materials */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Materials</label>
+                <div className="space-y-2">
+                  {MATERIALS.map(mat => (
+                    <label key={mat} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.materials.includes(mat)}
+                        onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
+                      />
+                      <span className="text-sm">{mat}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Colors */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Colors</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {COLORS.map(color => (
+                    <label key={color} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.colors.includes(color)}
+                        onCheckedChange={() => handleMultiFilterToggle('colors', color)}
+                      />
+                      <span className="text-sm">{color}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Min Rating</label>
+                <div className="space-y-2">
+                  {[4, 3, 2, 1].map(rating => (
+                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.rating === rating}
+                        onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
+                      />
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                        <span className="text-sm">{rating}+ Stars</span>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content */}
+          <main className="flex-1">
+            <div className="flex justify-between items-center mb-4">
+              <p className="text-sm text-gray-600">{displayedProducts.length} of {applyFilters().length} products</p>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="border rounded px-3 py-1 text-sm"
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
 
-            <ProductGrid products={filteredProducts} loading={loading} />
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg h-80 animate-pulse" />
+                ))}
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {displayedProducts.map(product => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {hasMore && (
+                  <div ref={observerTarget} className="flex justify-center py-8">
+                    {loadingMore && <Loader2 className="w-8 h-8 animate-spin text-teal-600" />}
+                  </div>
+                )}
+
+                {!hasMore && displayedProducts.length > 0 && (
+                  <p className="text-center text-gray-500 py-8">You've reached the end!</p>
+                )}
+              </>
+            )}
           </main>
         </div>
       </div>
+
+      {/* Mobile Filter Toggle */}
+      <Button
+        className="lg:hidden fixed bottom-4 right-4 rounded-full shadow-lg z-40"
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+      >
+        <SlidersHorizontal className="w-5 h-5" />
+      </Button>
     </div>
   );
 }
