@@ -143,8 +143,8 @@ export default function ProductCard({ product }) {
   };
 
   const truncateTitle = (title) => {
-    if (title.length > 27) {
-      return title.substring(0, 27) + '...';
+    if (title.length > 20) {
+      return title.substring(0, 20) + '...';
     }
     return title;
   };
