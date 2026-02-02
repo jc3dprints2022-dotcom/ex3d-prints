@@ -705,8 +705,12 @@ export default function ExpRewardsSection() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="filament" className="text-white">Filament</SelectItem>
-                    <SelectItem value="equipment" className="text-white">Equipment</SelectItem>
+                    {formData.reward_type !== 'consumer' && (
+                      <>
+                        <SelectItem value="filament" className="text-white">Filament</SelectItem>
+                        <SelectItem value="equipment" className="text-white">Equipment</SelectItem>
+                      </>
+                    )}
                     <SelectItem value="print" className="text-white">Print</SelectItem>
                     <SelectItem value="accessory" className="text-white">Accessory</SelectItem>
                     <SelectItem value="discount" className="text-white">Discount</SelectItem>
