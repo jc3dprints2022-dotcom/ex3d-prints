@@ -149,7 +149,7 @@ export default function Terms() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Consumers</h3>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
                   <li>Pay the item price and applicable taxes at checkout</li>
-                  <li>For the campus pilot, there is no shipping fee; pickup is at the Student Union</li>
+                  <li>For the campus pilot, there is no shipping fee; pickup is at the Hazy Library</li>
                   <li><strong>Payment timing:</strong> Payment is captured upfront when you place the order; no deposits are required</li>
                 </ul>
               </div>
