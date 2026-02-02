@@ -215,7 +215,7 @@ export default function ProductCard({ product }) {
           )}
         </div>
         <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 line-clamp-2" title={product.name}>
+          <h3 className="font-semibold text-lg mb-2 truncate" title={product.name}>
             {truncateTitle(product.name)}
           </h3>
           
