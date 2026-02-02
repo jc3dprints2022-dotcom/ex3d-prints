@@ -135,23 +135,27 @@ export default function ConsumerDashboard() {
   const loadRecentlyViewed = async () => {
     try {
       const recentlyViewedIds = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
-      if (recentlyViewedIds.length === 0) return;
+      if (recentlyViewedIds.length === 0) {
+        setRecentlyViewedProducts([]);
+        return;
+      }
 
       const products = await Promise.all(
         recentlyViewedIds.slice(0, 6).map(id => 
           base44.entities.Product.get(id).catch(() => null)
         )
       );
-      setRecentlyViewedProducts(products.filter(p => p !== null && p.status === 'active'));
+      setRecentlyViewedProducts(products.filter(p => p !== null && p?.status === 'active'));
     } catch (error) {
       console.error('Failed to load recently viewed:', error);
+      setRecentlyViewedProducts([]);
     }
   };
 
   const loadRecommendedProducts = async (currentUser) => {
     try {
       // Get user's order history to find their preferred categories
-      const userOrders = await base44.entities.Order.filter({ customer_id: currentUser.id });
+      const userOrders = await base44.entities.Order.filter({ customer_id: currentUser.id }).catch(() => []);
       const orderedProductIds = userOrders.flatMap(order => 
         order.items?.map(item => item.product_id) || []
       );
@@ -162,24 +166,25 @@ export default function ConsumerDashboard() {
         )
       );
 
-      const categories = [...new Set(orderedProducts.filter(p => p).map(p => p.category))];
+      const categories = [...new Set(orderedProducts.filter(p => p).map(p => p?.category).filter(Boolean))];
 
       // Get products from those categories
-      const allProducts = await base44.entities.Product.filter({ status: 'active' });
+      const allProducts = await base44.entities.Product.filter({ status: 'active' }).catch(() => []);
       const categoryMatches = allProducts.filter(p => 
-        categories.includes(p.category) && !orderedProductIds.includes(p.id)
+        categories.includes(p?.category) && !orderedProductIds.includes(p?.id)
       );
 
       // Sort by view count and rating
       const sorted = categoryMatches.sort((a, b) => {
-        const scoreA = (a.view_count || 0) + (a.rating || 0) * 10;
-        const scoreB = (b.view_count || 0) + (b.rating || 0) * 10;
+        const scoreA = (a?.view_count || 0) + (a?.rating || 0) * 10;
+        const scoreB = (b?.view_count || 0) + (b?.rating || 0) * 10;
         return scoreB - scoreA;
       });
 
       setRecommendedProducts(sorted.slice(0, 6));
     } catch (error) {
       console.error('Failed to load recommendations:', error);
+      setRecommendedProducts([]);
     }
   };
 

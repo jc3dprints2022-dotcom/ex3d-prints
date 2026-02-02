@@ -311,13 +311,7 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = async () => {
-    try {
-      await base44.auth.redirectToLogin(window.location.href);
-    } catch (error) {
-      console.error('Login redirect error:', error);
-      // Fallback: redirect to SSO provider directly if configured
-      window.location.href = '/api/auth/login';
-    }
+    window.location.href = '/api/auth/login?next=' + encodeURIComponent(window.location.href);
   };
 
   const getDashboardUrl = () => {
