@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle } from "lucide-react";
 import DesignerProductForm from "../components/designers/DesignerProductForm";
 import BankInfoManager from "../components/shared/BankInfoManager";
+import ExpRedeemTab from "../components/consumer/ExpRedeemTab";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -43,6 +44,7 @@ export default function DesignerDashboard() {
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
+    { value: 'exp', label: 'Redeem EXP', icon: PlusCircle },
     { value: 'guide', label: 'Guide', icon: HelpCircle },
     { value: 'settings', label: 'Settings', icon: Settings },
   ];
@@ -373,6 +375,10 @@ export default function DesignerDashboard() {
             </>
           )}
           
+        </TabsContent>
+
+        <TabsContent value="exp">
+          <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
         </TabsContent>
 
         <TabsContent value="guide">
