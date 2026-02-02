@@ -149,8 +149,28 @@ Deno.serve(async (req) => {
             },
         };
 
-        // If a specific coupon code is provided, validate and apply it
-        if (couponCode && couponCode.trim()) {
+        // Check for test code first
+        if (couponCode && couponCode.trim().toUpperCase() === 'JC3DTESTFREEDOM') {
+            // Create a 100% off coupon
+            try {
+                const testCoupon = await stripe.coupons.create({
+                    percent_off: 100,
+                    duration: 'once',
+                    name: 'Test Freedom Code',
+                });
+                const testPromoCode = await stripe.promotionCodes.create({
+                    coupon: testCoupon.id,
+                    code: 'JC3DTESTFREEDOM_' + Date.now(),
+                });
+                sessionData.discounts = [{
+                    promotion_code: testPromoCode.id
+                }];
+                console.log('Applied test code JC3DTESTFREEDOM - order is FREE');
+            } catch (testError) {
+                console.error('Failed to create test code:', testError);
+            }
+        } else if (couponCode && couponCode.trim()) {
+            // If a specific coupon code is provided, validate and apply it
             try {
                 const promotionCodes = await stripe.promotionCodes.list({
                     code: couponCode.trim(),

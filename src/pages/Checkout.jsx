@@ -161,12 +161,10 @@ export default function Checkout() {
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
   const calculateTotal = () => {
-    let total = calculateSubtotal();
-    // Add priority fee for display purposes on checkout page
-    if (isPriority) {
-      total += 4;
-    }
-    return total;
+    const subtotal = calculateSubtotal();
+    const priorityFee = isPriority ? 4 : 0;
+    const shippingFee = subtotal < 35 ? 5.99 : 0;
+    return subtotal + priorityFee + shippingFee;
   };
 
   const formatPrice = (price) => `$${price.toFixed(2)}`;
@@ -193,6 +191,10 @@ export default function Checkout() {
       console.log('Referral code:', referralCode);
       console.log('Is priority:', isPriority);
       
+      // Calculate shipping fee
+      const subtotal = calculateSubtotal();
+      const shippingFee = subtotal < 35 ? 5.99 : 0;
+
       // Add priority delivery as a cart item if selected
       let finalCartItems = [...cartItems];
       if (isPriority) {
@@ -232,11 +234,12 @@ export default function Checkout() {
         })),
         successUrl: `${window.location.origin}/PaymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/Checkout?payment=cancelled`,
-        couponCode: couponCode.trim() || undefined,
+        couponCode: couponCode.trim().toUpperCase() === 'JC3DTESTFREEDOM' ? 'JC3DTESTFREEDOM' : (couponCode.trim() || undefined),
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: isPriority,
         campusLocation: "erau_prescott",
-        shippingAddress: shippingAddress
+        shippingAddress: shippingAddress,
+        shippingFee: shippingFee
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -447,6 +450,33 @@ export default function Checkout() {
                   </div>
                 </div>
 
+                {/* Priority Option */}
+                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="priority"
+                      checked={isPriority}
+                      onChange={(e) => setIsPriority(e.target.checked)}
+                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                    />
+                    <Label htmlFor="priority" className="cursor-pointer flex-1">
+                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
+                      <p className="text-sm text-orange-700">
+                        Est. delivery: Next day
+                      </p>
+                    </Label>
+                  </div>
+                </div>
+
+                {!isPriority && (
+                  <div className="p-3 bg-gray-50 border rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
+                    </p>
+                  </div>
+                )}
+
                 <div className="flex items-center space-x-2 pt-2">
                   <input
                     type="checkbox"
@@ -474,33 +504,6 @@ export default function Checkout() {
                     Save this address for future orders
                   </Label>
                 </div>
-
-                {/* Priority Option */}
-                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="priority"
-                      checked={isPriority}
-                      onChange={(e) => setIsPriority(e.target.checked)}
-                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
-                    />
-                    <Label htmlFor="priority" className="cursor-pointer flex-1">
-                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
-                      <p className="text-sm text-orange-700">
-                        Est. delivery: Next day
-                      </p>
-                    </Label>
-                  </div>
-                </div>
-
-                {!isPriority && (
-                  <div className="p-3 bg-gray-50 border rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
-                    </p>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>
@@ -564,10 +567,18 @@ export default function Checkout() {
                     <span>+$4.00</span>
                   </div>
                 )}
-                <div className="flex justify-between text-gray-600">
-                  <span>Pickup</span>
-                  <span className="text-green-600 font-semibold">FREE</span>
-                </div>
+                {calculateSubtotal() < 35 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping Fee (Orders under $35)</span>
+                    <span>+$5.99</span>
+                  </div>
+                )}
+                {calculateSubtotal() >= 35 && (
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span className="text-green-600 font-semibold">FREE</span>
+                  </div>
+                )}
                 {couponCode && (
                   <div className="flex justify-between text-green-600 text-sm">
                     <span>Coupon: {couponCode}</span>
