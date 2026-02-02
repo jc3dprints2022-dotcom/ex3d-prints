@@ -199,7 +199,7 @@ export default function Terms() {
                 or email. Authorized delegates must present the order code.
               </li>
               <li>
-                <strong>Risk/Title (pilot):</strong> Pass to the buyer upon pickup handoff at the Student Union.
+                <strong>Risk/Title (pilot):</strong> Pass to the buyer upon pickup handoff at the Hazy Library.
               </li>
               <li>
                 <strong>Lost/Damaged before pickup:</strong> Report to EX3D within 48 hours of notice that the order is 
