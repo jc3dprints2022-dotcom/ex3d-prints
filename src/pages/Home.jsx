@@ -31,6 +31,29 @@ export default function Home() {
     try {
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
       setTotalProducts(allProducts.length);
+      
+      // Load featured products from HomepageFeatured entity
+      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
+      
+      if (featuredList.length > 0) {
+        // Sort by display order
+        featuredList.sort((a, b) => a.display_order - b.display_order);
+        
+        // Fetch the actual product details
+        const productPromises = featuredList.map(f =>
+          base44.entities.Product.get(f.product_id).catch(() => null)
+        );
+        const productsData = await Promise.all(productPromises);
+        const validProducts = productsData.filter(p => p && p.status === 'active');
+        
+        if (validProducts.length > 0) {
+          setProducts(validProducts);
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // Fallback to most viewed products if no featured products set
       const featured = allProducts
         .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
         .slice(0, 12);
