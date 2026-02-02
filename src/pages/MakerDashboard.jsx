@@ -853,8 +853,7 @@ The EX3D Team`
             <div className="mt-8">
               <FilamentManager makerId={user?.maker_id} />
             </div>
-          </div>
-        </TabsContent>
+          </TabsContent>
 
         <TabsContent value="exp">
           <MakerExpRedeemTab user={user} onUpdate={loadDashboard} />
