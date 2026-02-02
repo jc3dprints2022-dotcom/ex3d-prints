@@ -2,8 +2,9 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Trash2, Plus, Loader2, MoveUp, MoveDown } from "lucide-react";
+import { Trash2, Plus, Loader2, MoveUp, MoveDown, Search } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ export default function HomepageFeaturedSection() {
   const [loading, setLoading] = useState(true);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedProductId, setSelectedProductId] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -163,7 +165,10 @@ export default function HomepageFeaturedSection() {
   };
 
   const availableProducts = allProducts.filter(p => 
-    !featuredProducts.some(f => f.product_id === p.id)
+    !featuredProducts.some(f => f.product_id === p.id) &&
+    (searchQuery === "" || 
+     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+     p.description?.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -278,7 +283,16 @@ export default function HomepageFeaturedSection() {
               Select a product to feature in the homepage background slideshow
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4">
+          <div className="py-4 space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Input
+                placeholder="Search products..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-slate-900 border-slate-700 text-white"
+              />
+            </div>
             <Select value={selectedProductId} onValueChange={setSelectedProductId}>
               <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
                 <SelectValue placeholder="Select a product..." />
