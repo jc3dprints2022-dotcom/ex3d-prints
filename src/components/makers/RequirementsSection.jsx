@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -8,19 +7,19 @@ import { CheckCircle, Star } from "lucide-react";
 
 export default function RequirementsSection() {
   const requirements = [
-    "Own a working FDM 3D printer",
-    "Consistent print quality",
-    "Reliable internet connection",
-    "Ability to meet deadlines",
-    "Basic knowledge of slicing software"
+    "Access to a reliable 3D printer",
+    "Comfortable following print instructions",
+    "Able to package and ship items when needed",
+    "Can meet agreed delivery times",
+    "Willing to fix or reprint if issues come up"
   ];
 
   const benefits = [
-    "No upfront costs or inventory",
-    "We handle customer service",
-    "Flexible work hours",
-    "Weekly payouts",
-    "Growing customer base"
+    "No upfront costs or inventory to manage",
+    "We take care of customer support and marketing",
+    "Work on your own schedule",
+    "Reliable monthly payouts",
+    "Access to a growing customer base"
   ];
 
   return (
@@ -57,7 +56,7 @@ export default function RequirementsSection() {
               </div>
               <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
               <p className="text-gray-600">
-                Earn 250 EXP for using a referral code on your first order. Redeem EXP for rewards, filament, and equipment!
+                Complete orders quickly and consistently to receive more print jobs and earn EXP bonuses. Use your EXP to unlock free filament, printers, and more.
               </p>
             </CardContent>
           </Card>

@@ -428,9 +428,6 @@ export default function Layout({ children, currentPageName }) {
                   <DropdownMenuItem asChild>
                     <Link to={createPageUrl("ForMakers")} onClick={scrollToTop}>Overview</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl("MakerHowItWorks")} onClick={scrollToTop}>How It Works</Link>
-                  </DropdownMenuItem>
                   {user && user.maker_id && (user.business_roles?.includes('maker')) && (
                     <>
                       <DropdownMenuSeparator />

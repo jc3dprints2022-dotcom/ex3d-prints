@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -74,9 +73,9 @@ export default function ForMakers() {
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Shield className="w-8 h-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Secure Payments</h3>
+                <h3 className="text-xl font-semibold mb-4">Monthly Payments</h3>
                 <p className="text-slate-600">
-                  Get paid quickly and securely through our platform. Weekly payouts directly to your account.
+                  Get paid quickly and securely through our platform. Monthly payouts directly to your account.
                 </p>
               </CardContent>
             </Card>

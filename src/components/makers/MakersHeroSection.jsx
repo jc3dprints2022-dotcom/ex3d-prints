@@ -27,19 +27,19 @@ export default function MakersHeroSection({ paidToMakers, loading }) {
             
             <p className="text-xl text-slate-600 mb-8 leading-relaxed">
               Join our maker community earning consistent income from their 3D printers. 
-              No marketing needed - we bring the customers to you.
+              No upfront work needed, we bring the customers to you.
             </p>
 
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
                 <p className="text-2xl font-bold text-slate-900">70%</p>
-                <p className="text-sm text-slate-600">Of Each Order in Profit</p>
+                <p className="text-sm text-slate-600">Profit Each Order</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <Printer className="w-8 h-8 text-orange-600 mb-2" />
-                <p className="text-2xl font-bold text-slate-900">24/7</p>
-                <p className="text-sm text-slate-600">Order Flow</p>
+                <p className="text-2xl font-bold text-slate-900">Skill</p>
+                <p className="text-sm text-slate-600">Receive skill-matched orders</p>
               </div>
             </div>
 

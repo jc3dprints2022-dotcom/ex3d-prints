@@ -33,7 +33,6 @@ export default function MakerHowItWorks() {
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
                     <li>Register your 3D printers and materials</li>
                     <li>Set your weekly printing capacity</li>
-                    <li>Quick approval process (usually within 24 hours)</li>
                   </ul>
                 </div>
               </div>
@@ -108,7 +107,7 @@ export default function MakerHowItWorks() {
           <h2 className="text-2xl font-bold mb-6">Ready to Start Earning?</h2>
           <Link to={createPageUrl("MakerSignup")}>
             <Button size="lg" className="bg-orange-600 hover:bg-orange-700 text-lg px-8 py-6">
-              Apply as a Maker
+              Sign Up for Free
             </Button>
           </Link>
         </div>
