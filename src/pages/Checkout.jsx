@@ -32,8 +32,7 @@ export default function Checkout() {
     street: "",
     city: "",
     state: "",
-    zip: "",
-    campus: ""
+    zip: ""
   });
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
@@ -76,8 +75,7 @@ export default function Checkout() {
           street: currentUser.address?.street || "",
           city: currentUser.address?.city || "",
           state: currentUser.address?.state || "",
-          zip: currentUser.address?.zip || "",
-          campus: currentUser.campus_location || ""
+          zip: currentUser.address?.zip || ""
         });
       }
       
@@ -181,11 +179,6 @@ export default function Checkout() {
       return;
     }
 
-    if (!shippingAddress.campus) {
-      toast({ title: "Campus location required", description: "Please select your campus in the delivery address.", variant: "destructive" });
-      return;
-    }
-    
     if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
       toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
       return;
@@ -242,7 +235,7 @@ export default function Checkout() {
         couponCode: couponCode.trim() || undefined,
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: isPriority,
-        campusLocation: shippingAddress.campus,
+        campusLocation: "erau_prescott",
         shippingAddress: shippingAddress
       };
       
@@ -367,9 +360,8 @@ export default function Checkout() {
                             street: "",
                             city: "",
                             state: "",
-                            zip: "",
-                            campus: ""
-                          });
+                            zip: ""
+                            });
                         } else {
                           const addr = savedAddresses.find(a => a.id === value);
                           if (addr) {
@@ -455,33 +447,7 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
-                  <Label className="flex items-center gap-2 mb-2 font-medium text-blue-900">
-                    <Building className="w-4 h-4" />
-                    Campus Location *
-                  </Label>
-                  <Select 
-                    value={shippingAddress.campus} 
-                    onValueChange={(value) => setShippingAddress({...shippingAddress, campus: value})} 
-                    required
-                  >
-                    <SelectTrigger className="bg-white border-blue-300">
-                      <SelectValue placeholder="Select your campus" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CAMPUS_LOCATIONS.map(campus => (
-                        <SelectItem key={campus.value} value={campus.value}>
-                          {campus.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <p className="text-xs text-blue-700 mt-2">
-                    Your order will be fulfilled by a maker at your campus
-                  </p>
-                </div>
-
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 pt-2">
                   <input
                     type="checkbox"
                     id="saveAddress"
