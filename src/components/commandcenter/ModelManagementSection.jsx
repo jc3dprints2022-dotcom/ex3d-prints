@@ -582,13 +582,12 @@ export default function ModelManagementSection() {
               <div>
                 <Label htmlFor="tags" className="text-white">Tags (comma-separated)</Label>
                 <Input
-                  id="tags"
-                  value={formData.tags.join(', ')} // Display as comma-separated string
-                  onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
-                  className="bg-slate-800 border-cyan-500/30 text-white"
-                  placeholder="e.g., cosplay, helmet, character, fanart"
-                  className = "text-white"
-                />
+                   id="tags"
+                   value={formData.tags.join(', ')}
+                   onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
+                   className="bg-slate-800 border-cyan-500/30 text-white"
+                   placeholder="e.g., cosplay, helmet, character, fanart"
+                 />
               </div>
 
               {/* Updated grid for new custom_scale and infill inputs */}

@@ -115,10 +115,6 @@ export default function EmailComposerSection() {
     setFilteredUsers(filtered);
   };
 
-
-
-  const [sending, setSending] = useState(false);
-
   const handleSend = async () => {
     if (!recipient || !subject || !message) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
