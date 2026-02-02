@@ -3,7 +3,6 @@ import { base44 } from "@/api/base44Client";
 import AnnouncementBanner from "../components/home/AnnouncementBanner";
 import HeroSection from "../components/home/HeroSection";
 import HowItWorksSection from "../components/home/HowItWorksSection";
-import StatsSection from "../components/home/StatsSection";
 import FeaturedProducts from "../components/home/FeaturedProducts";
 import TestimonialsSection from "../components/home/TestimonialsSection";
 
@@ -47,7 +46,6 @@ export default function Home() {
     <div className="min-h-screen">
       <AnnouncementBanner />
       <HeroSection />
-      <StatsSection totalProducts={totalProducts} />
       <FeaturedProducts products={products} loading={loading} />
       <HowItWorksSection />
       <TestimonialsSection />
