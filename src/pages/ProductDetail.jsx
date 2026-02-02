@@ -729,7 +729,7 @@ export default function ProductDetail() {
           <div className="mt-16">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
-              <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+              <Button asChild variant="ghost" className="text-teal-600 hover:text-teal-700">
                 <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
                   See More
                   <ArrowRight className="w-4 h-4" />
@@ -753,7 +753,7 @@ export default function ProductDetail() {
           <div className="mt-16">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-2xl font-bold text-gray-900">For You</h2>
-              <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+              <Button asChild variant="ghost" className="text-teal-600 hover:text-teal-700">
                 <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
                   See More
                   <ArrowRight className="w-4 h-4" />

@@ -222,10 +222,15 @@ export default function DesignerSignup() {
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+              <Palette className="w-8 h-8 text-red-600" />
+            </div>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
-            <span className="text-red-600">Designer</span> Sign Up
+            Become a Designer
           </h1>
-          <p className="text-gray-600">Share your 3D designs with the world and earn from every print</p>
+          <p className="text-xl text-gray-600">Share your creations and earn rewards</p>
         </div>
 
         <Card className="border-2 border-red-200 shadow-2xl">
