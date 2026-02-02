@@ -113,7 +113,7 @@ export default function ForMakers() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
-              <Link to={createPageUrl("HowItWorks")}>
+              <Link to={createPageUrl("MakerHowItWorks")}>
                 <span className="text-orange-500">Learn How It Works</span>
                 <ArrowRight className="w-5 h-5 ml-2 text-orange-500" />
               </Link>

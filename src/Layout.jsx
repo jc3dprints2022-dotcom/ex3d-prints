@@ -467,9 +467,6 @@ export default function Layout({ children, currentPageName }) {
                   <DropdownMenuItem asChild>
                     <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl("DesignerHowItWorks")} onClick={scrollToTop}>How It Works</Link>
-                  </DropdownMenuItem>
                   {user && user.designer_id && user.business_roles?.includes('designer') ? (
                     <>
                       <DropdownMenuSeparator />
