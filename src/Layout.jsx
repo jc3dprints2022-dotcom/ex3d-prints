@@ -715,7 +715,6 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Support</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><Link to={createPageUrl("HowItWorks")} onClick={scrollToTop} className="hover:text-white">How It Works</Link></li>
                 <li><Link to={createPageUrl("FAQ")} onClick={scrollToTop} className="hover:text-white">FAQ</Link></li>
                 <li><Link to={createPageUrl("Contact")} onClick={scrollToTop} className="hover:text-white">Contact Us</Link></li>
                 <li><Link to={createPageUrl("ReportIssue")} onClick={scrollToTop} className="hover:text-white">Report Issue / Feature Request</Link></li>
