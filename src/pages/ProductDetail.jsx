@@ -578,7 +578,7 @@ export default function ProductDetail() {
             <div className="mb-8">
               <p className="text-4xl font-bold text-teal-600">${product.price.toFixed(2)}</p>
             </div>
-            {product.review_count > 0 && (
+            {product.review_count > 0 ? (
               <div className="flex items-center gap-2 mb-6">
                 <div className="flex">
                   {[1, 2, 3, 4, 5].map((star) => (
@@ -595,6 +595,11 @@ export default function ProductDetail() {
                 <span className="text-gray-600">
                   {product.rating.toFixed(1)} ({product.review_count} {product.review_count === 1 ? 'review' : 'reviews'})
                 </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-6 text-gray-500">
+                <Star className="w-5 h-5 text-gray-300" />
+                <span>No reviews yet. Be the first to leave a review!</span>
               </div>
             )}
 
