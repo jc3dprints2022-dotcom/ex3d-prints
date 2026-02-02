@@ -186,7 +186,7 @@ export default function Terms() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">8. Pickup (Campus Pilot) & Risk of Loss</h2>
             <ul className="list-disc pl-6 space-y-3 text-gray-700">
               <li>
-                <strong>Method:</strong> During the campus pilot, Makers deliver completed orders to the Student Union 
+                <strong>Method:</strong> During the campus pilot, Makers deliver completed orders to the Hazy Library 
                 pickup desk. Consumers pick up orders from the same location during posted hours. Carrier shipping is not 
                 used during the pilot.
               </li>
