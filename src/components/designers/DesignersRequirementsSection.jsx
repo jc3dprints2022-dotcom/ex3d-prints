@@ -49,15 +49,26 @@ export default function DesignersRequirementsSection() {
             </CardContent>
           </Card>
 
-          <Card className="text-center border-none shadow-lg">
+          <Card className="border-none shadow-lg">
             <CardContent className="p-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Star className="w-8 h-8 text-blue-600" />
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Star className="w-8 h-8 text-orange-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
-              <p className="text-gray-600">
-                Earn 250 EXP for sharing a referral code with your friends. Redeem EXP for real rewards on your dashboard!
-              </p>
+              <h3 className="text-xl font-semibold mb-4 text-center">Boost Your Listings</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-orange-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Pay $5 per week (up to a month) to promote your design</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-orange-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Push your listing to the top of the site</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-orange-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Get additional advertising from us to reach more customers</span>
+                </li>
+              </ul>
             </CardContent>
           </Card>
 
