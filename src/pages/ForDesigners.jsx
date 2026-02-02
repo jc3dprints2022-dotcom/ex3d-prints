@@ -71,7 +71,7 @@ export default function ForDesigners() {
               </div>
 
               <Button size="lg" className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-orange-600 hover:to-red-700 h-14 px-8">
-                <Link to={createPageUrl("DesignerSignup")}>
+                <Link to={createPageUrl("DesignerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                   Start Earning Today
                 </Link>
               </Button>
@@ -161,13 +161,13 @@ export default function ForDesigners() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-white border-white text-red-500 hover:bg-slate-300">
-              <Link to={createPageUrl("DesignerSignup")}>
+              <Link to={createPageUrl("DesignerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <Upload className="w-5 h-5 mr-2" />
                 Start Making Money
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
-              <Link to={createPageUrl("DesignerHowItWorks")}>
+              <Link to={createPageUrl("DesignerHowItWorks")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <span className="text-red-500">Learn How It Works</span>
                 <ArrowRight className="w-5 h-5 ml-2 text-red-500" />
               </Link>

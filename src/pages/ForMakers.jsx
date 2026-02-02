@@ -107,13 +107,13 @@ export default function ForMakers() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-white border-white text-orange-500 hover:bg-slate-300">
-              <Link to={createPageUrl("MakerSignup")}>
+              <Link to={createPageUrl("MakerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <Printer className="w-5 h-5 mr-2" />
                 Start Making Money
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
-              <Link to={createPageUrl("MakerHowItWorks")}>
+              <Link to={createPageUrl("MakerHowItWorks")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 <span className="text-orange-500">Learn How It Works</span>
                 <ArrowRight className="w-5 h-5 ml-2 text-orange-500" />
               </Link>
