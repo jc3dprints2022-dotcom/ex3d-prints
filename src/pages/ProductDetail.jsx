@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User } from "lucide-react";
+import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User, ArrowRight } from "lucide-react";
 import ReviewList from "../components/shared/ReviewList";
 import RatingDisplay from "../components/shared/RatingDisplay";
 import { Label } from "@/components/ui/label";
@@ -724,10 +724,42 @@ export default function ProductDetail() {
           </div>
         </div>
 
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">Related Products</h2>
+              <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
+                  See More
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+                {relatedProducts.map((relatedProduct) => (
+                  <div key={relatedProduct.id} className="flex-shrink-0" style={{ width: '280px' }}>
+                    <ProductCard product={relatedProduct} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* For You Carousel */}
         {user && user.recently_viewed && user.recently_viewed.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">For You</h2>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-900">For You</h2>
+              <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
+                  See More
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </Button>
+            </div>
             <div className="overflow-x-auto pb-4">
               <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
                 {allProducts
@@ -742,19 +774,20 @@ export default function ProductDetail() {
                   ))}
               </div>
             </div>
-            <div className="flex justify-center mt-6">
-              <Button asChild variant="outline">
-                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                  See More
-                </Link>
-              </Button>
-            </div>
           </div>
         )}
 
         {/* Popular Products */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Popular Products</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Popular Products</h2>
+            <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
+                See More
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
           <div className="overflow-x-auto pb-4">
             <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
               {[...allProducts]
@@ -768,18 +801,19 @@ export default function ProductDetail() {
                 ))}
             </div>
           </div>
-          <div className="flex justify-center mt-6">
-            <Button asChild variant="outline">
-              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=popular`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                See More
-              </Link>
-            </Button>
-          </div>
         </div>
 
         {/* Newest Products */}
         <div className="mt-16">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Newest Products</h2>
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900">Newest Products</h2>
+            <Button asChild variant="ghost" className="text-green-600 hover:text-green-700">
+              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="flex items-center gap-2">
+                See More
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </Button>
+          </div>
           <div className="overflow-x-auto pb-4">
             <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
               {[...allProducts]
@@ -793,37 +827,16 @@ export default function ProductDetail() {
                 ))}
             </div>
           </div>
-          <div className="flex justify-center mt-6">
-            <Button asChild variant="outline">
-              <Link to={`${createPageUrl("Marketplace")}?viewAll=true&sortBy=newest`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                See More
-              </Link>
-            </Button>
-          </div>
         </div>
 
-        {/* Related Products */}
-        {relatedProducts.length > 0 && (
-          <div className="mt-16">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
-            <div className="overflow-x-auto pb-4">
-              <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
-                {relatedProducts.map((relatedProduct) => (
-                  <div key={relatedProduct.id} className="flex-shrink-0" style={{ width: '280px' }}>
-                    <ProductCard product={relatedProduct} />
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-center mt-6">
-              <Button asChild variant="outline">
-                <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-                  See More
-                </Link>
-              </Button>
-            </div>
-          </div>
-        )}
+        {/* Marketplace Button */}
+        <div className="flex justify-center mt-12">
+          <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700 text-white px-8 py-6 text-lg">
+            <Link to={createPageUrl("Marketplace")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
+              Browse Marketplace
+            </Link>
+          </Button>
+        </div>
       </div>
     </div>
   );

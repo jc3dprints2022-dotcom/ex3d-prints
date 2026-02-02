@@ -34,7 +34,10 @@ export default function MakerSignup() {
     phone: '',
     experience_level: '',
     weekly_capacity: '',
-    campus_location: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: '',
     materials: [],
     agree_terms: false
   });
@@ -64,7 +67,10 @@ export default function MakerSignup() {
                 phone: existingApplication.phone || '',
                 experience_level: existingApplication.experience_level || '',
                 weekly_capacity: existingApplication.weekly_capacity ? String(existingApplication.weekly_capacity) : '',
-                campus_location: existingApplication.campus_location || '',
+                street: existingApplication.campus_location?.split('|')[0] || '',
+                city: existingApplication.campus_location?.split('|')[1] || '',
+                state: existingApplication.campus_location?.split('|')[2] || '',
+                zip: existingApplication.campus_location?.split('|')[3] || '',
                 materials: existingApplication.materials || [],
                 agree_terms: false
               }));
@@ -168,13 +174,14 @@ export default function MakerSignup() {
       toast({ title: "Materials required", description: "Please select at least one material you can print with.", variant: "destructive" });
       return;
     }
-    if (!formData.campus_location || !formData.campus_location.trim()) {
-      toast({ title: "Address required", description: "Please enter your address.", variant: "destructive" });
+    if (!formData.street || !formData.city || !formData.state || !formData.zip) {
+      toast({ title: "Address required", description: "Please enter your complete address.", variant: "destructive" });
       return;
     }
     
     setFormState('submitting');
     try {
+      const fullAddress = `${formData.street}|${formData.city}|${formData.state}|${formData.zip}`;
       const applicationData = {
         user_id: user.id,
         full_name: formData.full_name,
@@ -182,7 +189,7 @@ export default function MakerSignup() {
         phone: formData.phone,
         experience_level: formData.experience_level,
         weekly_capacity: parseInt(formData.weekly_capacity, 10),
-        campus_location: formData.campus_location,
+        campus_location: fullAddress,
         materials: formData.materials,
         status: 'pending'
       };
@@ -209,8 +216,28 @@ export default function MakerSignup() {
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }
 
-      // Send application received email
+      // Send application received emails
       try {
+        // Email to admin
+        await base44.functions.invoke('sendEmail', {
+          to: 'jc3dprints2022@gmail.com',
+          subject: 'New Maker Signup - EX3D Prints',
+          body: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #f97316;">New Maker Signup</h1>
+    <h2>Application Details:</h2>
+    <p><strong>Name:</strong> ${formData.full_name}</p>
+    <p><strong>Email:</strong> ${formData.email}</p>
+    <p><strong>Phone:</strong> ${formData.phone}</p>
+    <p><strong>Address:</strong> ${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}</p>
+    <p><strong>Experience Level:</strong> ${formData.experience_level}</p>
+    <p><strong>Weekly Capacity:</strong> ${formData.weekly_capacity} hours</p>
+    <p><strong>Materials:</strong> ${formData.materials.join(', ')}</p>
+</div>
+          `.trim()
+        });
+
+        // Email to user
         const emailResult = await base44.functions.invoke('sendEmail', {
           to: user.email,
           subject: 'Maker Application Received - EX3D Prints',
@@ -233,7 +260,7 @@ export default function MakerSignup() {
     <div style="background: #fef3f2; border-left: 4px solid #f97316; padding: 20px; margin-bottom: 30px; border-radius: 4px;">
         <h2 style="color: #111827; font-size: 18px; margin: 0 0 16px 0;">Application Details</h2>
         <div style="color: #6b7280; font-size: 15px; line-height: 1.8;">
-            <p style="margin: 8px 0;"><strong>Address:</strong> ${formData.campus_location}</p>
+            <p style="margin: 8px 0;"><strong>Address:</strong> ${formData.street}, ${formData.city}, ${formData.state} ${formData.zip}</p>
             <p style="margin: 8px 0;"><strong>Experience Level:</strong> ${formData.experience_level}</p>
             <p style="margin: 8px 0;"><strong>Weekly Capacity:</strong> ${formData.weekly_capacity} hours</p>
             <p style="margin: 8px 0;"><strong>Materials:</strong> ${formData.materials.join(', ')}</p>
@@ -353,14 +380,47 @@ export default function MakerSignup() {
 
               {/* Address */}
               <div>
-                <Label htmlFor="address">Address *</Label>
+                <Label htmlFor="street">Street Address *</Label>
                 <Input 
-                  id="address" 
-                  value={formData.campus_location} 
-                  onChange={(e) => handleInputChange('campus_location', e.target.value)} 
-                  placeholder="123 Main St, City, State, ZIP"
+                  id="street" 
+                  value={formData.street} 
+                  onChange={(e) => handleInputChange('street', e.target.value)} 
+                  placeholder="123 Main St"
                   required
                 />
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-6">
+                <div>
+                  <Label htmlFor="city">City *</Label>
+                  <Input 
+                    id="city" 
+                    value={formData.city} 
+                    onChange={(e) => handleInputChange('city', e.target.value)} 
+                    placeholder="City"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="state">State *</Label>
+                  <Input 
+                    id="state" 
+                    value={formData.state} 
+                    onChange={(e) => handleInputChange('state', e.target.value)} 
+                    placeholder="State"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="zip">ZIP Code *</Label>
+                  <Input 
+                    id="zip" 
+                    value={formData.zip} 
+                    onChange={(e) => handleInputChange('zip', e.target.value)} 
+                    placeholder="12345"
+                    required
+                  />
+                </div>
               </div>
 
               {/* Experience & Capacity */}
@@ -430,7 +490,7 @@ export default function MakerSignup() {
               </div>
 
               <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-orange-500 to-red-600" disabled={formState === 'submitting'}>
-                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting...</> : 'Submit'}
+                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Signing Up...</> : 'Sign Up'}
               </Button>
             </form>
           </CardContent>

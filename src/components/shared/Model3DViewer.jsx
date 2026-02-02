@@ -255,10 +255,33 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
     if (!modelRef.current || !sceneRef.current) return;
 
     const modelColor = colorToHex(selectedColor);
+    const isRainbow = selectedColor.toLowerCase() === 'silk rainbow';
     
     modelRef.current.traverse((child) => {
       if (child instanceof THREE.Mesh && child.material) {
-        child.material.color.setHex(modelColor);
+        if (isRainbow) {
+          // Re-apply rainbow colors
+          child.material.vertexColors = true;
+          if (child.geometry && child.geometry.attributes.position) {
+            const colors = [];
+            const color = new THREE.Color();
+            const positionAttribute = child.geometry.attributes.position;
+            
+            for (let i = 0; i < positionAttribute.count; i++) {
+              const hue = (i / positionAttribute.count);
+              color.setHSL(hue, 1.0, 0.5);
+              colors.push(color.r, color.g, color.b);
+            }
+            
+            child.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+          }
+          child.material.needsUpdate = true;
+        } else {
+          // Solid color
+          child.material.vertexColors = false;
+          child.material.color.setHex(modelColor);
+          child.material.needsUpdate = true;
+        }
       }
     });
   }, [selectedColor]);

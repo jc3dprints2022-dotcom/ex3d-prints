@@ -173,6 +173,26 @@ export default function DesignerSignup() {
         designer_id: application.id
       });
 
+      // Send email to admin
+      await base44.functions.invoke('sendEmail', {
+        to: 'jc3dprints2022@gmail.com',
+        subject: 'New Designer Signup - EX3D Prints',
+        body: `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #dc2626;">New Designer Signup</h1>
+    <h2>Application Details:</h2>
+    <p><strong>Name:</strong> ${user.full_name}</p>
+    <p><strong>Email:</strong> ${user.email}</p>
+    <p><strong>Phone:</strong> ${formData.phone}</p>
+    <p><strong>Designer Name:</strong> ${formData.designer_name}</p>
+    <p><strong>Experience Level:</strong> ${formData.experience_level}</p>
+    <p><strong>Bio:</strong> ${formData.bio}</p>
+    <p><strong>Categories:</strong> ${selectedCategories.join(', ')}</p>
+    ${profileImageUrl ? `<p><strong>Profile Image:</strong> <a href="${profileImageUrl}">View Image</a></p>` : ''}
+</div>
+        `.trim()
+      });
+
       toast({
         title: "Success!",
         description: "Welcome to the designer network!"
@@ -200,7 +220,7 @@ export default function DesignerSignup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-pink-50">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">
             <span className="text-red-600">Designer</span> Sign Up
@@ -226,46 +246,49 @@ export default function DesignerSignup() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="phone">Phone Number *</Label>
-                <Input 
-                  id="phone" 
-                  value={formData.phone} 
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})} 
-                  placeholder="(555) 123-4567"
-                  required
-                />
-                <p className="text-xs text-slate-500 mt-1">10-digit phone number</p>
-              </div>
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="phone">Phone Number *</Label>
+                  <Input 
+                    id="phone" 
+                    value={formData.phone} 
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})} 
+                    placeholder="(555) 123-4567"
+                    required
+                  />
+                  <p className="text-xs text-slate-500 mt-1">10-digit phone number</p>
+                </div>
 
-              {/* Profile Image */}
-              <div>
-                <Label>Profile Image</Label>
-                <div className="mt-2 flex items-center gap-4">
-                  {profileImageUrl ? (
-                    <img src={profileImageUrl} alt="Profile" className="w-24 h-24 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
-                      <User className="w-12 h-12 text-gray-400" />
+                {/* Profile Image */}
+                <div>
+                  <Label>Profile Image</Label>
+                  <div className="mt-2 flex items-center gap-4">
+                    {profileImageUrl ? (
+                      <img src={profileImageUrl} alt="Profile" className="w-16 h-16 rounded-full object-cover" />
+                    ) : (
+                      <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="w-8 h-8 text-gray-400" />
+                      </div>
+                    )}
+                    <div>
+                      <Input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="profile-image-upload"
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => document.getElementById('profile-image-upload').click()}
+                        disabled={uploadingImage}
+                      >
+                        {uploadingImage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadIcon className="w-4 h-4 mr-2" />}
+                        Upload
+                      </Button>
                     </div>
-                  )}
-                  <div>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="profile-image-upload"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('profile-image-upload').click()}
-                      disabled={uploadingImage}
-                    >
-                      {uploadingImage ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <UploadIcon className="w-4 h-4 mr-2" />}
-                      Upload Photo
-                    </Button>
                   </div>
                 </div>
               </div>
@@ -358,7 +381,7 @@ export default function DesignerSignup() {
               </div>
 
               <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-red-500 to-pink-600" disabled={submitting}>
-                {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting...</> : 'Submit'}
+                {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Signing Up...</> : 'Sign Up'}
               </Button>
             </form>
           </CardContent>
