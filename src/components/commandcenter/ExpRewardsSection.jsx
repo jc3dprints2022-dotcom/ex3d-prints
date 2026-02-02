@@ -48,16 +48,18 @@ export default function ExpRewardsSection() {
   const [editingReward, setEditingReward] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [updating, setUpdating] = useState(null); // New state to track redemption update loading
+  const [products, setProducts] = useState([]);
   const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    exp_cost: '',
-    reward_type: 'consumer',
-    category: 'filament',
-    image_url: '',
-    stock_quantity: '',
-    is_active: true
-  });
+     name: '',
+     description: '',
+     exp_cost: '',
+     reward_type: 'consumer',
+     category: 'filament',
+     image_url: '',
+     stock_quantity: '',
+     is_active: true,
+     existing_product_id: ''
+   });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -97,22 +99,31 @@ export default function ExpRewardsSection() {
     }
   };
 
-  const loadAllData = async () => {
-    setLoading(true);
-    setLoadingRedemptions(true); // Also set redemption loading
+  const loadProducts = async () => {
     try {
-      // Use Promise.all to fetch all necessary data concurrently
-      await Promise.all([
-        loadRewards(),
-        loadRedemptions(),
-        loadUsers()
-      ]);
+      const productsData = await base44.entities.Product.list();
+      setProducts(productsData.filter(p => p.status === 'active'));
     } catch (error) {
-      console.error('Failed to load all data:', error);
-      toast({ title: "Failed to load data", variant: "destructive" });
+      console.error('Failed to load products:', error);
     }
-    setLoading(false);
   };
+
+  const loadAllData = async () => {
+     setLoading(true);
+     setLoadingRedemptions(true);
+     try {
+       await Promise.all([
+         loadRewards(),
+         loadRedemptions(),
+         loadUsers(),
+         loadProducts()
+       ]);
+     } catch (error) {
+       console.error('Failed to load all data:', error);
+       toast({ title: "Failed to load data", variant: "destructive" });
+     }
+     setLoading(false);
+   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
@@ -146,7 +157,8 @@ export default function ExpRewardsSection() {
       const rewardData = {
         ...formData,
         exp_cost: parseInt(formData.exp_cost),
-        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : undefined
+        stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : undefined,
+        existing_product_id: formData.existing_product_id || undefined
       };
 
       if (editingReward) {
@@ -168,19 +180,20 @@ export default function ExpRewardsSection() {
   };
 
   const handleEdit = (reward) => {
-    setEditingReward(reward);
-    setFormData({
-      name: reward.name,
-      description: reward.description,
-      exp_cost: reward.exp_cost.toString(),
-      reward_type: reward.reward_type,
-      category: reward.category,
-      image_url: reward.image_url || '',
-      stock_quantity: reward.stock_quantity?.toString() || '',
-      is_active: reward.is_active
-    });
-    setShowDialog(true);
-  };
+     setEditingReward(reward);
+     setFormData({
+       name: reward.name,
+       description: reward.description,
+       exp_cost: reward.exp_cost.toString(),
+       reward_type: reward.reward_type,
+       category: reward.category,
+       image_url: reward.image_url || '',
+       stock_quantity: reward.stock_quantity?.toString() || '',
+       is_active: reward.is_active,
+       existing_product_id: reward.existing_product_id || ''
+     });
+     setShowDialog(true);
+   };
 
   const handleDelete = async (rewardId) => {
     if (!confirm('Are you sure you want to delete this reward?')) return;
@@ -221,16 +234,31 @@ export default function ExpRewardsSection() {
   };
 
   const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      exp_cost: '',
-      reward_type: 'consumer',
-      category: 'filament',
-      image_url: '',
-      stock_quantity: '',
-      is_active: true
-    });
+     setFormData({
+       name: '',
+       description: '',
+       exp_cost: '',
+       reward_type: 'consumer',
+       category: 'filament',
+       image_url: '',
+       stock_quantity: '',
+       is_active: true,
+       existing_product_id: ''
+     });
+   };
+
+  const handleProductSelect = (productId) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      setFormData(prev => ({
+        ...prev,
+        existing_product_id: productId,
+        name: product.name,
+        description: product.description,
+        image_url: product.images?.[0] || '',
+        category: 'print'
+      }));
+    }
   };
 
   return (
@@ -685,7 +713,26 @@ export default function ExpRewardsSection() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
+              </div>
+
+              {formData.reward_type === 'consumer' && (
+                <div>
+                  <Label className="text-white">Link to Product (optional) *</Label>
+                  <Select value={formData.existing_product_id} onValueChange={handleProductSelect}>
+                    <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
+                      <SelectValue placeholder="Select a product to auto-populate details..." />
+                    </SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                      {products.map(product => (
+                        <SelectItem key={product.id} value={product.id} className="text-white">
+                          {product.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-slate-400 mt-1">Selecting a product will auto-fill name, description, and image.</p>
+                </div>
+              )}
 
             <div>
               <Label className="text-white">Reward Name *</Label>
