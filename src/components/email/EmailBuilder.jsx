@@ -76,15 +76,9 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
 
     setUploading(true);
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      const response = await fetch('/api/functions/uploadFile', {
-        method: 'POST',
-        body: formData
-      });
-      const result = await response.json();
-      if (result.file_url) {
-        setUploadedImages((prev) => [...prev, result.file_url]);
+      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      if (file_url) {
+        setUploadedImages((prev) => [...prev, file_url]);
         toast({ title: "Image uploaded successfully!" });
       }
     } catch (error) {
