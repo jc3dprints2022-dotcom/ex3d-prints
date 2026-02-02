@@ -846,14 +846,13 @@ The EX3D Team`
                 </CardContent>
               </Card>
             )}
-          </div>
-        </TabsContent>
 
             {/* Filament Manager Section */}
             <div className="mt-8">
               <FilamentManager makerId={user?.maker_id} />
             </div>
-          </TabsContent>
+          </div>
+        </TabsContent>
 
         <TabsContent value="exp">
           <MakerExpRedeemTab user={user} onUpdate={loadDashboard} />
