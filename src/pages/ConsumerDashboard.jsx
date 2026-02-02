@@ -26,7 +26,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProductCard from "@/components/marketplace/ProductCard";
 import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
 import ReferralTab from "@/components/consumer/ReferralTab";
-import RewardsTab from "@/components/consumer/RewardsTab";
 
 export default function ConsumerDashboard() {
   const [user, setUser] = useState(null);
@@ -634,15 +633,11 @@ export default function ConsumerDashboard() {
             {/* EXP / Rewards Section */}
             {activeSection === "exp" && (
               <div className="space-y-6">
-                <Tabs defaultValue="rewards" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="rewards">Rewards</TabsTrigger>
-                    <TabsTrigger value="redeem">Redeem EXP</TabsTrigger>
+                <Tabs defaultValue="redeem" className="w-full">
+                  <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="redeem">Redeem Your EXP</TabsTrigger>
                     <TabsTrigger value="referrals">Referrals</TabsTrigger>
                   </TabsList>
-                  <TabsContent value="rewards">
-                    <RewardsTab user={user} />
-                  </TabsContent>
                   <TabsContent value="redeem">
                     <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
                   </TabsContent>
