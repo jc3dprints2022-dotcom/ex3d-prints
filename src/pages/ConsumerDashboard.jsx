@@ -639,10 +639,10 @@ export default function ConsumerDashboard() {
                     <TabsTrigger value="referrals">Referrals</TabsTrigger>
                   </TabsList>
                   <TabsContent value="redeem">
-                    <ExpRedeemTab />
+                    <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
                   </TabsContent>
                   <TabsContent value="referrals">
-                    <ReferralTab />
+                    <ReferralTab user={user} />
                   </TabsContent>
                 </Tabs>
               </div>

@@ -34,10 +34,16 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   const { toast } = useToast();
 
   useEffect(() => {
-    loadTransactions();
+    if (user?.id) {
+      loadTransactions();
+    }
   }, [user]);
 
   const loadTransactions = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
     try {
       const allTransactions = await base44.entities.ExpTransaction.filter(
         { user_id: user.id },
@@ -52,6 +58,8 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   };
 
   const handleRedeem = async (tier) => {
+    if (!user) return;
+    
     const quantity = quantities[tier.value];
     const totalExpCost = tier.exp * quantity;
     
@@ -111,12 +119,12 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   };
 
   const getNextTier = () => {
-    const currentExp = user.exp_points || 0;
+    const currentExp = user?.exp_points || 0;
     return TIERS.find(t => t.exp > currentExp) || TIERS[TIERS.length - 1];
   };
 
   const getProgressPercent = () => {
-    const currentExp = user.exp_points || 0;
+    const currentExp = user?.exp_points || 0;
     const nextTier = getNextTier();
     const previousTier = TIERS[TIERS.indexOf(nextTier) - 1];
     const baseExp = previousTier ? previousTier.exp : 0;
@@ -147,7 +155,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
               <p className="text-cyan-100 mb-2">Your EXP Balance</p>
               <h2 className="text-5xl font-bold flex items-center gap-3">
                 <Trophy className="w-12 h-12" />
-                {user.exp_points || 0} EXP
+                {user?.exp_points || 0} EXP
               </h2>
             </div>
           </div>
@@ -156,12 +164,12 @@ export default function ExpRedeemTab({ user, onUpdate }) {
             <div className="flex justify-between text-sm">
               <span>Progress to {getNextTier().label}</span>
               <span className="font-semibold">
-                {user.exp_points || 0} / {getNextTier().exp} EXP
+                {user?.exp_points || 0} / {getNextTier().exp} EXP
               </span>
             </div>
             <Progress value={getProgressPercent()} className="h-3 bg-cyan-700" />
             <p className="text-xs text-cyan-100">
-              {Math.max(0, getNextTier().exp - (user.exp_points || 0))} EXP until next reward
+              {Math.max(0, getNextTier().exp - (user?.exp_points || 0))} EXP until next reward
             </p>
           </div>
         </CardContent>
@@ -181,7 +189,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
               const quantity = quantities[tier.value];
               const totalExpCost = tier.exp * quantity;
               const totalValue = tier.value * quantity;
-              const canRedeem = (user.exp_points || 0) >= totalExpCost;
+              const canRedeem = (user?.exp_points || 0) >= totalExpCost;
               const isRedeeming = redeeming === tier.value;
 
               return (
@@ -192,7 +200,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
                     </div>
                     <p className="text-2xl font-bold mb-1">{totalExpCost} EXP</p>
                     <p className="text-sm text-gray-600 mb-4">
-                      {canRedeem ? '✓ You can redeem this!' : `Need ${totalExpCost - (user.exp_points || 0)} more EXP`}
+                      {canRedeem ? '✓ You can redeem this!' : `Need ${totalExpCost - (user?.exp_points || 0)} more EXP`}
                     </p>
                     
                     {/* Quantity Selector */}
@@ -217,7 +225,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
                           onClick={() => {
                             const newQuantity = quantity + 1;
                             const newTotalCost = tier.exp * newQuantity;
-                            if ((user.exp_points || 0) >= newTotalCost) {
+                            if ((user?.exp_points || 0) >= newTotalCost) {
                               setQuantities(prev => ({
                                 ...prev,
                                 [tier.value]: newQuantity
