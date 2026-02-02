@@ -1,5 +1,4 @@
 import React, { useState, useRef } from "react";
-import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,10 +25,11 @@ import {
   Plus,
   Upload,
   Image as ImageIcon,
-  Monitor,
-  Smartphone,
   Loader2,
+  Clock,
+  Mail as MailIcon,
 } from "lucide-react";
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import EmailPreview from "./EmailPreview";
 import EmailBlockPanel from "./EmailBlockPanel";
 
@@ -40,38 +40,29 @@ const DEFAULT_BLOCKS = [
   { id: "spacer-1", type: "spacer", height: 20 },
 ];
 
-export default function EmailBuilder({ onSave, initialContent }) {
+export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSetup }) {
   const [blocks, setBlocks] = useState(initialContent?.blocks || []);
   const [selectedBlockId, setSelectedBlockId] = useState(null);
-  const [previewMode, setPreviewMode] = useState("desktop");
   const [uploadedImages, setUploadedImages] = useState([]);
-  const [showImageLibrary, setShowImageLibrary] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [editingBlock, setEditingBlock] = useState(null);
-  const [showBlockModal, setShowBlockModal] = useState(false);
-  const [blockType, setBlockType] = useState("text");
+  const [showAutomation, setShowAutomation] = useState(false);
+  const [automationName, setAutomationName] = useState("");
+  const [automationSchedule, setAutomationSchedule] = useState("");
+  const [automationAudience, setAutomationAudience] = useState("all");
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
   const handleDragEnd = (result) => {
-    const { source, destination, draggableId } = result;
+    const { source, destination, draggableId, sourceDroppableId } = result;
     if (!destination) return;
 
-    if (draggableId.startsWith("template-")) {
-      // Adding a new block from template
-      const newBlock = { ...DEFAULT_BLOCKS[parseInt(draggableId.split("-")[1])], id: `block-${Date.now()}` };
+    // Reordering blocks within the preview
+    if (sourceDroppableId === "preview-blocks" && destination.droppableId === "preview-blocks") {
       const newBlocks = [...blocks];
-      newBlocks.splice(destination.index, 0, newBlock);
+      const [removed] = newBlocks.splice(source.index, 1);
+      newBlocks.splice(destination.index, 0, removed);
       setBlocks(newBlocks);
-      toast({ title: "Block added!" });
-      return;
     }
-
-    // Reordering existing blocks
-    const newBlocks = [...blocks];
-    const [removed] = newBlocks.splice(source.index, 1);
-    newBlocks.splice(destination.index, 0, removed);
-    setBlocks(newBlocks);
   };
 
   const handleImageUpload = async (e) => {
@@ -164,7 +155,7 @@ export default function EmailBuilder({ onSave, initialContent }) {
               case "button":
                 return `<div style="text-align: center; padding: 20px;"><a href="${block.link}" style="display: inline-block; padding: 12px 24px; background: ${block.bgColor}; color: ${block.textColor}; text-decoration: none; border-radius: 6px; font-weight: bold;">${block.content}</a></div>`;
               case "image":
-                return `<div style="text-align: ${block.alignment}; padding: 20px;"><img src="${block.src}" style="width: ${block.width}px; max-width: 100%; height: auto;" /></div>`;
+                return `<div style="text-align: center; padding: 20px; display: flex; justify-content: center;"><img src="${block.src}" style="width: ${block.width}px; max-width: 100%; height: auto; border-radius: 6px;" /></div>`;
               case "spacer":
                 return `<div style="height: ${block.height}px;"></div>`;
               case "hero":
@@ -179,6 +170,28 @@ export default function EmailBuilder({ onSave, initialContent }) {
       </body>
       </html>
     `;
+  };
+
+  const handleSetupCampaign = async () => {
+    if (!automationName.trim()) {
+      toast({ title: "Please enter a campaign name", variant: "destructive" });
+      return;
+    }
+    if (!automationSchedule) {
+      toast({ title: "Please select a schedule", variant: "destructive" });
+      return;
+    }
+    if (onEmailCampaignSetup) {
+      onEmailCampaignSetup({
+        name: automationName,
+        schedule: automationSchedule,
+        audience: automationAudience,
+        html: getEmailHTML(),
+        blocks: blocks
+      });
+      toast({ title: "Campaign automation set up!" });
+      setShowAutomation(false);
+    }
   };
 
   return (
@@ -237,17 +250,49 @@ export default function EmailBuilder({ onSave, initialContent }) {
       </div>
 
       {/* Middle Panel - Preview/Editor */}
-      <div className="col-span-3 flex flex-col gap-4">
-        <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden shadow-lg">
-          <CardContent className="flex-1 overflow-y-auto p-0">
-            <EmailPreview 
-              blocks={blocks} 
-              selectedBlockId={selectedBlockId} 
-              onSelectBlock={setSelectedBlockId}
-              onUpdateBlock={updateBlock}
-            />
-          </CardContent>
-        </Card>
+      <div className="col-span-3 flex flex-col gap-4 h-screen">
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="preview-blocks">
+            {(provided, snapshot) => (
+              <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden shadow-lg">
+                <CardContent 
+                  className="flex-1 overflow-y-auto p-0"
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                >
+                  {blocks.length === 0 ? (
+                    <div className="text-center py-12 text-gray-400 p-8">
+                      <p>No blocks yet. Add some from the left panel.</p>
+                    </div>
+                  ) : (
+                    <div className="p-8 bg-white">
+                      {blocks.map((block, index) => (
+                        <Draggable key={block.id} draggableId={block.id} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                              {...provided.dragHandleProps}
+                              className={`${snapshot.isDragging ? "opacity-50 bg-gray-100" : ""}`}
+                            >
+                              <EmailPreview 
+                                blocks={[block]} 
+                                selectedBlockId={selectedBlockId} 
+                                onSelectBlock={setSelectedBlockId}
+                                onUpdateBlock={updateBlock}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      ))}
+                    </div>
+                  )}
+                  {provided.placeholder}
+                </CardContent>
+              </Card>
+            )}
+          </Droppable>
+        </DragDropContext>
       </div>
 
       {/* Right Panel - Block List & Settings */}

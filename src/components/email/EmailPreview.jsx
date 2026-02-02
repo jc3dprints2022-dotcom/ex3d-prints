@@ -117,7 +117,7 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, o
             )}
 
             {block.type === "image" && (
-              <div style={{ textAlign: block.alignment, padding: "20px" }}>
+              <div style={{ textAlign: "center", padding: "20px", display: "flex", justifyContent: "center" }}>
                 {block.src ? (
                   <img
                     src={block.src}
@@ -126,6 +126,7 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, o
                       width: `${block.width}px`,
                       maxWidth: "100%",
                       height: "auto",
+                      borderRadius: "6px",
                     }}
                   />
                 ) : (
