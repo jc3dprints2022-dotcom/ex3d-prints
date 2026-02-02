@@ -377,7 +377,7 @@ export default function Terms() {
             <h2 className="text-2xl font-bold text-gray-900 mb-4">15. Subscriptions & Promotions</h2>
             <p className="text-gray-700 mb-4">
               EX3D offers an optional <strong>Maker Subscription for $10/month</strong> that reduces the platform fee 
-              from 12% → 6%. Subscriptions auto‑renew monthly until canceled. You can cancel anytime; cancellation takes 
+              from 10% → 6%. Subscriptions auto‑renew monthly until canceled. You can cancel anytime; cancellation takes 
               effect at the end of the current billing period. Subscription fees are non‑refundable once the period starts.
             </p>
             <p className="text-gray-700">
