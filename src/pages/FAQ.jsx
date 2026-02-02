@@ -72,34 +72,89 @@ export default function FAQ() {
       ]
     },
     {
-      title: "For Makers",
-      questions: [
-        {
-          id: "payout-date",
-          question: "When do I get paid?",
-          answer: "You will get paid on November 30th."
-        },
-        {
-          id: "download-design",
-          question: "How do I download a design?",
-          answer: "Go to your maker dashboard, set the order to printing and then download the files."
-        },
-        {
-          id: "order-issues",
-          question: "I'm having issues with this order. What can I do?",
-          answer: "You can cancel the order on your side, another maker will pick up the work and finish it."
-        },
-        {
-          id: "download-issues",
-          question: "I'm having issues with my download. What can I do?",
-          answer: (
-            <>
-              Reach out to <a href="mailto:ex3dprint@gmail.com" className="text-teal-600 hover:underline">ex3dprint@gmail.com</a> and we'll help you solve the issue.
-            </>
-          )
-        }
-      ]
-    },
+       title: "For Makers",
+       questions: [
+         {
+           id: "payout-date",
+           question: "When do I get paid?",
+           answer: "You will get paid on the last day of each month."
+         },
+         {
+           id: "download-design",
+           question: "How do I download a design?",
+           answer: "Go to your maker dashboard, set the order to printing and then download the files."
+         },
+         {
+           id: "order-issues",
+           question: "I'm having issues with this order. What can I do?",
+           answer: "You can cancel the order on your side, another maker will pick up the work and finish it."
+         },
+         {
+           id: "download-issues",
+           question: "I'm having issues with my download. What can I do?",
+           answer: (
+             <>
+               Reach out to <a href="mailto:ex3dprint@gmail.com" className="text-teal-600 hover:underline">ex3dprint@gmail.com</a> and we'll help you solve the issue.
+             </>
+           )
+         }
+       ]
+     },
+     {
+       title: "For Designers",
+       questions: [
+         {
+           id: "designer-signup",
+           question: "How do I sign up as a designer?",
+           answer: "Signing up is completely free! Just create an account, verify your email, and you can start uploading designs immediately."
+         },
+         {
+           id: "designer-products",
+           question: "What types of products can I sell?",
+           answer: "You can sell physical 3D printed versions of your designs. Digital files are not sold directly."
+         },
+         {
+           id: "file-formats-designer",
+           question: "Do I need special software or file formats?",
+           answer: "We accept standard 3D printing files like .stl, .obj, and .3mf. There are no file size limits."
+         },
+         {
+           id: "upload-cost",
+           question: "How much does it cost to upload my designs?",
+           answer: "Uploading is free. You only pay if you choose to boost a listing for extra visibility ($5 per week, up to 4 weeks)."
+         },
+         {
+           id: "boosting",
+           question: "What is \"boosting\" a listing?",
+           answer: "Boosting promotes your design to the top of the marketplace and search results. Boosted listings get significantly more visibility and views."
+         },
+         {
+           id: "designer-payment",
+           question: "How are designers paid?",
+           answer: "You earn 10% of each sale. Payments are processed automatically after each order is completed."
+         },
+         {
+           id: "design-rights",
+           question: "Do I need to own the rights to my designs?",
+           answer: "Yes. You are fully responsible for copyright compliance. Only upload designs you own or have permission to sell."
+         },
+         {
+           id: "copyright-dispute",
+           question: "What happens if there is a copyright dispute?",
+           answer: "If a copyright issue arises, you are liable for any claims. We may remove disputed listings, but legal responsibility rests with the designer."
+         },
+         {
+           id: "refund-request",
+           question: "What if a customer requests a refund?",
+           answer: "We offer refunds for eligible orders. Refunds are handled through our platform and are deducted from your sale amount before you receive your payout."
+         },
+         {
+           id: "maximize-sales",
+           question: "How do I maximize sales?",
+           answer: "Test print your designs to ensure quality, use high-quality photos from multiple angles, provide detailed descriptions and assembly instructions if needed, and boost your top designs for extra visibility."
+         }
+       ]
+     },
     {
       title: "General 3D Print Questions",
       questions: [

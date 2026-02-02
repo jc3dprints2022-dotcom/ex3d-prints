@@ -686,7 +686,7 @@ export default function Layout({ children, currentPageName }) {
 
       <footer className="bg-slate-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
                 <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-10 w-auto"/>
@@ -701,6 +701,14 @@ export default function Layout({ children, currentPageName }) {
               <ul className="space-y-2 text-sm text-gray-300">
                 <li><Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hover:text-white">Marketplace</Link></li>
                 <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
+                <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
               </ul>
             </div>
 
