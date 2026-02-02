@@ -337,8 +337,8 @@ export default function Terms() {
 
             <h3 className="text-xl font-semibold text-gray-900 mb-3">12.4 Representations</h3>
             <p className="text-gray-700">
-              You represent you have commercial rights to the content you upload and that your content does not infringe any third‑party 
-              rights or laws. You agree to compensate EX3D for claims arising from your content.
+              You represent you have rights to the content you upload and that your content does not infringe any third‑party 
+              rights or laws. You agree to indemnify EX3D for claims arising from your content.
             </p>
           </section>
 
