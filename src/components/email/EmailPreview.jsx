@@ -1,8 +1,23 @@
-import React from "react";
+import React, { useState } from "react";
 
-export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock }) {
+export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock }) {
+  const [editingId, setEditingId] = useState(null);
+  const [editText, setEditText] = useState("");
+
+  const handleTextClick = (blockId, currentContent) => {
+    setEditingId(blockId);
+    setEditText(currentContent);
+  };
+
+  const handleTextBlur = (blockId) => {
+    if (editText.trim()) {
+      onUpdateBlock(blockId, { content: editText });
+    }
+    setEditingId(null);
+  };
+
   return (
-    <div className="p-4">
+    <div className="p-8 bg-white">
       {blocks.length === 0 ? (
         <div className="text-center py-12 text-gray-400">
           <p>No blocks yet. Add some to see preview.</p>
@@ -13,7 +28,7 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock })
             key={block.id}
             onClick={() => onSelectBlock(block.id)}
             className={`cursor-pointer transition-all ${
-              selectedBlockId === block.id ? "ring-2 ring-cyan-500 ring-offset-2" : "hover:opacity-80"
+              selectedBlockId === block.id ? "ring-2 ring-cyan-500 ring-offset-2 ring-offset-white" : "hover:bg-gray-50"
             }`}
           >
             {block.type === "text" && (
@@ -26,8 +41,36 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock })
                   whiteSpace: "pre-wrap",
                   wordWrap: "break-word",
                 }}
+                onDoubleClick={(e) => {
+                  e.stopPropagation();
+                  handleTextClick(block.id, block.content);
+                }}
               >
-                {block.content}
+                {editingId === block.id ? (
+                  <textarea
+                    autoFocus
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    onBlur={() => handleTextBlur(block.id)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && e.ctrlKey) {
+                        handleTextBlur(block.id);
+                      }
+                    }}
+                    style={{
+                      width: "100%",
+                      fontSize: `${block.fontSize}px`,
+                      color: block.color,
+                      textAlign: block.alignment,
+                      fontFamily: "inherit",
+                      border: "2px solid #14b8a6",
+                      padding: "8px",
+                      borderRadius: "4px",
+                    }}
+                  />
+                ) : (
+                  block.content
+                )}
               </div>
             )}
 
@@ -36,6 +79,11 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock })
                 <a
                   href={block.link}
                   onClick={(e) => e.preventDefault()}
+                  onDoubleClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleTextClick(block.id, block.content);
+                  }}
                   style={{
                     display: "inline-block",
                     padding: "12px 24px",
@@ -46,7 +94,24 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock })
                     fontWeight: "bold",
                   }}
                 >
-                  {block.content}
+                  {editingId === block.id ? (
+                    <input
+                      autoFocus
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onBlur={() => handleTextBlur(block.id)}
+                      style={{
+                        background: "transparent",
+                        color: "inherit",
+                        border: "none",
+                        outline: "2px dashed #fff",
+                        padding: "2px",
+                      }}
+                    />
+                  ) : (
+                    block.content
+                  )}
                 </a>
               </div>
             )}
