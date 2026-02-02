@@ -29,6 +29,9 @@ export default function EmailBuilder({ onSave, initialContent }) {
   const [selectedBlockId, setSelectedBlockId] = useState(null);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [uploading, setUploading] = useState(false);
+  const [bgColor, setBgColor] = useState("#ffffff");
+  const [bgImage, setBgImage] = useState("");
+  const [draggedBlockId, setDraggedBlockId] = useState(null);
   const fileInputRef = useRef(null);
   const { toast } = useToast();
 
@@ -102,12 +105,36 @@ export default function EmailBuilder({ onSave, initialContent }) {
       ...(type === "spacer" && { height: 20 }),
       ...(type === "hero" && { bgImage: "", title: "Your Hero Title", subtitle: "Your subtitle here", titleColor: "#ffffff", subtitleColor: "#ffffff", height: 300 }),
       ...(type === "divider" && { color: "#e5e7eb", height: 1 }),
+      ...(type === "footer" && { content: "© 2025 EX3DPrints. All rights reserved." }),
     };
     setBlocks((prev) => [...prev, newBlock]);
     toast({ title: `${type} block added` });
   };
 
+  const handleDragStart = (e, blockId) => {
+    setDraggedBlockId(blockId);
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+  };
+
+  const handleDropOnBlock = (e, targetBlockId) => {
+    e.preventDefault();
+    if (!draggedBlockId || draggedBlockId === targetBlockId) return;
+
+    const draggedIndex = blocks.findIndex(b => b.id === draggedBlockId);
+    const targetIndex = blocks.findIndex(b => b.id === targetBlockId);
+
+    const newBlocks = [...blocks];
+    const [removed] = newBlocks.splice(draggedIndex, 1);
+    newBlocks.splice(targetIndex, 0, removed);
+    setBlocks(newBlocks);
+    setDraggedBlockId(null);
+  };
+
   const getEmailHTML = () => {
+    const bgStyle = bgImage ? `background-image: url('${bgImage}'); background-size: cover; background-position: center;` : `background-color: ${bgColor};`;
     return `
       <!DOCTYPE html>
       <html>
@@ -116,7 +143,7 @@ export default function EmailBuilder({ onSave, initialContent }) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
           body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          .email-container { max-width: 600px; margin: 0 auto; background: white; }
+          .email-container { max-width: 600px; margin: 0 auto; ${bgStyle} }
           img { max-width: 100%; height: auto; display: block; }
         </style>
       </head>
@@ -136,6 +163,8 @@ export default function EmailBuilder({ onSave, initialContent }) {
                 return `<div style="background-image: url('${block.bgImage}'); background-size: cover; background-position: center; height: ${block.height}px; display: flex; align-items: center; justify-content: center; text-align: center; color: white;"><div><h1 style="color: ${block.titleColor}; margin: 0 0 10px 0;">${block.title}</h1><p style="color: ${block.subtitleColor}; margin: 0;">${block.subtitle}</p></div></div>`;
               case "divider":
                 return `<div style="border-top: ${block.height}px solid ${block.color}; margin: 20px 0;"></div>`;
+              case "footer":
+                return `<div style="background: #000000; color: #ffffff; padding: 20px; text-align: center; font-size: 12px;">${block.content}</div>`;
               default:
                 return "";
             }
@@ -162,6 +191,7 @@ export default function EmailBuilder({ onSave, initialContent }) {
               <Button onClick={() => addBlock("button")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Button</Button>
               <Button onClick={() => addBlock("spacer")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Spacer</Button>
               <Button onClick={() => addBlock("divider")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Divider</Button>
+              <Button onClick={() => addBlock("footer")} variant="outline" size="sm" className="w-full justify-start text-white bg-slate-700 border-slate-600 text-xs h-7">Footer</Button>
             </CardContent>
           </Card>
 
@@ -227,16 +257,45 @@ export default function EmailBuilder({ onSave, initialContent }) {
         <div className="w-56 flex flex-col gap-3 overflow-y-auto">
           <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
             <CardHeader className="pb-2">
+              <CardTitle className="text-white text-xs">Email Background</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div>
+                <Label className="text-white text-xs">Color</Label>
+                <div className="flex gap-2 items-center">
+                  <Input
+                    type="color"
+                    value={bgColor}
+                    onChange={(e) => setBgColor(e.target.value)}
+                    className="bg-slate-900 border-slate-600 h-8 cursor-pointer w-20"
+                  />
+                  <div style={{ backgroundColor: bgColor, width: "30px", height: "24px", borderRadius: "3px" }} />
+                </div>
+              </div>
+              <div>
+                <Label className="text-white text-xs">Image URL</Label>
+                <Input
+                  value={bgImage}
+                  onChange={(e) => setBgImage(e.target.value)}
+                  className="bg-slate-900 border-slate-600 text-white text-xs h-7"
+                  placeholder="https://example.com/bg.jpg"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-slate-800 border-slate-700 flex-shrink-0">
+            <CardHeader className="pb-2">
               <CardTitle className="text-white text-xs">Blocks ({blocks.length})</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-2 max-h-40 overflow-y-auto">
+            <CardContent className="space-y-1 max-h-48 overflow-y-auto">
               {blocks.length === 0 ? (
                 <p className="text-slate-400 text-xs text-center py-2">No blocks yet</p>
               ) : (
                 blocks.map((block, index) => (
-                  <div key={block.id} onClick={() => setSelectedBlockId(block.id)} className={`p-2 rounded border cursor-pointer text-xs transition-all ${selectedBlockId === block.id ? "border-cyan-500 bg-cyan-900 text-white" : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"}`}>
+                  <div key={block.id} draggable onDragStart={(e) => handleDragStart(e, block.id)} onDragOver={handleDragOver} onDrop={(e) => handleDropOnBlock(e, block.id)} onClick={() => setSelectedBlockId(block.id)} className={`p-2 rounded border cursor-move text-xs transition-all ${selectedBlockId === block.id ? "border-cyan-500 bg-cyan-900 text-white" : "border-slate-700 bg-slate-900 text-slate-300 hover:border-slate-600"} ${draggedBlockId === block.id ? "opacity-50" : ""}`}>
                     <div className="flex items-center justify-between">
-                      <span>{block.type === "text" && "📝"}{block.type === "image" && "🖼️"}{block.type === "button" && "🔘"}{block.type === "spacer" && "⬌"}{block.type === "hero" && "🎯"}{block.type === "divider" && "─"} {index + 1}</span>
+                      <span>{block.type === "text" && "📝"}{block.type === "image" && "🖼️"}{block.type === "button" && "🔘"}{block.type === "spacer" && "⬌"}{block.type === "hero" && "🎯"}{block.type === "divider" && "─"}{block.type === "footer" && "🔗"} {index + 1}</span>
                       <div className="flex gap-1">
                         <button onClick={(e) => { e.stopPropagation(); duplicateBlock(block.id); }} className="text-cyan-400 hover:text-cyan-300"><Copy className="w-3 h-3" /></button>
                         <button onClick={(e) => { e.stopPropagation(); deleteBlock(block.id); }} className="text-red-400 hover:text-red-300"><Trash2 className="w-3 h-3" /></button>
