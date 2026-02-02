@@ -6,26 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Truck, Shield, Plus, X, Info, Box } from "lucide-react";
+import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User } from "lucide-react";
 import ReviewList from "../components/shared/ReviewList";
 import RatingDisplay from "../components/shared/RatingDisplay";
 import { Label } from "@/components/ui/label";
 import Model3DViewer from "../components/shared/Model3DViewer";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import ProductCard from "../components/marketplace/ProductCard";
 
-const FILAMENT_INFO = {
-  'PLA': 'Biodegradable, easy to print, good for decorative items and prototypes',
-  'PETG': 'More durable than PLA, temperature and impact resistant, food-safe',
-  'ABS': 'Strong and heat-resistant, ideal for functional parts',
-  'TPU': 'Flexible and rubber-like, perfect for phone cases and grips'
-};
+
 
 const mmToInches = (mm) => {
   return (mm / 25.4).toFixed(2);
@@ -51,8 +40,10 @@ export default function ProductDetail() {
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [view3D, setView3D] = useState(false);
-  
+  const [current3DFileIndex, setCurrent3DFileIndex] = useState(0);
   const [multiColorSelections, setMultiColorSelections] = useState([]);
+  const [designer, setDesigner] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   const { toast } = useToast();
 
@@ -166,6 +157,23 @@ export default function ProductDetail() {
           review_count: reviewCount
         });
       }
+
+      // Load designer info
+      if (productData.designer_id) {
+        try {
+          const designerData = await base44.entities.User.get(productData.designer_id);
+          setDesigner(designerData);
+        } catch (error) {
+          console.error("Failed to load designer:", error);
+        }
+      }
+
+      // Load related products (same category)
+      const allProducts = await base44.entities.Product.list();
+      const related = allProducts
+        .filter(p => p.status === 'active' && p.category === productData.category && p.id !== productData.id)
+        .slice(0, 10);
+      setRelatedProducts(related);
 
     } catch (error) {
       console.error("Failed to load product:", error);
@@ -367,7 +375,7 @@ export default function ProductDetail() {
             )}
 
             {!view3D ? (
-              <>
+              <div className="space-y-4">
                 <div className="relative bg-white rounded-xl overflow-hidden shadow-lg mb-4" style={{ paddingBottom: '66.67%' }}>
                   {product.images && product.images.length > 0 ? (
                     <>
@@ -407,29 +415,80 @@ export default function ProductDetail() {
                     </Badge>
                   )}
                 </div>
-              </>
+                
+                {/* Thumbnail Grid */}
+                {product.images && product.images.length > 1 && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {product.images.map((img, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrentImageIndex(idx)}
+                        className={`relative rounded-lg overflow-hidden border-2 transition-all ${
+                          idx === currentImageIndex ? 'border-teal-500 ring-2 ring-teal-200' : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                        style={{ paddingBottom: '66.67%' }}
+                      >
+                        <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute top-0 left-0 w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
-              <div className="bg-white rounded-xl overflow-hidden shadow-lg mb-4">
-                <Model3DViewer fileUrl={product.print_files[0]} className="h-96" />
+              <div className="space-y-4">
+                <div className="bg-white rounded-xl overflow-hidden shadow-lg">
+                  <Model3DViewer fileUrl={product.print_files[current3DFileIndex]} className="h-96" />
+                </div>
+                
+                {/* 3D File Thumbnails */}
+                {product.print_files && product.print_files.length > 1 && (
+                  <div className="grid grid-cols-5 gap-2">
+                    {product.print_files.map((file, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setCurrent3DFileIndex(idx)}
+                        className={`relative rounded-lg overflow-hidden border-2 transition-all p-4 bg-white ${
+                          idx === current3DFileIndex ? 'border-teal-500 ring-2 ring-teal-200' : 'border-gray-200 hover:border-gray-300'
+                        }`}
+                      >
+                        <Box className="w-8 h-8 mx-auto text-gray-600" />
+                        <p className="text-xs text-center mt-2 text-gray-600">File {idx + 1}</p>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
-            
-            {/* Thumbnail Grid */}
-            {product.images && product.images.length > 1 && (
-              <div className="grid grid-cols-5 gap-2 mb-6">
-                {product.images.map((img, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => setCurrentImageIndex(idx)}
-                    className={`relative rounded-lg overflow-hidden border-2 transition-all ${
-                      idx === currentImageIndex ? 'border-teal-500 ring-2 ring-teal-200' : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                    style={{ paddingBottom: '66.67%' }}
+            {/* Designer Info */}
+            {designer && (
+              <Card className="mb-6">
+                <CardContent className="p-4">
+                  <p className="text-sm text-gray-600 mb-2">Designed by</p>
+                  <Link 
+                    to={`${createPageUrl("DesignerProfile")}?id=${designer.id}`}
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                   >
-                    <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute top-0 left-0 w-full h-full object-cover" />
-                  </button>
-                ))}
-              </div>
+                    {designer.profile_image ? (
+                      <img
+                        src={designer.profile_image}
+                        alt={designer.full_name}
+                        className="w-12 h-12 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
+                        <User className="w-6 h-6 text-gray-400" />
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold text-gray-900">{designer.full_name}</p>
+                      {designer.designer_name && (
+                        <p className="text-sm text-gray-600">@{designer.designer_name}</p>
+                      )}
+                    </div>
+                  </Link>
+                </CardContent>
+              </Card>
             )}
 
             {/* Description */}
@@ -438,15 +497,51 @@ export default function ProductDetail() {
               <p className="text-gray-700 leading-relaxed">{product.description}</p>
             </div>
 
-            {/* Reviews */}
+            {/* Reviews - Compact Carousel */}
             <div>
               <Card>
                 <CardContent className="p-6">
                   <h1 className="font-bold text-lg mb-4 text-gray-900">⭐ Reviews</h1>
-                  <div className="mb-8">
+                  <div className="mb-4">
                     <RatingDisplay reviews={reviews} />
                   </div>
-                  <ReviewList reviews={reviews} />
+                  <div className="overflow-x-auto">
+                    <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
+                      {reviews.length > 0 ? (
+                        reviews.map((review) => (
+                          <Card key={review.id} className="flex-shrink-0" style={{ width: '320px' }}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`w-4 h-4 ${
+                                        star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                              {review.title && (
+                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{review.title}</h4>
+                              )}
+                              {review.comment && (
+                                <p className="text-gray-700 text-sm mb-2 line-clamp-3">{review.comment}</p>
+                              )}
+                              <div className="text-xs text-gray-500">
+                                by {review.customer_name || 'Anonymous'}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 w-full">
+                          No reviews yet. Be the first to leave a review!
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </div>
@@ -493,49 +588,23 @@ export default function ProductDetail() {
             {/* Add to Cart Card */}
             <Card className="mb-6">
               <CardContent className="p-6 space-y-4">
-                <div className={`grid ${showMaterialSelector ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
-                  {showMaterialSelector && (
-                    <div>
-                      <div className="flex items-center gap-2 mb-2">
-                        <Label htmlFor="material">Material *</Label>
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Info className="w-4 h-4 text-gray-400 cursor-help" />
-                            </TooltipTrigger>
-                            <TooltipContent className="max-w-xs">
-                              <p className="text-sm">Choose the material for your print. Each has different properties.</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                      </div>
-                      <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
-                        <SelectTrigger id="material">
-                          <SelectValue placeholder="Select material" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {product.materials.map((material) => (
-                            <SelectItem key={material} value={material}>
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <div className="flex items-center gap-2">
-                                      {material}
-                                      <Info className="w-3 h-3 text-gray-400" />
-                                    </div>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-xs">
-                                    <p className="text-sm">{FILAMENT_INFO[material] || 'High-quality printing material'}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  )}
-                </div>
+                {showMaterialSelector && (
+                  <div>
+                    <Label htmlFor="material">Material *</Label>
+                    <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
+                      <SelectTrigger id="material">
+                        <SelectValue placeholder="Select material" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {product.materials.map((material) => (
+                          <SelectItem key={material} value={material}>
+                            {material}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
 
                 {!product.multi_color && (
                   <div>
@@ -641,6 +710,22 @@ export default function ProductDetail() {
             </Card>
           </div>
         </div>
+
+        {/* Related Products */}
+        {relatedProducts.length > 0 && (
+          <div className="mt-16">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Related Products</h2>
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+                {relatedProducts.map((relatedProduct) => (
+                  <div key={relatedProduct.id} className="flex-shrink-0" style={{ width: '280px' }}>
+                    <ProductCard product={relatedProduct} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

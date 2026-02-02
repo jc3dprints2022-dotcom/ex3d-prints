@@ -131,9 +131,9 @@ export default function DesignerHowItWorks() {
 
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-6">Ready to Start Earning?</h2>
-          <Link to={createPageUrl("DesignerSignup")}>
+          <Link to={createPageUrl("DesignerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
             <Button size="lg" className="bg-red-600 hover:bg-red-700 text-lg px-8 py-6">
-              Apply as a Designer
+              Sign Up for Free
             </Button>
           </Link>
         </div>
