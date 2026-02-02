@@ -26,7 +26,17 @@ export default function Checkout() {
     return saved === 'true';
   });
   const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [campusLocation, setCampusLocation] = useState("");
+  const [shippingAddress, setShippingAddress] = useState({
+    name: "",
+    phone: "",
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+    campus: ""
+  });
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState("");
   const { toast } = useToast();
 
   // Persist priority state to localStorage
@@ -49,10 +59,28 @@ export default function Checkout() {
         return;
       }
       setUser(currentUser);
-      // Pre-fill campus location if user has one
-      if (currentUser.campus_location) {
-        setCampusLocation(currentUser.campus_location);
+      
+      // Load saved addresses
+      const addresses = currentUser.saved_addresses || [];
+      setSavedAddresses(addresses);
+      
+      // Pre-fill with default address or user info
+      if (addresses.length > 0) {
+        const defaultAddr = addresses.find(addr => addr.is_default) || addresses[0];
+        setShippingAddress(defaultAddr);
+        setSelectedAddressId(defaultAddr.id || "");
+      } else {
+        setShippingAddress({
+          name: currentUser.full_name || "",
+          phone: currentUser.phone || "",
+          street: currentUser.address?.street || "",
+          city: currentUser.address?.city || "",
+          state: currentUser.address?.state || "",
+          zip: currentUser.address?.zip || "",
+          campus: currentUser.campus_location || ""
+        });
       }
+      
       await loadCart(currentUser.id);
     } catch (error) {
       console.error("Auth error:", error);
@@ -153,8 +181,13 @@ export default function Checkout() {
       return;
     }
 
-    if (!campusLocation) {
-      toast({ title: "Campus location required", description: "Please select your campus location for pickup.", variant: "destructive" });
+    if (!shippingAddress.campus) {
+      toast({ title: "Campus location required", description: "Please select your campus in the delivery address.", variant: "destructive" });
+      return;
+    }
+    
+    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
+      toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
       return;
     }
 
@@ -209,7 +242,8 @@ export default function Checkout() {
         couponCode: couponCode.trim() || undefined,
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: isPriority,
-        campusLocation: campusLocation
+        campusLocation: shippingAddress.campus,
+        shippingAddress: shippingAddress
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -314,18 +348,123 @@ export default function Checkout() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Building className="w-5 h-5" />
-                  Campus Selection
+                  <MapPin className="w-5 h-5" />
+                  Delivery Address
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {/* Campus Location Selection */}
-                <div className="mb-4 p-4 border rounded-lg bg-blue-50 border-blue-200">
+              <CardContent className="space-y-4">
+                {savedAddresses.length > 0 && (
+                  <div>
+                    <Label className="mb-2">Saved Addresses</Label>
+                    <Select 
+                      value={selectedAddressId} 
+                      onValueChange={(value) => {
+                        if (value === "new") {
+                          setSelectedAddressId("");
+                          setShippingAddress({
+                            name: user?.full_name || "",
+                            phone: user?.phone || "",
+                            street: "",
+                            city: "",
+                            state: "",
+                            zip: "",
+                            campus: ""
+                          });
+                        } else {
+                          const addr = savedAddresses.find(a => a.id === value);
+                          if (addr) {
+                            setShippingAddress(addr);
+                            setSelectedAddressId(value);
+                          }
+                        }
+                      }}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select an address or enter new" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="new">+ Enter New Address</SelectItem>
+                        {savedAddresses.map((addr) => (
+                          <SelectItem key={addr.id} value={addr.id}>
+                            {addr.name} - {addr.street}, {addr.city}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="name">Full Name *</Label>
+                    <Input
+                      id="name"
+                      value={shippingAddress.name}
+                      onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone">Phone *</Label>
+                    <Input
+                      id="phone"
+                      value={shippingAddress.phone}
+                      onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor="street">Street Address *</Label>
+                  <Input
+                    id="street"
+                    value={shippingAddress.street}
+                    onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="city">City *</Label>
+                    <Input
+                      id="city"
+                      value={shippingAddress.city}
+                      onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="state">State *</Label>
+                    <Input
+                      id="state"
+                      value={shippingAddress.state}
+                      onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="zip">ZIP *</Label>
+                    <Input
+                      id="zip"
+                      value={shippingAddress.zip}
+                      onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="p-4 border rounded-lg bg-blue-50 border-blue-200">
                   <Label className="flex items-center gap-2 mb-2 font-medium text-blue-900">
-                    <MapPin className="w-4 h-4" />
+                    <Building className="w-4 h-4" />
                     Campus Location *
                   </Label>
-                  <Select value={campusLocation} onValueChange={setCampusLocation} required>
+                  <Select 
+                    value={shippingAddress.campus} 
+                    onValueChange={(value) => setShippingAddress({...shippingAddress, campus: value})} 
+                    required
+                  >
                     <SelectTrigger className="bg-white border-blue-300">
                       <SelectValue placeholder="Select your campus" />
                     </SelectTrigger>
@@ -342,6 +481,34 @@ export default function Checkout() {
                   </p>
                 </div>
 
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="saveAddress"
+                    onChange={async (e) => {
+                      if (e.target.checked && user) {
+                        try {
+                          const newAddress = {
+                            ...shippingAddress,
+                            id: `addr_${Date.now()}`,
+                            is_default: savedAddresses.length === 0
+                          };
+                          const updatedAddresses = [...savedAddresses, newAddress];
+                          await base44.auth.updateMe({ saved_addresses: updatedAddresses });
+                          setSavedAddresses(updatedAddresses);
+                          toast({ title: "Address saved!" });
+                        } catch (error) {
+                          toast({ title: "Failed to save address", variant: "destructive" });
+                        }
+                      }
+                    }}
+                    className="w-4 h-4 text-teal-600 rounded"
+                  />
+                  <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                    Save this address for future orders
+                  </Label>
+                </div>
+
                 {/* Priority Option */}
                 <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
                   <div className="flex items-center space-x-3">
@@ -355,11 +522,19 @@ export default function Checkout() {
                     <Label htmlFor="priority" className="cursor-pointer flex-1">
                       <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
                       <p className="text-sm text-orange-700">
-                        Your order will be completed by the next day
+                        Est. delivery: Next day
                       </p>
                     </Label>
                   </div>
                 </div>
+
+                {!isPriority && (
+                  <div className="p-3 bg-gray-50 border rounded-lg">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
