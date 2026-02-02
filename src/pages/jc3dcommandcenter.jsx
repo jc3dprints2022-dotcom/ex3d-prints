@@ -77,8 +77,7 @@ export default function JC3DCommandCenter() {
     { value: "exp", label: "🏆 EXP Management" },
     { value: "email", label: "📧 Email Management" },
     { value: "makers", label: "🔧 Maker Tools" },
-    { value: "designer-products", label: "🖼️ Designer Products Review" },
-    { value: "custom-requests", label: "🎯 Custom Print Requests" },
+    { value: "items", label: "📋 Item Management" },
     { value: "settings", label: "⚙️ System Settings" }
   ];
 
@@ -98,10 +97,8 @@ export default function JC3DCommandCenter() {
         return <EmailManagementSection />;
       case "makers":
         return <MakerToolsSection />;
-      case "designer-products":
-        return <DesignerProductsSection />;
-      case "custom-requests":
-        return <CustomRequestManagement />;
+      case "items":
+        return <ItemManagementSection />;
       case "settings":
         return <SystemSettingsSection />;
       default:
