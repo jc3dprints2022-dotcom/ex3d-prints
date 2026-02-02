@@ -329,20 +329,6 @@ export default function CustomPrintRequest() {
                 </div>
               </div>
 
-              {/* Class Project Checkbox */}
-              <div className="flex items-center space-x-2 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <input
-                  type="checkbox"
-                  id="is_class_project"
-                  checked={formData.is_class_project}
-                  onChange={(e) => handleInputChange('is_class_project', e.target.checked)}
-                  className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                />
-                <Label htmlFor="is_class_project" className="cursor-pointer text-blue-900 font-medium">
-                  This is for a class project or capstone (Get 25% off!)
-                </Label>
-              </div>
-
               <div className="flex justify-end pt-6">
                 <Button type="submit" size="lg" disabled={submitting}>
                   {submitting ? (
