@@ -157,7 +157,7 @@ export default function Terms() {
               <div className="bg-orange-50 p-6 rounded-lg">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">Makers</h3>
                 <ul className="list-disc pl-6 space-y-2 text-gray-700">
-                  <li>EX3D charges a <strong>30% platform fee</strong> on the order subtotal (excluding taxes)</li>
+                  <li>EX3D charges a <strong>10% platform fee</strong> on the order subtotal (excluding taxes)</li>
                   <li>Makers may subscribe for <strong>$10/month</strong> to reduce the platform fee to <strong>6%</strong></li>
                   <li>Payouts are initiated within 7 days after pickup is confirmed and may be delayed for fraud or quality investigations</li>
                 </ul>
