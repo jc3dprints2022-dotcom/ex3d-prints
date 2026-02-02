@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SecurityDRMSection from "./SecurityDRMSection";
 import AnnouncementsSection from "./AnnouncementsSection";
+import UserManagementSection from "./UserManagementSection";
 
 export default function SystemSettingsSection() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -56,9 +57,12 @@ export default function SystemSettingsSection() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="general" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-slate-900 border-slate-700">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-900 border-slate-700">
           <TabsTrigger value="general" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
             General Settings
+          </TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            User Management
           </TabsTrigger>
           <TabsTrigger value="security" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
             Security & Logs
@@ -160,6 +164,10 @@ export default function SystemSettingsSection() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserManagementSection />
         </TabsContent>
 
         <TabsContent value="security">

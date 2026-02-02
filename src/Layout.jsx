@@ -385,7 +385,7 @@ export default function Layout({ children, currentPageName }) {
               <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-12 w-auto"/>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden lg:flex items-center space-x-8">
               <Link
                 to={createPageUrl("Home")}
                 onClick={scrollToTop}
@@ -596,7 +596,7 @@ export default function Layout({ children, currentPageName }) {
               <Button
                 variant="ghost"
                 size="icon"
-                className="md:hidden"
+                className="lg:hidden"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -605,7 +605,7 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           {mobileMenuOpen && (
-            <div className="md:hidden border-t bg-white py-4">
+            <div className="lg:hidden border-t bg-white py-4">
               <Link
                 to={createPageUrl("Home")}
                 className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"

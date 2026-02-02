@@ -71,7 +71,6 @@ export default function JC3DCommandCenter() {
 
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
-    { value: "users", label: "👥 User Management" },
     { value: "models", label: "🎨 Model Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
@@ -87,8 +86,6 @@ export default function JC3DCommandCenter() {
     switch (activeSection) {
       case "dashboard":
         return <DashboardSection />;
-      case "users":
-        return <UserManagementSection />;
       case "models":
         return <ModelManagementSection />;
       case "orders":
