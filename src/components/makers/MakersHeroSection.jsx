@@ -38,13 +38,13 @@ export default function MakersHeroSection({ paidToMakers, loading }) {
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <Printer className="w-8 h-8 text-orange-600 mb-2" />
-                <p className="text-2xl font-bold text-slate-900">Skill</p>
-                <p className="text-sm text-slate-600">Receive skill-matched orders</p>
+                <p className="text-2xl font-bold text-slate-900">Matched Orders</p>
+                <p className="text-sm text-slate-600">Suited to You</p>
               </div>
             </div>
 
             <Button size="lg" className="bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 h-14 px-8">
-              <Link to={createPageUrl("MakerSignup")}>
+              <Link to={createPageUrl("MakerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                 Start Earning Today
               </Link>
             </Button>
