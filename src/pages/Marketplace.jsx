@@ -12,19 +12,16 @@ import ProductCard from "../components/marketplace/ProductCard";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
-  { value: "plane_models", label: "Plane Models" },
   { value: "rocket_models", label: "Rocket Models" },
   { value: "halloween", label: "Halloween" },
-  { value: "embry_riddle", label: "Embry-Riddle" },
   { value: "dorm_essentials", label: "Dorm Essentials"},
   { value: "desk", label: "Desk"},
   { value: "art", label: "Art"},
-  { value: "fashion", label: "Fashion"},
   { value: "gadgets", label: "Gadgets"},
   { value: "toys_and_games", label: "Toys & Games"},
   { value: "thanksgiving", label: "Thanksgiving"},
   { value: "christmas", label: "Christmas"},
-  { value: "holidays", label: "Holidays"},
+  { value: "valentines_day", label: "Valentine's Day"},
   { value: "misc", label: "Misc" }
 ];
 const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
@@ -245,10 +242,10 @@ export default function Marketplace() {
                 className="pl-10 h-10"
               />
             </div>
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="default" size="sm" className="bg-red-600 hover:bg-red-700">
               <Link to={createPageUrl("CustomPrintRequest")}>
                 <Upload className="w-4 h-4 mr-2" />
-                Upload
+                Upload Custom Files
               </Link>
             </Button>
           </div>
