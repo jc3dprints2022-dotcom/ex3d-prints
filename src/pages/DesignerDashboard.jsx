@@ -388,16 +388,15 @@ export default function DesignerDashboard() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">📐 File Naming for "Shown Colors" Mode</h3>
                   <p className="text-sm text-gray-700 mb-3">
-                    When you enable "Use Shown Colors" for a design (perfect for multi-part models like rockets and spacecraft), 
-                    you can specify exactly which color each file should be printed in. Here's how to make it easy for makers:
+                    When you enable "Use Shown Colors" (ideal for multi-part models like rockets or spacecraft), you can assign specific colors to each file. Proper naming helps makers know exactly how to print your design.
                   </p>
                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                     <p className="text-sm font-semibold mb-2">File Naming Best Practices:</p>
                     <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
-                      <li><strong>Include color in filename:</strong> "Starship_Booster_White.stl" or "SLS_Core_Orange.stl"</li>
-                      <li><strong>Indicate quantity if multiple:</strong> "Wing_Red_x2.stl" means print 2 copies in red</li>
-                      <li><strong>Be descriptive:</strong> "Rocket_Fins_Black_x4.stl" tells makers exactly what to do</li>
-                      <li><strong>Number parts:</strong> "Part1_Body_White.stl", "Part2_Nose_Red.stl", etc.</li>
+                      <li><strong>Include color in the filename:</strong> Starship_Booster_White.stl, SLS_Core_Orange.stl</li>
+                      <li><strong>Indicate quantity if printing multiple:</strong> Wing_Red_x2.stl → prints 2 copies in red</li>
+                      <li><strong>Be descriptive:</strong> Rocket_Fins_Black_x4.stl → clearly communicates instructions</li>
+                      <li><strong>Number parts:</strong> Part1_Body_White.stl, Part2_Nose_Red.stl, etc.</li>
                     </ul>
                   </div>
                 </div>
@@ -405,11 +404,11 @@ export default function DesignerDashboard() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">🎨 When to Use "Shown Colors"</h3>
                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <p className="text-sm text-gray-700 mb-2"><strong>Perfect for:</strong></p>
+                    <p className="text-sm text-gray-700 mb-2"><strong>This mode is perfect for:</strong></p>
                     <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
-                      <li>Multi-part models with specific color schemes (SpaceX Starship, NASA SLS, etc.)</li>
-                      <li>Designs where colors are essential to the final look</li>
-                      <li>Models that need specific color combinations to look accurate</li>
+                      <li>Multi-part models with specific color schemes (e.g., SpaceX Starship, NASA SLS)</li>
+                      <li>Designs where color is essential to the final look</li>
+                      <li>Models that require precise color combinations for accuracy</li>
                     </ul>
                   </div>
                 </div>
@@ -417,14 +416,15 @@ export default function DesignerDashboard() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">✅ Design Upload Checklist</h3>
                   <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <p className="text-sm font-semibold mb-2">Before uploading, make sure your design meets these standards:</p>
                     <ul className="text-sm text-gray-700 space-y-2">
                       <li>✓ Clear, high-quality images showing the finished print</li>
                       <li>✓ Accurate print time and weight measurements</li>
                       <li>✓ Correct dimensions (L × W × H in mm)</li>
-                      <li>✓ All 3D files uploaded (.stl, .obj, or .3mf)</li>
-                      <li>✓ Descriptive name and detailed description</li>
+                      <li>✓ All 3D files included (.stl, .obj, or .3mf)</li>
+                      <li>✓ Descriptive filenames and detailed descriptions</li>
                       <li>✓ Appropriate category selected</li>
-                      <li>✓ License verification (must allow commercial use)</li>
+                      <li>✓ License verified (must allow commercial use)</li>
                     </ul>
                   </div>
                 </div>
@@ -432,25 +432,24 @@ export default function DesignerDashboard() {
                 <div>
                   <h3 className="font-semibold text-lg mb-2">🚀 Boost Your Listings</h3>
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-                    <p className="text-sm font-semibold text-purple-900 mb-2">Get More Visibility for Your Designs</p>
-                    <p className="text-sm text-gray-700 mb-3">
-                      Boost your listings to get top placement in the marketplace and priority in search results. 
-                      Boosted listings are displayed first and get significantly more views.
-                    </p>
+                    <p className="text-sm font-semibold text-purple-900 mb-2">Increase visibility for your designs by boosting them in the marketplace. Boosted listings appear at the top and get more views.</p>
                     <div className="bg-white p-3 rounded-lg border border-purple-200 mb-3">
                       <p className="text-sm font-semibold mb-2">Pricing:</p>
                       <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
-                        <li>1 Week Boost: $5</li>
-                        <li>2 Weeks Boost: $10</li>
-                        <li>3 Weeks Boost: $15</li>
-                        <li>4 Weeks Boost: $20</li>
+                        <li>1 Week: $5</li>
+                        <li>2 Weeks: $10</li>
+                        <li>3 Weeks: $15</li>
+                        <li>4 Weeks: $20</li>
                       </ul>
                     </div>
-                    <p className="text-sm text-gray-700">
-                      <strong>How it works:</strong> When uploading a new design, simply check the "Boost this listing" option 
-                      and select your duration. After your design is approved by our team, you'll be able to pay for the boost 
-                      directly from your dashboard. Once paid, your listing will be boosted immediately for the selected duration.
+                    <p className="text-sm text-gray-700 mb-2">
+                      <strong>How it works:</strong>
                     </p>
+                    <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
+                      <li>Check "Boost this listing" when uploading your design</li>
+                      <li>After approval, pay for your boost directly from your dashboard</li>
+                      <li>Your listing is boosted immediately for the selected duration</li>
+                    </ul>
                   </div>
                 </div>
 
@@ -458,13 +457,13 @@ export default function DesignerDashboard() {
                   <h3 className="font-semibold text-lg mb-2">💡 Tips for Success</h3>
                   <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
                     <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
-                      <li>Test print your designs before uploading to ensure quality</li>
-                      <li>Use clear, well-lit photos that show the print from multiple angles</li>
-                      <li>Write detailed descriptions explaining assembly if needed</li>
-                      <li>Select all compatible materials and colors to increase sales</li>
-                      <li>Tag your designs appropriately for better discoverability</li>
+                      <li>Test print your designs to ensure quality</li>
+                      <li>Use clear, well-lit photos from multiple angles</li>
+                      <li>Write detailed descriptions, including assembly instructions if needed</li>
+                      <li>Select all compatible materials and colors</li>
+                      <li>Tag your designs for better discoverability</li>
                       <li>Respond to feedback and update designs based on user reviews</li>
-                      <li>Consider boosting your best-performing designs to maximize visibility</li>
+                      <li>Boost your best-performing designs to maximize visibility</li>
                     </ul>
                   </div>
                 </div>
