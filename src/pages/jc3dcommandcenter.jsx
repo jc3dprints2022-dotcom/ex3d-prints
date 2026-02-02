@@ -70,13 +70,13 @@ export default function JC3DCommandCenter() {
 
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
+    { value: "items", label: "📋 Item Management" },
     { value: "models", label: "🎨 Model Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
     { value: "exp", label: "🏆 EXP Management" },
     { value: "email", label: "📧 Email Management" },
     { value: "makers", label: "🔧 Maker Tools" },
-    { value: "items", label: "📋 Item Management" },
     { value: "settings", label: "⚙️ System Settings" }
   ];
 
