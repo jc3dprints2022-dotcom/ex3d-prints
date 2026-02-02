@@ -771,16 +771,30 @@ export default function ExpRewardsSection() {
                 />
               </div>
 
-              <div>
-                <Label className="text-white">Stock Quantity (optional)</Label>
-                <Input
-                  type="number"
-                  value={formData.stock_quantity}
-                  onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
-                  placeholder="Leave empty for unlimited"
-                  className="bg-slate-900 border-slate-700 text-white"
-                />
-              </div>
+                <div>
+                  <Label className="text-white">Stock Quantity (optional)</Label>
+                  <Input
+                    type="number"
+                    value={formData.stock_quantity}
+                    onChange={(e) => setFormData(prev => ({ ...prev, stock_quantity: e.target.value }))}
+                    placeholder="Leave empty for unlimited"
+                    className="bg-slate-900 border-slate-700 text-white"
+                  />
+                </div>
+
+                {formData.category === 'boost' && (
+                  <div>
+                    <Label className="text-white">Boost Duration (days)</Label>
+                    <Input
+                      type="number"
+                      value={formData.boost_duration_days || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, boost_duration_days: e.target.value }))}
+                      placeholder="e.g., 7"
+                      className="bg-slate-900 border-slate-700 text-white"
+                    />
+                    <p className="text-xs text-slate-400 mt-1">How many days the boost will last</p>
+                  </div>
+                )}
             </div>
 
             <div>

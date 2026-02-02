@@ -170,8 +170,8 @@ export default function EmailBuilder({ onSave, initialContent }) {
           .footer-block { background: #000000; color: #ffffff; padding: 20px; text-align: center; font-size: 12px; margin: 0; }
         </style>
       </head>
-      <body style="margin: 0; padding: 0;">
-        <div class="email-container">
+      <body style="margin: 0; padding: 0; ${bgStyle}">
+        <div class="email-container" style="margin: 0 auto; max-width: 600px;">
           ${blocks.map((block) => {
             switch (block.type) {
               case "text":
