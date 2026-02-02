@@ -253,7 +253,7 @@ export default function Terms() {
                 <li>Surface finish may show layer lines or support marks</li>
               </ul>
               <p className="text-sm text-gray-600 mt-2 italic">
-                See Appendix E (Quality Specs) in our Privacy Policy for detailed specifications
+                See Appendix E (Quality Specs) for suggested initial specs
               </p>
             </div>
             <ul className="list-disc pl-6 space-y-2 text-gray-700">
