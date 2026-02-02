@@ -426,45 +426,14 @@ export default function ConsumerDashboard() {
 
         <AnnouncementBanner userRole="consumer" userId={user?.id} />
 
-        {pendingApplications && (
-          <Alert className="mb-6 border-blue-200 bg-blue-50">
-            <Clock className="h-4 w-4 text-blue-600" />
-            <AlertDescription className="text-blue-900">
-              <strong>Application Status:</strong>
-              {makerApplication?.status === 'pending' && <span className="ml-2">Your Maker application is under review.</span>}
-              {designerApplication?.status === 'pending' && <span className="ml-2">Your Designer application is under review.</span>}
-            </AlertDescription>
-          </Alert>
-        )}
 
-        {(makerApplication?.status === 'approved' || designerApplication?.status === 'approved') && (
-          <Alert className="mb-6 border-green-200 bg-green-50">
-            <Check className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-900">
-              <strong>Congratulations! Your maker status has been approved. Access your Maker Dashboard under the For Makers tab.</strong>
-              {makerApplication?.status === 'approved' && !user.maker_id && <span className="ml-2">Your Maker application has been approved! Complete your subscription to access your Maker Dashboard.</span>}
-              {designerApplication?.status === 'approved' && !user.designer_id && <span className="ml-2">Your Designer application has been approved! Complete your subscription to access your Designer Dashboard.</span>}
-            </AlertDescription>
-          </Alert>
-        )}
-
-        {(makerApplication?.status === 'rejected' || designerApplication?.status === 'rejected') && (
-          <Alert className="mb-6 border-red-200 bg-red-50">
-            <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-900">
-              <strong>Application Update:</strong>
-              {makerApplication?.status === 'rejected' && <span className="ml-2">Your Maker application was not approved. Check your email for details.</span>}
-              {designerApplication?.status === 'rejected' && <span className="ml-2">Your Designer application was not approved. Check your email for details.</span>}
-            </AlertDescription>
-          </Alert>
-        )}
 
         <Tabs defaultValue="orders" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="orders"><Package className="w-4 h-4 mr-2"/>Orders</TabsTrigger>
-            <TabsTrigger value="custom-requests"><FileText className="w-4 h-4 mr-2"/>Custom Quotes ({customRequests.filter(r => r.status === 'quoted').length})</TabsTrigger>
-            <TabsTrigger value="exp"><Star className="w-4 h-4 mr-2"/>Redeem EXP</TabsTrigger>
-            <TabsTrigger value="referral"><Users className="w-4 h-4 mr-2"/>Referrals</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+            <TabsTrigger value="orders"><Package className="w-4 h-4 mr-2 sm:mr-2"/>Orders</TabsTrigger>
+            <TabsTrigger value="custom-requests"><FileText className="w-4 h-4 mr-2 sm:mr-2"/>Quotes {customRequests.filter(r => r.status === 'quoted').length > 0 && `(${customRequests.filter(r => r.status === 'quoted').length})`}</TabsTrigger>
+            <TabsTrigger value="exp-referral"><Star className="w-4 h-4 mr-2 sm:mr-2"/>EXP & Referrals</TabsTrigger>
+            <TabsTrigger value="recently-viewed"><Package className="w-4 h-4 mr-2 sm:mr-2"/>Recently Viewed</TabsTrigger>
           </TabsList>
 
           <TabsContent value="orders" className="mt-6">
@@ -841,33 +810,46 @@ export default function ConsumerDashboard() {
             </Card>
           </TabsContent>
           
-          <TabsContent value="exp" className="mt-6">
-            <ExpRedeemTab user={user} onUpdate={async () => {
-              const currentUser = await base44.auth.me();
-              setUser(currentUser);
-            }} />
+          <TabsContent value="exp-referral" className="mt-6">
+            <Tabs defaultValue="exp" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="exp">Redeem EXP</TabsTrigger>
+                <TabsTrigger value="referrals">Referrals</TabsTrigger>
+              </TabsList>
+              <TabsContent value="exp">
+                <ExpRedeemTab user={user} onUpdate={async () => {
+                  const currentUser = await base44.auth.me();
+                  setUser(currentUser);
+                }} />
+              </TabsContent>
+              <TabsContent value="referrals">
+                <ReferralTab user={user} onUpdate={checkAuthAndLoad} />
+              </TabsContent>
+            </Tabs>
           </TabsContent>
 
-          <TabsContent value="referral" className="mt-6">
-            <ReferralTab user={user} onUpdate={checkAuthAndLoad} />
+          <TabsContent value="recently-viewed" className="mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Recently Viewed Products</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {recentlyViewedProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-500">No recently viewed products</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {recentlyViewedProducts.map(product => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
-
-        {/* Recently Viewed Section */}
-        {recentlyViewedProducts.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Recently Viewed</h2>
-            <div className="relative">
-              <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                {recentlyViewedProducts.map(product => (
-                  <div key={product.id} className="flex-shrink-0" style={{ width: '280px' }}>
-                    <ProductCard product={product} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
 
         {/* Recommended Section */}
         {recommendedProducts.length > 0 && (

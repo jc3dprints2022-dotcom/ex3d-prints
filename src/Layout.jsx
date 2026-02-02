@@ -355,14 +355,14 @@ export default function Layout({ children, currentPageName }) {
       dashboards.push({ name: 'Maker Dashboard', url: createPageUrl("MakerDashboard") });
     }
 
+    // Show designer dashboard if user is a designer
+    if (user.designer_id && user.business_roles?.includes('designer')) {
+      dashboards.push({ name: 'Designer Dashboard', url: createPageUrl("DesignerDashboard") });
+    }
+
     // Show campus management center if user is a campus manager
     if (user.business_roles?.includes('campus_manager') && user.managed_campus) {
       dashboards.push({ name: 'Campus Management', url: createPageUrl("CampusManagementCenter") });
-    }
-
-    // Show admin command center if user is admin
-    if (user.role === 'admin') {
-      dashboards.push({ name: 'Admin Command Center', url: createPageUrl("jc3dcommandcenter") });
     }
 
     return dashboards;
