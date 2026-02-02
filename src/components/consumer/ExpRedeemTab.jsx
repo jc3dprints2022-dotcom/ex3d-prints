@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Trophy, Gift, Copy, Check, Loader2, Sparkles } from "lucide-react";
+import { Trophy, Gift, Copy, Check, Loader2, Sparkles, ArrowRight } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Dialog,
@@ -33,11 +33,29 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
+  const [rewards, setRewards] = useState([]);
+  const [loadingRewards, setLoadingRewards] = useState(false);
+
   useEffect(() => {
     if (user?.id) {
       loadTransactions();
+      loadRewards();
     }
   }, [user]);
+
+  const loadRewards = async () => {
+    setLoadingRewards(true);
+    try {
+      const expRewards = await base44.entities.ExpReward.filter({
+        reward_type: "consumer",
+        is_active: true
+      });
+      setRewards(expRewards);
+    } catch (error) {
+      console.error('Failed to load rewards:', error);
+    }
+    setLoadingRewards(false);
+  };
 
   const loadTransactions = async () => {
     if (!user?.id) {
@@ -266,6 +284,52 @@ export default function ExpRedeemTab({ user, onUpdate }) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Rewards Section */}
+      {rewards.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-teal-600" />
+              Available Rewards
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingRewards ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+              </div>
+            ) : (
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rewards.map(reward => {
+                  const canRedeem = (user?.exp_points || 0) >= reward.exp_cost;
+                  return (
+                    <Card key={reward.id} className="overflow-hidden">
+                      {reward.image_url && (
+                        <div className="aspect-square bg-gray-100 overflow-hidden">
+                          <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-sm">{reward.name}</h3>
+                          <p className="text-xs text-gray-600">{reward.description}</p>
+                        </div>
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {reward.exp_cost} EXP
+                        </Badge>
+                        <Button disabled={!canRedeem} className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-7">
+                          {canRedeem ? <>Redeem <ArrowRight className="w-3 h-3 ml-1" /></> : `Need ${reward.exp_cost - (user?.exp_points || 0)} more`}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Transaction History */}
       <Card>
