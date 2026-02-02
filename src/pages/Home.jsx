@@ -11,6 +11,7 @@ export default function Home() {
   const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     loadUser();
@@ -30,6 +31,7 @@ export default function Home() {
     setLoading(true);
     try {
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
+      setTotalProducts(allProducts.length);
       const featured = allProducts
         .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
         .slice(0, 12);
@@ -45,7 +47,7 @@ export default function Home() {
     <div className="min-h-screen">
       <AnnouncementBanner />
       <HeroSection />
-      <StatsSection />
+      <StatsSection totalProducts={totalProducts} />
       <FeaturedProducts products={products} loading={loading} />
       <HowItWorksSection />
       <TestimonialsSection />

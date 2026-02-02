@@ -236,7 +236,7 @@ export default function ProductCard({ product }) {
               className="w-full bg-teal-600 hover:bg-teal-700 text-lg font-semibold py-6"
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
-              {addingToCart ? 'Adding...' : `Add to Cart - $${product.price?.toFixed(2)}`}
+              {addingToCart ? 'Adding...' : `$${product.price?.toFixed(2)}`}
             </Button>
           </div>
         </CardContent>

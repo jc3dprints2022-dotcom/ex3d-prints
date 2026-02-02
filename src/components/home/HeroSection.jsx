@@ -152,7 +152,7 @@ export default function HeroSection() {
                   alt="Featured product"
                   className="w-full h-full object-cover"
                   style={{
-                    filter: "brightness(0.4)",
+                    filter: "brightness(0.5)",
                     transform: "translateZ(0)",
                     backfaceVisibility: "hidden",
                   }}

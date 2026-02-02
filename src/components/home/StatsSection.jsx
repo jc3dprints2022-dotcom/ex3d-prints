@@ -2,11 +2,14 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Package, Clock, Users, Star } from "lucide-react";
 
-export default function StatsSection() {
-  return null;
-  
-  {/*
+export default function StatsSection({ totalProducts }) {
   const stats = [
+    {
+      icon: Package,
+      value: totalProducts > 0 ? `${totalProducts}+` : "Loading...",
+      label: "Designs Available",
+      color: "text-blue-600"
+    },
     {
       icon: Package,
       value: "10,000+",
