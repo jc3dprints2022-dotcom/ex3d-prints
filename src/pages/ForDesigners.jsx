@@ -54,7 +54,7 @@ export default function ForDesigners() {
               
               <p className="text-xl text-slate-600 mb-8 leading-relaxed">
                 Join our designer community earning royalties from their 3D CAD models. 
-                No marketing needed - we bring the customers to you.
+                No upfront work needed, we bring the customers to you.
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
@@ -167,7 +167,7 @@ export default function ForDesigners() {
               </Link>
             </Button>
             <Button asChild variant="outline" size="lg" className="text-white border-white hover:bg-slate-300">
-              <Link to={createPageUrl("HowItWorks")}>
+              <Link to={createPageUrl("DesignerHowItWorks")}>
                 <span className="text-orange-500">Learn How It Works</span>
                 <ArrowRight className="w-5 h-5 ml-2 text-red-500" />
               </Link>
@@ -178,4 +178,3 @@ export default function ForDesigners() {
     </div>
   );
 }
-

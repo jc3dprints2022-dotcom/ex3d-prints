@@ -28,7 +28,7 @@ export default function DesignerHowItWorks() {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-3">1. Upload Your Designs</h2>
                   <p className="text-gray-600 mb-4">
-                    After approval, upload your 3D model files (STL, OBJ) to our platform. Add descriptions, images, and set your pricing.
+                    After approval, upload your 3D model files for free to our platform. Add descriptions, images, and set your pricing.
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
                     <li>Supported formats: STL, OBJ, and more</li>
