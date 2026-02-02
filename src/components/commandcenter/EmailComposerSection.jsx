@@ -3,10 +3,9 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Send, Upload, Bold, Italic, Link as LinkIcon, Image as ImageIcon, Loader2, Users, Filter, LayoutGrid } from "lucide-react";
+import { Send, Loader2, Users, Filter } from "lucide-react";
 import EmailBuilder from "../email/EmailBuilder";
 import {
   Select,
@@ -33,13 +32,6 @@ export default function EmailComposerSection() {
   const [audienceFilter, setAudienceFilter] = useState("all");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [uploadedImages, setUploadedImages] = useState([]);
-  const [showImageDialog, setShowImageDialog] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
-  const [scheduleDate, setScheduleDate] = useState("");
-  const [scheduleTime, setScheduleTime] = useState("");
-  const [useBuilder, setUseBuilder] = useState(false);
   const [emailContent, setEmailContent] = useState(null);
   const { toast } = useToast();
 
@@ -123,141 +115,14 @@ export default function EmailComposerSection() {
     setFilteredUsers(filtered);
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      toast({ title: "Please select an image file", variant: "destructive" });
-      return;
-    }
 
-    setUploading(true);
-    try {
-      const { data } = await base44.functions.invoke('uploadFile', { file });
-      if (data?.file_url) {
-        setUploadedImages(prev => [...prev, data.file_url]);
-        toast({ title: "Image uploaded successfully!" });
-      }
-    } catch (error) {
-      console.error("Upload error:", error);
-      toast({ title: "Failed to upload image", variant: "destructive" });
-    }
-    setUploading(false);
-  };
-
-  const insertImage = () => {
-    if (imageUrl) {
-      const imgTag = `\n<img src="${imageUrl}" alt="Image" style="max-width: 100%; height: auto;" />\n`;
-      setMessage(prev => prev + imgTag);
-      setImageUrl("");
-      setShowImageDialog(false);
-    }
-  };
-
-  const insertUploadedImage = (url) => {
-    const imgTag = `\n<img src="${url}" alt="Uploaded Image" style="max-width: 100%; height: auto;" />\n`;
-    setMessage(prev => prev + imgTag);
-  };
-
-  const formatText = (format) => {
-    const textarea = document.querySelector('textarea[name="message"]');
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = message.substring(start, end);
-
-    let formattedText = "";
-    switch (format) {
-      case 'bold':
-        formattedText = `<strong>${selectedText || 'bold text'}</strong>`;
-        break;
-      case 'italic':
-        formattedText = `<em>${selectedText || 'italic text'}</em>`;
-        break;
-      case 'link':
-        const url = prompt("Enter URL:");
-        if (url) {
-          formattedText = `<a href="${url}" style="color: #14b8a6; text-decoration: underline;">${selectedText || url}</a>`;
-        }
-        break;
-      case 'h1':
-        formattedText = `<h1 style="font-size: 24px; font-weight: bold; margin: 16px 0;">${selectedText || 'Heading'}</h1>`;
-        break;
-      case 'h2':
-        formattedText = `<h2 style="font-size: 20px; font-weight: bold; margin: 14px 0;">${selectedText || 'Subheading'}</h1>`;
-        break;
-    }
-
-    if (formattedText) {
-      const newMessage = message.substring(0, start) + formattedText + message.substring(end);
-      setMessage(newMessage);
-    }
-  };
+  const [sending, setSending] = useState(false);
 
   const handleSend = async () => {
     if (!recipient || !subject || !message) {
       toast({ title: "Please fill in all fields", variant: "destructive" });
       return;
-    }
-
-    // Check if scheduling
-    if (scheduleDate && scheduleTime) {
-      const scheduledDateTime = new Date(`${scheduleDate}T${scheduleTime}`);
-      if (scheduledDateTime <= new Date()) {
-        toast({ title: "Scheduled time must be in the future", variant: "destructive" });
-        return;
-      }
-
-      // Save as scheduled email
-      setSending(true);
-      try {
-        let targetUsers = [];
-        if (recipient === "FILTERED_USERS") {
-          targetUsers = filteredUsers;
-        } else {
-          const singleUser = users.find(u => u.id === recipient);
-          if (singleUser) {
-            targetUsers = [singleUser];
-          }
-        }
-
-        if (targetUsers.length === 0) {
-          toast({ title: "No users to send to", variant: "destructive" });
-          setSending(false);
-          return;
-        }
-
-        await base44.entities.ScheduledEmail.create({
-          subject: subject,
-          body: message,
-          recipient_ids: targetUsers.map(u => u.id),
-          scheduled_for: scheduledDateTime.toISOString(),
-          status: 'pending'
-        });
-
-        toast({ 
-          title: "Email scheduled successfully!", 
-          description: `Will be sent on ${scheduledDateTime.toLocaleString()} to ${targetUsers.length} user(s)`
-        });
-        
-        // Reset form
-        setRecipient("");
-        setSubject("");
-        setMessage("");
-        setUploadedImages([]);
-        setAudienceFilter("all");
-        setScheduleDate("");
-        setScheduleTime("");
-        setSending(false);
-        return;
-      } catch (error) {
-        console.error("Schedule error:", error);
-        toast({ title: "Failed to schedule email", description: error.message, variant: "destructive" });
-        setSending(false);
-        return;
-      }
     }
 
     setSending(true);
@@ -275,7 +140,7 @@ export default function EmailComposerSection() {
       }
 
       if (targetUsers.length === 0) {
-        toast({ title: "No users to send to", description: "The selected recipient or filter yielded no users.", variant: "destructive" });
+        toast({ title: "No users to send to", variant: "destructive" });
         setSending(false);
         return;
       }
@@ -283,44 +148,12 @@ export default function EmailComposerSection() {
       let successCount = 0;
       let failCount = 0;
 
-      // Get all active products for potential dynamic content
-      const allProducts = await base44.entities.Product.filter({ status: 'active' });
-
       for (const targetUser of targetUsers) {
         try {
-          let finalMessage = message;
-
-          // Add product recommendations if available
-          if (targetUser.recently_viewed && targetUser.recently_viewed.length > 0) {
-            const recentProducts = targetUser.recently_viewed
-              .map(id => allProducts.find(p => p.id === id))
-              .filter(p => p) // Filter out any products not found or inactive
-              .slice(0, 3); // Limit to top 3
-
-            if (recentProducts.length > 0) {
-              const productsHTML = `
-                <div style="margin: 20px 0; padding: 20px; background: #f9fafb; border-radius: 8px;">
-                  <h3 style="margin: 0 0 16px 0; color: #111827;">Products You Viewed</h3>
-                  <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;">
-                    ${recentProducts.map(p => `
-                      <div style="width: 90px; background: white; padding: 8px; border-radius: 6px; border: 1px solid #e5e7eb;">
-                        ${p.images?.[0] ? `<img src="${p.images[0]}" alt="${p.name}" style="width: 100%; height: 70px; object-fit: cover; border-radius: 4px; margin-bottom: 4px;" />` : ''}
-                        <h4 style="margin: 0 0 3px 0; font-size: 10px; font-weight: 600; color: #111827; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${p.name}</h4>
-                        <p style="margin: 0 0 4px 0; font-size: 12px; font-weight: bold; color: #14b8a6;">$${p.price.toFixed(2)}</p>
-                        <a href="${window.location.origin}/ProductDetail?id=${p.id}" style="display: inline-block; padding: 3px 6px; background: #14b8a6; color: white; text-decoration: none; border-radius: 4px; font-size: 9px; font-weight: 500;">View</a>
-                      </div>
-                    `).join('')}
-                  </div>
-                </div>
-              `;
-              finalMessage += productsHTML;
-            }
-          }
-
           await base44.functions.invoke('sendEmail', {
             to: targetUser.email,
             subject: subject,
-            body: finalMessage,
+            body: message,
             from_name: "EX3D Prints Admin"
           });
           successCount++;
@@ -337,14 +170,10 @@ export default function EmailComposerSection() {
           : undefined
       });
 
-      // Reset form
       setRecipient("");
       setSubject("");
       setMessage("");
-      setUploadedImages([]);
       setAudienceFilter("all");
-      setScheduleDate("");
-      setScheduleTime("");
     } catch (error) {
       console.error("Send error:", error);
       toast({
