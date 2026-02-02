@@ -293,79 +293,14 @@ export default function EmailBuilder({ onSave, initialContent }) {
 
       {/* Middle Panel - Preview/Editor */}
       <div className="col-span-3 flex flex-col gap-4">
-        <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden">
+        <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden shadow-lg">
           <CardContent className="flex-1 overflow-y-auto p-0">
-            {blocks.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
-                <p>No blocks yet. Add one from the left panel.</p>
-              </div>
-            ) : (
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="blocks">
-                  {(provided, snapshot) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className={`space-y-2 ${snapshot.isDraggingOver ? "bg-slate-700 rounded" : ""}`}
-                    >
-                      {blocks.map((block, index) => (
-                        <Draggable key={block.id} draggableId={block.id} index={index}>
-                          {(provided, snapshot) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              {...provided.dragHandleProps}
-                              onClick={() => setSelectedBlockId(block.id)}
-                              className={`p-3 rounded border-2 cursor-move transition-all ${
-                                selectedBlockId === block.id
-                                  ? "border-cyan-500 bg-slate-700"
-                                  : "border-slate-700 bg-slate-900 hover:border-slate-600"
-                              }`}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="text-white text-sm font-medium">
-                                  {block.type === "text" && "📝 Text"}
-                                  {block.type === "image" && "🖼️ Image"}
-                                  {block.type === "button" && "🔘 Button"}
-                                  {block.type === "spacer" && "⬌ Spacer"}
-                                  {block.type === "hero" && "🎯 Hero"}
-                                  {block.type === "divider" && "─ Divider"}
-                                </span>
-                                <div className="flex gap-1">
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      duplicateBlock(block.id);
-                                    }}
-                                    className="text-cyan-400 hover:text-cyan-300"
-                                  >
-                                    <Copy className="w-4 h-4" />
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      deleteBlock(block.id);
-                                    }}
-                                    className="text-red-400 hover:text-red-300"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-                    </div>
-                  )}
-                </Droppable>
-              </DragDropContext>
-            )}
+            <EmailPreview 
+              blocks={blocks} 
+              selectedBlockId={selectedBlockId} 
+              onSelectBlock={setSelectedBlockId}
+              onUpdateBlock={updateBlock}
+            />
           </CardContent>
         </Card>
       </div>
