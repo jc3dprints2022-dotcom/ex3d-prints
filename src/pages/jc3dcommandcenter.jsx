@@ -19,8 +19,7 @@ import OrderRoutingSection from "../components/commandcenter/OrderRoutingSection
 import PaymentsFinancialsSection from "../components/commandcenter/PaymentsFinancialsSection";
 import MakerToolsSection from "../components/commandcenter/MakerToolsSection";
 import SystemSettingsSection from "../components/commandcenter/SystemSettingsSection";
-import DesignerProductsSection from "../components/commandcenter/DesignerProductsSection";
-import CustomRequestManagement from "../components/commandcenter/CustomRequestManagement";
+import ItemManagementSection from "../components/commandcenter/ItemManagementSection";
 import EmailManagementSection from "../components/commandcenter/EmailManagementSection";
 import ExpManagementSection from "../components/commandcenter/ExpManagementSection";
 
