@@ -49,15 +49,35 @@ export default function RequirementsSection() {
             </CardContent>
           </Card>
 
-          <Card className="text-center border-none shadow-lg">
+          <Card className="border-none shadow-lg">
             <CardContent className="p-8">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Star className="w-8 h-8 text-blue-600" />
               </div>
-              <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
-              <p className="text-gray-600">
-                Complete orders quickly and consistently to receive more print jobs and earn EXP bonuses. Use your EXP to unlock free filament, printers, and more.
-              </p>
+              <h3 className="text-xl font-semibold mb-4 text-center">Earn Rewards</h3>
+              <ul className="space-y-3 text-gray-700">
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Complete orders quickly and consistently to receive more print jobs</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Earn EXP bonuses for your work</span>
+                </li>
+                <li className="flex items-start">
+                  <CheckCircle className="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" />
+                  <span>Redeem EXP for:</span>
+                </li>
+                <li className="ml-8 flex items-start">
+                  <span className="text-gray-600">• Free filament</span>
+                </li>
+                <li className="ml-8 flex items-start">
+                  <span className="text-gray-600">• Free prints</span>
+                </li>
+                <li className="ml-8 flex items-start">
+                  <span className="text-gray-600">• Other rewards</span>
+                </li>
+              </ul>
             </CardContent>
           </Card>
 
@@ -72,19 +92,6 @@ export default function RequirementsSection() {
                   </li>
                 ))}
               </ul>
-            </CardContent>
-          </Card>
-
-          
-          <Card className="text-center border-none shadow-lg">
-            <CardContent className="p-8">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Star className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold mb-4">Earn Rewards</h3>
-              <p className="text-gray-600">
-                Earn 250 EXP for every new user you refer to the website who purchases. Redeem EXP on your dashboard for real rewards. 
-              </p>
             </CardContent>
           </Card>
 
