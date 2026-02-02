@@ -305,12 +305,7 @@ export default function EmailComposerSection() {
                   {sending ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      {scheduleDate && scheduleTime ? 'Scheduling...' : `Sending${recipient === "FILTERED_USERS" ? ` to ${filteredUsers.length} users` : ''}...`}
-                    </>
-                  ) : scheduleDate && scheduleTime ? (
-                    <>
-                      <Send className="w-4 h-4 mr-2" />
-                      Schedule Email{recipient === "FILTERED_USERS" ? ` for ${filteredUsers.length} Users` : ''}
+                      Sending{recipient === "FILTERED_USERS" ? ` to ${filteredUsers.length} users` : ''}...
                     </>
                   ) : (
                     <>
