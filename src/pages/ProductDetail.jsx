@@ -89,6 +89,10 @@ export default function ProductDetail() {
   const loadProduct = async () => {
     setLoading(true);
     try {
+      if (!id) {
+        setLoading(false);
+        return;
+      }
       const productData = await base44.entities.Product.get(id);
       setProduct(productData);
       

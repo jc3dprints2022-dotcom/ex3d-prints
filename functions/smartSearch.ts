@@ -23,10 +23,16 @@ Deno.serve(async (req) => {
 
     const prompt = `Given this search query: "${query}"
     
-Find the most relevant products from this list and return their IDs in order of relevance:
+Find the most relevant products from this list. Consider:
+- Spelling variations and typos (e.g., "tabel" should match "table")
+- Related terms and synonyms (e.g., "cup" should match "mug", "holder")
+- Partial matches and similar concepts
+
+Product list:
 ${JSON.stringify(productDescriptions, null, 2)}
 
 Return ONLY a JSON array of product IDs in order of relevance (most relevant first). Maximum 20 products.
+Include products that are conceptually similar even if they don't match exactly.
 Example: ["id1", "id2", "id3"]`;
 
     const aiResponse = await base44.asServiceRole.integrations.Core.InvokeLLM({

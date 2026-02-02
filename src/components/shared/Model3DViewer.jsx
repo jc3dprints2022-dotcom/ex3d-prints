@@ -5,7 +5,7 @@ import { STLLoader } from 'three-stdlib';
 import { OBJLoader } from 'three-stdlib';
 import { Loader2 } from 'lucide-react';
 
-export default function Model3DViewer({ fileUrl, selectedColor = "teal", className = "" }) {
+export default function Model3DViewer({ fileUrl, selectedColor = "black", className = "" }) {
   const mountRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -109,21 +109,7 @@ export default function Model3DViewer({ fileUrl, selectedColor = "teal", classNa
                 specular: 0x111111,
                 shininess: 200
               });
-              
-              // Add edge for white color
-              if (selectedColor.toLowerCase() === 'white') {
-                const edges = new THREE.EdgesGeometry(geometry);
-                const line = new THREE.LineSegments(
-                  edges, 
-                  new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 })
-                );
-                model = new THREE.Group();
-                const mesh = new THREE.Mesh(geometry, material);
-                model.add(mesh);
-                model.add(line);
-              } else {
-                model = new THREE.Mesh(geometry, material);
-              }
+              model = new THREE.Mesh(geometry, material);
             } else {
               model = geometry;
               const material = new THREE.MeshPhongMaterial({
@@ -135,15 +121,6 @@ export default function Model3DViewer({ fileUrl, selectedColor = "teal", classNa
               model.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
                   child.material = material.clone();
-                  
-                  if (selectedColor.toLowerCase() === 'white') {
-                    const edges = new THREE.EdgesGeometry(child.geometry);
-                    const line = new THREE.LineSegments(
-                      edges,
-                      new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 2 })
-                    );
-                    child.add(line);
-                  }
                 }
               });
             }
