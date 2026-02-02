@@ -29,7 +29,9 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
       'purple': 0x800080,
       'pink': 0xffc0cb,
       'copper': 0xb87333,
-      'teal': 0x14b8a6
+      'teal': 0x14b8a6,
+      'marble': 0xffffff,
+      'silk rainbow': 0xff0000
     };
     return colorMap[colorName.toLowerCase()] || 0x14b8a6;
   };
@@ -101,26 +103,67 @@ export default function Model3DViewer({ fileUrl, selectedColor = "black", classN
           fileUrl,
           (geometry) => {
             const modelColor = colorToHex(selectedColor);
+            const isRainbow = selectedColor.toLowerCase() === 'silk rainbow';
             let model;
             
             if (fileExtension === 'stl') {
               const material = new THREE.MeshPhongMaterial({
                 color: modelColor,
                 specular: 0x111111,
-                shininess: 200
+                shininess: 200,
+                vertexColors: isRainbow
               });
+              
+              // Add rainbow vertex colors
+              if (isRainbow) {
+                const colors = [];
+                const color = new THREE.Color();
+                const positionAttribute = geometry.attributes.position;
+                
+                for (let i = 0; i < positionAttribute.count; i++) {
+                  const hue = (i / positionAttribute.count);
+                  color.setHSL(hue, 1.0, 0.5);
+                  colors.push(color.r, color.g, color.b);
+                }
+                
+                geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+              }
+              
               model = new THREE.Mesh(geometry, material);
             } else {
               model = geometry;
-              const material = new THREE.MeshPhongMaterial({
-                color: modelColor,
-                specular: 0x111111,
-                shininess: 200
+              let childIndex = 0;
+              const totalChildren = [];
+              model.traverse((child) => {
+                if (child instanceof THREE.Mesh) totalChildren.push(child);
               });
               
               model.traverse((child) => {
                 if (child instanceof THREE.Mesh) {
-                  child.material = material.clone();
+                  const material = new THREE.MeshPhongMaterial({
+                    color: modelColor,
+                    specular: 0x111111,
+                    shininess: 200,
+                    vertexColors: isRainbow
+                  });
+                  
+                  if (isRainbow && child.geometry) {
+                    const colors = [];
+                    const color = new THREE.Color();
+                    const positionAttribute = child.geometry.attributes.position;
+                    
+                    if (positionAttribute) {
+                      for (let i = 0; i < positionAttribute.count; i++) {
+                        const hue = ((childIndex + i / positionAttribute.count) / totalChildren.length) % 1.0;
+                        color.setHSL(hue, 1.0, 0.5);
+                        colors.push(color.r, color.g, color.b);
+                      }
+                      child.geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+                    }
+                  }
+                  
+                  child.material = material;
+                  childIndex++;
                 }
               });
             }
