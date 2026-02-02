@@ -163,26 +163,59 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, o
                   background: block.bgImage ? undefined : "#e5e7eb",
                 }}
               >
-                <div>
-                  <h1
-                    style={{
-                      color: block.titleColor,
-                      margin: "0 0 10px 0",
-                      fontSize: "36px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {block.title}
-                  </h1>
-                  <p
-                    style={{
-                      color: block.subtitleColor,
-                      margin: "0",
-                      fontSize: "18px",
-                    }}
-                  >
-                    {block.subtitle}
-                  </p>
+                <div
+                  onDoubleClick={(e) => {
+                    e.stopPropagation();
+                    handleTextClick(block.id, block.title);
+                  }}
+                  style={{ cursor: "pointer" }}
+                >
+                  {editingId === block.id ? (
+                    <input
+                      autoFocus
+                      type="text"
+                      value={editText}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onBlur={() => {
+                        if (editText.trim()) {
+                          onUpdateBlock(block.id, { title: editText });
+                        }
+                        setEditingId(null);
+                      }}
+                      style={{
+                        fontSize: "36px",
+                        fontWeight: "bold",
+                        background: "rgba(0,0,0,0.3)",
+                        color: block.titleColor,
+                        border: "2px dashed white",
+                        padding: "10px",
+                        borderRadius: "4px",
+                        textAlign: "center",
+                      }}
+                    />
+                  ) : (
+                    <>
+                      <h1
+                        style={{
+                          color: block.titleColor,
+                          margin: "0 0 10px 0",
+                          fontSize: "36px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {block.title}
+                      </h1>
+                      <p
+                        style={{
+                          color: block.subtitleColor,
+                          margin: "0",
+                          fontSize: "18px",
+                        }}
+                      >
+                        {block.subtitle}
+                      </p>
+                    </>
+                  )}
                 </div>
               </div>
             )}
