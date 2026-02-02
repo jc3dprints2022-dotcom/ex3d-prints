@@ -3,6 +3,7 @@ import React, { useState } from "react";
 export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, onUpdateBlock }) {
   const [editingId, setEditingId] = useState(null);
   const [editText, setEditText] = useState("");
+  const [imageScale, setImageScale] = useState({});
 
   const handleTextClick = (blockId, currentContent) => {
     setEditingId(blockId);
@@ -119,16 +120,21 @@ export default function EmailPreview({ blocks, selectedBlockId, onSelectBlock, o
             {block.type === "image" && (
               <div style={{ textAlign: "center", padding: "20px", display: "flex", justifyContent: "center" }}>
                 {block.src ? (
-                  <img
-                    src={block.src}
-                    alt="Email image"
-                    style={{
-                      width: `${block.width}px`,
-                      maxWidth: "100%",
-                      height: "auto",
-                      borderRadius: "6px",
-                    }}
-                  />
+                  <div style={{ position: "relative", display: "inline-block" }}>
+                    <img
+                      src={block.src}
+                      alt="Email image"
+                      style={{
+                        width: `${block.width}px`,
+                        height: `${block.height || "auto"}px`,
+                        maxWidth: "100%",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                        cursor: "grab",
+                      }}
+                      onClick={() => onSelectBlock(block.id)}
+                    />
+                  </div>
                 ) : (
                   <div
                     style={{

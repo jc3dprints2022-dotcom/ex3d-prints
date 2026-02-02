@@ -66,7 +66,7 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
   };
 
   const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
@@ -76,15 +76,23 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
 
     setUploading(true);
     try {
-      const { data } = await base44.functions.invoke("uploadFile", { file });
-      if (data?.file_url) {
-        setUploadedImages((prev) => [...prev, data.file_url]);
+      const formData = new FormData();
+      formData.append('file', file);
+      const response = await fetch('/api/functions/uploadFile', {
+        method: 'POST',
+        body: formData
+      });
+      const result = await response.json();
+      if (result.file_url) {
+        setUploadedImages((prev) => [...prev, result.file_url]);
         toast({ title: "Image uploaded successfully!" });
       }
     } catch (error) {
+      console.error('Upload error:', error);
       toast({ title: "Failed to upload image", variant: "destructive" });
     }
     setUploading(false);
+    e.target.value = '';
   };
 
   const deleteBlock = (id) => {
