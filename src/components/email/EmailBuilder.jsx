@@ -183,9 +183,9 @@ export default function EmailBuilder({ onSave, initialContent }) {
   };
 
   return (
-    <div className="grid grid-cols-4 gap-6 h-screen bg-slate-900 p-6">
+    <div className="grid grid-cols-5 gap-6 h-screen bg-slate-900 p-6">
       {/* Left Panel - Block Library */}
-      <div className="col-span-1 flex flex-col gap-4 overflow-y-auto">
+      <div className="col-span-1 flex flex-col gap-4 overflow-y-auto max-h-screen">
         <Card className="bg-slate-800 border-slate-700">
           <CardHeader>
             <CardTitle className="text-white text-sm">Add Blocks</CardTitle>
@@ -291,15 +291,12 @@ export default function EmailBuilder({ onSave, initialContent }) {
         </Card>
       </div>
 
-      {/* Middle Panel - Editor */}
-      <div className="col-span-2 flex flex-col gap-4 overflow-y-auto">
-        <Card className="bg-slate-800 border-slate-700 flex-1">
-          <CardHeader>
-            <CardTitle className="text-white text-sm">Email Blocks</CardTitle>
-          </CardHeader>
-          <CardContent>
+      {/* Middle Panel - Preview/Editor */}
+      <div className="col-span-3 flex flex-col gap-4">
+        <Card className="bg-white border-gray-300 flex-1 flex flex-col overflow-hidden">
+          <CardContent className="flex-1 overflow-y-auto p-0">
             {blocks.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-12 text-gray-400">
                 <p>No blocks yet. Add one from the left panel.</p>
               </div>
             ) : (
@@ -400,27 +397,27 @@ export default function EmailBuilder({ onSave, initialContent }) {
           <EmailPreview blocks={blocks} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} />
         </div>
 
-        {selectedBlockId && (
-          <Card className="bg-slate-800 border-slate-700">
-            <CardHeader>
-              <CardTitle className="text-white text-sm">Block Settings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmailBlockPanel
-                block={blocks.find((b) => b.id === selectedBlockId)}
-                onUpdate={(updates) => updateBlock(selectedBlockId, updates)}
-                uploadedImages={uploadedImages}
-              />
-            </CardContent>
-          </Card>
-        )}
+      {selectedBlockId && (
+        <Card className="bg-slate-800 border-slate-700">
+          <CardHeader>
+            <CardTitle className="text-white text-sm">Block Settings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <EmailBlockPanel
+              block={blocks.find((b) => b.id === selectedBlockId)}
+              onUpdate={(updates) => updateBlock(selectedBlockId, updates)}
+              uploadedImages={uploadedImages}
+            />
+          </CardContent>
+        </Card>
+      )}
 
-        <Button
-          onClick={() => onSave({ blocks, html: getEmailHTML() })}
-          className="w-full bg-green-600 hover:bg-green-700"
-        >
-          Save Email
-        </Button>
+      <Button
+        onClick={() => onSave({ blocks, html: getEmailHTML() })}
+        className="w-full bg-green-600 hover:bg-green-700"
+      >
+        Save Email
+      </Button>
       </div>
 
       {/* Add Block Modal */}
