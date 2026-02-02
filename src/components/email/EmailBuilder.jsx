@@ -304,7 +304,7 @@ export default function EmailBuilder({ onSave, initialContent, onEmailCampaignSe
       </div>
 
       {/* Right Panel - Block List & Settings */}
-      <div className="col-span-1 flex flex-col gap-4 max-h-screen overflow-y-auto">
+      <div className="col-span-1 flex flex-col gap-4 h-screen overflow-y-auto">
         <Card className="bg-slate-800 border-slate-700 flex-1 flex flex-col overflow-hidden">
           <CardHeader>
             <CardTitle className="text-white text-sm">Blocks ({blocks.length})</CardTitle>

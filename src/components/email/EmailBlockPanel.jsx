@@ -142,6 +142,15 @@ export default function EmailBlockPanel({ block, onUpdate, uploadedImages }) {
               />
             </div>
             <div>
+              <Label className="text-white text-sm">Height (px)</Label>
+              <Input
+                type="number"
+                value={block.height || 200}
+                onChange={(e) => onUpdate({ height: parseInt(e.target.value) })}
+                className="bg-slate-900 border-slate-600 text-white"
+              />
+            </div>
+            <div>
               <Label className="text-white text-sm">Alignment</Label>
               <Select value={block.alignment || "center"} onValueChange={(v) => onUpdate({ alignment: v })}>
                 <SelectTrigger className="bg-slate-900 border-slate-600 text-white">
