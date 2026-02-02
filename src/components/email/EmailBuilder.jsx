@@ -141,29 +141,35 @@ export default function EmailBuilder({ onSave, initialContent }) {
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-          .email-container { max-width: 600px; margin: 0 auto; ${bgStyle} }
+          body { font-family: Arial, sans-serif; margin: 0; padding: 0; ${bgStyle} }
+          .email-container { max-width: 600px; margin: 0 auto; background: transparent; }
           img { max-width: 100%; height: auto; display: block; }
+          .text-block { padding: 20px; margin: 0; }
+          .button-block { text-align: center; padding: 20px; margin: 0; }
+          .image-block { text-align: center; padding: 20px; margin: 0; }
+          .spacer-block { margin: 0; }
+          .divider-block { margin: 0; }
+          .footer-block { background: #000000; color: #ffffff; padding: 20px; text-align: center; font-size: 12px; margin: 0; }
         </style>
       </head>
-      <body>
+      <body style="margin: 0; padding: 0;">
         <div class="email-container">
           ${blocks.map((block) => {
             switch (block.type) {
               case "text":
-                return `<div style="padding: 20px; font-size: ${block.fontSize}px; color: ${block.color}; text-align: ${block.alignment};">${block.content}</div>`;
+                return `<div class="text-block" style="font-size: ${block.fontSize}px; color: ${block.color}; text-align: ${block.alignment};">${block.content}</div>`;
               case "button":
-                return `<div style="text-align: center; padding: 20px;"><a href="${block.link}" style="display: inline-block; padding: 12px 24px; background: ${block.bgColor}; color: ${block.textColor}; text-decoration: none; border-radius: 6px; font-weight: bold;">${block.content}</a></div>`;
+                return `<div class="button-block"><a href="${block.link}" style="display: inline-block; padding: 12px 24px; background: ${block.bgColor}; color: ${block.textColor}; text-decoration: none; border-radius: 6px; font-weight: bold;">${block.content}</a></div>`;
               case "image":
-                return `<div style="text-align: center; padding: 20px; display: flex; justify-content: center;"><img src="${block.src}" style="width: ${block.width}px; max-width: 100%; height: auto; border-radius: 6px;" /></div>`;
+                return `<div class="image-block"><img src="${block.src}" style="width: ${block.width}px; max-width: 100%; height: auto; border-radius: 6px;" /></div>`;
               case "spacer":
-                return `<div style="height: ${block.height}px;"></div>`;
+                return `<div class="spacer-block" style="height: ${block.height}px;"></div>`;
               case "hero":
-                return `<div style="background-image: url('${block.bgImage}'); background-size: cover; background-position: center; height: ${block.height}px; display: flex; align-items: center; justify-content: center; text-align: center; color: white;"><div><h1 style="color: ${block.titleColor}; margin: 0 0 10px 0;">${block.title}</h1><p style="color: ${block.subtitleColor}; margin: 0;">${block.subtitle}</p></div></div>`;
+                return `<div style="background-image: url('${block.bgImage}'); background-size: cover; background-position: center; height: ${block.height}px; display: flex; align-items: center; justify-content: center; text-align: center;"><div><h1 style="color: ${block.titleColor}; margin: 0 0 10px 0;">${block.title}</h1><p style="color: ${block.subtitleColor}; margin: 0;">${block.subtitle}</p></div></div>`;
               case "divider":
-                return `<div style="border-top: ${block.height}px solid ${block.color}; margin: 20px 0;"></div>`;
+                return `<div class="divider-block" style="border-top: ${block.height}px solid ${block.color}; margin: 20px 0;"></div>`;
               case "footer":
-                return `<div style="background: #000000; color: #ffffff; padding: 20px; text-align: center; font-size: 12px;">${block.content}</div>`;
+                return `<div class="footer-block">${block.content}</div>`;
               default:
                 return "";
             }
@@ -318,7 +324,6 @@ export default function EmailBuilder({ onSave, initialContent }) {
           )}
 
           <div className="space-y-2 flex-shrink-0">
-            <Button onClick={() => onSave({ blocks, html: getEmailHTML() })} className="w-full bg-green-600 hover:bg-green-700 text-xs h-8">Send</Button>
             <Button className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-8"><MailIcon className="w-3 h-3 mr-1" />Setup Campaign</Button>
           </div>
         </div>

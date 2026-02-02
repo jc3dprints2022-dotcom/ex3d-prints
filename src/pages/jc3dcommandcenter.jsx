@@ -13,8 +13,6 @@ import {
 
 // Import all sections
 import DashboardSection from "../components/commandcenter/DashboardSection";
-import UserManagementSection from "../components/commandcenter/UserManagementSection";
-import ModelManagementSection from "../components/commandcenter/ModelManagementSection";
 import OrderRoutingSection from "../components/commandcenter/OrderRoutingSection";
 import PaymentsFinancialsSection from "../components/commandcenter/PaymentsFinancialsSection";
 import MakerToolsSection from "../components/commandcenter/MakerToolsSection";
@@ -71,7 +69,6 @@ export default function JC3DCommandCenter() {
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
     { value: "items", label: "📋 Item Management" },
-    { value: "models", label: "🎨 Model Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
     { value: "exp", label: "🏆 EXP Management" },
@@ -84,8 +81,6 @@ export default function JC3DCommandCenter() {
     switch (activeSection) {
       case "dashboard":
         return <DashboardSection />;
-      case "models":
-        return <ModelManagementSection />;
       case "orders":
         return <OrderRoutingSection />;
       case "payments":
