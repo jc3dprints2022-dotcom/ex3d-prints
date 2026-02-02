@@ -11,52 +11,46 @@ export default function StatsSection({ totalProducts }) {
       color: "text-blue-600"
     },
     {
-      icon: Package,
-      value: "10,000+",
-      label: "Products Printed",
-      color: "text-blue-600"
-    },
-    {
       icon: Clock,
-      value: "7 Days",
-      label: "Average Delivery",
+      value: "2-3 Days",
+      label: "Fast Delivery",
       color: "text-green-600"
     },
     {
       icon: Users,
-      value: "1,000+",
-      label: "Active Makers",
+      value: "Local",
+      label: "Campus Makers",
       color: "text-purple-600"
     },
     {
       icon: Star,
-      value: "4.9/5",
-      label: "Customer Rating",
+      value: "Quality",
+      label: "Guaranteed",
       color: "text-orange-600"
     }
   ];
 
   return (
-    <section className="py-20 bg-slate-50">
+    <section className="py-12 md:py-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-            Trusted by Thousands
+        <div className="text-center mb-8 md:mb-12">
+          <h2 className="text-2xl md:text-4xl font-bold text-slate-900 mb-4">
+            For Shoppers
           </h2>
-          <p className="text-xl text-slate-600">
-            Join our growing community of creators and innovators
+          <p className="text-lg md:text-xl text-slate-600">
+            Browse, order, and receive high-quality 3D prints
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
           {stats.map((stat, index) => (
             <Card key={index} className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className={`inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-md mb-4`}>
-                  <stat.icon className={`w-8 h-8 ${stat.color}`} />
+              <CardContent className="p-4 md:p-8">
+                <div className={`inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 bg-white rounded-full shadow-md mb-2 md:mb-4`}>
+                  <stat.icon className={`w-6 h-6 md:w-8 md:h-8 ${stat.color}`} />
                 </div>
-                <div className="text-3xl font-bold text-slate-900 mb-2">{stat.value}</div>
-                <div className="text-slate-600 font-medium">{stat.label}</div>
+                <div className="text-xl md:text-3xl font-bold text-slate-900 mb-1 md:mb-2">{stat.value}</div>
+                <div className="text-xs md:text-base text-slate-600 font-medium">{stat.label}</div>
               </CardContent>
             </Card>
           ))}
@@ -64,5 +58,5 @@ export default function StatsSection({ totalProducts }) {
       </div>
     </section>
   );
-  */}
+}
 }
