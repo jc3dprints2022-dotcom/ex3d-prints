@@ -450,22 +450,56 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* Priority Option */}
-                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="priority"
-                      checked={isPriority}
-                      onChange={(e) => setIsPriority(e.target.checked)}
-                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
-                    />
-                    <Label htmlFor="priority" className="cursor-pointer flex-1">
-                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
-                      <p className="text-sm text-orange-700">
-                        Est. delivery: Next day
-                      </p>
-                    </Label>
+                {/* Sustainability Options */}
+                <div className="space-y-3">
+                  {/* Recycled Filament Option */}
+                  <div className="border rounded-lg p-4 bg-green-50 border-green-200">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="recycled"
+                        checked={cartItems.some(item => item.use_recycled_filament)}
+                        onChange={(e) => {
+                          // Update all cart items
+                          cartItems.forEach(async (item) => {
+                            try {
+                              await base44.entities.Cart.update(item.id, {
+                                use_recycled_filament: e.target.checked
+                              });
+                            } catch (error) {
+                              console.error('Failed to update cart item:', error);
+                            }
+                          });
+                          loadCart(user.id);
+                        }}
+                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
+                      />
+                      <Label htmlFor="recycled" className="cursor-pointer flex-1">
+                        <p className="font-medium text-green-900">♻️ Use Recycled Filament (Free)</p>
+                        <p className="text-sm text-green-700">
+                          Help reduce plastic waste with eco-friendly recycled materials
+                        </p>
+                      </Label>
+                    </div>
+                  </div>
+
+                  {/* Priority Option */}
+                  <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="priority"
+                        checked={isPriority}
+                        onChange={(e) => setIsPriority(e.target.checked)}
+                        className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                      />
+                      <Label htmlFor="priority" className="cursor-pointer flex-1">
+                        <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
+                        <p className="text-sm text-orange-700">
+                          Est. delivery: Next day
+                        </p>
+                      </Label>
+                    </div>
                   </div>
                 </div>
 

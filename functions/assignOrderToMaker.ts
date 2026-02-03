@@ -27,11 +27,17 @@ Deno.serve(async (req) => {
         const requiredMaterials = new Set();
         const requiredColors = new Set();
         let requiresMultiColor = false;
+        let requiresRecycledFilament = false;
 
         if (order.items) {
             order.items.forEach(item => {
                 totalPrintTime += (item.print_time_hours || 2) * (item.quantity || 1);
                 requiredMaterials.add(item.material || 'PLA');
+                
+                // Check if recycled filament is requested
+                if (item.use_recycled_filament) {
+                    requiresRecycledFilament = true;
+                }
                 
                 // Handle multi-color prints
                 if (item.multi_color && item.multi_color_selections) {
@@ -55,7 +61,8 @@ Deno.serve(async (req) => {
             maxDimensions: { length: maxLength, width: maxWidth, height: maxHeight },
             requiredMaterials: Array.from(requiredMaterials),
             requiredColors: Array.from(requiredColors),
-            requiresMultiColor
+            requiresMultiColor,
+            requiresRecycledFilament
         });
 
         const allUsers = await base44.asServiceRole.entities.User.list();
@@ -138,10 +145,14 @@ Deno.serve(async (req) => {
                 makerFilaments.some(f => f.color === color)
             );
             
-            // If maker doesn't have materials or colors, check if they're open to ordering
-            if (!hasMaterials || !hasColors) {
+            // Check if maker has recycled filament if needed
+            const hasRecycledFilament = !requiresRecycledFilament || 
+                makerFilaments.some(f => f.is_recycled === true);
+            
+            // If maker doesn't have materials, colors, or recycled filament, check if they're open to ordering
+            if (!hasMaterials || !hasColors || !hasRecycledFilament) {
                 if (!maker.open_to_unowned_filaments) {
-                    console.log(`❌ Maker ${maker.maker_id}: Missing filaments and not open to ordering. Has materials: ${hasMaterials}, Has colors: ${hasColors}`);
+                    console.log(`❌ Maker ${maker.maker_id}: Missing filaments and not open to ordering. Has materials: ${hasMaterials}, Has colors: ${hasColors}, Has recycled: ${hasRecycledFilament}`);
                     continue;
                 }
                 console.log(`⚠️ Maker ${maker.maker_id}: Missing filaments but open to ordering`);
@@ -190,6 +201,11 @@ Deno.serve(async (req) => {
             // Bonus points if they already have all materials/colors
             if (hasMaterials && hasColors) {
                 score += 15;
+            }
+            
+            // Bonus points for having recycled filament
+            if (requiresRecycledFilament && hasRecycledFilament) {
+                score += 10; // Prioritize makers with eco-friendly options
             }
             
             eligibleMakers.push({
