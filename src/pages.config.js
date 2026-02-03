@@ -53,6 +53,7 @@ import AdminPortalJC3D from './pages/AdminPortalJC3D';
 import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
+import ConsumerDashboard from './pages/ConsumerDashboard';
 import Contact from './pages/Contact';
 import CustomPrintRequest from './pages/CustomPrintRequest';
 import DesignerDashboard from './pages/DesignerDashboard';
@@ -77,7 +78,6 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import ConsumerDashboard from './pages/ConsumerDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -88,6 +88,7 @@ export const PAGES = {
     "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
+    "ConsumerDashboard": ConsumerDashboard,
     "Contact": Contact,
     "CustomPrintRequest": CustomPrintRequest,
     "DesignerDashboard": DesignerDashboard,
@@ -112,7 +113,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "ConsumerDashboard": ConsumerDashboard,
 }
 
 export const pagesConfig = {

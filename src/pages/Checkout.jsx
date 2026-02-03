@@ -450,56 +450,22 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* Sustainability Options */}
-                <div className="space-y-3">
-                  {/* Recycled Filament Option */}
-                  <div className="border rounded-lg p-4 bg-green-50 border-green-200">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="recycled"
-                        checked={cartItems.some(item => item.use_recycled_filament)}
-                        onChange={(e) => {
-                          // Update all cart items
-                          cartItems.forEach(async (item) => {
-                            try {
-                              await base44.entities.Cart.update(item.id, {
-                                use_recycled_filament: e.target.checked
-                              });
-                            } catch (error) {
-                              console.error('Failed to update cart item:', error);
-                            }
-                          });
-                          loadCart(user.id);
-                        }}
-                        className="w-5 h-5 text-green-600 rounded focus:ring-green-500"
-                      />
-                      <Label htmlFor="recycled" className="cursor-pointer flex-1">
-                        <p className="font-medium text-green-900">♻️ Use Recycled Filament (Free)</p>
-                        <p className="text-sm text-green-700">
-                          Help reduce plastic waste with eco-friendly recycled materials
-                        </p>
-                      </Label>
-                    </div>
-                  </div>
-
-                  {/* Priority Option */}
-                  <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="priority"
-                        checked={isPriority}
-                        onChange={(e) => setIsPriority(e.target.checked)}
-                        className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
-                      />
-                      <Label htmlFor="priority" className="cursor-pointer flex-1">
-                        <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
-                        <p className="text-sm text-orange-700">
-                          Est. delivery: Next day
-                        </p>
-                      </Label>
-                    </div>
+                {/* Priority Option */}
+                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="priority"
+                      checked={isPriority}
+                      onChange={(e) => setIsPriority(e.target.checked)}
+                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                    />
+                    <Label htmlFor="priority" className="cursor-pointer flex-1">
+                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
+                      <p className="text-sm text-orange-700">
+                        Est. delivery: Next day
+                      </p>
+                    </Label>
                   </div>
                 </div>
 
@@ -660,6 +626,23 @@ export default function Checkout() {
           </div>
         </div>
       </form>
+
+      {/* Sustainability Commitment Footer */}
+      <div className="mt-12 border-t pt-8">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="inline-block p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
+            <div className="flex items-center justify-center gap-3 mb-3">
+              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
+                <span className="text-2xl">♻️</span>
+              </div>
+              <h3 className="text-xl font-bold text-green-900">Our Sustainability Promise</h3>
+            </div>
+            <p className="text-gray-700 leading-relaxed">
+              We encourage all our makers to use recycled filament whenever possible. We're committed to making <strong>100% of our products</strong> printed with recycled materials by <strong>2030</strong>. Together, we're reducing plastic waste and building a greener future.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
