@@ -132,6 +132,25 @@ export default function ConsumerDashboard() {
         order.items?.map(item => item.product_id) || []
       );
 
+      // Try embedding-based recommendations first
+      if (orderedProductIds.length > 0) {
+        try {
+          const mostRecentProductId = orderedProductIds[0];
+          const response = await base44.functions.invoke('findSimilarProducts', {
+            productId: mostRecentProductId,
+            limit: 8
+          });
+          
+          if (response.data?.products?.length > 0) {
+            setRecommendedProducts(response.data.products);
+            return;
+          }
+        } catch (embeddingError) {
+          console.log('Embedding-based recommendations unavailable, falling back to category-based');
+        }
+      }
+
+      // Fallback to category-based recommendations
       const orderedProducts = await Promise.all(
         orderedProductIds.map(id => 
           base44.entities.Product.get(id).catch(() => null)
