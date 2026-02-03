@@ -536,22 +536,23 @@ export default function ConsumerDashboard() {
 
             {/* Orders & Quotes Section */}
             {activeSection === "orders" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-teal-600" />
-                    My Orders
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {orders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                      <p className="text-gray-500">No orders yet</p>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {orders.map(order => (
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Package className="w-5 h-5 text-teal-600" />
+                      My Orders
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    {orders.length === 0 ? (
+                      <div className="text-center py-12">
+                        <Package className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">No orders yet</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {orders.map(order => (
                         <Card key={order.id} className="border-l-4 border-teal-500">
                           <CardContent className="p-4">
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -604,13 +605,13 @@ export default function ConsumerDashboard() {
                             </div>
                           </CardContent>
                         </Card>
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
 
-                <Card>
+                  <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-teal-600" />
@@ -675,11 +676,11 @@ export default function ConsumerDashboard() {
                         </Card>
                       ))}
                       </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+                      )}
+                      </CardContent>
+                      </Card>
+                      </div>
+                      )}
 
             {/* EXP / Rewards Section */}
             {activeSection === "exp" && (
