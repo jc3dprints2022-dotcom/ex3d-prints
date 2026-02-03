@@ -46,6 +46,8 @@ export default function ConsumerDashboard() {
     full_name: '', phone: '', address: { street: '', city: '', state: '', zip: '' }
   });
   const [savingAccount, setSavingAccount] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(false);
+  const [showAllCustomRequests, setShowAllCustomRequests] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -552,22 +554,31 @@ export default function ConsumerDashboard() {
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {orders.map(order => (
-                        <Card key={order.id} className="border-l-4 border-teal-500">
-                          <CardContent className="p-4">
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold">{order.items?.[0]?.product_name}</h3>
-                                  {getOrderStatusBadge(order.status)}
-                                </div>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                                  <p>Order ID: #{order.id.slice(0, 8)}</p>
-                                  <p>Total: ${order.total_amount?.toFixed(2)}</p>
-                                  <p>Date: {new Date(order.created_date).toLocaleDateString()}</p>
-                                  <p>Items: {order.items?.length || 0}</p>
-                                </div>
-                              </div>
+                        {orders.slice(0, showAllOrders ? orders.length : 5).map(order => (
+                          <Card key={order.id} className="border-l-4 border-teal-500">
+                            <CardContent className="p-4">
+                              <div className="flex flex-col sm:flex-row gap-4">
+                                {order.items?.[0]?.images?.[0] && (
+                                  <img
+                                    src={order.items[0].images[0]}
+                                    alt={order.items[0].product_name}
+                                    className="w-20 h-20 object-cover rounded-lg"
+                                  />
+                                )}
+                                <div className="flex-1">
+                                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex-1">
+                                      <div className="flex items-center gap-2 mb-2">
+                                        <h3 className="font-semibold">{order.items?.[0]?.product_name}</h3>
+                                        {getOrderStatusBadge(order.status)}
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                        <p>Order ID: #{order.id.slice(0, 8)}</p>
+                                        <p>Total: ${order.total_amount?.toFixed(2)}</p>
+                                        <p>Date: {new Date(order.created_date).toLocaleDateString()}</p>
+                                        <p>Items: {order.items?.length || 0}</p>
+                                      </div>
+                                    </div>
                               <div className="flex flex-wrap gap-2">
                                 {order.status === 'pending' && (
                                   <Button
@@ -600,16 +611,27 @@ export default function ConsumerDashboard() {
                                     <Star className="w-4 h-4 mr-2" />
                                     Leave Review
                                   </Button>
-                                )}
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </CardContent>
                         </Card>
-                          ))}
-                        </div>
+                      ))}
+                      {orders.length > 5 && (
+                        <Button
+                          variant="outline"
+                          onClick={() => setShowAllOrders(!showAllOrders)}
+                          className="w-full"
+                        >
+                          {showAllOrders ? 'Show Less' : `Show ${orders.length - 5} More Orders`}
+                          <ChevronRight className={`w-4 h-4 ml-2 transition-transform ${showAllOrders ? 'rotate-90' : ''}`} />
+                        </Button>
                       )}
-                    </CardContent>
-                  </Card>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
                   <Card>
                 <CardHeader>
@@ -629,15 +651,24 @@ export default function ConsumerDashboard() {
                     </div>
                   ) : (
                     <div className="space-y-4">
-                      {customRequests.map(request => (
+                      {customRequests.slice(0, showAllCustomRequests ? customRequests.length : 5).map(request => (
                         <Card key={request.id} className="border-l-4 border-purple-500">
                           <CardContent className="p-4">
-                            <div className="flex flex-col sm:flex-row justify-between gap-4">
+                            <div className="flex flex-col sm:flex-row gap-4">
+                              {request.images?.[0] && (
+                                <img
+                                  src={request.images[0]}
+                                  alt={request.title}
+                                  className="w-20 h-20 object-cover rounded-lg"
+                                />
+                              )}
                               <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-2">
-                                  <h3 className="font-semibold">{request.title}</h3>
-                                  {getOrderStatusBadge(request.status)}
-                                </div>
+                                <div className="flex flex-col sm:flex-row justify-between gap-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <h3 className="font-semibold">{request.title}</h3>
+                                      {getOrderStatusBadge(request.status)}
+                                    </div>
                                 <p className="text-sm text-gray-600 mb-2">{request.description}</p>
                                 <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
                                   <p>Submitted: {new Date(request.created_date).toLocaleDateString()}</p>
