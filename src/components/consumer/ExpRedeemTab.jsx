@@ -31,6 +31,7 @@ export default function ExpRedeemTab({ user, onUpdate }) {
   const [couponCode, setCouponCode] = useState('');
   const [couponAmount, setCouponAmount] = useState('');
   const [copied, setCopied] = useState(false);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
   const { toast } = useToast();
 
   const [rewards, setRewards] = useState([]);
@@ -344,39 +345,50 @@ export default function ExpRedeemTab({ user, onUpdate }) {
           ) : transactions.length === 0 ? (
             <p className="text-center text-gray-500 py-8">No transactions yet</p>
           ) : (
-            <div className="space-y-3">
-              {transactions.map(tx => (
-                <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">{tx.description}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(tx.created_date).toLocaleDateString()}
-                    </p>
-                    {tx.stripe_coupon_id && (
-                      <div className="mt-2 flex items-center gap-2">
-                        <Badge variant="outline" className="font-mono text-xs">
-                          {tx.stripe_coupon_id}
-                        </Badge>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            navigator.clipboard.writeText(tx.stripe_coupon_id);
-                            toast({ title: "Coupon code copied!" });
-                          }}
-                          className="h-6 px-2"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </Button>
-                      </div>
-                    )}
+            <>
+              <div className="space-y-3">
+                {transactions.slice(0, showAllTransactions ? transactions.length : 5).map(tx => (
+                  <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{tx.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(tx.created_date).toLocaleDateString()}
+                      </p>
+                      {tx.stripe_coupon_id && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <Badge variant="outline" className="font-mono text-xs">
+                            {tx.stripe_coupon_id}
+                          </Badge>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              navigator.clipboard.writeText(tx.stripe_coupon_id);
+                              toast({ title: "Coupon code copied!" });
+                            }}
+                            className="h-6 px-2"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                    <Badge className={tx.action === 'earned' ? 'bg-green-500' : 'bg-orange-500'}>
+                      {tx.action === 'earned' ? '+' : ''}{tx.amount} EXP
+                    </Badge>
                   </div>
-                  <Badge className={tx.action === 'earned' ? 'bg-green-500' : 'bg-orange-500'}>
-                    {tx.action === 'earned' ? '+' : ''}{tx.amount} EXP
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+              {transactions.length > 5 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllTransactions(!showAllTransactions)}
+                  className="w-full mt-4"
+                >
+                  {showAllTransactions ? 'Show Less' : `Show ${transactions.length - 5} More Transactions`}
+                </Button>
+              )}
+            </>
           )}
         </CardContent>
       </Card>
