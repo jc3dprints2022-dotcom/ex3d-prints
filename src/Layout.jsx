@@ -522,26 +522,28 @@ export default function Layout({ children, currentPageName }) {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem asChild>
-                      <Link to={getDashboardUrl()} onClick={scrollToTop} className="flex items-center">
+                      <Link to={createPageUrl("ConsumerDashboard")} onClick={scrollToTop} className="flex items-center">
                         <Settings className="w-4 h-4 mr-2" />
-                        {getDashboardLabel()}
+                        My Dashboard
                       </Link>
                     </DropdownMenuItem>
 
-                    {getAvailableDashboards().length > 1 && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <div className="px-2 py-1.5 text-xs font-semibold text-gray-500">
-                          Switch Dashboard
-                        </div>
-                        {getAvailableDashboards().map((dashboard, index) => (
-                          <DropdownMenuItem key={index} asChild>
-                            <Link to={dashboard.url} onClick={scrollToTop} className="pl-6">
-                              {dashboard.name}
-                            </Link>
-                          </DropdownMenuItem>
-                        ))}
-                      </>
+                    {user.role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("jc3dcommandcenter")} onClick={scrollToTop} className="flex items-center">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin Command Center
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    {user.business_roles?.includes('campus_manager') && user.managed_campus && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("CampusManagementCenter")} onClick={scrollToTop} className="flex items-center">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Campus Management
+                        </Link>
+                      </DropdownMenuItem>
                     )}
 
                     <DropdownMenuSeparator />
