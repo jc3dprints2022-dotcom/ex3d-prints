@@ -73,7 +73,7 @@ export default function Marketplace() {
   useEffect(() => {
     loadUser();
     loadProducts();
-  }, []);
+  }, [searchQuery]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -93,7 +93,43 @@ export default function Marketplace() {
     }
   };
 
+  const searchWithAlgolia = async () => {
+    if (!searchQuery.trim()) {
+      return loadProducts();
+    }
+
+    setLoading(true);
+    try {
+      const { data } = await base44.functions.invoke('searchProducts', {
+        query: searchQuery,
+        filters: {
+          category: filters.category || undefined,
+          materials: filters.materials.length > 0 ? filters.materials : undefined,
+          colors: filters.colors.length > 0 ? filters.colors : undefined,
+          minPrice: filters.priceRange[0],
+          maxPrice: filters.priceRange[1]
+        },
+        page: 0,
+        hitsPerPage: 100
+      });
+
+      if (data.success) {
+        setProducts(data.products);
+      } else {
+        loadProducts();
+      }
+    } catch (error) {
+      console.error('Algolia search failed, using fallback:', error);
+      loadProducts();
+    }
+    setLoading(false);
+  };
+
   const loadProducts = async () => {
+    if (searchQuery.trim()) {
+      return searchWithAlgolia();
+    }
+
     setLoading(true);
     try {
       const allProducts = await base44.entities.Product.list();
