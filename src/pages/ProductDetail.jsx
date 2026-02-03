@@ -352,9 +352,19 @@ export default function ProductDetail() {
   const showMaterialSelector = product.materials && product.materials.length > 1;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Mobile Back Button Header */}
+      <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-gray-800 border-b dark:border-gray-700 safe-area-top">
+        <div className="flex items-center px-4 py-3">
+          <Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 touch-target">
+            <ChevronLeft className="w-6 h-6" />
+            <span className="font-medium">Back</span>
+          </Link>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="inline-flex items-center text-teal-600 hover:text-teal-700 mb-8">
+        <Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hidden md:inline-flex items-center text-teal-600 hover:text-teal-700 mb-8">
           <ChevronLeft className="w-5 h-5 mr-1" />
           Back to Marketplace
         </Link>

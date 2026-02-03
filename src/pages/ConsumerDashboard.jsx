@@ -891,6 +891,28 @@ export default function ConsumerDashboard() {
                       </Button>
                     </div>
                   </form>
+
+                  {/* Account Deletion Section */}
+                  <div className="mt-8 pt-8 border-t border-red-200">
+                    <h3 className="text-lg font-semibold text-red-600 mb-2">Danger Zone</h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <Button
+                      variant="destructive"
+                      onClick={() => {
+                        if (confirm('Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All your data, orders, and EXP will be lost.')) {
+                          if (confirm('Final confirmation: Type DELETE in the prompt to confirm account deletion') && 
+                              prompt('Type DELETE to confirm:') === 'DELETE') {
+                            toast({ title: "Account deletion requested", description: "Please contact support to complete this process." });
+                          }
+                        }
+                      }}
+                    >
+                      <XCircle className="w-4 h-4 mr-2" />
+                      Delete My Account
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             )}
