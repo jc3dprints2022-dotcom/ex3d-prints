@@ -321,7 +321,6 @@ export default function Layout({ children, currentPageName }) {
 
     const roles = user.business_roles || [];
     if (roles.includes('campus_manager')) return createPageUrl("CampusManagementCenter");
-    if (roles.includes('maker')) return createPageUrl("MakerDashboard");
     return createPageUrl("ConsumerDashboard");
   };
 
@@ -346,12 +345,12 @@ export default function Layout({ children, currentPageName }) {
 
     // Show maker dashboard if user is a maker
     if (user.maker_id && user.business_roles?.includes('maker')) {
-      dashboards.push({ name: 'Maker Dashboard', url: createPageUrl("MakerDashboard") });
+      dashboards.push({ name: 'Maker Hub', url: `${createPageUrl("ConsumerDashboard")}?tab=maker` });
     }
 
     // Show designer dashboard if user is a designer
     if (user.designer_id && user.business_roles?.includes('designer')) {
-      dashboards.push({ name: 'Designer Dashboard', url: createPageUrl("DesignerDashboard") });
+      dashboards.push({ name: 'Designer Studio', url: `${createPageUrl("ConsumerDashboard")}?tab=designer` });
     }
 
     // Show campus management center if user is a campus manager
@@ -414,9 +413,9 @@ export default function Layout({ children, currentPageName }) {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={createPageUrl("MakerDashboard")} onClick={scrollToTop}>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=maker`} onClick={scrollToTop}>
                           <Settings className="w-4 h-4 mr-2" />
-                          Maker Dashboard
+                          Maker Hub
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -453,9 +452,9 @@ export default function Layout({ children, currentPageName }) {
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={createPageUrl("DesignerDashboard")} onClick={scrollToTop}>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
                           <Settings className="w-4 h-4 mr-2" />
-                          Designer Dashboard
+                          Designer Studio
                         </Link>
                       </DropdownMenuItem>
                     </>
@@ -601,11 +600,11 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
                 {user && user.maker_id && user.business_roles?.includes('maker') && (
                   <Link
-                    to={createPageUrl("MakerDashboard")}
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=maker`}
                     className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
                     onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                   >
-                    Maker Dashboard
+                    Maker Hub
                   </Link>
                 )}
                 {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
@@ -631,11 +630,11 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
                 {user && user.designer_id && user.business_roles?.includes('designer') ? (
                   <Link
-                    to={createPageUrl("DesignerDashboard")}
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=designer`}
                     className="block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
                     onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                   >
-                    Designer Dashboard
+                    Designer Studio
                   </Link>
                 ) : (
                   <Link
