@@ -579,44 +579,45 @@ export default function ConsumerDashboard() {
                                         <p>Items: {order.items?.length || 0}</p>
                                       </div>
                                     </div>
-                              <div className="flex flex-wrap gap-2">
-                                {order.status === 'pending' && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleCancelOrder(order.id)}
-                                  >
-                                    Cancel
-                                  </Button>
-                                )}
-                                {order.status === 'dropped_off' && (
-                                  <Button
-                                    size="sm"
-                                    className="bg-green-600 hover:bg-green-700"
-                                    onClick={() => handleConfirmPickup(order.id)}
-                                  >
-                                    <CheckCircle className="w-4 h-4 mr-2" />
-                                    Confirm Pickup
-                                  </Button>
-                                )}
-                                {order.status === 'delivered' && (
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedOrder(order);
-                                      setReviewModalOpen(true);
-                                    }}
-                                  >
-                                    <Star className="w-4 h-4 mr-2" />
-                                    Leave Review
-                                  </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                                    <div className="flex flex-wrap gap-2">
+                                     {order.status === 'pending' && (
+                                       <Button
+                                         variant="outline"
+                                         size="sm"
+                                         onClick={() => handleCancelOrder(order.id)}
+                                       >
+                                         Cancel
+                                       </Button>
+                                     )}
+                                     {order.status === 'dropped_off' && (
+                                       <Button
+                                         size="sm"
+                                         className="bg-green-600 hover:bg-green-700"
+                                         onClick={() => handleConfirmPickup(order.id)}
+                                       >
+                                         <CheckCircle className="w-4 h-4 mr-2" />
+                                         Confirm Pickup
+                                       </Button>
+                                     )}
+                                     {order.status === 'delivered' && (
+                                       <Button
+                                         size="sm"
+                                         variant="outline"
+                                         onClick={() => {
+                                           setSelectedOrder(order);
+                                           setReviewModalOpen(true);
+                                         }}
+                                       >
+                                         <Star className="w-4 h-4 mr-2" />
+                                         Leave Review
+                                       </Button>
+                                     )}
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </div>
+                                    </CardContent>
+                                    </Card>
                       ))}
                       {orders.length > 5 && (
                         <Button
