@@ -306,10 +306,8 @@ export default function ConsumerDashboard() {
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: TrendingUp },
-    { id: "orders", label: "Orders", icon: Package },
-    { id: "quotes", label: "Custom Quotes", icon: FileText },
+    { id: "orders", label: "Orders & Quotes", icon: Package },
     { id: "exp", label: "EXP / Rewards", icon: Gift },
-    { id: "recommendations", label: "Recommendations", icon: Eye },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Studio", icon: Star }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
@@ -490,10 +488,53 @@ export default function ConsumerDashboard() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Recommendations Section */}
+                <div className="space-y-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-teal-600" />
+                        Recently Viewed
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {recentlyViewedProducts.length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">No recently viewed products</p>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                          {recentlyViewedProducts.map(product => (
+                            <ProductCard key={product.id} product={product} />
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Award className="w-5 h-5 text-purple-600" />
+                        Recommended For You
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      {recommendedProducts.length === 0 ? (
+                        <p className="text-center text-gray-500 py-8">No recommendations yet</p>
+                      ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                          {recommendedProducts.map(product => (
+                            <ProductCard key={product.id} product={product} />
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
               </>
             )}
 
-            {/* Orders Section */}
+            {/* Orders & Quotes Section */}
             {activeSection === "orders" && (
               <Card>
                 <CardHeader>
@@ -563,16 +604,13 @@ export default function ConsumerDashboard() {
                             </div>
                           </CardContent>
                         </Card>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )}
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
 
-            {/* Custom Quotes Section */}
-            {activeSection === "quotes" && (
-              <Card>
+                <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="w-5 h-5 text-teal-600" />
@@ -636,10 +674,11 @@ export default function ConsumerDashboard() {
                           </CardContent>
                         </Card>
                       ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             )}
 
             {/* EXP / Rewards Section */}
@@ -660,52 +699,7 @@ export default function ConsumerDashboard() {
               </div>
             )}
 
-            {/* Recommendations Section */}
-            {activeSection === "recommendations" && (
-              <div className="space-y-6">
-                {/* Recently Viewed */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Eye className="w-5 h-5 text-teal-600" />
-                      Recently Viewed
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {recentlyViewedProducts.length === 0 ? (
-                      <p className="text-center text-gray-500 py-8">No recently viewed products</p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {recentlyViewedProducts.map(product => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
 
-                {/* Recommended For You */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Award className="w-5 h-5 text-purple-600" />
-                      Recommended For You
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {recommendedProducts.length === 0 ? (
-                      <p className="text-center text-gray-500 py-8">No recommendations yet</p>
-                    ) : (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                        {recommendedProducts.map(product => (
-                          <ProductCard key={product.id} product={product} />
-                        ))}
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </div>
-            )}
 
             {/* Maker Hub Section */}
             {activeSection === "maker" && user?.business_roles?.includes('maker') && (
