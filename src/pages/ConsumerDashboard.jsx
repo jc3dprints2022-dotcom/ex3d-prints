@@ -669,49 +669,60 @@ export default function ConsumerDashboard() {
                                       <h3 className="font-semibold">{request.title}</h3>
                                       {getOrderStatusBadge(request.status)}
                                     </div>
-                                <p className="text-sm text-gray-600 mb-2">{request.description}</p>
-                                <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
-                                  <p>Submitted: {new Date(request.created_date).toLocaleDateString()}</p>
-                                  {request.quoted_price && (
-                                    <p className="font-semibold text-green-600">
-                                      Quote: ${request.quoted_price.toFixed(2)}
-                                    </p>
-                                  )}
-                                </div>
-                                {request.admin_notes && request.status === 'quoted' && (
-                                  <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
-                                    <p className="font-medium text-blue-900">Quote Details:</p>
-                                    <p className="text-blue-700">{request.admin_notes}</p>
-                                  </div>
-                                )}
-                              </div>
-                              {request.status === 'quoted' && (
-                                <div className="flex flex-col gap-2">
-                                  <Button
-                                    onClick={() => handleAcceptQuote(request)}
-                                    className="bg-green-600 hover:bg-green-700"
-                                  >
-                                    <ThumbsUp className="w-4 h-4 mr-2" />
-                                    Accept & Add to Cart
-                                  </Button>
-                                  <Button
+                                    <p className="text-sm text-gray-600 mb-2">{request.description}</p>
+                                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                                     <p>Submitted: {new Date(request.created_date).toLocaleDateString()}</p>
+                                     {request.quoted_price && (
+                                       <p className="font-semibold text-green-600">
+                                         Quote: ${request.quoted_price.toFixed(2)}
+                                       </p>
+                                     )}
+                                    </div>
+                                    {request.admin_notes && request.status === 'quoted' && (
+                                     <div className="mt-2 p-2 bg-blue-50 rounded text-sm">
+                                       <p className="font-medium text-blue-900">Quote Details:</p>
+                                       <p className="text-blue-700">{request.admin_notes}</p>
+                                     </div>
+                                    )}
+                                    </div>
+                                    {request.status === 'quoted' && (
+                                    <div className="flex flex-col gap-2">
+                                     <Button
+                                       onClick={() => handleAcceptQuote(request)}
+                                       className="bg-green-600 hover:bg-green-700"
+                                     >
+                                       <ThumbsUp className="w-4 h-4 mr-2" />
+                                       Accept & Add to Cart
+                                     </Button>
+                                     <Button
+                                       variant="outline"
+                                       onClick={() => handleDeclineQuote(request.id)}
+                                     >
+                                       Decline
+                                     </Button>
+                                    </div>
+                                    )}
+                                    </div>
+                                    </div>
+                                    </CardContent>
+                                    </Card>
+                                    ))}
+                                    {customRequests.length > 5 && (
+                                    <Button
                                     variant="outline"
-                                    onClick={() => handleDeclineQuote(request.id)}
-                                  >
-                                    Decline
-                                  </Button>
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                      </div>
-                      )}
-                      </CardContent>
-                      </Card>
-                      </div>
-                      )}
+                                    onClick={() => setShowAllCustomRequests(!showAllCustomRequests)}
+                                    className="w-full"
+                                    >
+                                    {showAllCustomRequests ? 'Show Less' : `Show ${customRequests.length - 5} More Requests`}
+                                    <ChevronRight className={`w-4 h-4 ml-2 transition-transform ${showAllCustomRequests ? 'rotate-90' : ''}`} />
+                                    </Button>
+                                    )}
+                                    </div>
+                                    )}
+                                    </CardContent>
+                                    </Card>
+                                    </div>
+                                    )}
 
             {/* EXP / Rewards Section */}
             {activeSection === "exp" && (
