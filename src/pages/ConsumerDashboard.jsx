@@ -705,6 +705,7 @@ export default function ConsumerDashboard() {
                                     )}
                                     </div>
                                     </div>
+                                    </div>
                                     </CardContent>
                                     </Card>
                                     ))}
