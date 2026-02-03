@@ -340,18 +340,8 @@ export default function Layout({ children, currentPageName }) {
 
     const dashboards = [];
 
-    // Always show consumer dashboard
+    // Always show consumer dashboard (includes maker/designer hubs as tabs)
     dashboards.push({ name: 'My Dashboard', url: createPageUrl("ConsumerDashboard") });
-
-    // Show maker dashboard if user is a maker
-    if (user.maker_id && user.business_roles?.includes('maker')) {
-      dashboards.push({ name: 'Maker Hub', url: `${createPageUrl("ConsumerDashboard")}?tab=maker` });
-    }
-
-    // Show designer dashboard if user is a designer
-    if (user.designer_id && user.business_roles?.includes('designer')) {
-      dashboards.push({ name: 'Designer Studio', url: `${createPageUrl("ConsumerDashboard")}?tab=designer` });
-    }
 
     // Show campus management center if user is a campus manager
     if (user.business_roles?.includes('campus_manager') && user.managed_campus) {
