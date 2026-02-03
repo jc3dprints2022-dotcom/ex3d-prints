@@ -26,6 +26,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProductCard from "@/components/marketplace/ProductCard";
 import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
 import ReferralTab from "@/components/consumer/ReferralTab";
+import { createPageUrl } from "@/utils";
 
 export default function ConsumerDashboard() {
   const [user, setUser] = useState(null);
@@ -48,6 +49,14 @@ export default function ConsumerDashboard() {
 
   useEffect(() => {
     loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tab = urlParams.get('tab');
+    if (tab) {
+      setActiveSection(tab);
+    }
   }, []);
 
   const loadDashboardData = async () => {
@@ -300,6 +309,8 @@ export default function ConsumerDashboard() {
     { id: "quotes", label: "Custom Quotes", icon: FileText },
     { id: "exp", label: "EXP / Rewards", icon: Gift },
     { id: "recommendations", label: "Recommendations", icon: Eye },
+    ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
+    ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Studio", icon: Star }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
 
@@ -692,6 +703,28 @@ export default function ConsumerDashboard() {
                     )}
                   </CardContent>
                 </Card>
+              </div>
+            )}
+
+            {/* Maker Hub Section */}
+            {activeSection === "maker" && user?.business_roles?.includes('maker') && (
+              <div>
+                <iframe 
+                  src={createPageUrl("MakerDashboard")} 
+                  className="w-full h-[calc(100vh-150px)] border-0 rounded-lg"
+                  title="Maker Dashboard"
+                />
+              </div>
+            )}
+
+            {/* Designer Studio Section */}
+            {activeSection === "designer" && user?.business_roles?.includes('designer') && (
+              <div>
+                <iframe 
+                  src={createPageUrl("DesignerDashboard")} 
+                  className="w-full h-[calc(100vh-150px)] border-0 rounded-lg"
+                  title="Designer Dashboard"
+                />
               </div>
             )}
 
