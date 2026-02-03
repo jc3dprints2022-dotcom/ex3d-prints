@@ -26,7 +26,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProductCard from "@/components/marketplace/ProductCard";
 import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
 import ReferralTab from "@/components/consumer/ReferralTab";
-import { createPageUrl } from "@/utils";
+import MakerDashboardContent from "@/components/makers/MakerDashboardContent";
+import DesignerDashboardContent from "@/components/designers/DesignerDashboardContent";
 
 export default function ConsumerDashboard() {
   const [user, setUser] = useState(null);
@@ -708,24 +709,12 @@ export default function ConsumerDashboard() {
 
             {/* Maker Hub Section */}
             {activeSection === "maker" && user?.business_roles?.includes('maker') && (
-              <div>
-                <iframe 
-                  src={createPageUrl("MakerDashboard")} 
-                  className="w-full h-[calc(100vh-150px)] border-0 rounded-lg"
-                  title="Maker Dashboard"
-                />
-              </div>
+              <MakerDashboardContent user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* Designer Studio Section */}
             {activeSection === "designer" && user?.business_roles?.includes('designer') && (
-              <div>
-                <iframe 
-                  src={createPageUrl("DesignerDashboard")} 
-                  className="w-full h-[calc(100vh-150px)] border-0 rounded-lg"
-                  title="Designer Dashboard"
-                />
-              </div>
+              <DesignerDashboardContent user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* Account Settings Section */}
