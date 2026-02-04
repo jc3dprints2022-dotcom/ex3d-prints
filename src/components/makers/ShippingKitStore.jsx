@@ -11,8 +11,7 @@ export default function ShippingKitStore({ subscription, userId, onKitOrdered })
   const { toast } = useToast();
 
   const getKitPrice = () => {
-    if (!subscription) return 15;
-    return subscription.plan_name.toLowerCase().includes('basic') ? 15 : 5;
+    return 20;
   };
 
   const orderKit = async () => {
@@ -79,14 +78,7 @@ export default function ShippingKitStore({ subscription, userId, onKitOrdered })
             <h3 className="text-2xl font-bold text-gray-900 mb-2">
               ${kitPrice} per kit
             </h3>
-            {isBasicPlan ? (
-              <p className="text-gray-700">Basic Plan Pricing</p>
-            ) : (
-              <div>
-                <p className="text-green-700 font-semibold">Premium Plan Discount!</p>
-                <p className="text-sm text-gray-700">Plus 1 FREE kit per month</p>
-              </div>
-            )}
+            <p className="text-gray-700">Good for 10 orders</p>
           </div>
 
           <div className="space-y-4 mb-6">
@@ -136,8 +128,7 @@ export default function ShippingKitStore({ subscription, userId, onKitOrdered })
           </Button>
 
           <p className="text-xs text-gray-600 text-center mt-4">
-            Kit will be shipped to your registered business address within 3-5 business days.
-            {!isBasicPlan && <span className="block mt-1">Charges for extra kits will be deducted from your next payout.</span>}
+            Kit will be shipped to your registered business address within 3-5 business days. Charges will be deducted from your next payout.
           </p>
         </CardContent>
       </Card>
