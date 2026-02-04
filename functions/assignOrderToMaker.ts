@@ -82,6 +82,24 @@ Deno.serve(async (req) => {
 
         console.log(`Makers at campus ${orderCampusLocation}: ${makers.length}`);
 
+        // Calculate monthly print hours and limits based on subscription plan
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        
+        const planLimits = {
+            lite: 60,
+            pro: 200,
+            express: 600,
+            unlimited: Infinity
+        };
+        
+        const planPriority = {
+            unlimited: 4,
+            express: 3,
+            pro: 2,
+            lite: 1
+        };
+
         // Filter makers based on requirements
         const eligibleMakers = [];
         
@@ -158,17 +176,32 @@ Deno.serve(async (req) => {
                 console.log(`⚠️ Maker ${maker.maker_id}: Missing filaments but open to ordering`);
             }
             
-            // Check weekly hours capacity
-            const hoursUsed = maker.hours_printed_this_week || 0;
-            const maxHours = maker.max_hours_per_week || 40;
-            const availableHours = maxHours - hoursUsed;
+            // Check monthly hours capacity based on subscription plan
+            const makerPlan = maker.subscription_plan || 'lite'; // Default to lite for existing makers
+            const monthlyLimit = planLimits[makerPlan] || 60;
+            
+            // Calculate hours printed this month
+            const makerOrdersThisMonth = allOrders.filter(o => {
+                if (o.maker_id !== maker.maker_id) return false;
+                if (!['completed', 'dropped_off', 'delivered', 'printing', 'accepted'].includes(o.status)) return false;
+                const orderDate = new Date(o.created_date);
+                return orderDate >= firstDayOfMonth;
+            });
+            
+            const hoursUsedThisMonth = makerOrdersThisMonth.reduce((sum, o) => {
+                const orderHours = o.items?.reduce((h, item) => 
+                    h + ((item.print_time_hours || 2) * (item.quantity || 1)), 0) || 0;
+                return sum + orderHours;
+            }, 0);
+            
+            const availableHours = monthlyLimit - hoursUsedThisMonth;
             
             if (availableHours < totalPrintTime) {
-                console.log(`❌ Maker ${maker.maker_id}: Insufficient hours. Available: ${availableHours}h, Need: ${totalPrintTime}h`);
+                console.log(`❌ Maker ${maker.maker_id}: Insufficient hours. Plan: ${makerPlan}, Used: ${hoursUsedThisMonth}h/${monthlyLimit}h, Available: ${availableHours}h, Need: ${totalPrintTime}h`);
                 continue;
             }
             
-            console.log(`✅ Maker ${maker.maker_id}: Eligible! Available hours: ${availableHours}h`);
+            console.log(`✅ Maker ${maker.maker_id}: Eligible! Plan: ${makerPlan}, Available hours: ${availableHours}h/${monthlyLimit}h`);
             
             // Calculate score for this maker
             const makerOrders = allOrders
@@ -186,9 +219,14 @@ Deno.serve(async (req) => {
             
             // Scoring algorithm - prioritize by:
             // 1. Location (already filtered above)
-            // 2. Time since last order (fairness)
-            // 3. New makers
-            let score = daysSinceLastOrder * 15; // Heavy weight on time since last order
+            // 2. Subscription plan priority (unlimited/express > pro > lite)
+            // 3. Time since last order (fairness)
+            // 4. New makers
+            const makerPlan = maker.subscription_plan || 'lite';
+            const priority = planPriority[makerPlan] || 1;
+            
+            let score = priority * 100; // Heavy weight on subscription plan priority
+            score += daysSinceLastOrder * 15; // Time since last order for fairness
             
             // Extra boost for new makers
             if (isNewMaker) {
@@ -214,7 +252,9 @@ Deno.serve(async (req) => {
                 daysSinceLastOrder,
                 availableHours,
                 printers: makerPrinters,
-                hasAllFilaments: hasMaterials && hasColors
+                hasAllFilaments: hasMaterials && hasColors,
+                plan: maker.subscription_plan || 'lite',
+                hoursUsedThisMonth
             });
         }
 
@@ -231,9 +271,11 @@ Deno.serve(async (req) => {
         
         console.log('Top 3 eligible makers:', eligibleMakers.slice(0, 3).map(m => ({
             maker_id: m.maker.maker_id,
+            plan: m.plan,
             score: m.score,
             daysSinceLastOrder: m.daysSinceLastOrder.toFixed(1),
-            availableHours: m.availableHours
+            availableHours: m.availableHours,
+            hoursUsed: m.hoursUsedThisMonth
         })));
         
         if (assignToMultiple) {
