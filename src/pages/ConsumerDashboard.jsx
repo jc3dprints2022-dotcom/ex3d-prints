@@ -49,6 +49,8 @@ export default function ConsumerDashboard() {
   const [savingAccount, setSavingAccount] = useState(false);
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [showAllCustomRequests, setShowAllCustomRequests] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
