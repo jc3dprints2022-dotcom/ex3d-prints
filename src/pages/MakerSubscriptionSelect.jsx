@@ -86,7 +86,7 @@ const SUBSCRIPTION_PLANS = [
     color: 'orange',
     price: 250,
     priceMonthly: '$250+/month',
-    priceYearly: '$3,000+/year',
+    priceYearly: '$2,250+/year',
     estimatedProfit: '$5,000+',
     maxHours: '600+',
     printers: '4+',
