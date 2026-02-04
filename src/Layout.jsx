@@ -312,7 +312,8 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const handleLogin = async () => {
-    window.location.href = '/api/auth/login?next=' + encodeURIComponent(window.location.href);
+    //window.location.href = '/api/auth/login?next=' + encodeURIComponent(window.location.href);
+    base44.auth.redirectToLogin(window.location.href);
   };
 
   const getDashboardUrl = () => {
