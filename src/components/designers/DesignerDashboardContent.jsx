@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle, Upload } from "lucide-react";
 import DesignerProductForm from "../designers/DesignerProductForm";
 import BankInfoManager from "../shared/BankInfoManager";
