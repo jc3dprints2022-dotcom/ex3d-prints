@@ -160,7 +160,9 @@ export default function ExpRewardsSection() {
         ...formData,
         exp_cost: parseInt(formData.exp_cost),
         stock_quantity: formData.stock_quantity ? parseInt(formData.stock_quantity) : undefined,
-        existing_product_id: formData.existing_product_id || undefined
+        existing_product_id: formData.existing_product_id || undefined,
+        boost_duration_weeks: formData.boost_duration_weeks ? parseInt(formData.boost_duration_weeks) : undefined,
+        product_link: formData.product_link || undefined
       };
 
       if (editingReward) {
