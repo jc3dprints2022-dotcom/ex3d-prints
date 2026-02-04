@@ -194,7 +194,7 @@ export default function DesignerSignup() {
         designer_id: application.id
       });
 
-      // Send admin notification only (no user confirmation email)
+      // Send admin notification
       try {
         await base44.functions.invoke('sendEmail', {
           to: 'jc3dprints2022@gmail.com',
@@ -202,7 +202,7 @@ export default function DesignerSignup() {
           body: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #dc2626;">New Designer Signup</h1>
-    <h2>Application Details:</h2>
+    <h2>Signup Details:</h2>
     <p><strong>Name:</strong> ${user.full_name}</p>
     <p><strong>Email:</strong> ${user.email}</p>
     <p><strong>Phone:</strong> ${formData.phone}</p>

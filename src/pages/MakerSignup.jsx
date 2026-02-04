@@ -216,7 +216,7 @@ export default function MakerSignup() {
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }
 
-      // Send admin notification only (no user confirmation email)
+      // Send admin notification
       try {
         await base44.functions.invoke('sendEmail', {
           to: 'jc3dprints2022@gmail.com',
@@ -224,7 +224,7 @@ export default function MakerSignup() {
           body: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #f97316;">New Maker Signup</h1>
-    <h2>Application Details:</h2>
+    <h2>Signup Details:</h2>
     <p><strong>Name:</strong> ${formData.full_name}</p>
     <p><strong>Email:</strong> ${formData.email}</p>
     <p><strong>Phone:</strong> ${formData.phone}</p>
@@ -270,24 +270,7 @@ export default function MakerSignup() {
     );
   }
 
-  if (formState === 'submitted') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
-        <Card className="max-w-xl text-center shadow-2xl">
-          <CardContent className="p-10">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
-            <h1 className="text-3xl font-bold text-slate-900 mb-4">Application Submitted!</h1>
-            <p className="text-slate-600 mb-6">
-              Thank you for applying! Our team will review your application and you'll receive an email within 2-3 business days.
-            </p>
-            <Button asChild>
-              <Link to={createPageUrl("ConsumerDashboard")}>Go to My Dashboard</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
