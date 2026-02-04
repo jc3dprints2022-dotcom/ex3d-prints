@@ -332,6 +332,127 @@ The EX3D Team`
         </Card>
       </div>
 
+      {/* Print Hours Tracker */}
+      <Card className="mb-6">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5 text-orange-600" />
+                Monthly Print Hours
+              </CardTitle>
+              <p className="text-sm text-gray-600 mt-1">
+                Track your printing capacity for this month
+              </p>
+            </div>
+            <Badge className={`text-lg ${
+              (() => {
+                const plan = user?.subscription_plan || 'lite';
+                const limits = { lite: 60, pro: 200, express: 600, unlimited: Infinity };
+                const limit = limits[plan] || 60;
+                
+                const now = new Date();
+                const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const completedOrders = orders.filter(o => 
+                  ['completed', 'dropped_off', 'delivered'].includes(o.status) &&
+                  new Date(o.updated_date || o.created_date) >= firstDayOfMonth
+                );
+                const hoursUsed = completedOrders.reduce((sum, o) => 
+                  sum + (o.items?.reduce((h, item) => h + ((item.print_time_hours || 2) * (item.quantity || 1)), 0) || 0), 0
+                );
+                
+                const percentage = (hoursUsed / limit) * 100;
+                if (percentage >= 85) return 'bg-red-100 text-red-900';
+                if (percentage >= 70) return 'bg-yellow-100 text-yellow-900';
+                return 'bg-green-100 text-green-900';
+              })()
+            }`}>
+              {user?.subscription_plan ? user.subscription_plan.toUpperCase() : 'LITE'} Plan
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {(() => {
+            const plan = user?.subscription_plan || 'lite';
+            const limits = { lite: 60, pro: 200, express: 600, unlimited: Infinity };
+            const limit = limits[plan] || 60;
+            
+            const now = new Date();
+            const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const completedOrders = orders.filter(o => 
+              ['completed', 'dropped_off', 'delivered'].includes(o.status) &&
+              new Date(o.updated_date || o.created_date) >= firstDayOfMonth
+            );
+            const hoursUsed = completedOrders.reduce((sum, o) => 
+              sum + (o.items?.reduce((h, item) => h + ((item.print_time_hours || 2) * (item.quantity || 1)), 0) || 0), 0
+            );
+            
+            const percentage = Math.min((hoursUsed / limit) * 100, 100);
+            const hoursRemaining = Math.max(limit - hoursUsed, 0);
+            
+            return (
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-3xl font-bold text-gray-900">
+                      {hoursUsed.toFixed(1)} <span className="text-lg text-gray-600">/ {limit === Infinity ? '∞' : limit} hrs</span>
+                    </p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {limit === Infinity ? 'Unlimited printing hours' : `${hoursRemaining.toFixed(1)} hours remaining`}
+                    </p>
+                  </div>
+                  {percentage >= 85 && limit !== Infinity && (
+                    <AlertCircle className="w-8 h-8 text-red-600" />
+                  )}
+                </div>
+                
+                {limit !== Infinity && (
+                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div 
+                      className={`h-full transition-all duration-500 ${
+                        percentage >= 85 ? 'bg-red-600' : 
+                        percentage >= 70 ? 'bg-yellow-500' : 
+                        'bg-green-600'
+                      }`}
+                      style={{ width: `${percentage}%` }}
+                    />
+                  </div>
+                )}
+                
+                {percentage >= 85 && limit !== Infinity && (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-900">Approaching Monthly Limit</p>
+                        <p className="text-sm text-red-800 mt-1">
+                          You've used {percentage.toFixed(0)}% of your monthly hours. Consider upgrading your plan for more capacity.
+                        </p>
+                        <Button 
+                          size="sm"
+                          className="mt-3 bg-red-600 hover:bg-red-700"
+                          onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
+                        >
+                          Upgrade Plan
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                {percentage >= 70 && percentage < 85 && limit !== Infinity && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong> You're at {percentage.toFixed(0)}% capacity. Plan ahead for additional orders.
+                    </p>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+        </CardContent>
+      </Card>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>

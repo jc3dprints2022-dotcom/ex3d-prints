@@ -69,9 +69,9 @@ Return as a JSON array of design objects. If you cannot access the page, return 
 
     if (!response.success || !response.designs || response.designs.length === 0) {
       return Response.json({ 
-        error: response.error || 'No designs found or unable to access profile',
+        error: response.error || `Unable to access the ${platform} profile at ${profileUrl}. Please check the URL or the profile's visibility settings.`,
         imported: 0 
-      });
+      }, { status: 400 });
     }
 
     // Create product entries for each design
