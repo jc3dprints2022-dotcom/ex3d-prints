@@ -239,8 +239,8 @@ export default function MakerSignup() {
         console.error("Failed to send admin notification:", emailError);
       }
       
-      // Redirect to maker dashboard
-      window.location.href = createPageUrl("MakerDashboard");
+      // Redirect to subscription selection
+      window.location.href = createPageUrl("MakerSubscriptionSelect");
 
     } catch (error) {
       console.error("Signup error:", error);
