@@ -2,6 +2,7 @@
 body {
   overscroll-behavior: none;
   -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x pan-y;
 }
 
 /* Safe Area Insets for Notches */
@@ -13,15 +14,25 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
+.pb-safe-bottom {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
 /* Disable Text Selection on Interactive Elements */
 button,
-.select-none {
+a,
+.select-none,
+[role="button"] {
   user-select: none;
   -webkit-user-select: none;
+  -webkit-touch-callout: none;
 }
 
 /* Touch Target Size - Minimum 44px */
-.touch-target {
+.touch-target,
+button,
+a,
+[role="button"] {
   min-width: 44px;
   min-height: 44px;
 }
