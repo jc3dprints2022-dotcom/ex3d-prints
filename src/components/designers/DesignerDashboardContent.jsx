@@ -361,7 +361,7 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
         </TabsContent>
 
         <TabsContent value="exp">
-          <DesignerExpRedeemTab user={user} onUpdate={loadDashboardData} />
+          <DesignerExpRedeemTab user={user} onExpUpdate={loadDashboardData} />
         </TabsContent>
 
         <TabsContent value="guide">
