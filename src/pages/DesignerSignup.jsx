@@ -8,8 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, Palette, Upload as UploadIcon, User } from "lucide-react";
+import { Loader2, Palette, Upload as UploadIcon, User, CreditCard } from "lucide-react";
 import { createPageUrl } from "@/utils";
+import BankInfoManager from "@/components/shared/BankInfoManager";
 
 const EXPERIENCE_LEVELS = [
   { value: "beginner", label: "Beginner (0-1 yrs)" },
@@ -64,6 +65,9 @@ export default function DesignerSignup() {
   const [profileImage, setProfileImage] = useState(null);
   const [profileImageUrl, setProfileImageUrl] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [currentStep, setCurrentStep] = useState(1); // 1 = info, 2 = bank details
+  const [stripeAccountId, setStripeAccountId] = useState('');
+  const [bankInfoComplete, setBankInfoComplete] = useState(false);
   const [formData, setFormData] = useState({
     designer_name: '',
     bio: '',
@@ -86,6 +90,12 @@ export default function DesignerSignup() {
         return;
       }
       setUser(currentUser);
+      
+      // Check if they have Stripe account already
+      if (currentUser.stripe_account_id) {
+        setStripeAccountId(currentUser.stripe_account_id);
+        setBankInfoComplete(true);
+      }
     } catch (error) {
       await base44.auth.redirectToLogin(window.location.href);
     }
@@ -117,7 +127,7 @@ export default function DesignerSignup() {
     );
   };
 
-  const handleSubmit = async (e) => {
+  const handleContinueToPayment = (e) => {
     e.preventDefault();
 
     if (!formData.designer_name.trim()) {
@@ -147,6 +157,17 @@ export default function DesignerSignup() {
 
     if (selectedCategories.length === 0) {
       toast({ title: "Please select at least one design category", variant: "destructive" });
+      return;
+    }
+
+    // Move to step 2 - bank info
+    setCurrentStep(2);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async () => {
+    if (!bankInfoComplete) {
+      toast({ title: "Please complete your bank account setup", variant: "destructive" });
       return;
     }
 
@@ -237,12 +258,28 @@ export default function DesignerSignup() {
           <p className="text-xl text-gray-600">Share your creations and earn rewards</p>
         </div>
 
-        <Card className="border-2 border-red-200 shadow-2xl">
-          <CardHeader>
-            <CardTitle>Tell Us About Yourself</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Progress Steps */}
+        <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${currentStep === 1 ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+              <User className="w-5 h-5" />
+              <span className="font-semibold">1. Profile Info</span>
+            </div>
+            <div className="w-12 h-1 bg-gray-300"></div>
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${currentStep === 2 ? 'bg-red-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+              <CreditCard className="w-5 h-5" />
+              <span className="font-semibold">2. Payment Setup</span>
+            </div>
+          </div>
+        </div>
+
+        {currentStep === 1 && (
+          <Card className="border-2 border-red-200 shadow-2xl">
+            <CardHeader>
+              <CardTitle>Tell Us About Yourself</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleContinueToPayment} className="space-y-6">
               {/* Personal Info */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
@@ -389,12 +426,61 @@ export default function DesignerSignup() {
                 </Label>
               </div>
 
-              <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-red-500 to-pink-600" disabled={submitting}>
-                {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Signing Up...</> : 'Sign Up'}
+              <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-red-500 to-pink-600">
+                Continue to Payment Setup
               </Button>
             </form>
           </CardContent>
         </Card>
+        )}
+
+        {currentStep === 2 && (
+          <Card className="border-2 border-red-200 shadow-2xl">
+            <CardHeader>
+              <CardTitle>Set Up Payment Information</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Connect your bank account to receive payouts from your design sales
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <BankInfoManager 
+                user={user} 
+                onUpdate={async (updatedUser) => {
+                  setUser(updatedUser);
+                  if (updatedUser.stripe_account_id) {
+                    setStripeAccountId(updatedUser.stripe_account_id);
+                    setBankInfoComplete(true);
+                  }
+                }}
+              />
+
+              {bankInfoComplete && (
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p className="text-sm text-green-800 font-semibold">✓ Bank account connected successfully!</p>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setCurrentStep(1)}
+                  className="w-full"
+                >
+                  Back to Profile Info
+                </Button>
+                <Button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={!bankInfoComplete || submitting}
+                  className="w-full bg-gradient-to-r from-red-500 to-pink-600"
+                >
+                  {submitting ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Completing Signup...</> : 'Complete Signup'}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );
