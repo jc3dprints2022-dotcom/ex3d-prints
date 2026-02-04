@@ -16,12 +16,12 @@ Deno.serve(async (req) => {
 
     const { planId, billingCycle } = await req.json();
 
-    // Define plan pricing
+    // Define plan pricing (first-time discounted prices)
     const plans = {
-      lite: { monthly: 1000, yearly: 9000 }, // $10, $90 (25% off $120)
-      pro: { monthly: 10000, yearly: 90000 }, // $100, $900 (25% off $1200)
-      express: { monthly: 25000, yearly: 225000 }, // $250, $2250 (25% off $3000)
-      unlimited: { monthly: 25000, yearly: 225000 } // $250+, $2250+ base
+      lite: { monthly: 1000, yearly: 7500 }, // $10, $75 first year (25% off $100)
+      pro: { monthly: 10000, yearly: 75000 }, // $100, $750 first year (25% off $1000)
+      express: { monthly: 25000, yearly: 210000 }, // $250, $2100 first year (25% off $2800)
+      unlimited: { monthly: 25000, yearly: 210000 } // $250+, $2100+ first year (25% off $2800)
     };
 
     const planPricing = plans[planId];

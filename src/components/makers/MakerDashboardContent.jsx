@@ -631,6 +631,59 @@ The EX3D Team`
           <div className="space-y-6">
             <Card>
               <CardHeader>
+                <CardTitle>Subscription Management</CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  Manage your maker subscription plan
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {user?.subscription_plan ? (
+                  <>
+                    <div className="p-4 bg-teal-50 rounded-lg border border-teal-200">
+                      <p className="font-semibold text-teal-900">Current Plan</p>
+                      <p className="text-2xl font-bold text-teal-700 capitalize">{user.subscription_plan}</p>
+                      <p className="text-sm text-teal-600 mt-1">
+                        {user.subscription_billing_cycle === 'yearly' ? 'Billed Annually' : 'Billed Monthly'}
+                      </p>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
+                      >
+                        Upgrade Plan
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        className="w-full text-red-600 hover:text-red-700"
+                        onClick={async () => {
+                          if (confirm('Are you sure you want to cancel your subscription? You will lose access to the Maker Hub.')) {
+                            toast({ title: "Please contact support to cancel", description: "Email labaghr@my.erau.edu" });
+                          }
+                        }}
+                      >
+                        Cancel Subscription
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center py-6">
+                    <p className="text-gray-600 mb-4">No active subscription</p>
+                    <Button 
+                      onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
+                      className="bg-orange-600 hover:bg-orange-700"
+                    >
+                      Choose a Plan
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>Financial Information</CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   Manage your banking information for receiving payouts and making payments
