@@ -22,8 +22,6 @@ const SUBSCRIPTION_PLANS = [
     printers: 1,
     benefits: [
       'Access to maker platform',
-      'Up to 30 print hours/month',
-      '1 printer supported',
       'Basic order notifications',
       'Community support access'
     ],
@@ -47,8 +45,6 @@ const SUBSCRIPTION_PLANS = [
     popular: true,
     benefits: [
       'Priority order assignments',
-      'Up to 200 print hours/month',
-      '2+ printers supported',
       'Overtime eligible (200+ hours)',
       '2 FREE shipping kits per month',
       'Priority customer support'
@@ -70,8 +66,6 @@ const SUBSCRIPTION_PLANS = [
     printers: '3+',
     benefits: [
       'Highest priority orders',
-      'Up to 600 print hours/month',
-      '3+ printers supported',
       'Order filtering & preferences',
       '10% discount on all website items',
       '5 FREE shipping kits per month',
@@ -92,8 +86,6 @@ const SUBSCRIPTION_PLANS = [
     printers: '4+',
     benefits: [
       'Everything in Express',
-      'Unlimited print hours',
-      'Unlimited printers',
       '$2/hour over 600 hours',
       '+$1,000/month per additional printer',
       'Custom order routing',
@@ -179,11 +171,6 @@ export default function MakerSubscriptionSelect() {
             Select the subscription that fits your printing capacity
           </p>
           
-          {/* First Month Free Banner */}
-          <div className="inline-block bg-gradient-to-r from-green-500 to-teal-600 text-white px-6 py-3 rounded-full font-semibold shadow-lg mb-6">
-            🎉 First Month FREE on all plans!
-          </div>
-
           {/* Billing Toggle */}
           <div className="flex items-center justify-center gap-4 mt-6">
             <button
@@ -264,23 +251,14 @@ export default function MakerSubscriptionSelect() {
                   )}
                 </CardHeader>
 
-                <CardContent className="pt-6 space-y-4">
-                  <div className="text-center py-3 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm text-gray-600">Estimated {billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} Profit</p>
-                    <p className="text-2xl font-bold text-green-700">
+                <CardContent className="pt-6 space-y-2">
+                  <div className="text-center py-2 bg-green-50 rounded-lg border border-green-200">
+                    <p className="text-xs text-gray-600">Est. {billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} Profit</p>
+                    <p className="text-xl font-bold text-green-700">
                       {billingCycle === 'yearly' && typeof plan.price === 'number' && plan.estimatedProfit.includes('$') 
                         ? `$${parseInt(plan.estimatedProfit.replace(/\D/g, '')) * 12}+`
                         : plan.estimatedProfit
                       }
-                    </p>
-                  </div>
-
-                  <div className="space-y-1 text-sm">
-                    <p className="font-semibold text-gray-700">
-                      ⏱️ Up to {plan.maxHours} hours/month
-                    </p>
-                    <p className="font-semibold text-gray-700">
-                      🖨️ {plan.printers} {typeof plan.printers === 'number' ? 'printer' : 'printers'}
                     </p>
                   </div>
 

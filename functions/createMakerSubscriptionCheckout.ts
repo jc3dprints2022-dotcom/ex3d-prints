@@ -78,8 +78,8 @@ Deno.serve(async (req) => {
           billing_cycle: billingCycle
         }
       },
-      success_url: `${req.headers.get('origin')}${req.headers.get('origin').includes('localhost') ? '' : '/api'}/pages/ConsumerDashboard?tab=maker&subscription=success`,
-      cancel_url: `${req.headers.get('origin')}${req.headers.get('origin').includes('localhost') ? '' : '/api'}/pages/MakerSubscriptionSelect?canceled=true`,
+      success_url: `${req.headers.get('origin')}/api/pages/ConsumerDashboard?tab=maker&subscription=success`,
+      cancel_url: `${req.headers.get('origin')}/api/pages/MakerSubscriptionSelect?canceled=true`,
     });
 
     return Response.json({ url: session.url });
