@@ -16,7 +16,7 @@ export default function BottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 safe-area-bottom">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-50 shadow-lg" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
       <div className="flex justify-around items-center h-16 px-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -26,11 +26,11 @@ export default function BottomNav() {
             <Link
               key={item.path}
               to={item.path}
-              className={`flex flex-col items-center justify-center flex-1 h-full select-none touch-target ${
-                active ? "text-teal-600" : "text-gray-600"
+              className={`flex flex-col items-center justify-center flex-1 h-full select-none min-w-[44px] min-h-[44px] transition-colors ${
+                active ? "text-teal-600 dark:text-teal-400" : "text-gray-600 dark:text-gray-400"
               }`}
             >
-              <Icon className={`w-6 h-6 mb-1 ${active ? "fill-teal-600" : ""}`} />
+              <Icon className={`w-6 h-6 mb-1 ${active ? "fill-teal-600 dark:fill-teal-400" : ""}`} />
               <span className="text-xs font-medium">{item.label}</span>
             </Link>
           );

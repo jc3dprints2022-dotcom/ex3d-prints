@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -990,6 +991,42 @@ export default function ConsumerDashboard() {
           </form>
         </DialogContent>
       </Dialog>
+
+      {/* Account Deletion Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your account and remove all your data from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                setDeletingAccount(true);
+                try {
+                  const { data } = await base44.functions.invoke('deleteUserAccount');
+                  if (data.success) {
+                    toast({ title: "Account deleted", description: "Your account has been permanently deleted." });
+                    await base44.auth.logout();
+                    window.location.href = createPageUrl("Home");
+                  }
+                } catch (error) {
+                  toast({ title: "Failed to delete account", description: error.message, variant: "destructive" });
+                }
+                setDeletingAccount(false);
+                setShowDeleteDialog(false);
+              }}
+              disabled={deletingAccount}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {deletingAccount ? 'Deleting...' : 'Delete Account'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
