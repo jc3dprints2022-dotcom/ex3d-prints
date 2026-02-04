@@ -81,12 +81,21 @@ Deno.serve(async (req) => {
             if (item.is_priority_fee) {
                 return null;
             }
+            
+            let description = `Material: ${item.selected_material || 'N/A'}, Color: ${item.selected_color || 'N/A'}`;
+            if (item.device_model) {
+                description += ` | Device: ${item.device_model}`;
+                if (item.device_dimensions) {
+                    description += ` (${item.device_dimensions.width}×${item.device_dimensions.height || item.device_dimensions.depth}×${item.device_dimensions.thickness}mm)`;
+                }
+            }
+            
             return {
                 price_data: {
                     currency: 'usd',
                     product_data: {
                         name: item.product_name || 'Product',
-                        description: `Material: ${item.selected_material || 'N/A'}, Color: ${item.selected_color || 'N/A'}`,
+                        description: description,
                     },
                     unit_amount: Math.round(item.unit_price * 100),
                 },
