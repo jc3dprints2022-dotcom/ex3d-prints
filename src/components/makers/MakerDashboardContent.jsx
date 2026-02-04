@@ -777,8 +777,19 @@ The EX3D Team`
                         variant="outline"
                         className="w-full text-red-600 hover:text-red-700"
                         onClick={async () => {
-                          if (confirm('Are you sure you want to cancel your subscription? You will lose access to the Maker Hub.')) {
-                            toast({ title: "Please contact support to cancel", description: "Email labaghr@my.erau.edu" });
+                          if (confirm('Are you sure you want to cancel? Your subscription will remain active until the end of your current billing period.')) {
+                            try {
+                              const { data } = await base44.functions.invoke('cancelMakerSubscription');
+                              if (data.success) {
+                                toast({ 
+                                  title: "Subscription Cancelled", 
+                                  description: "You'll retain access until your billing period ends." 
+                                });
+                                await loadDashboard();
+                              }
+                            } catch (error) {
+                              toast({ title: "Failed to cancel", description: error.message, variant: "destructive" });
+                            }
                           }
                         }}
                       >

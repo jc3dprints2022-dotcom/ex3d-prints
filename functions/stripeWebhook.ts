@@ -49,6 +49,57 @@ Deno.serve(async (req) => {
 
         console.log('Webhook event received:', event.type);
 
+        // Handle maker subscription events
+        if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
+            const subscription = event.data.object as Stripe.Subscription;
+            console.log('Processing subscription event:', subscription.id);
+
+            const userId = subscription.metadata?.user_id;
+            const planId = subscription.metadata?.plan_id;
+            const billingCycle = subscription.metadata?.billing_cycle;
+
+            if (userId && planId && subscription.status === 'active') {
+                try {
+                    await base44.asServiceRole.entities.User.update(userId, {
+                        subscription_plan: planId,
+                        subscription_billing_cycle: billingCycle,
+                        subscription_status: 'active',
+                        stripe_subscription_id: subscription.id,
+                        subscription_started_at: new Date().toISOString()
+                    });
+                    console.log(`✅ Activated subscription for user ${userId}: ${planId} (${billingCycle})`);
+                } catch (error) {
+                    console.error('Failed to update subscription:', error);
+                }
+            }
+
+            return Response.json({ success: true });
+        }
+
+        // Handle subscription cancellation
+        if (event.type === 'customer.subscription.deleted') {
+            const subscription = event.data.object as Stripe.Subscription;
+            console.log('Processing subscription cancellation:', subscription.id);
+
+            const userId = subscription.metadata?.user_id;
+
+            if (userId) {
+                try {
+                    await base44.asServiceRole.entities.User.update(userId, {
+                        subscription_plan: null,
+                        subscription_billing_cycle: null,
+                        subscription_status: 'cancelled',
+                        stripe_subscription_id: null
+                    });
+                    console.log(`✅ Cancelled subscription for user ${userId}`);
+                } catch (error) {
+                    console.error('Failed to cancel subscription:', error);
+                }
+            }
+
+            return Response.json({ success: true });
+        }
+
         if (event.type === 'checkout.session.completed') {
             const session = event.data.object as Stripe.Checkout.Session;
             console.log('Processing completed checkout session:', session.id);
