@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Gift, Plus, Edit, Trash2, Loader2, Upload, Package, CheckCircle, X } from "lucide-react";
+import { createPageUrl } from "@/utils";
 import {
   Select,
   SelectContent,
@@ -266,7 +267,7 @@ export default function ExpRewardsSection() {
         description: product.description,
         image_url: product.images?.[0] || '',
         category: 'print',
-        product_link: `/marketplace/${productId}`
+        product_link: createPageUrl(`ProductDetail?id=${productId}`)
       }));
     }
   };
@@ -721,16 +722,22 @@ export default function ExpRewardsSection() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    {formData.reward_type !== 'consumer' && (
+                    {formData.reward_type === 'consumer' ? (
+                      <>
+                        <SelectItem value="print" className="text-white">Print</SelectItem>
+                        <SelectItem value="accessory" className="text-white">Accessory</SelectItem>
+                        <SelectItem value="discount" className="text-white">Discount</SelectItem>
+                      </>
+                    ) : (
                       <>
                         <SelectItem value="filament" className="text-white">Filament</SelectItem>
                         <SelectItem value="equipment" className="text-white">Equipment</SelectItem>
                         <SelectItem value="boost" className="text-white">Boost</SelectItem>
+                        <SelectItem value="print" className="text-white">Print</SelectItem>
+                        <SelectItem value="accessory" className="text-white">Accessory</SelectItem>
+                        <SelectItem value="discount" className="text-white">Discount</SelectItem>
                       </>
                     )}
-                    <SelectItem value="print" className="text-white">Print</SelectItem>
-                    <SelectItem value="accessory" className="text-white">Accessory</SelectItem>
-                    <SelectItem value="discount" className="text-white">Discount</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

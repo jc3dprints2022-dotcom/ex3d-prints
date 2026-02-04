@@ -2,43 +2,72 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Gift, Star, Loader2, TrendingUp, Award, CheckCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Trophy, Gift, Loader2, Sparkles, ArrowRight, TrendingUp } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-export default function DesignerExpRedeemTab({ user, onExpUpdate }) {
-  const [rewards, setRewards] = useState([]);
-  const [redemptions, setRedemptions] = useState([]);
+const TIERS = [
+  { exp: 500, value: 5, label: '$5 Off', color: 'bg-blue-500' },
+  { exp: 2000, value: 20, label: '$20 Off', color: 'bg-purple-500' },
+  { exp: 5000, value: 50, label: '$50 Off', color: 'bg-orange-500' }
+];
+
+export default function DesignerExpRedeemTab({ user, onUpdate }) {
+  const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState(null);
+  const [showAllTransactions, setShowAllTransactions] = useState(false);
   const { toast } = useToast();
 
+  const [rewards, setRewards] = useState([]);
+  const [loadingRewards, setLoadingRewards] = useState(false);
+
   useEffect(() => {
-    loadData();
+    if (user?.id) {
+      loadTransactions();
+      loadRewards();
+    }
   }, [user]);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadRewards = async () => {
+    setLoadingRewards(true);
     try {
-      const [rewardsData, redemptionsData] = await Promise.all([
-        base44.entities.ExpReward.filter({ reward_type: 'designer', is_active: true }),
-        base44.entities.ExpRedemption.filter({ user_id: user.id })
-      ]);
-      setRewards(rewardsData.sort((a, b) => a.exp_cost - b.exp_cost));
-      setRedemptions(redemptionsData.sort((a, b) => b.created_date.localeCompare(a.created_date)));
+      const expRewards = await base44.entities.ExpReward.filter({
+        reward_type: "designer",
+        is_active: true
+      });
+      setRewards(expRewards);
     } catch (error) {
       console.error('Failed to load rewards:', error);
-      toast({ title: "Failed to load rewards", variant: "destructive" });
+    }
+    setLoadingRewards(false);
+  };
+
+  const loadTransactions = async () => {
+    if (!user?.id) {
+      setLoading(false);
+      return;
+    }
+    try {
+      const allTransactions = await base44.entities.ExpTransaction.filter(
+        { user_id: user.id },
+        '-created_date',
+        50
+      );
+      setTransactions(allTransactions);
+    } catch (error) {
+      console.error('Failed to load transactions:', error);
     }
     setLoading(false);
   };
 
-  const handleRedeem = async (reward) => {
-    if (user.exp_balance < reward.exp_cost) {
+  const handleRedeemReward = async (reward) => {
+    if (!user || (user.exp_points || 0) < reward.exp_cost) {
       toast({
         title: "Insufficient EXP",
-        description: `You need ${reward.exp_cost - user.exp_balance} more EXP`,
+        description: `You need ${reward.exp_cost} EXP but have ${user.exp_points || 0} EXP.`,
         variant: "destructive"
       });
       return;
@@ -46,171 +75,195 @@ export default function DesignerExpRedeemTab({ user, onExpUpdate }) {
 
     setRedeeming(reward.id);
     try {
-      // Special handling for boost rewards
-      if (reward.category === 'boost') {
-        await base44.functions.invoke('redeemExpForReward', {
-          userId: user.id,
-          rewardId: reward.id,
-          rewardType: 'boost',
-          boostDurationWeeks: reward.boost_duration_weeks || 1
-        });
-        toast({
-          title: "Boost Redeemed! 🚀",
-          description: "Select a listing to apply your boost credit"
-        });
-      } else {
-        await base44.functions.invoke('redeemExpForReward', {
-          userId: user.id,
-          rewardId: reward.id
-        });
+      const { data } = await base44.functions.invoke('redeemExpForReward', {
+        rewardId: reward.id
+      });
+
+      if (data?.success) {
         toast({
           title: "Reward Redeemed!",
-          description: `You've redeemed ${reward.name}`
+          description: `You've redeemed ${reward.name}!`
         });
+        
+        await loadTransactions();
+        
+        if (onUpdate) {
+          await onUpdate();
+        }
+      } else {
+        throw new Error(data?.error || 'Redemption failed');
       }
-      
-      await loadData();
-      if (onExpUpdate) await onExpUpdate();
     } catch (error) {
-      console.error('Redemption failed:', error);
       toast({
-        title: "Redemption Failed",
-        description: error.message || "Please try again",
+        title: "Redemption failed",
+        description: error.message,
         variant: "destructive"
       });
     }
     setRedeeming(null);
   };
 
-  const expProgress = Math.min((user.exp_balance / 2000) * 100, 100);
+  const getNextTier = () => {
+    const currentExp = user?.exp_points || 0;
+    return TIERS.find(t => t.exp > currentExp) || TIERS[TIERS.length - 1];
+  };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
-      </div>
-    );
-  }
+  const getProgressPercent = () => {
+    const currentExp = user?.exp_points || 0;
+    const nextTier = getNextTier();
+    const previousTier = TIERS[TIERS.indexOf(nextTier) - 1];
+    const baseExp = previousTier ? previousTier.exp : 0;
+
+    const range = nextTier.exp - baseExp;
+    if (range <= 0) return 100;
+
+    return ((currentExp - baseExp) / range) * 100;
+  };
 
   return (
     <div className="space-y-6">
+      {/* How to Earn EXP */}
+      <Alert className="bg-gradient-to-r from-red-50 to-pink-50 border-red-200">
+        <Sparkles className="w-5 h-5 text-red-600" />
+        <AlertDescription className="text-red-900">
+          <strong>Earn EXP:</strong> Every sale = 10 EXP per dollar earned! Plus bonus EXP from featured products and milestones.
+          Redeem your EXP for boosts, perks, and exclusive designer benefits!
+        </AlertDescription>
+      </Alert>
+
       {/* EXP Balance Card */}
-      <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Star className="w-6 h-6 text-red-600" />
-            Your EXP Balance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-4xl font-bold text-red-600 mb-2">
-            {user.exp_balance?.toLocaleString() || 0} EXP
+      <Card className="bg-gradient-to-br from-red-500 to-pink-600 text-white">
+        <CardContent className="p-8">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-pink-100 mb-2">Your EXP Balance</p>
+              <h2 className="text-5xl font-bold flex items-center gap-3">
+                <Trophy className="w-12 h-12" />
+                {user?.exp_points || 0} EXP
+              </h2>
+            </div>
           </div>
-          <Progress value={expProgress} className="h-2 mb-2" />
-          <p className="text-sm text-gray-600">
-            {user.exp_balance >= 2000 ? "You're earning great EXP!" : `${2000 - user.exp_balance} EXP until next milestone`}
-          </p>
+
+          <div className="space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Progress to {getNextTier().label}</span>
+              <span className="font-semibold">
+                {user?.exp_points || 0} / {getNextTier().exp} EXP
+              </span>
+            </div>
+            <Progress value={getProgressPercent()} className="h-3 bg-pink-700" />
+            <p className="text-xs text-pink-100">
+              {Math.max(0, getNextTier().exp - (user?.exp_points || 0))} EXP until next reward
+            </p>
+          </div>
         </CardContent>
       </Card>
 
-      {/* Designer Rewards */}
-      <div>
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Gift className="w-5 h-5 text-red-600" />
-          Designer Rewards
-        </h3>
-        <div className="grid md:grid-cols-2 gap-4">
-          {rewards.map(reward => {
-            const canAfford = user.exp_balance >= reward.exp_cost;
-            const isBoost = reward.category === 'boost';
-            
-            return (
-              <Card key={reward.id} className={`${canAfford ? 'border-red-300 bg-red-50' : 'bg-gray-50'}`}>
-                <CardContent className="p-4">
-                  <div className="flex gap-4">
-                    {reward.image_url && (
-                      <img src={reward.image_url} alt={reward.name} className="w-20 h-20 rounded object-cover" />
-                    )}
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                        {reward.name}
-                        {isBoost && <TrendingUp className="w-4 h-4 text-orange-500" />}
-                      </h4>
-                      <p className="text-sm text-gray-600 mb-2">{reward.description}</p>
-                      {isBoost && reward.boost_duration_weeks && (
-                        <Badge className="bg-orange-500 mb-2">
-                          {reward.boost_duration_weeks} week{reward.boost_duration_weeks > 1 ? 's' : ''}
-                        </Badge>
-                      )}
-                      <div className="flex items-center justify-between">
-                        <Badge className="bg-red-500">{reward.exp_cost} EXP</Badge>
-                        <Button
-                          size="sm"
-                          onClick={() => handleRedeem(reward)}
-                          disabled={!canAfford || redeeming === reward.id}
-                          className="bg-red-600 hover:bg-red-700"
-                        >
-                          {redeeming === reward.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            'Redeem'
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-        {rewards.length === 0 && (
-          <Card>
-            <CardContent className="p-8 text-center text-gray-500">
-              No designer rewards available at the moment
-            </CardContent>
-          </Card>
-        )}
-      </div>
-
-      {/* Redemption History */}
-      <div>
-        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-          <Award className="w-5 h-5 text-red-600" />
-          Your Redemptions
-        </h3>
+      {/* Rewards Section */}
+      {rewards.length > 0 && (
         <Card>
-          <CardContent className="p-4">
-            {redemptions.length > 0 ? (
-              <div className="space-y-3">
-                {redemptions.map(redemption => (
-                  <div key={redemption.id} className="flex justify-between items-center py-2 border-b last:border-0">
-                    <div>
-                      <p className="font-medium">{redemption.reward_name}</p>
-                      <p className="text-sm text-gray-500">
-                        {new Date(redemption.created_date).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <Badge className={
-                        redemption.status === 'fulfilled' ? 'bg-green-500' :
-                        redemption.status === 'pending' ? 'bg-yellow-500' :
-                        'bg-gray-500'
-                      }>
-                        {redemption.status === 'fulfilled' && <CheckCircle className="w-3 h-3 mr-1" />}
-                        {redemption.status}
-                      </Badge>
-                      <span className="text-red-600 font-semibold">-{redemption.exp_cost} EXP</span>
-                    </div>
-                  </div>
-                ))}
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Gift className="w-5 h-5 text-red-600" />
+              Available Designer Rewards
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loadingRewards ? (
+              <div className="text-center py-8">
+                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
               </div>
             ) : (
-              <p className="text-center text-gray-500 py-8">No redemptions yet</p>
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {rewards.map(reward => {
+                  const canRedeem = (user?.exp_points || 0) >= reward.exp_cost;
+                  const isRedeeming = redeeming === reward.id;
+                  return (
+                    <Card key={reward.id} className={`overflow-hidden ${canRedeem ? 'border-red-500 border-2' : ''}`}>
+                      {reward.image_url && (
+                        <div className="aspect-square bg-gray-100 overflow-hidden">
+                          <img src={reward.image_url} alt={reward.name} className="w-full h-full object-cover" />
+                        </div>
+                      )}
+                      <CardContent className="p-4 space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-sm">{reward.name}</h3>
+                          <p className="text-xs text-gray-600">{reward.description}</p>
+                        </div>
+                        <Badge className="bg-purple-100 text-purple-800">
+                          {reward.exp_cost} EXP
+                        </Badge>
+                        {reward.category === 'boost' && reward.boost_duration_weeks && (
+                          <Badge className="bg-yellow-100 text-yellow-800">
+                            <TrendingUp className="w-3 h-3 mr-1" />
+                            {reward.boost_duration_weeks} week{reward.boost_duration_weeks > 1 ? 's' : ''}
+                          </Badge>
+                        )}
+                        <Button 
+                          disabled={!canRedeem || isRedeeming} 
+                          onClick={() => handleRedeemReward(reward)}
+                          className="w-full bg-red-600 hover:bg-red-700 text-xs h-7"
+                        >
+                          {isRedeeming ? (
+                            <><Loader2 className="w-3 h-3 mr-1 animate-spin" /> Redeeming...</>
+                          ) : canRedeem ? (
+                            <>Redeem <ArrowRight className="w-3 h-3 ml-1" /></>
+                          ) : (
+                            `Need ${reward.exp_cost - (user?.exp_points || 0)} more`
+                          )}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
             )}
           </CardContent>
         </Card>
-      </div>
+      )}
+
+      {/* Transaction History */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Transaction History</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <div className="text-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+            </div>
+          ) : transactions.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">No transactions yet</p>
+          ) : (
+            <>
+              <div className="space-y-3">
+                {transactions.slice(0, showAllTransactions ? transactions.length : 5).map(tx => (
+                  <div key={tx.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div className="flex-1">
+                      <p className="font-medium">{tx.description}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(tx.created_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <Badge className={tx.action === 'earned' ? 'bg-green-500' : 'bg-orange-500'}>
+                      {tx.action === 'earned' ? '+' : '-'}{tx.amount} EXP
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              {transactions.length > 5 && (
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAllTransactions(!showAllTransactions)}
+                  className="w-full mt-4"
+                >
+                  {showAllTransactions ? 'Show Less' : `Show ${transactions.length - 5} More Transactions`}
+                </Button>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -99,6 +99,10 @@ export default function ProductCard({ product }) {
     }
 
     try {
+      // Optimistically update UI
+      const wasInWishlist = isInWishlist;
+      setIsInWishlist(!wasInWishlist);
+
       // Fetch latest user data to ensure we have the most current wishlist
       const currentUser = await base44.auth.me();
       const currentWishlist = currentUser.wishlist || [];
@@ -110,18 +114,16 @@ export default function ProductCard({ product }) {
         ? currentWishlist.filter(pid => pid !== product.id)
         : [...currentWishlist, product.id];
 
-      await base44.auth.updateMe({ wishlist: updatedWishlist, wishlist_last_updated: new Date().toISOString() });
+      await base44.auth.updateMe({ wishlist: updatedWishlist });
       
       // Update local state
       setUser(prev => ({ ...prev, wishlist: updatedWishlist }));
-      setIsInWishlist(!productInWishlist);
       
       toast({ title: productInWishlist ? "Removed from wishlist" : "Added to wishlist ❤️" });
       window.dispatchEvent(new Event('wishlistUpdated'));
-      
-      // Reload user data to sync
-      await loadUser();
     } catch (error) {
+      // Revert optimistic update on error
+      setIsInWishlist(isInWishlist);
       toast({ title: "Failed to update wishlist", variant: "destructive" });
     }
   };
