@@ -669,15 +669,28 @@ The EX3D Team`
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-6">
-                    <p className="text-gray-600 mb-4">No active subscription</p>
+                  <>
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="font-semibold text-blue-900">Current Plan</p>
+                      <p className="text-2xl font-bold text-blue-700">Lite (Free Trial)</p>
+                      <p className="text-sm text-blue-600 mt-1">
+                        Up to 60 hours/month • Free until further notice
+                      </p>
+                    </div>
+                    
+                    <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Note:</strong> You're currently on a free trial. Upgrade anytime for more hours and priority order routing.
+                      </p>
+                    </div>
+                    
                     <Button 
                       onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
-                      className="bg-orange-600 hover:bg-orange-700"
+                      className="w-full bg-orange-600 hover:bg-orange-700"
                     >
-                      Choose a Plan
+                      Upgrade Plan
                     </Button>
-                  </div>
+                  </>
                 )}
               </CardContent>
             </Card>

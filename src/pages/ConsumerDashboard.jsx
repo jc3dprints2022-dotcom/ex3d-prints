@@ -310,7 +310,7 @@ export default function ConsumerDashboard() {
     { id: "overview", label: "Overview", icon: TrendingUp },
     { id: "orders", label: "Orders & Quotes", icon: Package },
     { id: "exp", label: "EXP / Rewards", icon: Gift },
-    ...(user?.business_roles?.includes('maker') && user?.subscription_plan ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
+    ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Studio", icon: Star }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
@@ -748,27 +748,7 @@ export default function ConsumerDashboard() {
 
             {/* Maker Hub Section */}
             {activeSection === "maker" && user?.business_roles?.includes('maker') && (
-              <>
-                {!user?.subscription_plan ? (
-                  <Card>
-                    <CardContent className="p-12 text-center">
-                      <Package className="w-16 h-16 mx-auto text-orange-400 mb-4" />
-                      <h3 className="text-xl font-bold mb-2">Subscription Required</h3>
-                      <p className="text-gray-600 mb-6">
-                        To access the Maker Hub, you need an active subscription plan.
-                      </p>
-                      <Button 
-                        onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
-                        className="bg-orange-600 hover:bg-orange-700"
-                      >
-                        Choose Your Plan
-                      </Button>
-                    </CardContent>
-                  </Card>
-                ) : (
-                  <MakerDashboardContent user={user} onUpdate={loadDashboardData} />
-                )}
-              </>
+              <MakerDashboardContent user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* Designer Studio Section */}
