@@ -266,8 +266,13 @@ export default function MakerSubscriptionSelect() {
 
                 <CardContent className="pt-6 space-y-4">
                   <div className="text-center py-3 bg-green-50 rounded-lg border border-green-200">
-                    <p className="text-sm text-gray-600">Estimated Monthly Profit</p>
-                    <p className="text-2xl font-bold text-green-700">{plan.estimatedProfit}</p>
+                    <p className="text-sm text-gray-600">Estimated {billingCycle === 'yearly' ? 'Yearly' : 'Monthly'} Profit</p>
+                    <p className="text-2xl font-bold text-green-700">
+                      {billingCycle === 'yearly' && typeof plan.price === 'number' && plan.estimatedProfit.includes('$') 
+                        ? `$${parseInt(plan.estimatedProfit.replace(/\D/g, '')) * 12}+`
+                        : plan.estimatedProfit
+                      }
+                    </p>
                   </div>
 
                   <div className="space-y-1 text-sm">

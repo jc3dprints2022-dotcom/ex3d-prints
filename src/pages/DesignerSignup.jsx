@@ -223,7 +223,7 @@ export default function DesignerSignup() {
         description: "Welcome to the designer network!"
       });
 
-      window.location.href = createPageUrl('DesignerDashboard');
+      window.location.href = createPageUrl('ConsumerDashboard') + '?tab=designer';
     } catch (error) {
       console.error("Failed to submit:", error);
       toast({

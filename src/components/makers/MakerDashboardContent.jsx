@@ -334,16 +334,13 @@ The EX3D Team`
 
       {/* Print Hours Tracker */}
       <Card className="mb-6">
-        <CardHeader>
+        <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-orange-600" />
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Clock className="w-4 h-4 text-orange-600" />
                 Monthly Print Hours
               </CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Track your printing capacity for this month
-              </p>
             </div>
             <Badge className={`text-lg ${
               (() => {
@@ -374,8 +371,8 @@ The EX3D Team`
         <CardContent>
           {(() => {
             const plan = user?.subscription_plan || 'lite';
-            const limits = { lite: 60, pro: 200, express: 600, unlimited: Infinity };
-            const limit = limits[plan] || 60;
+            const limits = { lite: 30, pro: 200, express: 600, unlimited: Infinity };
+            const limit = limits[plan] || 30;
             
             const now = new Date();
             const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -420,17 +417,17 @@ The EX3D Team`
                 )}
                 
                 {percentage >= 85 && limit !== Infinity && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <AlertCircle className="w-5 h-5 text-red-600 mt-0.5" />
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
                       <div className="flex-1">
-                        <p className="text-sm font-semibold text-red-900">Approaching Monthly Limit</p>
-                        <p className="text-sm text-red-800 mt-1">
-                          You've used {percentage.toFixed(0)}% of your monthly hours. Consider upgrading your plan for more capacity.
+                        <p className="text-xs font-semibold text-red-900">Approaching Limit</p>
+                        <p className="text-xs text-red-800 mt-0.5">
+                          {percentage.toFixed(0)}% used. Consider upgrading.
                         </p>
                         <Button 
                           size="sm"
-                          className="mt-3 bg-red-600 hover:bg-red-700"
+                          className="mt-2 bg-red-600 hover:bg-red-700 h-7 text-xs"
                           onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
                         >
                           Upgrade Plan
@@ -441,9 +438,9 @@ The EX3D Team`
                 )}
                 
                 {percentage >= 70 && percentage < 85 && limit !== Infinity && (
-                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Note:</strong> You're at {percentage.toFixed(0)}% capacity. Plan ahead for additional orders.
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-2">
+                    <p className="text-xs text-yellow-800">
+                      <strong>Note:</strong> {percentage.toFixed(0)}% capacity. Plan ahead.
                     </p>
                   </div>
                 )}
@@ -795,7 +792,7 @@ The EX3D Team`
                       <p className="font-semibold text-blue-900">Current Plan</p>
                       <p className="text-2xl font-bold text-blue-700">Lite (Free Trial)</p>
                       <p className="text-sm text-blue-600 mt-1">
-                        Up to 60 hours/month • Free until further notice
+                        Up to 30 hours/month • Free until further notice
                       </p>
                     </div>
                     
