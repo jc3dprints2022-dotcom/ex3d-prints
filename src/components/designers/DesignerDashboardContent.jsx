@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle, Upload, Clock } from "lucide-react";
-import { Progress } from "@/components/ui/progress";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle, Upload } from "lucide-react";
 import DesignerProductForm from "../designers/DesignerProductForm";
 import BankInfoManager from "../shared/BankInfoManager";
 import DesignerExpRedeemTab from "../designers/DesignerExpRedeemTab";
@@ -126,54 +125,6 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const monthlyRevenue = 0;
   
-  // Calculate print hours from completed orders
-  const [completedOrders, setCompletedOrders] = useState([]);
-  const [printHoursLoading, setPrintHoursLoading] = useState(true);
-  
-  useEffect(() => {
-    const loadCompletedOrders = async () => {
-      try {
-        const allOrders = await base44.entities.Order.list();
-        const myCompletedOrders = allOrders.filter(order => {
-          if (!['completed', 'dropped_off', 'delivered'].includes(order.status)) return false;
-          return order.items?.some(item => item.designer_id === user.designer_id);
-        });
-        setCompletedOrders(myCompletedOrders);
-      } catch (error) {
-        console.error('Failed to load orders:', error);
-      }
-      setPrintHoursLoading(false);
-    };
-    if (user?.designer_id) {
-      loadCompletedOrders();
-    }
-  }, [user?.designer_id]);
-  
-  // Calculate monthly print hours for designer's products
-  const monthlyPrintHours = completedOrders
-    .filter(order => {
-      const orderDate = new Date(order.created_date);
-      return orderDate >= firstDayOfMonth;
-    })
-    .reduce((sum, order) => {
-      const designerHours = order.items
-        ?.filter(item => item.designer_id === user.designer_id)
-        .reduce((h, item) => h + ((item.print_time_hours || 0) * (item.quantity || 1)), 0) || 0;
-      return sum + designerHours;
-    }, 0);
-  
-  const designerPlan = user?.designer_subscription_plan || 'free';
-  const planLimits = {
-    free: 100,
-    basic: 500,
-    pro: 2000,
-    unlimited: Infinity
-  };
-  
-  const maxPrintHours = planLimits[designerPlan] || 100;
-  const hoursPercentage = maxPrintHours === Infinity ? 0 : (monthlyPrintHours / maxPrintHours) * 100;
-  const needsUpgrade = hoursPercentage >= 85 && maxPrintHours !== Infinity;
-  
   const stats = {
     total: products.length,
     orders: totalOrders,
@@ -256,58 +207,6 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
           </CardContent>
         </Card>
       </div>
-
-      {/* Print Hours Tracker */}
-      {!printHoursLoading && (
-        <Card className={needsUpgrade ? 'border-2 border-orange-500' : ''}>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Clock className="w-5 h-5 text-blue-600" />
-              Monthly Print Hours
-              {needsUpgrade && <Badge className="bg-orange-500">Upgrade Recommended</Badge>}
-            </CardTitle>
-            <p className="text-sm text-gray-600">
-              Your designs have been printed for {monthlyPrintHours.toFixed(1)} hours this month
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium">
-                  {monthlyPrintHours.toFixed(1)} / {maxPrintHours === Infinity ? '∞' : maxPrintHours} hours
-                </span>
-                <span className="text-sm text-gray-600 capitalize">
-                  {designerPlan} Plan
-                </span>
-              </div>
-              {maxPrintHours !== Infinity && (
-                <Progress value={hoursPercentage} className="h-3" />
-              )}
-            </div>
-            
-            {needsUpgrade && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <p className="text-sm font-semibold text-orange-900 mb-2">
-                  ⚠️ You're at {hoursPercentage.toFixed(0)}% of your monthly limit!
-                </p>
-                <p className="text-sm text-orange-800 mb-3">
-                  Upgrade your plan to increase your print hour capacity and keep earning.
-                </p>
-                <Button 
-                  size="sm" 
-                  className="bg-orange-600 hover:bg-orange-700"
-                  onClick={() => toast({ 
-                    title: "Contact Support", 
-                    description: "Email labaghr@my.erau.edu to upgrade your designer plan" 
-                  })}
-                >
-                  Upgrade Plan
-                </Button>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>

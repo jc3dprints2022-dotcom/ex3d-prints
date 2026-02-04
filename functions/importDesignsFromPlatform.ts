@@ -17,35 +17,19 @@ Deno.serve(async (req) => {
 
     // Use LLM to scrape and extract design data
     const prompt = `
-You are a design import assistant. Access the ${platform} profile at: ${profileUrl}
+You are a design import assistant. Extract all designs from this ${platform} profile: ${profileUrl}
 
-IMPORTANT: You have web browsing capabilities. Visit the URL and extract design information.
-
-For EACH design found on the profile page, extract:
-- name: Design name/title
-- description: Full description (if available, otherwise use name)
-- images: Array of image URLs from the design thumbnails
+For EACH design found, return a JSON object with:
+- name: Design name
+- description: Full description
+- images: Array of image URLs (find all product images)
 - category: Best matching category from: kit_cards, rocket_models, halloween, dorm_essentials, desk, art, gadgets, toys_and_games, thanksgiving, christmas, valentines_day, misc
-- tags: Array of relevant tags based on design name/category
-- dimensions: Object with length, width, height in mm (estimate 100x100x50 if not available)
-- materials: Array ["PLA"] as default
-- colors: Array ["Black", "White"] as default
+- tags: Array of relevant tags
+- dimensions: Object with length, width, height in mm (estimate if not provided)
+- materials: Array of compatible materials from: PLA, ABS, PETG, TPU
+- colors: Array of available colors
 
-If the profile has multiple pages of designs, try to get as many as possible (at least 10-20).
-
-Return your response as a JSON object with:
-{
-  "success": true,
-  "designs": [array of design objects],
-  "error": null
-}
-
-If you cannot access the page or find designs, return:
-{
-  "success": false,
-  "designs": [],
-  "error": "Specific error message explaining what went wrong"
-}
+Return as a JSON array of design objects. If you cannot access the page, return an error message.
 `;
 
     const response = await base44.integrations.Core.InvokeLLM({
@@ -84,11 +68,9 @@ If you cannot access the page or find designs, return:
     });
 
     if (!response.success || !response.designs || response.designs.length === 0) {
-      const errorMsg = response.error || 'No designs found or unable to access the profile. The profile may be private, the URL may be incorrect, or there may be no public designs.';
       return Response.json({ 
-        error: errorMsg,
-        imported: 0,
-        success: false
+        error: response.error || 'No designs found or unable to access profile',
+        imported: 0 
       });
     }
 
