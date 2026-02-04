@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle } from "lucide-react";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle, Upload } from "lucide-react";
 import DesignerProductForm from "../designers/DesignerProductForm";
 import BankInfoManager from "../shared/BankInfoManager";
 import DesignerExpRedeemTab from "../designers/DesignerExpRedeemTab";
@@ -40,10 +40,14 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
     profile_image: ''
   });
   const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importPlatform, setImportPlatform] = useState('');
+  const [importing, setImporting] = useState(false);
   const { toast } = useToast();
 
   const tabs = [
     { value: 'products', label: 'My Designs', icon: Package },
+    { value: 'import', label: 'Import Designs', icon: Upload },
     { value: 'exp', label: 'Redeem EXP', icon: PlusCircle },
     { value: 'guide', label: 'Guide', icon: HelpCircle },
     { value: 'settings', label: 'Settings', icon: Settings },
@@ -358,6 +362,105 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
               )}
             </>
           )}
+        </TabsContent>
+
+        <TabsContent value="import">
+          <Card>
+            <CardHeader>
+              <CardTitle>Import Designs from Other Platforms</CardTitle>
+              <p className="text-sm text-gray-600 mt-2">
+                Import your existing designs from Thingiverse, Printables, or other platforms
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="platform">Platform</Label>
+                <Select value={importPlatform} onValueChange={setImportPlatform}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select platform" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="thingiverse">Thingiverse</SelectItem>
+                    <SelectItem value="printables">Printables</SelectItem>
+                    <SelectItem value="cults3d">Cults3D</SelectItem>
+                    <SelectItem value="myminifactory">MyMiniFactory</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <Label htmlFor="profileUrl">Your Profile URL</Label>
+                <Input
+                  id="profileUrl"
+                  value={importUrl}
+                  onChange={(e) => setImportUrl(e.target.value)}
+                  placeholder="https://www.thingiverse.com/username/designs"
+                />
+              </div>
+
+              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                <p className="text-sm text-yellow-800">
+                  <strong>Note:</strong> This will create draft listings for all your designs. 
+                  You'll need to edit each listing to add print files, set pricing, and verify details before they go live.
+                </p>
+              </div>
+
+              <Button
+                onClick={async () => {
+                  if (!importUrl || !importPlatform) {
+                    toast({ title: "Please select platform and enter URL", variant: "destructive" });
+                    return;
+                  }
+
+                  setImporting(true);
+                  try {
+                    const { data } = await base44.functions.invoke('importDesignsFromPlatform', {
+                      profileUrl: importUrl,
+                      platform: importPlatform
+                    });
+
+                    if (data.error) {
+                      toast({ 
+                        title: "Import failed", 
+                        description: data.error,
+                        variant: "destructive" 
+                      });
+                    } else {
+                      toast({ 
+                        title: "Import successful!", 
+                        description: `Imported ${data.imported} of ${data.total} designs. They're now in your products list as drafts.`
+                      });
+                      setImportUrl('');
+                      setImportPlatform('');
+                      setActiveTab('products');
+                      await loadDashboardData();
+                    }
+                  } catch (error) {
+                    toast({ 
+                      title: "Import failed", 
+                      description: error.message,
+                      variant: "destructive" 
+                    });
+                  }
+                  setImporting(false);
+                }}
+                disabled={importing}
+                className="w-full bg-red-600 hover:bg-red-700"
+              >
+                {importing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Importing Designs...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Import All Designs
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="exp">

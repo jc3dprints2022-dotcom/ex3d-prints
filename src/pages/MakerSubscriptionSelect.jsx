@@ -84,8 +84,9 @@ const SUBSCRIPTION_PLANS = [
     name: 'Unlimited',
     icon: Rocket,
     color: 'orange',
-    price: 'Custom',
-    priceMonthly: 'Custom pricing',
+    price: 250,
+    priceMonthly: '$250+/month',
+    priceYearly: '$3,000+/year',
     estimatedProfit: '$5,000+',
     maxHours: '600+',
     printers: '4+',
@@ -136,15 +137,6 @@ export default function MakerSubscriptionSelect() {
   }, []);
 
   const handleSelectPlan = async (plan) => {
-    if (plan.id === 'unlimited') {
-      toast({ 
-        title: "Contact Required", 
-        description: "Please contact support to set up an Unlimited plan."
-      });
-      window.location.href = createPageUrl("Contact");
-      return;
-    }
-
     setProcessing(true);
     try {
       // Create subscription checkout
@@ -244,19 +236,31 @@ export default function MakerSubscriptionSelect() {
                   </div>
                   
                   <CardTitle className="text-3xl font-bold text-gray-900">
-                    {typeof plan.price === 'number' 
-                      ? (billingCycle === 'monthly' ? `$${plan.price}` : `$${plan.price * 12}`)
-                      : plan.price
-                    }
+                    {plan.name}
                   </CardTitle>
-                  <p className="text-sm text-gray-600">
-                    {billingCycle === 'monthly' ? plan.priceMonthly : (isUnlimited ? 'Contact us' : plan.priceYearly)}
-                  </p>
                   
-                  {plan.firstYearOffer && billingCycle === 'yearly' && (
-                    <p className="text-xs text-green-700 font-semibold mt-2">
-                      💰 {plan.firstYearOffer}
-                    </p>
+                  {billingCycle === 'monthly' ? (
+                    plan.id === 'lite' ? (
+                      <div className="mt-2">
+                        <p className="text-lg line-through text-gray-400">$10/month</p>
+                        <p className="text-2xl font-bold text-green-600">$0 First Month</p>
+                      </div>
+                    ) : (
+                      <p className="text-lg text-gray-600 mt-2">{plan.priceMonthly}</p>
+                    )
+                  ) : (
+                    <div className="mt-2">
+                      <p className="text-lg line-through text-gray-400">
+                        ${typeof plan.price === 'number' ? plan.price * 12 : '3000+'}
+                      </p>
+                      <p className="text-2xl font-bold text-green-600">
+                        ${typeof plan.price === 'number' ? Math.floor(plan.price * 12 * 0.75) : '2250+'}
+                        <span className="text-sm font-normal text-gray-600">/year</span>
+                      </p>
+                      <p className="text-xs text-green-700 font-semibold mt-1">
+                        💰 25% off first year
+                      </p>
+                    </div>
                   )}
                 </CardHeader>
 
@@ -304,8 +308,6 @@ export default function MakerSubscriptionSelect() {
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Processing...
                       </>
-                    ) : isUnlimited ? (
-                      'Contact Us'
                     ) : (
                       'Get Started'
                     )}
