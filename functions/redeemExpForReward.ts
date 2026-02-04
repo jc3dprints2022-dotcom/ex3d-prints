@@ -1,4 +1,3 @@
-
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 
 Deno.serve(async (req) => {
@@ -10,14 +9,15 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const { reward_id } = await req.json();
+        const { rewardId, reward_id } = await req.json();
+        const finalRewardId = rewardId || reward_id;
 
-        if (!reward_id) {
+        if (!finalRewardId) {
             return Response.json({ error: 'Reward ID is required' }, { status: 400 });
         }
 
         // Get reward details
-        const reward = await base44.asServiceRole.entities.ExpReward.get(reward_id);
+        const reward = await base44.asServiceRole.entities.ExpReward.get(finalRewardId);
 
         if (!reward || !reward.is_active) {
             return Response.json({ error: 'Reward not available' }, { status: 400 });
@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
         // Create redemption record
         const redemption = await base44.asServiceRole.entities.ExpRedemption.create({
             user_id: user.id,
-            reward_id: reward_id,
+            reward_id: finalRewardId,
             reward_name: reward.name,
             exp_cost: reward.exp_cost,
             status: 'pending'
@@ -74,15 +74,16 @@ Deno.serve(async (req) => {
             try {
                 // Get product details if this reward references a product
                 let productDetails = null;
-                if (reward.product_id) {
-                    productDetails = await base44.asServiceRole.entities.Product.get(reward.product_id);
+                if (reward.existing_product_id) {
+                    productDetails = await base44.asServiceRole.entities.Product.get(reward.existing_product_id);
                 }
 
                 // Create order for the print reward
                 const newOrder = await base44.asServiceRole.entities.Order.create({
                     customer_id: user.id,
+                    customer_username: user.email?.split('@')[0] || user.full_name,
                     items: [{
-                        product_id: reward.product_id || reward_id,
+                        product_id: reward.existing_product_id || finalRewardId,
                         product_name: reward.name,
                         quantity: 1,
                         selected_material: productDetails?.materials?.[0] || 'PLA',
@@ -94,16 +95,17 @@ Deno.serve(async (req) => {
                         print_time_hours: productDetails?.print_time_hours || 0,
                         weight_grams: productDetails?.weight_grams || 0,
                         dimensions: productDetails?.dimensions || { length: 0, width: 0, height: 0 },
-                        multi_color: false,
-                        print_file_scale: 100,
-                        designer_id: productDetails?.designer_id
+                        multi_color: productDetails?.multi_color || false,
+                        print_file_scale: productDetails?.custom_scale || 100,
+                        designer_id: productDetails?.designer_id,
+                        images: productDetails?.images || [reward.image_url]
                     }],
                     total_amount: 0,
                     delivery_option: 'campus_pickup',
-                    pickup_location: 'Contact: labaghr@my.erau.edu or 610-858-3200',
+                    campus_location: user.campus_location || 'erau_prescott',
                     status: 'pending',
                     payment_status: 'paid',
-                    notes: `EXP Reward Redemption: ${reward.name}`
+                    notes: `EXP Reward Redemption: ${reward.name} (${reward.exp_cost} EXP)`
                 });
 
                 console.log('Order created:', newOrder.id);
