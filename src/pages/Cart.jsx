@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
@@ -364,6 +363,13 @@ export default function Cart() {
                     Continue Shopping
                   </Link>
                 </Button>
+
+                {/* Sustainability Message */}
+                <div className="pt-4 border-t">
+                  <p className="text-sm text-gray-600 text-center">
+                    🌱 We encourage the use of recycled filament by our makers, and we are committed to making all our products printed with recycled materials by 2030.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>

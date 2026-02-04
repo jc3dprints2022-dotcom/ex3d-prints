@@ -793,16 +793,16 @@ export default function DesignerProductForm({ designerId, designerName, existing
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="0">No boost (free)</SelectItem>
-              <SelectItem value="1">1 week - $5</SelectItem>
-              <SelectItem value="2">2 weeks - $10</SelectItem>
-              <SelectItem value="3">3 weeks - $15</SelectItem>
-              <SelectItem value="4">4 weeks - $20</SelectItem>
+              <SelectItem value="1">1 week - $5 or 350 EXP</SelectItem>
+              <SelectItem value="2">2 weeks - $10 or 700 EXP</SelectItem>
+              <SelectItem value="3">3 weeks - $15 or 1000 EXP</SelectItem>
+              <SelectItem value="4">4 weeks - $20 or 1350 EXP</SelectItem>
             </SelectContent>
           </Select>
         </div>
         {boostWeeks > 0 && (
           <p className="text-xs text-gray-600 mt-2">
-            Total: ${boostWeeks * 5} • Payment after approval
+            Total: ${boostWeeks * 5} or {Math.ceil(boostWeeks * 350)} EXP • Payment after approval
           </p>
         )}
       </div>

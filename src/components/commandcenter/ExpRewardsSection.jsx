@@ -58,7 +58,9 @@ export default function ExpRewardsSection() {
      image_url: '',
      stock_quantity: '',
      is_active: true,
-     existing_product_id: ''
+     existing_product_id: '',
+     boost_duration_weeks: '',
+     product_link: ''
    });
   const { toast } = useToast();
 
@@ -190,7 +192,9 @@ export default function ExpRewardsSection() {
        image_url: reward.image_url || '',
        stock_quantity: reward.stock_quantity?.toString() || '',
        is_active: reward.is_active,
-       existing_product_id: reward.existing_product_id || ''
+       existing_product_id: reward.existing_product_id || '',
+       boost_duration_weeks: reward.boost_duration_weeks?.toString() || '',
+       product_link: reward.product_link || ''
      });
      setShowDialog(true);
    };
@@ -243,8 +247,11 @@ export default function ExpRewardsSection() {
        image_url: '',
        stock_quantity: '',
        is_active: true,
-       existing_product_id: ''
+       existing_product_id: '',
+       boost_duration_weeks: '',
+       product_link: ''
      });
+     setSearchQuery('');
    };
 
   const handleProductSelect = (productId) => {
@@ -256,10 +263,17 @@ export default function ExpRewardsSection() {
         name: product.name,
         description: product.description,
         image_url: product.images?.[0] || '',
-        category: 'print'
+        category: 'print',
+        product_link: `/marketplace/${productId}`
       }));
     }
   };
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const filteredProducts = products.filter(p => 
+    p.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
@@ -709,6 +723,7 @@ export default function ExpRewardsSection() {
                       <>
                         <SelectItem value="filament" className="text-white">Filament</SelectItem>
                         <SelectItem value="equipment" className="text-white">Equipment</SelectItem>
+                        <SelectItem value="boost" className="text-white">Boost</SelectItem>
                       </>
                     )}
                     <SelectItem value="print" className="text-white">Print</SelectItem>
@@ -719,22 +734,29 @@ export default function ExpRewardsSection() {
               </div>
               </div>
 
-              {formData.reward_type === 'consumer' && (
+              {(formData.reward_type === 'consumer' || formData.category === 'print') && (
                 <div>
-                  <Label className="text-white">Link to Product (optional) *</Label>
+                  <Label className="text-white">Link to Product (optional)</Label>
+                  <Input
+                    type="text"
+                    placeholder="Search products..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="bg-slate-900 border-slate-700 text-white mb-2"
+                  />
                   <Select value={formData.existing_product_id} onValueChange={handleProductSelect}>
                     <SelectTrigger className="bg-slate-900 border-slate-700 text-white">
                       <SelectValue placeholder="Select a product to auto-populate details..." />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      {products.map(product => (
+                    <SelectContent className="bg-slate-800 border-slate-700 max-h-64 overflow-y-auto">
+                      {filteredProducts.map(product => (
                         <SelectItem key={product.id} value={product.id} className="text-white">
                           {product.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-slate-400 mt-1">Selecting a product will auto-fill name, description, and image.</p>
+                  <p className="text-xs text-slate-400 mt-1">Selecting a product will auto-fill name, description, image, and link to the listing.</p>
                 </div>
               )}
 
@@ -784,15 +806,15 @@ export default function ExpRewardsSection() {
 
                 {formData.category === 'boost' && (
                   <div>
-                    <Label className="text-white">Boost Duration (days)</Label>
+                    <Label className="text-white">Boost Duration (weeks) *</Label>
                     <Input
                       type="number"
-                      value={formData.boost_duration_days || ''}
-                      onChange={(e) => setFormData(prev => ({ ...prev, boost_duration_days: e.target.value }))}
-                      placeholder="e.g., 7"
+                      value={formData.boost_duration_weeks || ''}
+                      onChange={(e) => setFormData(prev => ({ ...prev, boost_duration_weeks: e.target.value }))}
+                      placeholder="e.g., 1, 2, 3, 4"
                       className="bg-slate-900 border-slate-700 text-white"
                     />
-                    <p className="text-xs text-slate-400 mt-1">How many days the boost will last</p>
+                    <p className="text-xs text-slate-400 mt-1">How many weeks the boost will last</p>
                   </div>
                 )}
             </div>

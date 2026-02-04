@@ -2,39 +2,31 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/components/ui/use-toast";
-import { Trophy, Package, Loader2, CheckCircle, Zap } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Gift, Star, Loader2, TrendingUp, Award, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
-export default function DesignerExpRedeemTab({ user, onUpdate }) {
+export default function DesignerExpRedeemTab({ user, onExpUpdate }) {
   const [rewards, setRewards] = useState([]);
+  const [redemptions, setRedemptions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState(null);
-  const [selectedReward, setSelectedReward] = useState(null);
-  const [myRedemptions, setMyRedemptions] = useState([]);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadRewards();
-    loadMyRedemptions();
+    loadData();
   }, [user]);
 
-  const loadRewards = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const allRewards = await base44.entities.ExpReward.filter({
-        reward_type: 'designer',
-        is_active: true
-      });
-      setRewards(allRewards.sort((a, b) => a.exp_cost - b.exp_cost));
+      const [rewardsData, redemptionsData] = await Promise.all([
+        base44.entities.ExpReward.filter({ reward_type: 'designer', is_active: true }),
+        base44.entities.ExpRedemption.filter({ user_id: user.id })
+      ]);
+      setRewards(rewardsData.sort((a, b) => a.exp_cost - b.exp_cost));
+      setRedemptions(redemptionsData.sort((a, b) => b.created_date.localeCompare(a.created_date)));
     } catch (error) {
       console.error('Failed to load rewards:', error);
       toast({ title: "Failed to load rewards", variant: "destructive" });
@@ -42,220 +34,183 @@ export default function DesignerExpRedeemTab({ user, onUpdate }) {
     setLoading(false);
   };
 
-  const loadMyRedemptions = async () => {
-    try {
-      const redemptions = await base44.entities.ExpRedemption.filter(
-        { user_id: user.id },
-        '-created_date'
-      );
-      setMyRedemptions(redemptions);
-    } catch (error) {
-      console.error('Failed to load redemptions:', error);
-    }
-  };
-
-  const handleRedeem = async () => {
-    if (!selectedReward) return;
-
-    setRedeeming(selectedReward.id);
-    try {
-      const { data } = await base44.functions.invoke('redeemExpForReward', {
-        reward_id: selectedReward.id
+  const handleRedeem = async (reward) => {
+    if (user.exp_balance < reward.exp_cost) {
+      toast({
+        title: "Insufficient EXP",
+        description: `You need ${reward.exp_cost - user.exp_balance} more EXP`,
+        variant: "destructive"
       });
+      return;
+    }
 
-      if (data?.success) {
-        toast({ 
-          title: "Reward redeemed!", 
-          description: data.message 
+    setRedeeming(reward.id);
+    try {
+      // Special handling for boost rewards
+      if (reward.category === 'boost') {
+        await base44.functions.invoke('redeemExpForReward', {
+          userId: user.id,
+          rewardId: reward.id,
+          rewardType: 'boost',
+          boostDurationWeeks: reward.boost_duration_weeks || 1
         });
-        setSelectedReward(null);
-        await onUpdate();
-        await loadRewards();
-        await loadMyRedemptions();
+        toast({
+          title: "Boost Redeemed! 🚀",
+          description: "Select a listing to apply your boost credit"
+        });
       } else {
-        throw new Error(data?.error || 'Redemption failed');
+        await base44.functions.invoke('redeemExpForReward', {
+          userId: user.id,
+          rewardId: reward.id
+        });
+        toast({
+          title: "Reward Redeemed!",
+          description: `You've redeemed ${reward.name}`
+        });
       }
+      
+      await loadData();
+      if (onExpUpdate) await onExpUpdate();
     } catch (error) {
-      toast({ 
-        title: "Redemption failed", 
-        description: error.message,
-        variant: "destructive" 
+      console.error('Redemption failed:', error);
+      toast({
+        title: "Redemption Failed",
+        description: error.message || "Please try again",
+        variant: "destructive"
       });
     }
     setRedeeming(null);
   };
 
+  const expProgress = Math.min((user.exp_balance / 2000) * 100, 100);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-red-600" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* EXP Balance */}
-      <Card className="bg-gradient-to-br from-red-500 to-pink-600 text-white">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-red-100 mb-2">Your EXP Balance</p>
-              <h2 className="text-5xl font-bold flex items-center gap-3">
-                <Trophy className="w-12 h-12" />
-                {user.exp_points || 0} EXP
-              </h2>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Available Rewards */}
-      <Card>
+      {/* EXP Balance Card */}
+      <Card className="bg-gradient-to-br from-red-50 to-pink-50 border-red-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-red-600" />
-            Available Rewards
+            <Star className="w-6 h-6 text-red-600" />
+            Your EXP Balance
           </CardTitle>
-          <p className="text-sm text-slate-500 mt-2">Boost your designs and access exclusive perks</p>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-            </div>
-          ) : rewards.length === 0 ? (
-            <p className="text-center text-gray-500 py-12">
-              No rewards available yet. Check back soon!
-            </p>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {rewards.map(reward => {
-                const canRedeem = (user.exp_points || 0) >= reward.exp_cost;
-                const outOfStock = reward.stock_quantity !== undefined && reward.stock_quantity <= 0;
-                const isBoost = reward.category === 'boost';
-
-                return (
-                  <Card 
-                    key={reward.id} 
-                    className={`${canRedeem && !outOfStock ? 'border-red-500 border-2' : 'border-gray-200'} ${outOfStock ? 'opacity-50' : ''}`}
-                  >
-                    <CardContent className="p-4">
-                      {reward.image_url && (
-                        <img 
-                          src={reward.image_url} 
-                          alt={reward.name} 
-                          className="w-full h-40 object-cover rounded-lg mb-3"
-                        />
-                      )}
-                      {isBoost && (
-                        <Badge className="bg-red-500 mb-2 flex items-center gap-1 w-fit">
-                          <Zap className="w-3 h-3" />
-                          Boost
-                        </Badge>
-                      )}
-                      <h3 className="font-bold text-lg mb-1">{reward.name}</h3>
-                      <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
-                      <div className="flex items-center justify-between mb-3">
-                        <Badge className="bg-red-500">{reward.exp_cost} EXP</Badge>
-                        {reward.stock_quantity !== undefined && (
-                          <span className="text-xs text-gray-500">
-                            Stock: {reward.stock_quantity}
-                          </span>
-                        )}
-                      </div>
-                      <Button
-                        onClick={() => setSelectedReward(reward)}
-                        disabled={!canRedeem || outOfStock}
-                        className="w-full"
-                      >
-                        {outOfStock ? 'Out of Stock' : canRedeem ? 'Redeem' : `Need ${reward.exp_cost - (user.exp_points || 0)} more EXP`}
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
+          <div className="text-4xl font-bold text-red-600 mb-2">
+            {user.exp_balance?.toLocaleString() || 0} EXP
+          </div>
+          <Progress value={expProgress} className="h-2 mb-2" />
+          <p className="text-sm text-gray-600">
+            {user.exp_balance >= 2000 ? "You're earning great EXP!" : `${2000 - user.exp_balance} EXP until next milestone`}
+          </p>
         </CardContent>
       </Card>
 
-      {/* My Redemptions */}
-      {myRedemptions.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>My Redemptions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {myRedemptions.map(redemption => (
-                <div key={redemption.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                  <div className="flex-1">
-                    <p className="font-medium">{redemption.reward_name}</p>
-                    <p className="text-sm text-gray-500">
-                      {new Date(redemption.created_date).toLocaleDateString()}
-                    </p>
-                    {redemption.fulfillment_notes && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        Note: {redemption.fulfillment_notes}
-                      </p>
+      {/* Designer Rewards */}
+      <div>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Gift className="w-5 h-5 text-red-600" />
+          Designer Rewards
+        </h3>
+        <div className="grid md:grid-cols-2 gap-4">
+          {rewards.map(reward => {
+            const canAfford = user.exp_balance >= reward.exp_cost;
+            const isBoost = reward.category === 'boost';
+            
+            return (
+              <Card key={reward.id} className={`${canAfford ? 'border-red-300 bg-red-50' : 'bg-gray-50'}`}>
+                <CardContent className="p-4">
+                  <div className="flex gap-4">
+                    {reward.image_url && (
+                      <img src={reward.image_url} alt={reward.name} className="w-20 h-20 rounded object-cover" />
                     )}
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                        {reward.name}
+                        {isBoost && <TrendingUp className="w-4 h-4 text-orange-500" />}
+                      </h4>
+                      <p className="text-sm text-gray-600 mb-2">{reward.description}</p>
+                      {isBoost && reward.boost_duration_weeks && (
+                        <Badge className="bg-orange-500 mb-2">
+                          {reward.boost_duration_weeks} week{reward.boost_duration_weeks > 1 ? 's' : ''}
+                        </Badge>
+                      )}
+                      <div className="flex items-center justify-between">
+                        <Badge className="bg-red-500">{reward.exp_cost} EXP</Badge>
+                        <Button
+                          size="sm"
+                          onClick={() => handleRedeem(reward)}
+                          disabled={!canAfford || redeeming === reward.id}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          {redeeming === reward.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            'Redeem'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
-                  <Badge className={
-                    redemption.status === 'fulfilled' ? 'bg-green-500' :
-                    redemption.status === 'pending' ? 'bg-yellow-500' :
-                    'bg-red-500'
-                  }>
-                    {redemption.status}
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+        {rewards.length === 0 && (
+          <Card>
+            <CardContent className="p-8 text-center text-gray-500">
+              No designer rewards available at the moment
+            </CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Redemption History */}
+      <div>
+        <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+          <Award className="w-5 h-5 text-red-600" />
+          Your Redemptions
+        </h3>
+        <Card>
+          <CardContent className="p-4">
+            {redemptions.length > 0 ? (
+              <div className="space-y-3">
+                {redemptions.map(redemption => (
+                  <div key={redemption.id} className="flex justify-between items-center py-2 border-b last:border-0">
+                    <div>
+                      <p className="font-medium">{redemption.reward_name}</p>
+                      <p className="text-sm text-gray-500">
+                        {new Date(redemption.created_date).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <Badge className={
+                        redemption.status === 'fulfilled' ? 'bg-green-500' :
+                        redemption.status === 'pending' ? 'bg-yellow-500' :
+                        'bg-gray-500'
+                      }>
+                        {redemption.status === 'fulfilled' && <CheckCircle className="w-3 h-3 mr-1" />}
+                        {redemption.status}
+                      </Badge>
+                      <span className="text-red-600 font-semibold">-{redemption.exp_cost} EXP</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-gray-500 py-8">No redemptions yet</p>
+            )}
           </CardContent>
         </Card>
-      )}
-
-      {/* Confirmation Dialog */}
-      <Dialog open={!!selectedReward} onOpenChange={() => setSelectedReward(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Redemption</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to redeem this reward?
-            </DialogDescription>
-          </DialogHeader>
-          {selectedReward && (
-            <div className="py-4">
-              <div className="bg-gray-100 p-4 rounded-lg">
-                <h3 className="font-bold text-lg mb-2">{selectedReward.name}</h3>
-                <p className="text-sm text-gray-600 mb-3">{selectedReward.description}</p>
-                <div className="flex items-center justify-between">
-                  <span className="font-semibold">Cost:</span>
-                  <Badge className="bg-red-500">{selectedReward.exp_cost} EXP</Badge>
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                  <span className="font-semibold">Your balance after:</span>
-                  <span className="text-lg">{(user.exp_points || 0) - selectedReward.exp_cost} EXP</span>
-                </div>
-              </div>
-              <p className="text-sm text-gray-600 mt-4">
-                Your reward will be activated immediately upon confirmation.
-              </p>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setSelectedReward(null)}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleRedeem}
-              disabled={redeeming}
-              className="bg-red-600 hover:bg-red-700"
-            >
-              {redeeming ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Redeeming...
-                </>
-              ) : (
-                'Confirm Redemption'
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      </div>
     </div>
   );
 }
