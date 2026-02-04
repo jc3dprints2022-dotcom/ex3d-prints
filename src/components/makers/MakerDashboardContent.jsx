@@ -368,7 +368,7 @@ The EX3D Team`
             </Badge>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-3">
           {(() => {
             const plan = user?.subscription_plan || 'lite';
             const limits = { lite: 30, pro: 200, express: 600, unlimited: Infinity };
@@ -388,23 +388,23 @@ The EX3D Team`
             const hoursRemaining = Math.max(limit - hoursUsed, 0);
             
             return (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <div>
-                    <p className="text-3xl font-bold text-gray-900">
-                      {hoursUsed.toFixed(1)} <span className="text-lg text-gray-600">/ {limit === Infinity ? '∞' : limit} hrs</span>
+                    <p className="text-2xl font-bold text-gray-900">
+                      {hoursUsed.toFixed(1)} <span className="text-base text-gray-600">/ {limit === Infinity ? '∞' : limit} hrs</span>
                     </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {limit === Infinity ? 'Unlimited printing hours' : `${hoursRemaining.toFixed(1)} hours remaining`}
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      {limit === Infinity ? 'Unlimited hours' : `${hoursRemaining.toFixed(1)} hrs remaining`}
                     </p>
                   </div>
                   {percentage >= 85 && limit !== Infinity && (
-                    <AlertCircle className="w-8 h-8 text-red-600" />
+                    <AlertCircle className="w-6 h-6 text-red-600" />
                   )}
                 </div>
                 
                 {limit !== Infinity && (
-                  <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden">
+                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
                     <div 
                       className={`h-full transition-all duration-500 ${
                         percentage >= 85 ? 'bg-red-600' : 
