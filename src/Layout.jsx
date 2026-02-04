@@ -671,7 +671,7 @@ export default function Layout({ children, currentPageName }) {
         </DialogContent>
       </Dialog>
 
-      <main className="flex-1 pb-20 md:pb-0 dark:bg-gray-900">
+      <main className="flex-1 pb-safe-bottom md:pb-0">
         {children}
       </main>
       

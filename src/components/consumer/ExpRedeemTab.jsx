@@ -319,7 +319,27 @@ export default function ExpRedeemTab({ user, onUpdate }) {
                         <Badge className="bg-purple-100 text-purple-800">
                           {reward.exp_cost} EXP
                         </Badge>
-                        <Button disabled={!canRedeem} className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-7">
+                        <Button 
+                          disabled={!canRedeem} 
+                          onClick={async () => {
+                            try {
+                              const { data } = await base44.functions.invoke('redeemExpForReward', {
+                                rewardId: reward.id
+                              });
+                              if (data.success) {
+                                toast({
+                                  title: "Reward Redeemed!",
+                                  description: data.message || "Your reward has been processed!"
+                                });
+                                await loadTransactions();
+                                if (onUpdate) await onUpdate();
+                              }
+                            } catch (error) {
+                              toast({ title: "Redemption failed", description: error.message, variant: "destructive" });
+                            }
+                          }}
+                          className="w-full bg-teal-600 hover:bg-teal-700 text-xs h-7"
+                        >
                           {canRedeem ? <>Redeem <ArrowRight className="w-3 h-3 ml-1" /></> : `Need ${reward.exp_cost - (user?.exp_points || 0)} more`}
                         </Button>
                       </CardContent>
