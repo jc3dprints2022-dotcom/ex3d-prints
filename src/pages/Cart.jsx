@@ -270,16 +270,6 @@ export default function Cart() {
                                   <span className="font-medium">Multi-color:</span> {item.multi_color_selections.join(', ')}
                                 </p>
                               )}
-                              {item.device_model && (
-                                <p className="text-blue-600">
-                                  <span className="font-medium">Device:</span> {item.device_model}
-                                  {item.device_dimensions && (
-                                    <span className="text-xs block mt-0.5">
-                                      {item.device_dimensions.width}×{item.device_dimensions.height || item.device_dimensions.depth}×{item.device_dimensions.thickness}mm
-                                    </span>
-                                  )}
-                                </p>
-                              )}
                             </div>
                           </div>
                           <Button

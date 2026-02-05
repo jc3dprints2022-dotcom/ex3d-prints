@@ -13,7 +13,6 @@ import RatingDisplay from "../components/shared/RatingDisplay";
 import { Label } from "@/components/ui/label";
 import Model3DViewer from "../components/shared/Model3DViewer";
 import ProductCard from "../components/marketplace/ProductCard";
-import DeviceSelector from "../components/shared/DeviceSelector";
 
 
 
@@ -46,8 +45,6 @@ export default function ProductDetail() {
   const [designer, setDesigner] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [selectedDeviceModel, setSelectedDeviceModel] = useState("");
-  const [selectedDeviceDimensions, setSelectedDeviceDimensions] = useState(null);
 
   const { toast } = useToast();
 
@@ -231,21 +228,6 @@ export default function ProductDetail() {
       return;
     }
 
-    // Validate device selection for phone/laptop stands
-    const normalizedCategory = product.category?.toLowerCase().replace('_', ' ');
-    const isPhoneStand = normalizedCategory === 'phone stand';
-    const isLaptopStand = normalizedCategory === 'laptop stand';
-    
-    if ((isPhoneStand || isLaptopStand) && !selectedDeviceModel) {
-      toast({ title: `Please select your ${isPhoneStand ? 'phone' : 'laptop'} model`, variant: "destructive" });
-      return;
-    }
-
-    if ((isPhoneStand || isLaptopStand) && selectedDeviceModel === "Custom / Not listed" && !selectedDeviceDimensions) {
-      toast({ title: "Please enter custom device dimensions", variant: "destructive" });
-      return;
-    }
-
     if (!user) {
       toast({ 
         title: "Please sign in", 
@@ -272,9 +254,7 @@ export default function ProductDetail() {
         selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
         unit_price: product.price,
         total_price: product.price * quantity,
-        multi_color_selections: product.multi_color ? multiColorSelections : null,
-        device_model: selectedDeviceModel || null,
-        device_dimensions: selectedDeviceDimensions || null
+        multi_color_selections: product.multi_color ? multiColorSelections : null
       };
 
       if (existingCartItems.length > 0) {
@@ -636,20 +616,6 @@ export default function ProductDetail() {
             {/* Add to Cart Card */}
             <Card className="mb-6">
               <CardContent className="p-6 space-y-4">
-                {/* Device Selector for Phone/Laptop Stands */}
-                {(product.category?.toLowerCase().replace('_', ' ') === 'phone stand' || 
-                  product.category?.toLowerCase().replace('_', ' ') === 'laptop stand') && (
-                  <DeviceSelector
-                    deviceType={product.category?.toLowerCase().replace('_', ' ') === 'phone stand' ? 'phone' : 'laptop'}
-                    selectedModel={selectedDeviceModel}
-                    selectedDimensions={selectedDeviceDimensions}
-                    onChange={({ model, dimensions }) => {
-                      setSelectedDeviceModel(model);
-                      setSelectedDeviceDimensions(dimensions);
-                    }}
-                  />
-                )}
-
                 {showMaterialSelector && (
                   <div>
                     <Label htmlFor="material">Material *</Label>

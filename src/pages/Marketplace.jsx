@@ -22,8 +22,6 @@ const CATEGORIES = [
   { value: "thanksgiving", label: "Thanksgiving"},
   { value: "christmas", label: "Christmas"},
   { value: "valentines_day", label: "Valentine's Day"},
-  { value: "phone_stand", label: "Phone Stand"},
-  { value: "laptop_stand", label: "Laptop Stand"},
   { value: "misc", label: "Misc" }
 ];
 const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];

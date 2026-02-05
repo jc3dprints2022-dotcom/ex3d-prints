@@ -132,10 +132,7 @@ Deno.serve(async (req) => {
                         weight_grams: product.weight_grams,
                         dimensions: product.dimensions,
                         multi_color: product.multi_color,
-                        designer_id: product.designer_id,
-                        device_model: item.device_model || null,
-                        device_dimensions: item.device_dimensions || null,
-                        images: product.images || []
+                        designer_id: product.designer_id
                     });
                 }
             } catch (error) {
@@ -294,16 +291,9 @@ Deno.serve(async (req) => {
         // Send confirmation email to customer
         try {
             console.log('Sending confirmation email to customer...');
-            const itemsList = enrichedItems.map((item, idx) => {
-                let line = `${idx + 1}. ${item.product_name} (x${item.quantity}) - ${item.selected_material} / ${item.selected_color}`;
-                if (item.device_model) {
-                    line += ` | Device: ${item.device_model}`;
-                }
-                if (item.custom_request_id) {
-                    line += ' [Custom Quote]';
-                }
-                return line;
-            }).join('\n');
+            const itemsList = enrichedItems.map((item, idx) => 
+                `${idx + 1}. ${item.product_name} (x${item.quantity}) - ${item.selected_material} / ${item.selected_color}${item.custom_request_id ? ' [Custom Quote]' : ''}`
+            ).join('\n');
 
             const discountInfo = session.total_details?.amount_discount 
                 ? `\nDiscount Applied: -$${(session.total_details.amount_discount / 100).toFixed(2)}`

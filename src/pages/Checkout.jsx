@@ -330,16 +330,6 @@ export default function Checkout() {
                         <div className="text-sm text-gray-600 space-y-1">
                           <p>{item.selected_material} • {item.selected_color}</p>
                           <p>Quantity: {item.quantity}</p>
-                          {item.device_model && (
-                            <p className="text-blue-600">
-                              <span className="font-medium">Device:</span> {item.device_model}
-                              {item.device_dimensions && (
-                                <span className="text-xs block">
-                                  {item.device_dimensions.width}×{item.device_dimensions.height || item.device_dimensions.depth}×{item.device_dimensions.thickness}mm
-                                </span>
-                              )}
-                            </p>
-                          )}
                         </div>
                       </div>
                       <div className="text-right font-semibold text-gray-900">

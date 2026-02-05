@@ -583,17 +583,6 @@ The EX3D Team`
                                 <div><span className="font-medium">Color:</span> {item.selected_color}</div>
                               </div>
 
-                              {item.device_model && (
-                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                  <p className="text-sm font-semibold text-blue-900 mb-1">📱 Device: {item.device_model}</p>
-                                  {item.device_dimensions && (
-                                    <p className="text-xs text-blue-700">
-                                      {item.device_dimensions.width}mm × {item.device_dimensions.height || item.device_dimensions.depth}mm × {item.device_dimensions.thickness}mm
-                                    </p>
-                                  )}
-                                </div>
-                              )}
-
                               {item.print_files && item.print_files.length > 0 && (
                                 <div className="mt-3">
                                   <p className="text-sm font-medium text-gray-700 mb-2">Print Files:</p>
