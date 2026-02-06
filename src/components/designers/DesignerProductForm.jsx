@@ -39,6 +39,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
   const [boostWeeks, setBoostWeeks] = useState(0);
+  const [customPrice, setCustomPrice] = useState(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState(
@@ -48,6 +49,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           description: existingProduct.description,
           print_time_hours: existingProduct.print_time_hours.toString(),
           weight_grams: existingProduct.weight_grams.toString(),
+          custom_price: existingProduct.price || null,
           dimensions: existingProduct.dimensions || { length: '', width: '', height: '' },
           category: existingProduct.category,
           materials: existingProduct.materials || [],
@@ -68,6 +70,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
           description: '',
           print_time_hours: '',
           weight_grams: '',
+          custom_price: null,
           dimensions: { length: '', width: '', height: '' },
           category: '',
           materials: [],
@@ -273,7 +276,9 @@ export default function DesignerProductForm({ designerId, designerName, existing
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
     const rawPrice = (((grams / 1000) * 20) + (printTime / 5)) * 4.5;
-    const calculatedPrice = Math.ceil(rawPrice);
+    const calculatedPrice = formData.custom_price !== null && formData.custom_price !== '' 
+      ? parseFloat(formData.custom_price) 
+      : Math.ceil(rawPrice);
 
     // Store boost intention for post-approval payment (don't activate boost yet)
     let boostData = {};
@@ -460,21 +465,24 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </div>
 
         <div>
-          <Label htmlFor="price">Price ($) - Auto *</Label>
+          <Label htmlFor="price">Price ($) *</Label>
           <Input
             id="price"
             type="number"
             step="0.01"
             min="0"
             value={
-              formData.weight_grams && formData.print_time_hours
+              formData.custom_price !== null && formData.custom_price !== ''
+                ? formData.custom_price
+                : formData.weight_grams && formData.print_time_hours
                 ? Math.ceil((((parseFloat(formData.weight_grams) / 1000) * 20) + (parseFloat(formData.print_time_hours) / 5)) * 4.5)
                 : ''
             }
-            readOnly
-            className="bg-gray-100"
+            onChange={(e) => setFormData({...formData, custom_price: e.target.value ? parseFloat(e.target.value) : null})}
             placeholder="Auto-calculated"
+            className={formData.custom_price !== null && formData.custom_price !== '' ? '' : 'bg-gray-50'}
           />
+          <p className="text-xs text-gray-500 mt-1">Auto-calculated, or set custom</p>
         </div>
       </div>
 
