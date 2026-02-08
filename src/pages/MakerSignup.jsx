@@ -203,7 +203,8 @@ export default function MakerSignup() {
         currentApplication = await base44.entities.MakerApplication.update(user.maker_application_id, applicationData);
         await base44.auth.updateMe({ 
           business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
-          maker_id: currentApplication.id
+          maker_id: currentApplication.id,
+          account_status: 'active'
         });
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       } else {
@@ -211,7 +212,8 @@ export default function MakerSignup() {
         await base44.auth.updateMe({ 
           maker_application_id: currentApplication.id,
           business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
-          maker_id: currentApplication.id
+          maker_id: currentApplication.id,
+          account_status: 'active'
         });
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }

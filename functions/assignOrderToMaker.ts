@@ -1,5 +1,103 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.7.1';
 
+// Helper function to split order between multiple makers
+async function splitOrder(base44, order, orderCampusLocation, excludedMakerIds) {
+    const allUsers = await base44.asServiceRole.entities.User.list();
+    const allPrinters = await base44.asServiceRole.entities.Printer.list();
+    const allFilaments = await base44.asServiceRole.entities.Filament.list();
+    const allOrders = await base44.asServiceRole.entities.Order.list();
+
+    // Get eligible makers
+    const makers = allUsers.filter(u => 
+        u.maker_id && 
+        u.account_status === 'active' && 
+        u.business_roles?.includes('maker') &&
+        u.id !== order.customer_id &&
+        !excludedMakerIds.includes(u.maker_id) &&
+        (u.campus_location || 'erau_prescott') === orderCampusLocation &&
+        !u.vacation_mode
+    );
+
+    // Group items into ~5 hour chunks
+    const itemGroups = [];
+    let currentGroup = [];
+    let currentGroupTime = 0;
+
+    for (const item of order.items) {
+        const itemTime = (item.print_time_hours || 2) * (item.quantity || 1);
+        
+        if (currentGroupTime + itemTime <= 5 || currentGroup.length === 0) {
+            currentGroup.push(item);
+            currentGroupTime += itemTime;
+        } else {
+            itemGroups.push(currentGroup);
+            currentGroup = [item];
+            currentGroupTime = itemTime;
+        }
+    }
+    if (currentGroup.length > 0) {
+        itemGroups.push(currentGroup);
+    }
+
+    console.log(`Split into ${itemGroups.length} groups:`, itemGroups.map((g, i) => ({
+        group: i + 1,
+        items: g.length,
+        hours: g.reduce((sum, item) => sum + ((item.print_time_hours || 2) * (item.quantity || 1)), 0)
+    })));
+
+    // Create sub-orders for each group
+    const createdOrders = [];
+    for (let i = 0; i < itemGroups.length; i++) {
+        const group = itemGroups[i];
+        const groupTotal = group.reduce((sum, item) => sum + (item.total_price || 0), 0);
+        
+        const subOrder = await base44.asServiceRole.entities.Order.create({
+            customer_id: order.customer_id,
+            customer_username: order.customer_username,
+            campus_location: order.campus_location,
+            is_priority: order.is_priority,
+            is_local_delivery: order.is_local_delivery,
+            items: group,
+            total_amount: groupTotal,
+            status: 'unassigned',
+            payment_status: order.payment_status,
+            payment_intent_id: order.payment_intent_id,
+            stripe_session_id: order.stripe_session_id,
+            delivery_option: order.delivery_option,
+            notes: `Part ${i + 1} of ${itemGroups.length} - Split from order #${order.id.slice(-8)}`
+        });
+        
+        createdOrders.push(subOrder);
+    }
+
+    // Mark original order as cancelled
+    await base44.asServiceRole.entities.Order.update(order.id, {
+        status: 'cancelled',
+        cancellation_reason: `Split into ${itemGroups.length} sub-orders for efficient production`
+    });
+
+    // Assign each sub-order to a maker
+    const assignments = [];
+    for (const subOrder of createdOrders) {
+        try {
+            const response = await base44.asServiceRole.functions.invoke('assignOrderToMaker', { 
+                orderId: subOrder.id 
+            });
+            assignments.push({ orderId: subOrder.id, response });
+        } catch (err) {
+            console.error(`Failed to assign sub-order ${subOrder.id}:`, err);
+        }
+    }
+
+    return Response.json({ 
+        success: true,
+        split: true,
+        originalOrderId: order.id,
+        subOrders: createdOrders.map(o => o.id),
+        assignments
+    });
+}
+
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
@@ -21,8 +119,24 @@ Deno.serve(async (req) => {
         const orderCampusLocation = order.campus_location || 'erau_prescott';
         console.log('Order campus location:', orderCampusLocation);
 
-        // Calculate total print time and check requirements
+        // Check if order should be split (more than 5 hours AND multiple items)
+        let shouldSplit = false;
         let totalPrintTime = 0;
+        
+        if (order.items) {
+            totalPrintTime = order.items.reduce((sum, item) => 
+                sum + ((item.print_time_hours || 2) * (item.quantity || 1)), 0
+            );
+            shouldSplit = totalPrintTime > 5 && order.items.length > 1;
+        }
+
+        // If we should split, do it now and return
+        if (shouldSplit) {
+            console.log(`📦 Splitting order ${orderId} (${totalPrintTime}h, ${order.items.length} items)`);
+            return await splitOrder(base44, order, orderCampusLocation, excludedMakerIds);
+        }
+
+        // Calculate total print time and check requirements
         let maxLength = 0, maxWidth = 0, maxHeight = 0;
         const requiredMaterials = new Set();
         const requiredColors = new Set();
@@ -31,7 +145,6 @@ Deno.serve(async (req) => {
 
         if (order.items) {
             order.items.forEach(item => {
-                totalPrintTime += (item.print_time_hours || 2) * (item.quantity || 1);
                 requiredMaterials.add(item.material || 'PLA');
                 
                 // Check if recycled filament is requested
@@ -76,6 +189,7 @@ Deno.serve(async (req) => {
             u.business_roles?.includes('maker') &&
             u.id !== order.customer_id &&
             !excludedMakerIds.includes(u.maker_id) &&
+            !u.vacation_mode &&
             // FIRST REQUIREMENT: Maker must be at the same campus as the order
             (u.campus_location || 'erau_prescott') === orderCampusLocation
         );
@@ -303,6 +417,13 @@ Deno.serve(async (req) => {
    - Quantity: ${item.quantity}
    - Resolution: ${item.selected_resolution || 0.2}mm`;
                             
+                            // Add business order details if available
+                            if (item.business_name && item.business_customization) {
+                                itemText += `\n\n   🏢 BUSINESS ORDER:
+   - Business: ${item.business_name}
+   - Customization: ${item.business_customization}`;
+                            }
+                            
                             // Add custom request details if available
                             if (item.custom_request_id && item.description) {
                                 itemText += `\n   - Description: ${item.description}`;
@@ -390,6 +511,13 @@ The EX3D Team`
    - Color: ${item.selected_color || 'Black'}${item.multi_color_selections ? ` (Multi-color: ${item.multi_color_selections.join(', ')})` : ''}
    - Quantity: ${item.quantity}
    - Resolution: ${item.selected_resolution || 0.2}mm`;
+                    
+                    // Add business order details if available
+                    if (item.business_name && item.business_customization) {
+                        itemText += `\n\n   🏢 BUSINESS ORDER:
+   - Business: ${item.business_name}
+   - Customization: ${item.business_customization}`;
+                    }
                     
                     // Add custom request details if available
                     if (item.custom_request_id && item.description) {
