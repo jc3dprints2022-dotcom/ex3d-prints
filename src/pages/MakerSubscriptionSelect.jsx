@@ -109,6 +109,20 @@ export default function MakerSubscriptionSelect() {
         const currentUser = await base44.auth.me();
         setUser(currentUser);
 
+        // Check if user is exempt from subscription (like jc3dprints2022@gmail.com)
+        if (currentUser.email === 'jc3dprints2022@gmail.com' || currentUser.subscription_exempt) {
+          // Grant them maker access without subscription
+          if (!currentUser.subscription_exempt) {
+            await base44.auth.updateMe({ 
+              subscription_exempt: true,
+              subscription_plan: 'unlimited',
+              account_status: 'active'
+            });
+          }
+          window.location.href = createPageUrl("ConsumerDashboard") + "?tab=maker";
+          return;
+        }
+
         // If already a maker with subscription, redirect
         if (currentUser.business_roles?.includes('maker') && currentUser.subscription_plan) {
           window.location.href = createPageUrl("ConsumerDashboard") + "?tab=maker";

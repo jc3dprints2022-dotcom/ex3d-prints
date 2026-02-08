@@ -755,46 +755,50 @@ The EX3D Team`
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {user?.subscription_plan ? (
+                {user?.subscription_plan || user?.subscription_exempt ? (
                   <>
                     <div className="p-4 bg-teal-50 rounded-lg border border-teal-200">
                       <p className="font-semibold text-teal-900">Current Plan</p>
-                      <p className="text-2xl font-bold text-teal-700 capitalize">{user.subscription_plan}</p>
+                      <p className="text-2xl font-bold text-teal-700 capitalize">{user.subscription_plan || 'Unlimited'}</p>
                       <p className="text-sm text-teal-600 mt-1">
-                        {user.subscription_billing_cycle === 'yearly' ? 'Billed Annually' : 'Billed Monthly'}
+                        {user.subscription_exempt ? 'Subscription Exempt' : user.subscription_billing_cycle === 'yearly' ? 'Billed Annually' : 'Billed Monthly'}
                       </p>
                     </div>
                     
                     <div className="space-y-2">
-                      <Button 
-                        variant="outline"
-                        className="w-full"
-                        onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
-                      >
-                        Upgrade Plan
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        className="w-full text-red-600 hover:text-red-700"
-                        onClick={async () => {
-                          if (confirm('Are you sure you want to cancel? Your subscription will remain active until the end of your current billing period.')) {
-                            try {
-                              const { data } = await base44.functions.invoke('cancelMakerSubscription');
-                              if (data.success) {
-                                toast({ 
-                                  title: "Subscription Cancelled", 
-                                  description: "You'll retain access until your billing period ends." 
-                                });
-                                await loadDashboard();
+                      {!user?.subscription_exempt && (
+                        <>
+                          <Button 
+                            variant="outline"
+                            className="w-full"
+                            onClick={() => window.location.href = createPageUrl("MakerSubscriptionSelect")}
+                          >
+                            Upgrade Plan
+                          </Button>
+                          <Button 
+                            variant="outline"
+                            className="w-full text-red-600 hover:text-red-700"
+                            onClick={async () => {
+                              if (confirm('Are you sure you want to cancel? Your subscription will remain active until the end of your current billing period.')) {
+                                try {
+                                  const { data } = await base44.functions.invoke('cancelMakerSubscription');
+                                  if (data.success) {
+                                    toast({ 
+                                      title: "Subscription Cancelled", 
+                                      description: "You'll retain access until your billing period ends." 
+                                    });
+                                    await loadDashboard();
+                                  }
+                                } catch (error) {
+                                  toast({ title: "Failed to cancel", description: error.message, variant: "destructive" });
+                                }
                               }
-                            } catch (error) {
-                              toast({ title: "Failed to cancel", description: error.message, variant: "destructive" });
-                            }
-                          }
-                        }}
-                      >
-                        Cancel Subscription
-                      </Button>
+                            }}
+                          >
+                            Cancel Subscription
+                          </Button>
+                        </>
+                      )}
                     </div>
                   </>
                 ) : (
