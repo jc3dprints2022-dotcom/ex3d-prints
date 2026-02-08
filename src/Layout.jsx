@@ -50,33 +50,20 @@ export default function Layout({ children, currentPageName }) {
     const initLayout = async () => {
       if (isMounted) {
         await loadUserData();
-        // Only check announcements and welcome for logged in users
-        if (sessionStorage.getItem('cached_user')) {
-          await checkForNewAnnouncements();
-          await checkNewUserWelcome();
-        }
+        await checkForNewAnnouncements();
+        await checkNewUserWelcome();
       }
     };
     
     initLayout();
 
-    const handleCartUpdate = () => {
-      sessionStorage.removeItem('cached_cart_count');
-      loadUserData();
-    };
-    
-    const handleWishlistUpdate = () => {
-      sessionStorage.removeItem('cached_wishlist_count');
-      loadUserData();
-    };
-
-    window.addEventListener('cartUpdated', handleCartUpdate);
-    window.addEventListener('wishlistUpdated', handleWishlistUpdate);
+    window.addEventListener('cartUpdated', loadUserData);
+    window.addEventListener('wishlistUpdated', loadUserData);
 
     return () => {
       isMounted = false;
-      window.removeEventListener('cartUpdated', handleCartUpdate);
-      window.removeEventListener('wishlistUpdated', handleWishlistUpdate);
+      window.removeEventListener('cartUpdated', loadUserData);
+      window.removeEventListener('wishlistUpdated', loadUserData);
     };
   }, []);
 
@@ -87,9 +74,8 @@ export default function Layout({ children, currentPageName }) {
 
   const checkNewUserWelcome = async () => {
     try {
-      const cachedUser = sessionStorage.getItem('cached_user');
-      if (!cachedUser) return;
-      const currentUser = JSON.parse(cachedUser);
+      const currentUser = await base44.auth.me();
+      if (!currentUser) return;
 
       // Check if user was just created (within last 10 seconds) and hasn't received welcome bonus
       const userCreatedAt = new Date(currentUser.created_date);
@@ -126,9 +112,8 @@ export default function Layout({ children, currentPageName }) {
 
   const checkForNewAnnouncements = async () => {
     try {
-      const cachedUser = sessionStorage.getItem('cached_user');
-      if (!cachedUser) return;
-      const currentUser = JSON.parse(cachedUser);
+      const currentUser = await base44.auth.me();
+      if (!currentUser) return;
 
       const allAnnouncements = await base44.entities.Announcement.list();
       const now = new Date();
@@ -229,11 +214,14 @@ export default function Layout({ children, currentPageName }) {
       let userType = 'not_signed_in';
       let userId = null;
 
-      const cachedUser = sessionStorage.getItem('cached_user');
-      if (cachedUser) {
-        const currentUser = JSON.parse(cachedUser);
-        userId = currentUser.id;
-        userType = currentUser.business_roles?.includes('maker') ? 'maker' : 'signed_in';
+      try {
+        const currentUser = await base44.auth.me();
+        if (currentUser) {
+          userId = currentUser.id;
+          userType = currentUser.business_roles?.includes('maker') ? 'maker' : 'signed_in';
+        }
+      } catch (error) {
+        // Not logged in, keep as not_signed_in
       }
 
       // Generate or retrieve session ID
@@ -266,16 +254,14 @@ export default function Layout({ children, currentPageName }) {
       const cacheTime = sessionStorage.getItem('user_cache_time');
       const now = Date.now();
       
-      // Use cache if less than 2 minutes old
-      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 120000) {
+      // Use cache if less than 30 seconds old
+      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 30000) {
         const userData = JSON.parse(cachedUser);
         setUser(userData);
         
-        // Use cached counts too
-        const cachedCartCount = sessionStorage.getItem('cached_cart_count');
-        const cachedWishlistCount = sessionStorage.getItem('cached_wishlist_count');
-        if (cachedCartCount) setCartCount(parseInt(cachedCartCount));
-        if (cachedWishlistCount) setWishlistCount(parseInt(cachedWishlistCount));
+        const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
+        setCartCount(cartItems.length);
+        setWishlistCount(userData.wishlist?.length || 0);
         return;
       }
 
@@ -284,8 +270,6 @@ export default function Layout({ children, currentPageName }) {
         setUser(null);
         sessionStorage.removeItem('cached_user');
         sessionStorage.removeItem('user_cache_time');
-        sessionStorage.removeItem('cached_cart_count');
-        sessionStorage.removeItem('cached_wishlist_count');
         const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
         setCartCount(localCart.length);
         const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
@@ -301,18 +285,13 @@ export default function Layout({ children, currentPageName }) {
 
       const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
       setCartCount(cartItems.length);
-      sessionStorage.setItem('cached_cart_count', cartItems.length.toString());
 
-      const wishCount = userData.wishlist?.length || 0;
-      setWishlistCount(wishCount);
-      sessionStorage.setItem('cached_wishlist_count', wishCount.toString());
+      setWishlistCount(userData.wishlist?.length || 0);
     } catch (error) {
       // Not logged in - this is fine for public pages
       setUser(null);
       sessionStorage.removeItem('cached_user');
       sessionStorage.removeItem('user_cache_time');
-      sessionStorage.removeItem('cached_cart_count');
-      sessionStorage.removeItem('cached_wishlist_count');
       const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
       setCartCount(localCart.length);
       const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
