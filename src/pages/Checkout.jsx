@@ -410,123 +410,125 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {!isLocalDelivery && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="name">Full Name *</Label>
-                    <Input
-                      id="name"
-                      value={shippingAddress.name}
-                      onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
-                      required
-                    />
+{!isLocalDelivery && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="name">Full Name *</Label>
+                      <Input
+                        id="name"
+                        value={shippingAddress.name}
+                        onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="phone">Phone *</Label>
+                      <Input
+                        id="phone"
+                        value={shippingAddress.phone}
+                        onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="phone">Phone *</Label>
-                    <Input
-                      id="phone"
-                      value={shippingAddress.phone}
-                      onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
 
-                <div>
-                  <Label htmlFor="street">Street Address *</Label>
-                  <Input
-                    id="street"
-                    value={shippingAddress.street}
-                    onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                    required
-                  />
-                </div>
+                  <div>
+                    <Label htmlFor="street">Street Address *</Label>
+                    <Input
+                      id="street"
+                      value={shippingAddress.street}
+                      onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
+                      required
+                    />
+                  </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      value={shippingAddress.city}
-                      onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                      required
-                    />
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label htmlFor="city">City *</Label>
+                      <Input
+                        id="city"
+                        value={shippingAddress.city}
+                        onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="state">State *</Label>
+                      <Input
+                        id="state"
+                        value={shippingAddress.state}
+                        onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="zip">ZIP *</Label>
+                      <Input
+                        id="zip"
+                        value={shippingAddress.zip}
+                        onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
+                        required
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <Label htmlFor="state">State *</Label>
-                    <Input
-                      id="state"
-                      value={shippingAddress.state}
-                      onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="zip">ZIP *</Label>
-                    <Input
-                      id="zip"
-                      value={shippingAddress.zip}
-                      onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
 
-                {/* Priority Option */}
-                <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
-                  <div className="flex items-center space-x-3">
+                  {/* Priority Option */}
+                  <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        id="priority"
+                        checked={isPriority}
+                        onChange={(e) => setIsPriority(e.target.checked)}
+                        className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                      />
+                      <Label htmlFor="priority" className="cursor-pointer flex-1">
+                        <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
+                        <p className="text-sm text-orange-700">
+                          Est. delivery: Next day
+                        </p>
+                      </Label>
+                    </div>
+                  </div>
+
+                  {!isPriority && (
+                    <div className="p-3 bg-gray-50 border rounded-lg">
+                      <p className="text-sm text-gray-700">
+                        <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex items-center space-x-2 pt-2">
                     <input
                       type="checkbox"
-                      id="priority"
-                      checked={isPriority}
-                      onChange={(e) => setIsPriority(e.target.checked)}
-                      className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
+                      id="saveAddress"
+                      onChange={async (e) => {
+                        if (e.target.checked && user) {
+                          try {
+                            const newAddress = {
+                              ...shippingAddress,
+                              id: `addr_${Date.now()}`,
+                              is_default: savedAddresses.length === 0
+                            };
+                            const updatedAddresses = [...savedAddresses, newAddress];
+                            await base44.auth.updateMe({ saved_addresses: updatedAddresses });
+                            setSavedAddresses(updatedAddresses);
+                            toast({ title: "Address saved!" });
+                          } catch (error) {
+                            toast({ title: "Failed to save address", variant: "destructive" });
+                          }
+                        }
+                      }}
+                      className="w-4 h-4 text-teal-600 rounded"
                     />
-                    <Label htmlFor="priority" className="cursor-pointer flex-1">
-                      <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
-                      <p className="text-sm text-orange-700">
-                        Est. delivery: Next day
-                      </p>
+                    <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                      Save this address for future orders
                     </Label>
                   </div>
-                </div>
-
-                {!isPriority && (
-                  <div className="p-3 bg-gray-50 border rounded-lg">
-                    <p className="text-sm text-gray-700">
-                      <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-2 pt-2">
-                  <input
-                    type="checkbox"
-                    id="saveAddress"
-                    onChange={async (e) => {
-                      if (e.target.checked && user) {
-                        try {
-                          const newAddress = {
-                            ...shippingAddress,
-                            id: `addr_${Date.now()}`,
-                            is_default: savedAddresses.length === 0
-                          };
-                          const updatedAddresses = [...savedAddresses, newAddress];
-                          await base44.auth.updateMe({ saved_addresses: updatedAddresses });
-                          setSavedAddresses(updatedAddresses);
-                          toast({ title: "Address saved!" });
-                        } catch (error) {
-                          toast({ title: "Failed to save address", variant: "destructive" });
-                        }
-                      }
-                    }}
-                    className="w-4 h-4 text-teal-600 rounded"
-                  />
-                  <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
-                    Save this address for future orders
-                  </Label>
-                </div>
-                )}
+                </>
+              )}
               </CardContent>
             </Card>
           </div>
