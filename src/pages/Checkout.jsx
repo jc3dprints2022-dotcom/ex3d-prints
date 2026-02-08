@@ -36,6 +36,7 @@ export default function Checkout() {
   });
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [isLocalDelivery, setIsLocalDelivery] = useState(false);
   const { toast } = useToast();
 
   // Persist priority state to localStorage
@@ -177,8 +178,8 @@ export default function Checkout() {
       return;
     }
 
-    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
-      toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
+    if (!isLocalDelivery && (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip)) {
+      toast({ title: "Delivery address required", description: "Please fill in all address fields or select local delivery.", variant: "destructive" });
       return;
     }
 
@@ -238,8 +239,9 @@ export default function Checkout() {
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: isPriority,
         campusLocation: "erau_prescott",
-        shippingAddress: shippingAddress,
-        shippingFee: shippingFee
+        shippingAddress: isLocalDelivery ? { name: user?.full_name || '', phone: user?.phone || '' } : shippingAddress,
+        shippingFee: shippingFee,
+        isLocalDelivery: isLocalDelivery
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -349,7 +351,26 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {savedAddresses.length > 0 && (
+                {/* Local Delivery Option */}
+                <div className="border rounded-lg p-4 bg-teal-50 border-teal-200">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      id="localDelivery"
+                      checked={isLocalDelivery}
+                      onChange={(e) => setIsLocalDelivery(e.target.checked)}
+                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-500"
+                    />
+                    <Label htmlFor="localDelivery" className="cursor-pointer flex-1">
+                      <p className="font-medium text-teal-900">🚚 Local Drop-Off Delivery</p>
+                      <p className="text-sm text-teal-700">
+                        We'll drop it off directly to you (no shipping address needed)
+                      </p>
+                    </Label>
+                  </div>
+                </div>
+
+                {!isLocalDelivery && savedAddresses.length > 0 && (
                   <div>
                     <Label className="mb-2">Saved Addresses</Label>
                     <Select 
@@ -389,6 +410,7 @@ export default function Checkout() {
                   </div>
                 )}
 
+                {!isLocalDelivery && (
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="name">Full Name *</Label>
@@ -504,6 +526,7 @@ export default function Checkout() {
                     Save this address for future orders
                   </Label>
                 </div>
+                )}
               </CardContent>
             </Card>
           </div>
