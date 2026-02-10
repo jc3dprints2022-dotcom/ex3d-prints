@@ -132,6 +132,36 @@ Deno.serve(async (req) => {
             });
         }
 
+        // Create or retrieve Stripe customer
+        let stripeCustomerId = null;
+        try {
+            // Check if user already has a Stripe customer ID stored
+            if (user.stripe_customer_id) {
+                stripeCustomerId = user.stripe_customer_id;
+                console.log('Using existing Stripe customer:', stripeCustomerId);
+            } else {
+                // Create new Stripe customer
+                const customer = await stripe.customers.create({
+                    email: user.email,
+                    name: user.full_name,
+                    metadata: {
+                        user_id: user.id
+                    }
+                });
+                stripeCustomerId = customer.id;
+                
+                // Save customer ID to user record
+                await base44.asServiceRole.entities.User.update(user.id, {
+                    stripe_customer_id: stripeCustomerId
+                });
+                
+                console.log('Created new Stripe customer:', stripeCustomerId);
+            }
+        } catch (customerError) {
+            console.error('Failed to create Stripe customer:', customerError);
+            // Continue without customer - will fall back to customer_email
+        }
+
         // Prepare session data with referral metadata
         const sessionData: Stripe.Checkout.SessionCreateParams = {
             payment_method_types: ['card'],
@@ -139,7 +169,8 @@ Deno.serve(async (req) => {
             mode: 'payment',
             success_url: successUrl,
             cancel_url: cancelUrl,
-            customer_email: user.email,
+            customer: stripeCustomerId || undefined,
+            customer_email: stripeCustomerId ? undefined : user.email, // Only use email if no customer
             metadata: {
                 user_id: user.id,
                 referrer_id: referralValidation?.referrer_id || '',
