@@ -75,23 +75,46 @@ Deno.serve(async (req) => {
             }
         }
 
+        // Fetch products from database to get Stripe product IDs
+        const productIds = [...new Set(cartItems.filter(item => !item.is_priority_fee).map(item => item.product_id))];
+        const products = await Promise.all(
+            productIds.map(id => base44.asServiceRole.entities.Product.get(id).catch(() => null))
+        );
+        const productMap = {};
+        products.filter(p => p).forEach(p => productMap[p.id] = p);
+
         // Create line items from cart (including priority if it's in the cart)
         const lineItems = cartItems.map(item => {
             // Skip priority fee items - they're handled separately below
             if (item.is_priority_fee) {
                 return null;
             }
-            return {
-                price_data: {
-                    currency: 'usd',
-                    product_data: {
-                        name: item.product_name || 'Product',
-                        description: `Material: ${item.selected_material || 'N/A'}, Color: ${item.selected_color || 'N/A'}`,
+
+            const product = productMap[item.product_id];
+            
+            // Use Stripe product ID if available, otherwise create dynamic product
+            if (product?.stripe_product_id) {
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product: product.stripe_product_id,
+                        unit_amount: Math.round(item.unit_price * 100),
                     },
-                    unit_amount: Math.round(item.unit_price * 100),
-                },
-                quantity: item.quantity,
-            };
+                    quantity: item.quantity,
+                };
+            } else {
+                return {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: item.product_name || 'Product',
+                            description: `Material: ${item.selected_material || 'N/A'}, Color: ${item.selected_color || 'N/A'}`,
+                        },
+                        unit_amount: Math.round(item.unit_price * 100),
+                    },
+                    quantity: item.quantity,
+                };
+            }
         }).filter(item => item !== null);
 
         console.log('📦 Line items before priority:', lineItems.length);
