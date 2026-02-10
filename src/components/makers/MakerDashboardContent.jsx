@@ -185,6 +185,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
       const order = orders.find(o => o.id === orderId);
       if (order) {
+        // Send pickup notification to customer
         try {
           const customer = await base44.entities.User.get(order.customer_id);
           await base44.functions.invoke('sendEmail', {
@@ -212,6 +213,17 @@ The EX3D Team`
           });
         } catch (emailError) {
           console.error('Failed to send pickup email:', emailError);
+        }
+
+        // Automatically transfer payment to maker if Stripe Connect is set up
+        if (user?.stripe_connect_account_id && user?.stripe_connect_onboarding_complete) {
+          try {
+            await base44.functions.invoke('createStripeTransferToMaker', { orderId });
+            console.log('✅ Automatic payment transfer initiated');
+          } catch (transferError) {
+            console.error('⚠️ Failed to auto-transfer payment:', transferError);
+            // Don't show error to user - admin will handle manually
+          }
         }
       }
 
@@ -830,13 +842,78 @@ The EX3D Team`
 
             <Card>
               <CardHeader>
-                <CardTitle>Financial Information</CardTitle>
+                <CardTitle>Payment Account</CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
-                  Manage your banking information for receiving payouts and making payments
+                  Connect your Stripe account to receive payments automatically when orders are completed
                 </p>
               </CardHeader>
-              <CardContent>
-                <BankInfoManager user={user} onUpdate={loadDashboard} />
+              <CardContent className="space-y-4">
+                {user?.stripe_connect_account_id && user?.stripe_connect_onboarding_complete ? (
+                  <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <CheckCircle className="w-5 h-5 text-green-600" />
+                      <p className="font-semibold text-green-900">Payment Account Connected</p>
+                    </div>
+                    <p className="text-sm text-green-700">
+                      Your Stripe account is connected. You'll automatically receive payments when orders are completed.
+                    </p>
+                    <p className="text-xs text-green-600 mt-2">
+                      Payments are transferred within 2-3 business days after order completion.
+                    </p>
+                  </div>
+                ) : user?.stripe_connect_account_id ? (
+                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                    <div className="flex items-center gap-2 mb-2">
+                      <AlertCircle className="w-5 h-5 text-yellow-600" />
+                      <p className="font-semibold text-yellow-900">Onboarding Incomplete</p>
+                    </div>
+                    <p className="text-sm text-yellow-700 mb-3">
+                      Complete your Stripe onboarding to start receiving automatic payments.
+                    </p>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const { data } = await base44.functions.invoke('createStripeConnectOnboarding');
+                          if (data.onboarding_url) {
+                            window.location.href = data.onboarding_url;
+                          }
+                        } catch (error) {
+                          toast({ title: "Failed to start onboarding", variant: "destructive" });
+                        }
+                      }}
+                      className="bg-yellow-600 hover:bg-yellow-700"
+                    >
+                      Complete Setup
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <p className="text-sm text-blue-900 font-medium mb-2">🚀 Get Paid Automatically</p>
+                      <p className="text-sm text-blue-700">
+                        Connect your Stripe account to receive payments automatically when you complete orders. Funds are typically available in 2-3 business days.
+                      </p>
+                    </div>
+                    <Button
+                      onClick={async () => {
+                        try {
+                          const { data } = await base44.functions.invoke('createStripeConnectOnboarding');
+                          if (data.onboarding_url) {
+                            window.location.href = data.onboarding_url;
+                          }
+                        } catch (error) {
+                          toast({ title: "Failed to start onboarding", variant: "destructive" });
+                        }
+                      }}
+                      className="w-full bg-teal-600 hover:bg-teal-700"
+                    >
+                      Connect Stripe Account
+                    </Button>
+                    <p className="text-xs text-gray-500 text-center">
+                      Powered by Stripe Connect - Secure and trusted by millions
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
