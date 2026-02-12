@@ -30,8 +30,8 @@ export default function BusinessSubscriptions() {
   const { toast } = useToast();
 
   const availableColors = [
-    "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", 
-    "Pink", "Gray", "Brown", "Teal", "Misc (Any Available)"
+    "Red", "Blue", "Green", "Yellow", "Orange", "Purple", 
+    "Pink", "Brown", "Misc (Any Available)"
   ];
 
   const plans = [
@@ -230,12 +230,13 @@ export default function BusinessSubscriptions() {
                           <Checkbox
                             checked={selectedColors.includes(color)}
                             onCheckedChange={(checked) => {
-                              if (checked) {
+                              if (checked && selectedColors.length < 4) {
                                 setSelectedColors([...selectedColors, color]);
-                              } else {
+                              } else if (!checked) {
                                 setSelectedColors(selectedColors.filter(c => c !== color));
                               }
                             }}
+                            disabled={!selectedColors.includes(color) && selectedColors.length >= 4}
                           />
                           <span className="text-sm">{color}</span>
                         </div>
@@ -348,8 +349,8 @@ export default function BusinessSubscriptions() {
               </CardContent>
             </Card>
 
-            <div className="flex justify-between">
-              <Button onClick={() => setStep(2)} disabled={selectedProducts.length === 0} className="bg-purple-600 hover:bg-purple-700">
+            <div className="flex justify-end">
+              <Button onClick={() => setStep(2)} disabled={selectedProducts.length === 0} className="bg-purple-600 hover:bg-purple-700 h-14 px-12 text-lg">
                 Continue
               </Button>
             </div>
@@ -410,27 +411,27 @@ export default function BusinessSubscriptions() {
               <Card className="max-w-md mx-auto border-2 hover:border-purple-500 hover:shadow-xl transition-shadow">
                 <CardHeader className="text-center">
                   <CardTitle>50 Items per Unit</CardTitle>
-                  <div className="space-y-3 my-4">
+                  <div className="text-4xl font-bold text-purple-600 my-4">
+                    ${oneTimePlan.price * bulkQuantity}
+                  </div>
+                  <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
+                </CardHeader>
+                <CardContent className="text-center space-y-4">
+                  <div>
                     <Label>Quantity (50 items per unit)</Label>
                     <Input
                       type="number"
                       min="1"
                       value={bulkQuantity}
                       onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-center text-lg font-semibold"
+                      className="text-center text-lg font-semibold mt-2"
                     />
-                    <p className="text-sm text-gray-600">Total: {oneTimePlan.items * bulkQuantity} items</p>
+                    <p className="text-xs text-gray-500 mt-1">Total: {oneTimePlan.items * bulkQuantity} items</p>
                   </div>
-                  <div className="text-4xl font-bold text-purple-600 my-4">
-                    ${oneTimePlan.price * bulkQuantity}
-                  </div>
-                  <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
-                </CardHeader>
-                <CardContent className="text-center">
                   <Button onClick={() => handlePlanSelect({...oneTimePlan, price: oneTimePlan.price * bulkQuantity})} className="w-full bg-gray-800 hover:bg-gray-900">
                     Select Plan
                   </Button>
-                  <p className="text-xs text-gray-500 mt-3">No recurring billing</p>
+                  <p className="text-xs text-gray-500">No recurring billing</p>
                 </CardContent>
               </Card>
             </div>
