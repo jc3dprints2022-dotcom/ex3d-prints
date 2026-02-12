@@ -538,7 +538,16 @@ export default function Layout({ children, currentPageName }) {
 
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
-
+              {/* Businesses Section */}
+              <div className="pt-2">
+                <Link
+                  to={createPageUrl("BusinessSubscriptions")}
+                  className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Businesses
+                </Link>
+              </div>
 
               {/* For Makers Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
@@ -568,17 +577,6 @@ export default function Layout({ children, currentPageName }) {
                     Get Started
                   </Link>
                 )}
-              </div>
-
-              {/* Businesses Section */}
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <Link
-                  to={createPageUrl("BusinessSubscriptions")}
-                  className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                >
-                  Businesses
-                </Link>
               </div>
             </div>
           )}
@@ -617,8 +615,6 @@ export default function Layout({ children, currentPageName }) {
       
       <BottomNav />
 
-      <NewUserGiftPopup />
-
       <footer className="bg-slate-800 dark:bg-gray-950 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-safe-bottom">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
@@ -634,9 +630,8 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hover:text-white">Marketplace</Link></li>
+                <li><Link to={createPageUrl("BusinessSubscriptions")} onClick={scrollToTop} className="hover:text-white">Businesses</Link></li>
                 <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
-                <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
               </ul>
             </div>
 

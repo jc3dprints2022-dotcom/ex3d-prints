@@ -17,6 +17,8 @@ export default function SalesPerformanceSection() {
   const [showOfficeDialog, setShowOfficeDialog] = useState(false);
   const [editingRep, setEditingRep] = useState(null);
   const [editingOffice, setEditingOffice] = useState(null);
+  const [repFormData, setRepFormData] = useState({ name: "", email: "" });
+  const [officeFormData, setOfficeFormData] = useState({ office_name: "", contact_person: "", email: "", phone: "", assigned_rep_id: "" });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -153,27 +155,50 @@ export default function SalesPerformanceSection() {
       )}
 
       {/* Add Rep Dialog */}
-      <Dialog open={showRepDialog} onOpenChange={setShowRepDialog}>
+      <Dialog open={showRepDialog} onOpenChange={(open) => {
+        setShowRepDialog(open);
+        if (!open) {
+          setEditingRep(null);
+          setRepFormData({ name: "", email: "" });
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingRep ? 'Edit' : 'Add'} Sales Rep</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Name" defaultValue={editingRep?.name || ''} id="rep-name" />
-            <Input placeholder="Email" defaultValue={editingRep?.email || ''} id="rep-email" />
+            <div>
+              <Label>Name</Label>
+              <Input
+                placeholder="Name"
+                value={repFormData.name}
+                onChange={(e) => setRepFormData({...repFormData, name: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input
+                placeholder="Email"
+                value={repFormData.email}
+                onChange={(e) => setRepFormData({...repFormData, email: e.target.value})}
+              />
+            </div>
             <Button onClick={async () => {
-              const name = document.getElementById('rep-name').value;
-              const email = document.getElementById('rep-email').value;
-              if (!name || !email) return;
+              if (!repFormData.name || !repFormData.email) {
+                toast({ title: "Name and email required", variant: "destructive" });
+                return;
+              }
               
               try {
                 if (editingRep) {
-                  await base44.entities.SalesRep.update(editingRep.id, { name, email });
+                  await base44.entities.SalesRep.update(editingRep.id, repFormData);
                 } else {
-                  await base44.entities.SalesRep.create({ name, email, user_id: name });
+                  await base44.entities.SalesRep.create({ ...repFormData, user_id: repFormData.name });
                 }
                 toast({ title: "Sales rep saved" });
                 setShowRepDialog(false);
+                setRepFormData({ name: "", email: "" });
+                setEditingRep(null);
                 loadData();
               } catch (error) {
                 toast({ title: "Failed to save rep", variant: "destructive" });
@@ -186,49 +211,82 @@ export default function SalesPerformanceSection() {
       </Dialog>
 
       {/* Add Office Dialog */}
-      <Dialog open={showOfficeDialog} onOpenChange={setShowOfficeDialog}>
+      <Dialog open={showOfficeDialog} onOpenChange={(open) => {
+        setShowOfficeDialog(open);
+        if (!open) {
+          setEditingOffice(null);
+          setOfficeFormData({ office_name: "", contact_person: "", email: "", phone: "", assigned_rep_id: "" });
+        }
+      }}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{editingOffice ? 'Edit' : 'Add'} Office</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Office Name" defaultValue={editingOffice?.office_name || ''} id="office-name" />
-            <Input placeholder="Contact Person" defaultValue={editingOffice?.contact_person || ''} id="office-contact" />
-            <Input placeholder="Email" defaultValue={editingOffice?.email || ''} id="office-email" />
-            <Input placeholder="Phone" defaultValue={editingOffice?.phone || ''} id="office-phone" />
-            <Select defaultValue={editingOffice?.assigned_rep_id || ''} onValueChange={(val) => {
-              document.getElementById('office-rep').value = val;
-            }}>
-              <SelectTrigger id="office-rep">
-                <SelectValue placeholder="Assign Rep" />
-              </SelectTrigger>
-              <SelectContent>
-                {reps.map(rep => (
-                  <SelectItem key={rep.id} value={rep.id}>{rep.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div>
+              <Label>Office Name</Label>
+              <Input
+                placeholder="Office Name"
+                value={officeFormData.office_name}
+                onChange={(e) => setOfficeFormData({...officeFormData, office_name: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Contact Person</Label>
+              <Input
+                placeholder="Contact Person"
+                value={officeFormData.contact_person}
+                onChange={(e) => setOfficeFormData({...officeFormData, contact_person: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input
+                placeholder="Email"
+                value={officeFormData.email}
+                onChange={(e) => setOfficeFormData({...officeFormData, email: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Phone</Label>
+              <Input
+                placeholder="Phone"
+                value={officeFormData.phone}
+                onChange={(e) => setOfficeFormData({...officeFormData, phone: e.target.value})}
+              />
+            </div>
+            <div>
+              <Label>Assign Rep</Label>
+              <Select
+                value={officeFormData.assigned_rep_id}
+                onValueChange={(val) => setOfficeFormData({...officeFormData, assigned_rep_id: val})}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select Rep" />
+                </SelectTrigger>
+                <SelectContent>
+                  {reps.map(rep => (
+                    <SelectItem key={rep.id} value={rep.id}>{rep.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
             <Button onClick={async () => {
-              const office_name = document.getElementById('office-name').value;
-              const contact_person = document.getElementById('office-contact').value;
-              const email = document.getElementById('office-email').value;
-              const phone = document.getElementById('office-phone').value;
-              const assigned_rep_id = document.getElementById('office-rep').value;
-              
-              if (!office_name) return;
+              if (!officeFormData.office_name) {
+                toast({ title: "Office name required", variant: "destructive" });
+                return;
+              }
               
               try {
                 if (editingOffice) {
-                  await base44.entities.SalesOffice.update(editingOffice.id, {
-                    office_name, contact_person, email, phone, assigned_rep_id
-                  });
+                  await base44.entities.SalesOffice.update(editingOffice.id, officeFormData);
                 } else {
-                  await base44.entities.SalesOffice.create({
-                    office_name, contact_person, email, phone, assigned_rep_id
-                  });
+                  await base44.entities.SalesOffice.create(officeFormData);
                 }
                 toast({ title: "Office saved" });
                 setShowOfficeDialog(false);
+                setOfficeFormData({ office_name: "", contact_person: "", email: "", phone: "", assigned_rep_id: "" });
+                setEditingOffice(null);
                 loadData();
               } catch (error) {
                 toast({ title: "Failed to save office", variant: "destructive" });
@@ -278,7 +336,11 @@ export default function SalesPerformanceSection() {
                       <Button
                         size="sm"
                         variant="ghost"
-                        onClick={() => { setEditingRep(rep); setShowRepDialog(true); }}
+                        onClick={() => {
+                          setEditingRep(rep);
+                          setRepFormData({ name: rep.name, email: rep.email });
+                          setShowRepDialog(true);
+                        }}
                       >
                         <Edit2 className="w-4 h-4" />
                       </Button>
@@ -315,7 +377,17 @@ export default function SalesPerformanceSection() {
                       <div
                         key={office.id}
                         className="bg-white p-2 rounded text-sm cursor-pointer hover:bg-gray-100"
-                        onClick={() => { setEditingOffice(office); setShowOfficeDialog(true); }}
+                        onClick={() => {
+                          setEditingOffice(office);
+                          setOfficeFormData({
+                            office_name: office.office_name,
+                            contact_person: office.contact_person || "",
+                            email: office.email || "",
+                            phone: office.phone || "",
+                            assigned_rep_id: office.assigned_rep_id || ""
+                          });
+                          setShowOfficeDialog(true);
+                        }}
                       >
                         {office.office_name}
                       </div>
