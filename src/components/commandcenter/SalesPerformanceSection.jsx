@@ -152,6 +152,94 @@ export default function SalesPerformanceSection() {
         </Card>
       )}
 
+      {/* Add Rep Dialog */}
+      <Dialog open={showRepDialog} onOpenChange={setShowRepDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingRep ? 'Edit' : 'Add'} Sales Rep</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input placeholder="Name" defaultValue={editingRep?.name || ''} id="rep-name" />
+            <Input placeholder="Email" defaultValue={editingRep?.email || ''} id="rep-email" />
+            <Button onClick={async () => {
+              const name = document.getElementById('rep-name').value;
+              const email = document.getElementById('rep-email').value;
+              if (!name || !email) return;
+              
+              try {
+                if (editingRep) {
+                  await base44.entities.SalesRep.update(editingRep.id, { name, email });
+                } else {
+                  await base44.entities.SalesRep.create({ name, email, user_id: name });
+                }
+                toast({ title: "Sales rep saved" });
+                setShowRepDialog(false);
+                loadData();
+              } catch (error) {
+                toast({ title: "Failed to save rep", variant: "destructive" });
+              }
+            }}>
+              Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Office Dialog */}
+      <Dialog open={showOfficeDialog} onOpenChange={setShowOfficeDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{editingOffice ? 'Edit' : 'Add'} Office</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Input placeholder="Office Name" defaultValue={editingOffice?.office_name || ''} id="office-name" />
+            <Input placeholder="Contact Person" defaultValue={editingOffice?.contact_person || ''} id="office-contact" />
+            <Input placeholder="Email" defaultValue={editingOffice?.email || ''} id="office-email" />
+            <Input placeholder="Phone" defaultValue={editingOffice?.phone || ''} id="office-phone" />
+            <Select defaultValue={editingOffice?.assigned_rep_id || ''} onValueChange={(val) => {
+              document.getElementById('office-rep').value = val;
+            }}>
+              <SelectTrigger id="office-rep">
+                <SelectValue placeholder="Assign Rep" />
+              </SelectTrigger>
+              <SelectContent>
+                {reps.map(rep => (
+                  <SelectItem key={rep.id} value={rep.id}>{rep.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={async () => {
+              const office_name = document.getElementById('office-name').value;
+              const contact_person = document.getElementById('office-contact').value;
+              const email = document.getElementById('office-email').value;
+              const phone = document.getElementById('office-phone').value;
+              const assigned_rep_id = document.getElementById('office-rep').value;
+              
+              if (!office_name) return;
+              
+              try {
+                if (editingOffice) {
+                  await base44.entities.SalesOffice.update(editingOffice.id, {
+                    office_name, contact_person, email, phone, assigned_rep_id
+                  });
+                } else {
+                  await base44.entities.SalesOffice.create({
+                    office_name, contact_person, email, phone, assigned_rep_id
+                  });
+                }
+                toast({ title: "Office saved" });
+                setShowOfficeDialog(false);
+                loadData();
+              } catch (error) {
+                toast({ title: "Failed to save office", variant: "destructive" });
+              }
+            }}>
+              Save
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Sales Reps Leaderboard */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

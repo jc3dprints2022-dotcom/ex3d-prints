@@ -371,17 +371,7 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                to={createPageUrl("Marketplace")}
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === createPageUrl("Marketplace")
-                    ? "bg-teal-500 text-white"
-                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
-                }`}
-              >
-                Marketplace
-              </Link>
+
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -422,43 +412,17 @@ export default function Layout({ children, currentPageName }) {
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                      location.pathname === createPageUrl("ForDesigners")
-                        ? "bg-red-500 text-white"
-                        : "bg-red-50 text-red-700 hover:bg-red-100"
-                    } flex items-center gap-1`}
-                  >
-                    For Designers
-                    <ChevronDown className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
-                  </DropdownMenuItem>
-                  {user && user.designer_id && user.business_roles?.includes('designer') ? (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
-                          <Settings className="w-4 h-4 mr-2" />
-                          Designer Studio
-                        </Link>
-                      </DropdownMenuItem>
-                    </>
-                  ) : (
-                    <DropdownMenuItem asChild>
-                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
-                        <span className="text-red-600 font-semibold">Get Started</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link
+                to={createPageUrl("BusinessSubscriptions")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("BusinessSubscriptions")
+                    ? "bg-purple-500 text-white"
+                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                }`}
+              >
+                Businesses
+              </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -574,13 +538,7 @@ export default function Layout({ children, currentPageName }) {
 
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
-              <Link
-                to={createPageUrl("Marketplace")}
-                className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
-                onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-              >
-                Marketplace
-              </Link>
+
 
               {/* For Makers Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
@@ -612,33 +570,15 @@ export default function Layout({ children, currentPageName }) {
                 )}
               </div>
 
-              {/* For Designers Section */}
+              {/* Businesses Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
-                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Designers</p>
                 <Link
-                  to={createPageUrl("ForDesigners")}
-                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
+                  to={createPageUrl("BusinessSubscriptions")}
+                  className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >
-                  Overview
+                  Businesses
                 </Link>
-                {user && user.designer_id && user.business_roles?.includes('designer') ? (
-                  <Link
-                    to={`${createPageUrl("ConsumerDashboard")}?tab=designer`}
-                    className="block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                  >
-                    Designer Studio
-                  </Link>
-                ) : (
-                  <Link
-                    to={createPageUrl("DesignerSignup")}
-                    className="block px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50"
-                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                  >
-                    Get Started
-                  </Link>
-                )}
               </div>
             </div>
           )}

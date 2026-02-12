@@ -79,6 +79,7 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
+import BusinessSubscriptions from './pages/BusinessSubscriptions';
 import __Layout from './Layout.jsx';
 
 
@@ -115,6 +116,7 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
+    "BusinessSubscriptions": BusinessSubscriptions,
 }
 
 export const pagesConfig = {
