@@ -67,9 +67,22 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <AnnouncementBanner />
       <HeroSection />
-      <FeaturedProducts products={products} loading={loading} />
+      
+      {/* What We Do Section */}
+      <section className="bg-white py-16">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              Local Distributed Manufacturing for Pediatric Practices
+            </h2>
+            <p className="text-lg text-gray-700 leading-relaxed">
+              EX3D Prints is a local distributed manufacturing network that provides custom pediatric engagement rewards through a subscription model. We design, produce, and deliver high-quality 3D printed reward items for dental and medical offices, allowing practices to improve patient experience without managing inventory or vendors. Everything is locally produced, customizable with your business's name or logo, and delivered on a predictable monthly schedule. We're infrastructure for pediatric engagement, not a hobby print shop.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <HowItWorksSection />
       <TestimonialsSection />
     </div>

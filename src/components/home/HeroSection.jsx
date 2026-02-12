@@ -53,22 +53,16 @@ export default function HeroSection() {
 
   const loadProducts = async () => {
     try {
-      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
-      if (featuredList.length > 0) {
-        featuredList.sort((a, b) => a.display_order - b.display_order);
-        const productPromises = featuredList.map(f =>
-          base44.entities.Product.get(f.product_id).catch(() => null)
-        );
-        const productsData = await Promise.all(productPromises);
-        const validProducts = productsData.filter(p => p && p.images && p.images.length > 0);
-        if (validProducts.length > 0) {
-          setProducts(validProducts);
-          return;
-        }
-      }
-      const allProducts = await base44.entities.Product.filter({ status: 'active' });
-      const productsWithImages = allProducts.filter(p => p.images && p.images.length > 0);
-      setProducts(productsWithImages.slice(0, 10));
+      const allProducts = await base44.entities.Product.list();
+      const coreNames = [
+        "Rotating Rings Toy",
+        "Interlocking Stars - Fidget Toy",
+        "Cone Fidget Passthrough",
+        "Infinity Cube",
+        "Toothbrush Travel Case"
+      ];
+      const coreProducts = allProducts.filter(p => coreNames.includes(p.name) && p.images && p.images.length > 0);
+      setProducts(coreProducts);
     } catch (error) {
       console.error("Failed to load products for slideshow:", error);
     }
@@ -177,55 +171,19 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Order locally, Delivered in days
+            Locally produced. Customizable. Delivered monthly.
           </p>
 
-          {/* Search Bar */}
-          <div className="max-w-2xl mx-auto mb-6">
-            <div className="flex gap-3">
-              <div className="flex-1 relative">
-                <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <Input
-                  placeholder="Search for 3D models, designs, or categories..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                  className="pl-12 h-14 text-lg border-2 border-gray-200 focus:border-teal-500 bg-white/95"
-                />
-              </div>
-              <Button
-                onClick={handleSearch}
-                size="lg"
-                className="h-14 px-8 bg-teal-500 hover:bg-teal-600"
-              >
-                Search
-              </Button>
-            </div>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              onClick={scrollToTop}
-              className="h-14 px-8 border-2 border-red-400 bg-red-500/90 text-white hover:bg-red-500 backdrop-blur-sm"
-            >
-              <Link to={createPageUrl("CustomPrintRequest")}>
-                <Upload className="w-5 h-5 mr-2" />
-                Upload Custom Files
-              </Link>
-            </Button>
+          {/* CTA Button */}
+          <div className="flex justify-center mb-8">
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-14 px-8 bg-teal-500 hover:bg-teal-600 text-white"
+              className="h-16 px-12 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold shadow-xl"
             >
-              <Link to={createPageUrl("Marketplace")}>
-                <ShoppingBag className="w-5 h-5 mr-2" />
-                Shop 3D Prints Now
+              <Link to={createPageUrl("BusinessSubscriptions")}>
+                For Businesses
               </Link>
             </Button>
           </div>
