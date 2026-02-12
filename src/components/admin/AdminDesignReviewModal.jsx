@@ -25,22 +25,24 @@ export default function AdminDesignReviewModal({ isOpen, onClose, product, onUpd
   const [deleting, setDeleting] = useState(false);
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
-  const [productImages, setProductImages] = useState(product.images || []);
+  const [productImages, setProductImages] = useState(product?.images || []);
   const [formData, setFormData] = useState({
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    print_time_hours: product.print_time_hours || '',
-    weight_grams: product.weight_grams || '',
-    dimensions: product.dimensions || { length: '', width: '', height: '' },
-    category: product.category,
-    status: product.status,
-    rejection_reason: product.rejection_reason || '',
-    admin_feedback: product.admin_feedback || '',
-    custom_scale: product.custom_scale || null,
-    infill_percentage: product.infill_percentage || 15
+    name: product?.name || '',
+    description: product?.description || '',
+    price: product?.price || '',
+    print_time_hours: product?.print_time_hours || '',
+    weight_grams: product?.weight_grams || '',
+    dimensions: product?.dimensions || { length: '', width: '', height: '' },
+    category: product?.category || '',
+    status: product?.status || 'pending',
+    rejection_reason: product?.rejection_reason || '',
+    admin_feedback: product?.admin_feedback || '',
+    custom_scale: product?.custom_scale || null,
+    infill_percentage: product?.infill_percentage || 15
   });
   const { toast } = useToast();
+
+  if (!product) return null;
 
   const handleApprove = async () => {
     setLoading(true);
