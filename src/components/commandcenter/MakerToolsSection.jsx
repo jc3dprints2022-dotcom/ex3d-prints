@@ -25,6 +25,7 @@ export default function MakerToolsSection() {
   const [makers, setMakers] = useState([]);
   const [printers, setPrinters] = useState([]);
   const [filaments, setFilaments] = useState([]);
+  const [performance, setPerformance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaker, setSelectedMaker] = useState(null);
   const [showMakerDialog, setShowMakerDialog] = useState(false);
@@ -39,19 +40,29 @@ export default function MakerToolsSection() {
   const loadMakers = async () => {
     setLoading(true);
     try {
-      const [users, allPrinters, allFilaments] = await Promise.all([
+      const [users, allPrinters, allFilaments, allPerformance] = await Promise.all([
         base44.entities.User.list(),
         base44.entities.Printer.list(),
-        base44.entities.Filament.list()
+        base44.entities.Filament.list(),
+        base44.entities.MakerPerformance.list()
       ]);
       
       const makerUsers = users.filter(u => 
         u.business_roles?.includes('maker') && u.maker_id
       );
       
+      // Get latest performance for each maker
+      const perfMap = {};
+      allPerformance.forEach(p => {
+        if (!perfMap[p.maker_id] || new Date(p.week_start) > new Date(perfMap[p.maker_id].week_start)) {
+          perfMap[p.maker_id] = p;
+        }
+      });
+      
       setMakers(makerUsers);
       setPrinters(allPrinters);
       setFilaments(allFilaments);
+      setPerformance(perfMap);
     } catch (error) {
       console.error("Failed to load makers:", error);
     }
@@ -266,7 +277,7 @@ export default function MakerToolsSection() {
                     </div>
                     
                     <div className="mt-3 pt-3 border-t">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-3 gap-4 text-sm">
                         <div>
                           <span className="text-gray-600">Weekly Hours:</span>
                           <span className="font-medium ml-2">
@@ -279,7 +290,30 @@ export default function MakerToolsSection() {
                             {maker.account_status}
                           </Badge>
                         </div>
+                        <div>
+                          <span className="text-gray-600">Performance Tier:</span>
+                          {performance[maker.maker_id] ? (
+                            <Badge className={`ml-2 ${
+                              performance[maker.maker_id].tier === 'gold' ? 'bg-yellow-500 text-white' :
+                              performance[maker.maker_id].tier === 'silver' ? 'bg-gray-400 text-white' :
+                              'bg-orange-700 text-white'
+                            }`}>
+                              {performance[maker.maker_id].tier.toUpperCase()}
+                            </Badge>
+                          ) : (
+                            <Badge className="ml-2 bg-gray-300 text-gray-700">
+                              Not Rated
+                            </Badge>
+                          )}
+                        </div>
                       </div>
+                      {performance[maker.maker_id] && (
+                        <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 mt-2">
+                          <div>On-time: {performance[maker.maker_id].on_time_delivery_rate.toFixed(1)}%</div>
+                          <div>Defects: {performance[maker.maker_id].defect_rate.toFixed(1)}%</div>
+                          <div>Volume: {performance[maker.maker_id].total_volume_fulfilled} orders</div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

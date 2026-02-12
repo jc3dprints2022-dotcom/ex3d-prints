@@ -183,6 +183,15 @@ Deno.serve(async (req) => {
         const allFilaments = await base44.asServiceRole.entities.Filament.list();
         const allOrders = await base44.asServiceRole.entities.Order.list();
         
+        // Fetch maker performance data for merit-based routing
+        const allPerformance = await base44.asServiceRole.entities.MakerPerformance.list();
+        const performanceMap = {};
+        allPerformance.forEach(perf => {
+            if (!performanceMap[perf.maker_id] || new Date(perf.week_start) > new Date(performanceMap[perf.maker_id].week_start)) {
+                performanceMap[perf.maker_id] = perf;
+            }
+        });
+        
         let makers = allUsers.filter(u => 
             u.maker_id && 
             u.account_status === 'active' && 
@@ -333,32 +342,59 @@ Deno.serve(async (req) => {
             
             // Scoring algorithm - prioritize by:
             // 1. Location (already filtered above)
-            // 2. Subscription plan priority (unlimited/express > pro > lite)
-            // 3. Time since last order (fairness)
-            // 4. New makers
+            // 2. MERIT TIER (Gold > Silver > Bronze)
+            // 3. Subscription plan priority (unlimited/express > pro > lite)
+            // 4. Time since last order (fairness)
+            // 5. New makers
+            
+            // Merit-based tier bonus
+            const performance = performanceMap[maker.maker_id];
+            let tierBonus = 0;
+            let tierMultiplier = 1;
+            
+            if (performance && !performance.routing_priority_reduced) {
+                if (performance.tier === 'gold') {
+                    tierBonus = 300; // HIGHEST PRIORITY
+                    tierMultiplier = 1.5;
+                } else if (performance.tier === 'silver') {
+                    tierBonus = 150;
+                    tierMultiplier = 1.2;
+                } else {
+                    tierBonus = 0; // Bronze
+                    tierMultiplier = 1;
+                }
+            } else if (performance?.routing_priority_reduced) {
+                tierMultiplier = 0.3; // Significantly reduce priority for underperformers
+            }
+            
             const makerPlan = maker.subscription_plan || 'lite';
             const priority = planPriority[makerPlan] || 1;
             
-            let score = priority * 100; // Heavy weight on subscription plan priority
-            score += daysSinceLastOrder * 15; // Time since last order for fairness
+            let baseScore = priority * 100; // Heavy weight on subscription plan priority
+            baseScore += daysSinceLastOrder * 15; // Time since last order for fairness
             
             // Extra boost for new makers
             if (isNewMaker) {
-                score += 50; // Significant boost for never having received an order
+                baseScore += 50; // Significant boost for never having received an order
             }
             
-            score += availableHours * 2; // Available capacity
-            score += makerPrinters.length * 3; // More printers = more reliability
+            baseScore += availableHours * 2; // Available capacity
+            baseScore += makerPrinters.length * 3; // More printers = more reliability
             
             // Bonus points if they already have all materials/colors
             if (hasMaterials && hasColors) {
-                score += 15;
+                baseScore += 15;
             }
             
             // Bonus points for having recycled filament
             if (requiresRecycledFilament && hasRecycledFilament) {
-                score += 10; // Prioritize makers with eco-friendly options
+                baseScore += 10; // Prioritize makers with eco-friendly options
             }
+            
+            // Apply merit-based multiplier and bonus
+            let score = (baseScore + tierBonus) * tierMultiplier;
+            
+            console.log(`Maker ${maker.maker_id} score: ${score.toFixed(1)} (tier: ${performance?.tier || 'none'}, base: ${baseScore}, bonus: ${tierBonus}, multiplier: ${tierMultiplier})`);
             
             eligibleMakers.push({
                 maker,
