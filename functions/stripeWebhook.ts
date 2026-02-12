@@ -104,6 +104,36 @@ Deno.serve(async (req) => {
             const session = event.data.object as Stripe.Checkout.Session;
             console.log('Processing completed checkout session:', session.id);
 
+            // Handle business subscription checkout
+            if (session.metadata?.subscription_id) {
+                console.log('Processing business subscription payment');
+                const subscriptionId = session.metadata.subscription_id;
+                
+                try {
+                    const subscription = await base44.asServiceRole.entities.BusinessSubscription.get(subscriptionId);
+                    
+                    if (subscription) {
+                        // Update subscription to active
+                        await base44.asServiceRole.entities.BusinessSubscription.update(subscriptionId, {
+                            status: 'active',
+                            stripe_subscription_id: session.subscription as string
+                        });
+                        
+                        // Create initial production order split across makers
+                        await base44.asServiceRole.functions.invoke('createBusinessSubscriptionOrders', {
+                            subscriptionId: subscriptionId
+                        });
+                        
+                        console.log('✅ Business subscription activated and orders created');
+                    }
+                    
+                    return Response.json({ success: true });
+                } catch (error) {
+                    console.error('❌ Failed to process business subscription:', error);
+                    return Response.json({ error: error.message }, { status: 500 });
+                }
+            }
+
             // Handle listing boost payment
             if (session.metadata?.boost_type === 'listing_boost') {
                 console.log('Processing listing boost payment');
