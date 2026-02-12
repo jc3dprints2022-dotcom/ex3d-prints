@@ -152,7 +152,7 @@ export default function SubscriptionManagement({ user }) {
         </CardHeader>
         <CardContent>
           <p className="text-gray-600 mb-4">You don't have an active subscription yet.</p>
-          <Button onClick={() => window.location.href = '/business-subscriptions'}>
+          <Button onClick={() => window.location.href = '/businesssubscriptions'}>
             Start Subscription
           </Button>
         </CardContent>
