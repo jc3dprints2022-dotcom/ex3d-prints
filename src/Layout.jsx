@@ -426,37 +426,6 @@ export default function Layout({ children, currentPageName }) {
             </nav>
 
             <div className="flex items-center space-x-4">
-              <div className="hidden md:flex relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                <Input
-                  placeholder="Search..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                  className="pl-10 w-48"
-                />
-              </div>
-
-              <Link to={createPageUrl("Wishlist")} onClick={scrollToTop}>
-                <Button variant="ghost" size="icon" className="relative">
-                  <Heart className="w-5 h-5" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
-              <Link to={createPageUrl("Cart")} onClick={scrollToTop}>
-                <Button variant="ghost" size="icon" className="relative">
-                  <ShoppingCart className="w-5 h-5" />
-                  {cartCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-teal-500 text-white text-xs rounded-full flex items-center justify-center">
-                      {cartCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
 
               {user ? (
                 <DropdownMenu>

@@ -350,7 +350,7 @@ export default function BusinessSubscriptions() {
             </Card>
 
             <div className="flex justify-end">
-              <Button onClick={() => setStep(2)} disabled={selectedProducts.length === 0} className="bg-purple-600 hover:bg-purple-700 h-14 px-12 text-lg">
+              <Button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: 'smooth' }); }} disabled={selectedProducts.length === 0} className="bg-purple-600 hover:bg-purple-700 h-14 px-12 text-lg">
                 Continue
               </Button>
             </div>
