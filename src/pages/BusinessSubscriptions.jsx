@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Check, Upload, Building2, Package } from "lucide-react";
 
@@ -63,15 +65,11 @@ export default function BusinessSubscriptions() {
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
-    setStep(2);
+    setStep(3);
   };
 
   const getAllowedSelections = () => {
-    if (!selectedPlan) return 0;
-    if (selectedPlan.id === "one_time") {
-      return bulkQuantity;
-    }
-    return selectedPlan.selections;
+    return 3; // Max 3 items regardless of plan
   };
 
   const handleProductSelect = (productId) => {
@@ -100,17 +98,11 @@ export default function BusinessSubscriptions() {
     }
   };
 
-  const getMaxColors = () => {
-    if (!selectedPlan) return 0;
-    if (selectedPlan.id === "one_time") {
-      return Math.floor((selectedPlan.items * bulkQuantity) / 100) * 4;
-    }
-    return Math.floor(selectedPlan.items / 100) * 4;
-  };
+
 
   const handleCheckout = async () => {
-    if (selectedProducts.length !== getAllowedSelections()) {
-      toast({ title: `Please select exactly ${getAllowedSelections()} product(s)`, variant: "destructive" });
+    if (selectedProducts.length === 0) {
+      toast({ title: "Please select at least one product", variant: "destructive" });
       return;
     }
 
@@ -181,79 +173,10 @@ export default function BusinessSubscriptions() {
           </p>
         </div>
 
-        {/* Step 1: Plan Selection */}
+        {/* Step 1: Product Selection & Business Info */}
         {step === 1 && (
-          <>
-            <div className="flex justify-center gap-4 mb-8">
-              <Button
-                variant={billingCycle === "monthly" ? "default" : "outline"}
-                onClick={() => setBillingCycle("monthly")}
-              >
-                Monthly
-              </Button>
-              <Button
-                variant={billingCycle === "yearly" ? "default" : "outline"}
-                onClick={() => setBillingCycle("yearly")}
-                className="relative"
-              >
-                Yearly
-                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
-                  Save 10%
-                </span>
-              </Button>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {plans.map(plan => {
-                const price = billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
-                const perItem = billingCycle === "monthly" ? plan.perItemMonthly : plan.perItemYearly;
-                return (
-                  <Card key={plan.id} className="hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-purple-500">
-                    <CardHeader className="text-center">
-                      <CardTitle className="text-2xl">{plan.items} Items / Month</CardTitle>
-                      <div className="text-4xl font-bold text-purple-600 my-4">
-                        ${price}
-                        <span className="text-lg text-gray-600">/{billingCycle === "monthly" ? "mo" : "yr"}</span>
-                      </div>
-                      <p className="text-sm text-gray-600">${perItem.toFixed(2)} per item</p>
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <Button onClick={() => handlePlanSelect({...plan, price, perItem})} className="w-full bg-purple-600 hover:bg-purple-700">
-                        Select Plan
-                      </Button>
-                      <p className="text-xs text-gray-500 mt-3">
-                        {billingCycle === "monthly" ? "Subscription renews monthly" : "Billed annually"}
-                      </p>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            <div className="text-center mb-8">
-              <h3 className="text-2xl font-semibold text-gray-900 mb-4">One-Time Bulk Purchase</h3>
-              <Card className="max-w-md mx-auto border-2 hover:border-purple-500 hover:shadow-xl transition-shadow">
-                <CardHeader className="text-center">
-                  <CardTitle>50 Items per Unit</CardTitle>
-                  <div className="text-4xl font-bold text-purple-600 my-4">
-                    ${oneTimePlan.price}
-                  </div>
-                  <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
-                </CardHeader>
-                <CardContent className="text-center">
-                  <Button onClick={() => handlePlanSelect(oneTimePlan)} className="w-full bg-gray-800 hover:bg-gray-900">
-                    One-Time Purchase
-                  </Button>
-                  <p className="text-xs text-gray-500 mt-3">No recurring billing</p>
-                </CardContent>
-              </Card>
-            </div>
-          </>
-        )}
-
-        {/* Step 2: Product Selection & Business Info */}
-        {step === 2 && (
           <div className="space-y-8">
+
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -261,21 +184,8 @@ export default function BusinessSubscriptions() {
                   Product Selection
                 </CardTitle>
                 <p className="text-sm text-gray-600">
-                  Select {getAllowedSelections()} product(s) ({selectedProducts.length} selected)
+                  Select up to {getAllowedSelections()} products ({selectedProducts.length} selected)
                 </p>
-                {selectedPlan.id === "one_time" && (
-                  <div className="mt-4">
-                    <Label>Quantity (50 items per unit)</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={bulkQuantity}
-                      onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="max-w-xs"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">Total: {selectedPlan.items * bulkQuantity} items</p>
-                  </div>
-                )}
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -300,27 +210,49 @@ export default function BusinessSubscriptions() {
                 </div>
 
                 <div className="border-t pt-6">
-                  <Label>Color Selection (Select up to {getMaxColors()} colors - evenly applied across products)</Label>
-                  <p className="text-xs text-gray-500 mb-2">Colors will be distributed evenly across your selected products</p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
-                    {availableColors.map(color => (
-                      <div key={color} className="flex items-center gap-2">
-                        <Checkbox
-                          checked={selectedColors.includes(color)}
-                          onCheckedChange={(checked) => {
-                            if (checked && selectedColors.length < getMaxColors()) {
-                              setSelectedColors([...selectedColors, color]);
-                            } else if (!checked) {
-                              setSelectedColors(selectedColors.filter(c => c !== color));
-                            }
-                          }}
-                          disabled={!selectedColors.includes(color) && selectedColors.length >= getMaxColors()}
-                        />
-                        <Label className="text-sm">{color}</Label>
-                      </div>
-                    ))}
-                  </div>
-                  <p className="text-xs text-gray-500 mt-2">{selectedColors.length} / {getMaxColors()} colors selected</p>
+                  <Label>Color Selection</Label>
+                  <p className="text-xs text-gray-500 mb-2">Select colors that will be evenly applied across your products</p>
+                  <Select
+                    value={selectedColors.join(',')}
+                    onValueChange={(value) => {
+                      const colors = value ? value.split(',') : [];
+                      setSelectedColors(colors);
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select colors">
+                        {selectedColors.length > 0 ? `${selectedColors.length} colors selected` : "Select colors"}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableColors.map(color => (
+                        <div key={color} className="flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-gray-100">
+                          <Checkbox
+                            checked={selectedColors.includes(color)}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedColors([...selectedColors, color]);
+                              } else {
+                                setSelectedColors(selectedColors.filter(c => c !== color));
+                              }
+                            }}
+                          />
+                          <span className="text-sm">{color}</span>
+                        </div>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {selectedColors.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {selectedColors.map(color => (
+                        <Badge key={color} variant="outline" className="cursor-pointer" onClick={() => {
+                          setSelectedColors(selectedColors.filter(c => c !== color));
+                        }}>
+                          {color} ×
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -417,7 +349,125 @@ export default function BusinessSubscriptions() {
             </Card>
 
             <div className="flex justify-between">
+              <Button onClick={() => setStep(2)} disabled={selectedProducts.length === 0} className="bg-purple-600 hover:bg-purple-700">
+                Continue
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Step 2: Plan Selection */}
+        {step === 2 && (
+          <>
+            <div className="flex justify-center gap-4 mb-8">
+              <Button
+                variant={billingCycle === "monthly" ? "default" : "outline"}
+                onClick={() => setBillingCycle("monthly")}
+              >
+                Monthly
+              </Button>
+              <Button
+                variant={billingCycle === "yearly" ? "default" : "outline"}
+                onClick={() => setBillingCycle("yearly")}
+                className="relative"
+              >
+                Yearly
+                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  Save 10%
+                </span>
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-6 mb-8">
+              {plans.map(plan => {
+                const price = billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+                const perItem = billingCycle === "monthly" ? plan.perItemMonthly : plan.perItemYearly;
+                return (
+                  <Card key={plan.id} className="hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-purple-500">
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl">{plan.items} Items / Month</CardTitle>
+                      <div className="text-4xl font-bold text-purple-600 my-4">
+                        ${price}
+                        <span className="text-lg text-gray-600">/{billingCycle === "monthly" ? "mo" : "yr"}</span>
+                      </div>
+                      <p className="text-sm text-gray-600">${perItem.toFixed(2)} per item</p>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <Button onClick={() => handlePlanSelect({...plan, price, perItem})} className="w-full bg-purple-600 hover:bg-purple-700">
+                        Select Plan
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-3">
+                        {billingCycle === "monthly" ? "Subscription renews monthly" : "Billed annually"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="text-center mb-8">
+              <h3 className="text-2xl font-semibold text-gray-900 mb-4">One-Time Bulk Purchase</h3>
+              <Card className="max-w-md mx-auto border-2 hover:border-purple-500 hover:shadow-xl transition-shadow">
+                <CardHeader className="text-center">
+                  <CardTitle>50 Items per Unit</CardTitle>
+                  <div className="space-y-3 my-4">
+                    <Label>Quantity (50 items per unit)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={bulkQuantity}
+                      onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="text-center text-lg font-semibold"
+                    />
+                    <p className="text-sm text-gray-600">Total: {oneTimePlan.items * bulkQuantity} items</p>
+                  </div>
+                  <div className="text-4xl font-bold text-purple-600 my-4">
+                    ${oneTimePlan.price * bulkQuantity}
+                  </div>
+                  <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
+                </CardHeader>
+                <CardContent className="text-center">
+                  <Button onClick={() => handlePlanSelect({...oneTimePlan, price: oneTimePlan.price * bulkQuantity})} className="w-full bg-gray-800 hover:bg-gray-900">
+                    Select Plan
+                  </Button>
+                  <p className="text-xs text-gray-500 mt-3">No recurring billing</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="flex justify-between">
               <Button variant="outline" onClick={() => setStep(1)}>Back</Button>
+            </div>
+          </>
+        )}
+
+        {/* Step 3: Checkout */}
+        {step === 3 && (
+          <div className="space-y-8">
+            <Card>
+              <CardHeader>
+                <CardTitle>Review Your Order</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label>Plan</Label>
+                  <p className="font-semibold">{selectedPlan.items} Items / Month - ${selectedPlan.price}</p>
+                </div>
+                <div>
+                  <Label>Selected Products</Label>
+                  <p className="text-sm">{selectedProducts.length} products selected</p>
+                </div>
+                <div>
+                  <Label>Colors</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedColors.map(c => <Badge key={c}>{c}</Badge>)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="flex justify-between">
+              <Button variant="outline" onClick={() => setStep(2)}>Back</Button>
               <Button onClick={handleCheckout} disabled={processing} className="bg-purple-600 hover:bg-purple-700">
                 {processing ? "Processing..." : "Proceed to Checkout"}
               </Button>
