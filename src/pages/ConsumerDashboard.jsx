@@ -309,7 +309,6 @@ export default function ConsumerDashboard() {
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: TrendingUp },
-    { id: "subscription", label: "Subscription Manager", icon: Package },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
@@ -403,54 +402,9 @@ export default function ConsumerDashboard() {
 
 
 
-                {/* Recommendations Section */}
-                <div className="space-y-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Eye className="w-5 h-5 text-teal-600" />
-                        Recently Viewed
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {recentlyViewedProducts.length === 0 ? (
-                        <p className="text-center text-gray-500 py-8">No recently viewed products</p>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                          {recentlyViewedProducts.map(product => (
-                            <ProductCard key={product.id} product={product} />
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-purple-600" />
-                        Recommended For You
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      {recommendedProducts.length === 0 ? (
-                        <p className="text-center text-gray-500 py-8">No recommendations yet</p>
-                      ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                          {recommendedProducts.map(product => (
-                            <ProductCard key={product.id} product={product} />
-                          ))}
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
+                {/* Subscription Manager */}
+                <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
               </>
-            )}
-
-            {/* Subscription Manager Section */}
-            {activeSection === "subscription" && (
-              <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* Orders & Quotes Section - Hidden but kept for backwards compatibility */}
