@@ -180,7 +180,7 @@ export default function HeroSection() {
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-16 px-12 bg-purple-600 hover:bg-purple-700 text-white text-lg font-semibold shadow-xl"
+              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
             >
               <Link to={createPageUrl("BusinessSubscriptions")}>
                 For Businesses

@@ -75,54 +75,8 @@ export default function HowItWorksSection() {
 
   return (
     <section className="bg-white">
-      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
-            How EX3D Prints Works
-          </h2>
-          <p className="text-xl text-slate-200 max-w-3xl mx-auto">
-            Three easy ways to purchase, print, and earn with 3D printing.
-          </p>
-        </div>
-      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
         <div className="space-y-0">
-          {/* For Consumers */}
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-blue-500 to-blue-600 rounded-2xl mb-6">
-              <ShoppingCart className="w-8 h-8 text-white"/>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Shoppers</h3>
-            <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-              Get unique 3D printed products with a quick turn around time!
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              {consumerSteps.map((step, index) => (
-                <Card key={index} className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-                  <CardContent className="p-8">
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${step.color} mb-4`}>
-                      <step.icon className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-slate-900 mb-2">{step.title}</h4>
-                    <p className="text-slate-600">{step.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
-              <Link to={createPageUrl("Marketplace")}>
-                Start Shopping
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
-
           {/* For Makers */}
           <div className="text-center py-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl mb-6">
@@ -150,41 +104,6 @@ export default function HowItWorksSection() {
             <Button asChild size="lg" className="bg-orange-600 hover:bg-orange-700">
               <Link to={createPageUrl("MakerSignup")}>
                 Become a Maker
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="w-full h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
-
-          {/* For Designers */}
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-500 to-red-600 rounded-2xl mb-6">
-              <Upload className="w-8 h-8 text-white" />
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Designers</h3>
-            <p className="text-slate-600 mb-8 max-w-2xl mx-auto">
-              Share your designs and earn passive income
-            </p>
-            
-            <div className="grid md:grid-cols-3 gap-8 mb-8">
-              {designerSteps.map((step, index) => (
-                <Card key={index} className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-                  <CardContent className="p-8">
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full ${step.color} mb-4`}>
-                      <step.icon className="w-8 h-8" />
-                    </div>
-                    <h4 className="text-xl font-semibold text-slate-900 mb-2">{step.title}</h4>
-                    <p className="text-slate-600">{step.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            
-            <Button asChild size="lg" className="bg-red-600 hover:bg-red-700">
-              <Link to={createPageUrl("DesignerSignup")}>
-                Become a Designer
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
