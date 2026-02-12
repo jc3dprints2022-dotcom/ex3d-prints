@@ -12,6 +12,7 @@ export default function BusinessSubscriptions() {
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [billingCycle, setBillingCycle] = useState("monthly");
+  const [bulkQuantity, setBulkQuantity] = useState(1);
   const [coreProducts, setCoreProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [businessInfo, setBusinessInfo] = useState({
@@ -26,12 +27,12 @@ export default function BusinessSubscriptions() {
   const { toast } = useToast();
 
   const plans = [
-    { id: "100_items", items: 100, monthlyPrice: 300, yearlyPrice: 3200, perItemMonthly: 3.00, perItemYearly: 2.67 },
-    { id: "200_items", items: 200, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 2.50, perItemYearly: 2.25 },
-    { id: "550_items", items: 550, monthlyPrice: 1200, yearlyPrice: 12900, perItemMonthly: 2.18, perItemYearly: 1.95 }
+    { id: "100_items", items: 100, selections: 2, monthlyPrice: 300, yearlyPrice: 3200, perItemMonthly: 3.00, perItemYearly: 2.67 },
+    { id: "200_items", items: 200, selections: 4, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 2.50, perItemYearly: 2.25 },
+    { id: "550_items", items: 550, selections: 11, monthlyPrice: 1200, yearlyPrice: 12900, perItemMonthly: 2.18, perItemYearly: 1.95 }
   ];
 
-  const oneTimePlan = { id: "one_time", items: 50, price: 175, perItem: 3.50 };
+  const oneTimePlan = { id: "one_time", items: 50, selections: 1, price: 175, perItem: 3.50 };
 
   useEffect(() => {
     loadCoreProducts();
@@ -61,7 +62,10 @@ export default function BusinessSubscriptions() {
 
   const getAllowedSelections = () => {
     if (!selectedPlan) return 0;
-    return Math.floor(selectedPlan.items / 50);
+    if (selectedPlan.id === "one_time") {
+      return bulkQuantity;
+    }
+    return selectedPlan.selections;
   };
 
   const handleProductSelect = (productId) => {
@@ -92,7 +96,7 @@ export default function BusinessSubscriptions() {
 
   const handleCheckout = async () => {
     if (selectedProducts.length !== getAllowedSelections()) {
-      toast({ title: `Please select exactly ${getAllowedSelections()} products`, variant: "destructive" });
+      toast({ title: `Please select exactly ${getAllowedSelections()} product(s)`, variant: "destructive" });
       return;
     }
 
@@ -103,16 +107,17 @@ export default function BusinessSubscriptions() {
 
     setProcessing(true);
     try {
-      // Create subscription in database
-      const productionWeeks = Math.ceil(selectedPlan.items / 150);
+      const totalItems = selectedPlan.id === "one_time" ? selectedPlan.items * bulkQuantity : selectedPlan.items;
+      const totalPrice = selectedPlan.id === "one_time" ? selectedPlan.price * bulkQuantity : selectedPlan.price;
+      const productionWeeks = Math.ceil(totalItems / 150);
       const nextProdDate = new Date();
       nextProdDate.setDate(nextProdDate.getDate() + (productionWeeks * 7));
 
       const subscription = await base44.entities.BusinessSubscription.create({
         ...businessInfo,
         plan_type: selectedPlan.id,
-        items_per_month: selectedPlan.items,
-        monthly_price: selectedPlan.price,
+        items_per_month: totalItems,
+        monthly_price: totalPrice,
         selected_products: selectedProducts,
         has_logo_personalization: hasLogoPers,
         production_weeks: productionWeeks,
@@ -120,23 +125,25 @@ export default function BusinessSubscriptions() {
         status: "pending"
       });
 
-      // Create Stripe checkout session
       const isSubscription = selectedPlan.id !== "one_time";
-      const { data } = await base44.functions.invoke('createBusinessCheckout', {
+      const response = await base44.functions.invoke('createBusinessCheckout', {
         subscriptionId: subscription.id,
         planType: selectedPlan.id,
-        amount: selectedPlan.price,
-        isSubscription
+        amount: totalPrice,
+        isSubscription,
+        billingCycle
       });
 
-      if (data.url) {
-        window.location.href = data.url;
+      if (response.data?.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error("No checkout URL returned");
       }
     } catch (error) {
       console.error("Checkout failed:", error);
-      toast({ title: "Checkout failed", variant: "destructive" });
+      toast({ title: "Checkout failed: " + error.message, variant: "destructive" });
+      setProcessing(false);
     }
-    setProcessing(false);
   };
 
   return (
@@ -206,14 +213,25 @@ export default function BusinessSubscriptions() {
               <h3 className="text-2xl font-semibold text-gray-900 mb-4">One-Time Bulk Purchase</h3>
               <Card className="max-w-md mx-auto border-2 hover:border-purple-500 hover:shadow-xl transition-shadow">
                 <CardHeader className="text-center">
-                  <CardTitle>{oneTimePlan.items} Items</CardTitle>
+                  <CardTitle>50 Items per Unit</CardTitle>
+                  <div className="space-y-3 my-4">
+                    <Label>Quantity</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={bulkQuantity}
+                      onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="text-center text-lg font-semibold"
+                    />
+                    <p className="text-sm text-gray-600">Total: {oneTimePlan.items * bulkQuantity} items</p>
+                  </div>
                   <div className="text-4xl font-bold text-purple-600 my-4">
-                    ${oneTimePlan.price}
+                    ${oneTimePlan.price * bulkQuantity}
                   </div>
                   <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Button onClick={() => handlePlanSelect(oneTimePlan)} className="w-full bg-gray-800 hover:bg-gray-900">
+                  <Button onClick={() => handlePlanSelect({...oneTimePlan, price: oneTimePlan.price * bulkQuantity})} className="w-full bg-gray-800 hover:bg-gray-900">
                     One-Time Purchase
                   </Button>
                   <p className="text-xs text-gray-500 mt-3">No recurring billing</p>
@@ -233,7 +251,7 @@ export default function BusinessSubscriptions() {
                   Product Selection
                 </CardTitle>
                 <p className="text-sm text-gray-600">
-                  You may select {getAllowedSelections()} different items ({selectedProducts.length} selected)
+                  Select {getAllowedSelections()} product(s) ({selectedProducts.length} selected)
                 </p>
               </CardHeader>
               <CardContent>
@@ -249,9 +267,9 @@ export default function BusinessSubscriptions() {
                         }`}
                       >
                         {product.images?.[0] && (
-                          <img src={product.images[0]} alt={product.name} className="w-full h-32 object-cover rounded-lg mb-3" />
+                          <img src={product.images[0]} alt={product.name} className="w-full aspect-[3/4] object-cover rounded-lg mb-3" />
                         )}
-                        <h3 className="font-semibold">{product.name}</h3>
+                        <h3 className="font-semibold text-sm">{product.name}</h3>
                         {isSelected && <Check className="w-6 h-6 text-purple-600 mt-2" />}
                       </div>
                     );
@@ -298,7 +316,7 @@ export default function BusinessSubscriptions() {
                 </div>
 
                 <div>
-                  <Label>Shipping Address</Label>
+                  <Label>Address</Label>
                   <Input
                     placeholder="Street"
                     value={businessInfo.shipping_address.street}
@@ -340,9 +358,6 @@ export default function BusinessSubscriptions() {
                   <Checkbox checked={hasLogoPers} onCheckedChange={setHasLogoPers} />
                   <Label>Add Logo Personalization (when applicable)</Label>
                 </div>
-                {hasLogoPers && (
-                  <p className="text-xs text-gray-500">Our team will contact you to collect your logo after checkout.</p>
-                )}
               </CardContent>
             </Card>
 
