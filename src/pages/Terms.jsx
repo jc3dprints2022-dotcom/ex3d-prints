@@ -95,6 +95,107 @@ export default function Terms() {
             <p className="text-gray-700 mt-2">
               <strong>Campus Pilot:</strong> Orders may be routed for local pickup/drop‑off. Details appear at checkout.
             </p>
+
+            {/* Maker Agreement */}
+            <div className="mt-8 bg-orange-50 p-6 rounded-lg border-2 border-orange-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <Shield className="w-6 h-6 text-orange-600" />
+                EX3DPRINTS MAKER AGREEMENT (V1)
+              </h3>
+              
+              <div className="space-y-4 text-gray-700">
+                <div>
+                  <h4 className="font-semibold text-gray-900">1. Role</h4>
+                  <p>Maker operates as an independent contractor providing manufacturing services for ex3dprints. Maker has no direct relationship with ex3dprints clients.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">2. Non-Circumvention</h4>
+                  <p>Maker agrees not to contact, solicit, or fulfill orders directly for any ex3dprints client introduced through the platform for 24 months after last engagement.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">3. Standardization</h4>
+                  <p className="mb-2">Maker agrees to:</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>Use only ex3dprints-provided STL files</li>
+                    <li>Use provided slicer settings</li>
+                    <li>Use approved materials</li>
+                    <li>Follow packaging and labeling standards</li>
+                    <li>No changes without written approval</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">4. Performance Standards</h4>
+                  <p className="mb-2">Maker must maintain:</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>≥95% on-time delivery</li>
+                    <li>≤5% defect rate</li>
+                    <li>Photo proof of completed batches before delivery</li>
+                    <li>Failure may result in suspension or termination</li>
+                  </ul>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">5. Confidentiality</h4>
+                  <p>All pricing, client information, designs, and routing logic are confidential.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">6. Payment</h4>
+                  <p>Maker receives agreed percentage per order. Payments issued weekly.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">7. Termination</h4>
+                  <p>Either party may terminate with 14 days' notice. Immediate termination allowed for quality violations or circumvention.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Service Level Agreement */}
+            <div className="mt-8 bg-blue-50 p-6 rounded-lg border-2 border-blue-200">
+              <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
+                EX3DPRINTS SERVICE LEVEL GUARANTEE
+              </h3>
+              
+              <p className="text-gray-700 mb-4">We guarantee the following to all subscribed offices:</p>
+              
+              <div className="space-y-3 text-gray-700">
+                <div>
+                  <h4 className="font-semibold text-gray-900">Production Time:</h4>
+                  <p>Orders are produced within 7 calendar days of order confirmation.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">Quality Standard:</h4>
+                  <p>All items meet ex3dprints design, material, and finish specifications.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">Local Fulfillment:</h4>
+                  <p>Orders are produced locally whenever possible to ensure speed and reliability.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">Defect Policy:</h4>
+                  <p>Any defective or damaged items will be replaced at no cost within 7 days.</p>
+                </div>
+
+                <div>
+                  <h4 className="font-semibold text-gray-900">Missed SLA:</h4>
+                  <p className="mb-2">If we fail to meet the above standards, we will:</p>
+                  <ul className="list-disc pl-6 space-y-1">
+                    <li>Reprint the order at no charge, or</li>
+                    <li>Credit the next billing cycle (case by case)</li>
+                  </ul>
+                </div>
+
+                <p className="text-sm italic text-blue-900 mt-4">This SLA exists to ensure speed, consistency, and trust as we scale.</p>
+              </div>
+            </div>
           </section>
 
           {/* Section 5 */}
