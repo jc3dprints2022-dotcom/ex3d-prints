@@ -371,7 +371,17 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-8">
-
+              <Link
+                to={createPageUrl("BusinessSubscriptions")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("BusinessSubscriptions")
+                    ? "bg-purple-500 text-white"
+                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                }`}
+              >
+                Businesses
+              </Link>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -411,18 +421,6 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
-
-              <Link
-                to={createPageUrl("BusinessSubscriptions")}
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === createPageUrl("BusinessSubscriptions")
-                    ? "bg-purple-500 text-white"
-                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-                }`}
-              >
-                Businesses
-              </Link>
             </nav>
 
             <div className="flex items-center space-x-4">
