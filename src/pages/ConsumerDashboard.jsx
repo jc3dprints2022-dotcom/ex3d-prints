@@ -25,10 +25,8 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductCard from "@/components/marketplace/ProductCard";
-import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
-import ReferralTab from "@/components/consumer/ReferralTab";
 import MakerDashboardContent from "@/components/makers/MakerDashboardContent";
-import DesignerDashboardContent from "@/components/designers/DesignerDashboardContent";
+import SubscriptionManagement from "@/components/consumer/SubscriptionManagement";
 
 export default function ConsumerDashboard() {
   const [user, setUser] = useState(null);
@@ -311,10 +309,8 @@ export default function ConsumerDashboard() {
 
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: TrendingUp },
-    { id: "orders", label: "Orders & Quotes", icon: Package },
-    { id: "exp", label: "EXP / Rewards", icon: Gift },
+    { id: "subscription", label: "Subscription Manager", icon: Package },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
-    ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Studio", icon: Star }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
 
@@ -373,7 +369,7 @@ export default function ConsumerDashboard() {
                 </Card>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <Card>
                     <CardContent className="p-4">
                       <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
@@ -403,96 +399,9 @@ export default function ConsumerDashboard() {
                       <div className="text-2xl font-bold text-yellow-600">{stats.pendingQuotes}</div>
                     </CardContent>
                   </Card>
-
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                        <Gift className="w-4 h-4" />
-                        <span>EXP Balance</span>
-                      </div>
-                      <div className="text-2xl font-bold text-purple-600">{stats.expBalance}</div>
-                    </CardContent>
-                  </Card>
-
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-1">
-                        <Users className="w-4 h-4" />
-                        <span>Referrals</span>
-                      </div>
-                      <div className="text-2xl font-bold text-blue-600">{stats.totalReferrals}</div>
-                    </CardContent>
-                  </Card>
                 </div>
 
-                {/* Recent Activity Preview */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* Recent Orders */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>Recent Orders</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setActiveSection("orders")}
-                        >
-                          View All
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </Button>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {orders.slice(0, 3).map(order => (
-                        <div key={order.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{order.items?.[0]?.product_name}</p>
-                            <p className="text-xs text-gray-500">
-                              {new Date(order.created_date).toLocaleDateString()}
-                            </p>
-                          </div>
-                          {getOrderStatusBadge(order.status)}
-                        </div>
-                      ))}
-                      {orders.length === 0 && (
-                        <p className="text-center text-gray-500 py-4">No orders yet</p>
-                      )}
-                    </CardContent>
-                  </Card>
 
-                  {/* Pending Quotes */}
-                  <Card>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
-                        <span>Pending Quotes</span>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setActiveSection("quotes")}
-                        >
-                          View All
-                          <ChevronRight className="w-4 h-4 ml-1" />
-                        </Button>
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      {customRequests.filter(r => r.status === 'quoted').slice(0, 3).map(request => (
-                        <div key={request.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex-1">
-                            <p className="font-medium text-sm">{request.title}</p>
-                            <p className="text-xs text-gray-500">
-                              ${request.quoted_price?.toFixed(2)}
-                            </p>
-                          </div>
-                          <Badge className="bg-blue-100 text-blue-800">Quote Ready</Badge>
-                        </div>
-                      ))}
-                      {customRequests.filter(r => r.status === 'quoted').length === 0 && (
-                        <p className="text-center text-gray-500 py-4">No pending quotes</p>
-                      )}
-                    </CardContent>
-                  </Card>
-                </div>
 
                 {/* Recommendations Section */}
                 <div className="space-y-6">
@@ -539,7 +448,12 @@ export default function ConsumerDashboard() {
               </>
             )}
 
-            {/* Orders & Quotes Section */}
+            {/* Subscription Manager Section */}
+            {activeSection === "subscription" && (
+              <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
+            )}
+
+            {/* Orders & Quotes Section - Hidden but kept for backwards compatibility */}
             {activeSection === "orders" && (
               <div className="space-y-6">
                 <Card>
@@ -729,23 +643,7 @@ export default function ConsumerDashboard() {
                                     </div>
                                     )}
 
-            {/* EXP / Rewards Section */}
-            {activeSection === "exp" && (
-              <div className="space-y-6">
-                <Tabs defaultValue="redeem" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="redeem">Redeem Your EXP</TabsTrigger>
-                    <TabsTrigger value="referrals">Referrals</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="redeem">
-                    <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
-                  </TabsContent>
-                  <TabsContent value="referrals">
-                    <ReferralTab user={user} />
-                  </TabsContent>
-                </Tabs>
-              </div>
-            )}
+
 
 
 
@@ -754,10 +652,7 @@ export default function ConsumerDashboard() {
               <MakerDashboardContent user={user} onUpdate={loadDashboardData} />
             )}
 
-            {/* Designer Studio Section */}
-            {activeSection === "designer" && user?.business_roles?.includes('designer') && (
-              <DesignerDashboardContent user={user} onUpdate={loadDashboardData} />
-            )}
+
 
             {/* Account Settings Section */}
             {activeSection === "settings" && (
