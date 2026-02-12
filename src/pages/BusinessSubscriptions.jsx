@@ -11,6 +11,7 @@ import { Check, Upload, Building2, Package } from "lucide-react";
 export default function BusinessSubscriptions() {
   const [step, setStep] = useState(1);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [billingCycle, setBillingCycle] = useState("monthly");
   const [coreProducts, setCoreProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
   const [businessInfo, setBusinessInfo] = useState({
@@ -21,14 +22,13 @@ export default function BusinessSubscriptions() {
     shipping_address: { street: "", city: "", state: "", zip: "" }
   });
   const [hasLogoPers, setHasLogoPers] = useState(false);
-  const [logoFile, setLogoFile] = useState(null);
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
 
   const plans = [
-    { id: "100_items", items: 100, price: 300, perItem: 3.00 },
-    { id: "200_items", items: 200, price: 500, perItem: 2.50 },
-    { id: "550_items", items: 550, price: 1200, perItem: 2.18 }
+    { id: "100_items", items: 100, monthlyPrice: 300, yearlyPrice: 3200, perItemMonthly: 3.00, perItemYearly: 2.67 },
+    { id: "200_items", items: 200, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 2.50, perItemYearly: 2.25 },
+    { id: "550_items", items: 550, monthlyPrice: 1200, yearlyPrice: 12900, perItemMonthly: 2.18, perItemYearly: 1.95 }
   ];
 
   const oneTimePlan = { id: "one_time", items: 50, price: 175, perItem: 3.50 };
@@ -40,7 +40,14 @@ export default function BusinessSubscriptions() {
   const loadCoreProducts = async () => {
     try {
       const products = await base44.entities.Product.list();
-      const core = products.filter(p => p.is_core_business_product === true).slice(0, 5);
+      const coreNames = [
+        "Rotating Rings Toy",
+        "Interlocking Stars - Fidget Toy",
+        "Cone Fidget Passthrough",
+        "Infinity Cube",
+        "Toothbrush Travel Case"
+      ];
+      const core = products.filter(p => coreNames.includes(p.name));
       setCoreProducts(core);
     } catch (error) {
       console.error("Failed to load products:", error);
@@ -108,7 +115,6 @@ export default function BusinessSubscriptions() {
         monthly_price: selectedPlan.price,
         selected_products: selectedProducts,
         has_logo_personalization: hasLogoPers,
-        logo_url: logoFile,
         production_weeks: productionWeeks,
         next_production_date: nextProdDate.toISOString().split('T')[0],
         status: "pending"
@@ -140,7 +146,7 @@ export default function BusinessSubscriptions() {
         <div className="text-center mb-12">
           <Building2 className="w-16 h-16 mx-auto text-purple-600 mb-4" />
           <h1 className="text-4xl font-bold text-gray-900 mb-3">
-            Custom Pediatric Engagement Rewards — Subscription Plans
+            Subscription Plans
           </h1>
           <p className="text-xl text-gray-600">
             Locally produced. Customizable. Delivered monthly.
@@ -150,25 +156,50 @@ export default function BusinessSubscriptions() {
         {/* Step 1: Plan Selection */}
         {step === 1 && (
           <>
+            <div className="flex justify-center gap-4 mb-8">
+              <Button
+                variant={billingCycle === "monthly" ? "default" : "outline"}
+                onClick={() => setBillingCycle("monthly")}
+              >
+                Monthly
+              </Button>
+              <Button
+                variant={billingCycle === "yearly" ? "default" : "outline"}
+                onClick={() => setBillingCycle("yearly")}
+                className="relative"
+              >
+                Yearly
+                <span className="absolute -top-2 -right-2 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">
+                  Save 10%
+                </span>
+              </Button>
+            </div>
+
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              {plans.map(plan => (
-                <Card key={plan.id} className="hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-purple-500">
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-2xl">{plan.items} Items / Month</CardTitle>
-                    <div className="text-4xl font-bold text-purple-600 my-4">
-                      ${plan.price}
-                      <span className="text-lg text-gray-600">/mo</span>
-                    </div>
-                    <p className="text-sm text-gray-600">${plan.perItem.toFixed(2)} per item</p>
-                  </CardHeader>
-                  <CardContent className="text-center">
-                    <Button onClick={() => handlePlanSelect(plan)} className="w-full bg-purple-600 hover:bg-purple-700">
-                      Select Plan
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-3">Subscription renews monthly</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {plans.map(plan => {
+                const price = billingCycle === "monthly" ? plan.monthlyPrice : plan.yearlyPrice;
+                const perItem = billingCycle === "monthly" ? plan.perItemMonthly : plan.perItemYearly;
+                return (
+                  <Card key={plan.id} className="hover:shadow-xl transition-shadow cursor-pointer border-2 hover:border-purple-500">
+                    <CardHeader className="text-center">
+                      <CardTitle className="text-2xl">{plan.items} Items / Month</CardTitle>
+                      <div className="text-4xl font-bold text-purple-600 my-4">
+                        ${price}
+                        <span className="text-lg text-gray-600">/{billingCycle === "monthly" ? "mo" : "yr"}</span>
+                      </div>
+                      <p className="text-sm text-gray-600">${perItem.toFixed(2)} per item</p>
+                    </CardHeader>
+                    <CardContent className="text-center">
+                      <Button onClick={() => handlePlanSelect({...plan, price, perItem})} className="w-full bg-purple-600 hover:bg-purple-700">
+                        Select Plan
+                      </Button>
+                      <p className="text-xs text-gray-500 mt-3">
+                        {billingCycle === "monthly" ? "Subscription renews monthly" : "Billed annually"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
 
             <div className="text-center mb-8">
@@ -309,13 +340,8 @@ export default function BusinessSubscriptions() {
                   <Checkbox checked={hasLogoPers} onCheckedChange={setHasLogoPers} />
                   <Label>Add Logo Personalization (when applicable)</Label>
                 </div>
-
                 {hasLogoPers && (
-                  <div>
-                    <Label>Upload Logo</Label>
-                    <Input type="file" accept="image/png,image/svg+xml,image/jpeg" onChange={handleLogoUpload} />
-                    <p className="text-xs text-gray-500 mt-1">Logo will be applied to compatible products only.</p>
-                  </div>
+                  <p className="text-xs text-gray-500">Our team will contact you to collect your logo after checkout.</p>
                 )}
               </CardContent>
             </Card>
