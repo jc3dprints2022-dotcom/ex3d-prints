@@ -97,8 +97,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
                   <Package className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Design & Production</h4>
-                <p className="text-slate-600">We design, produce, and deliver high-quality 3D printed reward items for dental and medical offices.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Made for Dental Offices</h4>
+                <p className="text-slate-600">We create custom 3D printed reward items designed for pediatric patients. Each item is branded with your office name or logo and built to support a better patient experience.</p>
               </CardContent>
             </Card>
             
@@ -107,8 +107,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 mb-4">
                   <Printer className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Local Manufacturing</h4>
-                <p className="text-slate-600">Everything is locally produced and customizable with your business's name or logo on a predictable schedule.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Produced Locally</h4>
+                <p className="text-slate-600">All products are manufactured locally by student makers in your community. This means fast turnaround, consistent quality, and reliable monthly delivery.</p>
               </CardContent>
             </Card>
             
@@ -117,8 +117,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
                   <CheckCircle className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">No Vendor Management</h4>
-                <p className="text-slate-600">Improve patient experience without managing inventory or vendors. We're infrastructure, not a hobby shop.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fully Automatic</h4>
+                <p className="text-slate-600">We handle design, production, and restocking. No inventory tracking. No vendor calls. Just dependable, ready-to-use rewards delivered on schedule.</p>
               </CardContent>
             </Card>
           </div>

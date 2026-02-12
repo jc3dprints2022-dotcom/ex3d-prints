@@ -15,6 +15,7 @@ export default function BusinessSubscriptions() {
   const [bulkQuantity, setBulkQuantity] = useState(1);
   const [coreProducts, setCoreProducts] = useState([]);
   const [selectedProducts, setSelectedProducts] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
   const [businessInfo, setBusinessInfo] = useState({
     business_name: "",
     contact_name: "",
@@ -25,6 +26,11 @@ export default function BusinessSubscriptions() {
   const [hasLogoPers, setHasLogoPers] = useState(false);
   const [processing, setProcessing] = useState(false);
   const { toast } = useToast();
+
+  const availableColors = [
+    "Black", "White", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", 
+    "Pink", "Gray", "Brown", "Teal", "Misc (Any Available)"
+  ];
 
   const plans = [
     { id: "100_items", items: 100, selections: 2, monthlyPrice: 300, yearlyPrice: 3200, perItemMonthly: 3.00, perItemYearly: 2.67 },
@@ -94,14 +100,28 @@ export default function BusinessSubscriptions() {
     }
   };
 
+  const getMaxColors = () => {
+    if (!selectedPlan) return 0;
+    if (selectedPlan.id === "one_time") {
+      return Math.floor((selectedPlan.items * bulkQuantity) / 100) * 4;
+    }
+    return Math.floor(selectedPlan.items / 100) * 4;
+  };
+
   const handleCheckout = async () => {
     if (selectedProducts.length !== getAllowedSelections()) {
       toast({ title: `Please select exactly ${getAllowedSelections()} product(s)`, variant: "destructive" });
       return;
     }
 
-    if (!businessInfo.business_name || !businessInfo.email) {
-      toast({ title: "Please fill in required business information", variant: "destructive" });
+    if (!businessInfo.business_name || !businessInfo.email || !businessInfo.contact_name || !businessInfo.phone) {
+      toast({ title: "Please fill in all required fields", variant: "destructive" });
+      return;
+    }
+
+    if (!businessInfo.shipping_address.street || !businessInfo.shipping_address.city || 
+        !businessInfo.shipping_address.state || !businessInfo.shipping_address.zip) {
+      toast({ title: "Please complete the address", variant: "destructive" });
       return;
     }
 
@@ -119,6 +139,7 @@ export default function BusinessSubscriptions() {
         items_per_month: totalItems,
         monthly_price: totalPrice,
         selected_products: selectedProducts,
+        selected_colors: selectedColors.length > 0 ? selectedColors : ["Misc (Any Available)"],
         has_logo_personalization: hasLogoPers,
         production_weeks: productionWeeks,
         next_production_date: nextProdDate.toISOString().split('T')[0],
@@ -214,24 +235,13 @@ export default function BusinessSubscriptions() {
               <Card className="max-w-md mx-auto border-2 hover:border-purple-500 hover:shadow-xl transition-shadow">
                 <CardHeader className="text-center">
                   <CardTitle>50 Items per Unit</CardTitle>
-                  <div className="space-y-3 my-4">
-                    <Label>Quantity</Label>
-                    <Input
-                      type="number"
-                      min="1"
-                      value={bulkQuantity}
-                      onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-center text-lg font-semibold"
-                    />
-                    <p className="text-sm text-gray-600">Total: {oneTimePlan.items * bulkQuantity} items</p>
-                  </div>
                   <div className="text-4xl font-bold text-purple-600 my-4">
-                    ${oneTimePlan.price * bulkQuantity}
+                    ${oneTimePlan.price}
                   </div>
                   <p className="text-sm text-gray-600">${oneTimePlan.perItem.toFixed(2)} per item</p>
                 </CardHeader>
                 <CardContent className="text-center">
-                  <Button onClick={() => handlePlanSelect({...oneTimePlan, price: oneTimePlan.price * bulkQuantity})} className="w-full bg-gray-800 hover:bg-gray-900">
+                  <Button onClick={() => handlePlanSelect(oneTimePlan)} className="w-full bg-gray-800 hover:bg-gray-900">
                     One-Time Purchase
                   </Button>
                   <p className="text-xs text-gray-500 mt-3">No recurring billing</p>
@@ -253,8 +263,21 @@ export default function BusinessSubscriptions() {
                 <p className="text-sm text-gray-600">
                   Select {getAllowedSelections()} product(s) ({selectedProducts.length} selected)
                 </p>
+                {selectedPlan.id === "one_time" && (
+                  <div className="mt-4">
+                    <Label>Quantity (50 items per unit)</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      value={bulkQuantity}
+                      onChange={(e) => setBulkQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="max-w-xs"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Total: {selectedPlan.items * bulkQuantity} items</p>
+                  </div>
+                )}
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-6">
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {coreProducts.map(product => {
                     const isSelected = selectedProducts.some(p => p.product_id === product.id);
@@ -267,13 +290,37 @@ export default function BusinessSubscriptions() {
                         }`}
                       >
                         {product.images?.[0] && (
-                          <img src={product.images[0]} alt={product.name} className="w-full aspect-[3/4] object-cover rounded-lg mb-3" />
+                          <img src={product.images[0]} alt={product.name} className="w-full aspect-[4/3] object-cover rounded-lg mb-3" />
                         )}
                         <h3 className="font-semibold text-sm">{product.name}</h3>
                         {isSelected && <Check className="w-6 h-6 text-purple-600 mt-2" />}
                       </div>
                     );
                   })}
+                </div>
+
+                <div className="border-t pt-6">
+                  <Label>Color Selection (Select up to {getMaxColors()} colors - evenly applied across products)</Label>
+                  <p className="text-xs text-gray-500 mb-2">Colors will be distributed evenly across your selected products</p>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mt-2">
+                    {availableColors.map(color => (
+                      <div key={color} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedColors.includes(color)}
+                          onCheckedChange={(checked) => {
+                            if (checked && selectedColors.length < getMaxColors()) {
+                              setSelectedColors([...selectedColors, color]);
+                            } else if (!checked) {
+                              setSelectedColors(selectedColors.filter(c => c !== color));
+                            }
+                          }}
+                          disabled={!selectedColors.includes(color) && selectedColors.length >= getMaxColors()}
+                        />
+                        <Label className="text-sm">{color}</Label>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">{selectedColors.length} / {getMaxColors()} colors selected</p>
                 </div>
               </CardContent>
             </Card>
@@ -289,13 +336,15 @@ export default function BusinessSubscriptions() {
                     <Input
                       value={businessInfo.business_name}
                       onChange={(e) => setBusinessInfo({...businessInfo, business_name: e.target.value})}
+                      required
                     />
                   </div>
                   <div>
-                    <Label>Contact Name</Label>
+                    <Label>Contact Name *</Label>
                     <Input
                       value={businessInfo.contact_name}
                       onChange={(e) => setBusinessInfo({...businessInfo, contact_name: e.target.value})}
+                      required
                     />
                   </div>
                   <div>
@@ -304,19 +353,21 @@ export default function BusinessSubscriptions() {
                       type="email"
                       value={businessInfo.email}
                       onChange={(e) => setBusinessInfo({...businessInfo, email: e.target.value})}
+                      required
                     />
                   </div>
                   <div>
-                    <Label>Phone</Label>
+                    <Label>Phone *</Label>
                     <Input
                       value={businessInfo.phone}
                       onChange={(e) => setBusinessInfo({...businessInfo, phone: e.target.value})}
+                      required
                     />
                   </div>
                 </div>
 
                 <div>
-                  <Label>Address</Label>
+                  <Label>Address *</Label>
                   <Input
                     placeholder="Street"
                     value={businessInfo.shipping_address.street}
@@ -325,6 +376,7 @@ export default function BusinessSubscriptions() {
                       shipping_address: {...businessInfo.shipping_address, street: e.target.value}
                     })}
                     className="mb-2"
+                    required
                   />
                   <div className="grid grid-cols-3 gap-2">
                     <Input
@@ -334,6 +386,7 @@ export default function BusinessSubscriptions() {
                         ...businessInfo,
                         shipping_address: {...businessInfo.shipping_address, city: e.target.value}
                       })}
+                      required
                     />
                     <Input
                       placeholder="State"
@@ -342,6 +395,7 @@ export default function BusinessSubscriptions() {
                         ...businessInfo,
                         shipping_address: {...businessInfo.shipping_address, state: e.target.value}
                       })}
+                      required
                     />
                     <Input
                       placeholder="ZIP"
@@ -350,6 +404,7 @@ export default function BusinessSubscriptions() {
                         ...businessInfo,
                         shipping_address: {...businessInfo.shipping_address, zip: e.target.value}
                       })}
+                      required
                     />
                   </div>
                 </div>

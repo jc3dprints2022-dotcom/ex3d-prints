@@ -50,6 +50,7 @@
 import AccountInfo from './pages/AccountInfo';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
+import BusinessSubscriptions from './pages/BusinessSubscriptions';
 import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -79,7 +80,7 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import BusinessSubscriptions from './pages/BusinessSubscriptions';
+import SubscriptionConfirmation from './pages/SubscriptionConfirmation';
 import __Layout from './Layout.jsx';
 
 
@@ -87,6 +88,7 @@ export const PAGES = {
     "AccountInfo": AccountInfo,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
+    "BusinessSubscriptions": BusinessSubscriptions,
     "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
@@ -116,7 +118,7 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "BusinessSubscriptions": BusinessSubscriptions,
+    "SubscriptionConfirmation": SubscriptionConfirmation,
 }
 
 export const pagesConfig = {

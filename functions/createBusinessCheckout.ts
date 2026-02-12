@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
       await base44.auth.updateMe({ stripe_customer_id: customerId });
     }
 
-    const successUrl = `${req.headers.get('origin')}/pages/PaymentSuccess?subscription_id=${subscriptionId}`;
+    const successUrl = `${req.headers.get('origin')}/pages/SubscriptionConfirmation?subscription_id=${subscriptionId}`;
     const cancelUrl = `${req.headers.get('origin')}/pages/BusinessSubscriptions`;
 
     if (isSubscription) {
