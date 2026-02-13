@@ -40,7 +40,7 @@ export default function BusinessSubscriptions() {
     { id: "500_items", items: 500, selections: 10, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 1.00, perItemYearly: 0.90 }
   ];
 
-  const oneTimePlan = { id: "one_time", items: 50, selections: 1, price: 175, perItem: 3.50 };
+  const oneTimePlan = { id: "one_time", items: 50, selections: 1, price: 75, perItem: 1.50 };
 
   useEffect(() => {
     loadCoreProducts();
