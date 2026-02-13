@@ -70,7 +70,6 @@ import HowItWorks from './pages/HowItWorks';
 import MakerDashboard from './pages/MakerDashboard';
 import MakerHowItWorks from './pages/MakerHowItWorks';
 import MakerSignup from './pages/MakerSignup';
-import MakerSubscriptionSelect from './pages/MakerSubscriptionSelect';
 import Marketplace from './pages/Marketplace';
 import PaymentSuccess from './pages/PaymentSuccess';
 import Privacy from './pages/Privacy';
@@ -108,7 +107,6 @@ export const PAGES = {
     "MakerDashboard": MakerDashboard,
     "MakerHowItWorks": MakerHowItWorks,
     "MakerSignup": MakerSignup,
-    "MakerSubscriptionSelect": MakerSubscriptionSelect,
     "Marketplace": Marketplace,
     "PaymentSuccess": PaymentSuccess,
     "Privacy": Privacy,
