@@ -310,6 +310,7 @@ export default function ConsumerDashboard() {
   const sidebarItems = [
     { id: "overview", label: "Overview", icon: TrendingUp },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
+    ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Hub", icon: Package }] : []),
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
 
@@ -604,6 +605,24 @@ export default function ConsumerDashboard() {
             {/* Maker Hub Section */}
             {activeSection === "maker" && user?.business_roles?.includes('maker') && (
               <MakerDashboardContent user={user} onUpdate={loadDashboardData} />
+            )}
+
+            {/* Designer Hub Section */}
+            {activeSection === "designer" && user?.business_roles?.includes('designer') && (
+              <Card>
+                <CardContent className="p-6">
+                  <h2 className="text-2xl font-bold mb-4">Designer Hub</h2>
+                  <p className="text-gray-600 mb-4">
+                    Manage your designs, view sales, and track your earnings.
+                  </p>
+                  <Button asChild>
+                    <Link to={createPageUrl("DesignerDashboard")}>
+                      Go to Full Designer Dashboard
+                      <ArrowRight className="w-4 h-4 ml-2" />
+                    </Link>
+                  </Button>
+                </CardContent>
+              </Card>
             )}
 
 

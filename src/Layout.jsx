@@ -372,6 +372,18 @@ export default function Layout({ children, currentPageName }) {
 
             <nav className="hidden md:flex items-center space-x-8">
               <Link
+                to={createPageUrl("Marketplace")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("Marketplace")
+                    ? "bg-teal-500 text-white"
+                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                }`}
+              >
+                Marketplace
+              </Link>
+
+              <Link
                 to={createPageUrl("BusinessSubscriptions")}
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
@@ -416,6 +428,45 @@ export default function Layout({ children, currentPageName }) {
                     <DropdownMenuItem asChild>
                       <Link to={createPageUrl("MakerSignup")} onClick={scrollToTop}>
                         <span className="text-orange-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForDesigners")
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Designers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.designer_id && (user.business_roles?.includes('designer')) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Designer Hub
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                        <span className="text-blue-600 font-semibold">Get Started</span>
                       </Link>
                     </DropdownMenuItem>
                   )}
@@ -505,8 +556,19 @@ export default function Layout({ children, currentPageName }) {
 
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
-              {/* Businesses Section */}
+              {/* Marketplace Section */}
               <div className="pt-2">
+                <Link
+                  to={createPageUrl("Marketplace")}
+                  className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Marketplace
+                </Link>
+              </div>
+
+              {/* Businesses Section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
                 <Link
                   to={createPageUrl("BusinessSubscriptions")}
                   className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
@@ -539,6 +601,36 @@ export default function Layout({ children, currentPageName }) {
                   <Link
                     to={createPageUrl("MakerSignup")}
                     className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Get Started
+                  </Link>
+                )}
+              </div>
+
+              {/* For Designers Section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Designers</p>
+                <Link
+                  to={createPageUrl("ForDesigners")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-gray-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Overview
+                </Link>
+                {user && user.designer_id && user.business_roles?.includes('designer') && (
+                  <Link
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=designer`}
+                    className="block px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Designer Hub
+                  </Link>
+                )}
+                {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                  <Link
+                    to={createPageUrl("DesignerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                     onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                   >
                     Get Started
