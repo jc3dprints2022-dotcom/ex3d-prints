@@ -35,9 +35,9 @@ export default function BusinessSubscriptions() {
   ];
 
   const plans = [
-    { id: "100_items", items: 100, selections: 2, monthlyPrice: 300, yearlyPrice: 3200, perItemMonthly: 3.00, perItemYearly: 2.67 },
-    { id: "200_items", items: 200, selections: 4, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 2.50, perItemYearly: 2.25 },
-    { id: "550_items", items: 550, selections: 11, monthlyPrice: 1200, yearlyPrice: 12900, perItemMonthly: 2.18, perItemYearly: 1.95 }
+    { id: "100_items", items: 100, selections: 2, monthlyPrice: 150, yearlyPrice: 1620, perItemMonthly: 1.50, perItemYearly: 1.35 },
+    { id: "200_items", items: 200, selections: 4, monthlyPrice: 250, yearlyPrice: 2700, perItemMonthly: 1.25, perItemYearly: 1.13 },
+    { id: "500_items", items: 500, selections: 10, monthlyPrice: 500, yearlyPrice: 5400, perItemMonthly: 1.00, perItemYearly: 0.90 }
   ];
 
   const oneTimePlan = { id: "one_time", items: 50, selections: 1, price: 175, perItem: 3.50 };

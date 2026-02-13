@@ -311,6 +311,7 @@ export default function ConsumerDashboard() {
     { id: "overview", label: "Overview", icon: TrendingUp },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Hub", icon: Package }] : []),
+    { id: "subscriptions", label: "My Subscriptions", icon: Package },
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
 
@@ -401,10 +402,43 @@ export default function ConsumerDashboard() {
                   </Card>
                 </div>
 
+                {/* Recently Viewed Products */}
+                {recentlyViewedProducts.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Eye className="w-5 h-5 text-teal-600" />
+                        Recently Viewed
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {recentlyViewedProducts.map(product => (
+                          <ProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-
-                {/* Subscription Manager */}
-                <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
+                {/* Recommended Products */}
+                {recommendedProducts.length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Gift className="w-5 h-5 text-teal-600" />
+                        Recommended for You
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {recommendedProducts.map(product => (
+                          <ProductCard key={product.id} product={product} />
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </>
             )}
 
@@ -623,6 +657,11 @@ export default function ConsumerDashboard() {
                   </Button>
                 </CardContent>
               </Card>
+            )}
+
+            {/* Subscriptions Section */}
+            {activeSection === "subscriptions" && (
+              <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
             )}
 
 
