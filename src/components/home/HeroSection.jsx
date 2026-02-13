@@ -174,8 +174,8 @@ export default function HeroSection() {
             Locally produced. Customizable. Delivered monthly.
           </p>
 
-          {/* CTA Button */}
-          <div className="flex justify-center mb-8">
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
             <Button
               asChild
               size="lg"
@@ -184,6 +184,16 @@ export default function HeroSection() {
             >
               <Link to={createPageUrl("BusinessSubscriptions")}>
                 For Businesses
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              onClick={scrollToTop}
+              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+            >
+              <Link to={createPageUrl("Marketplace")}>
+                Marketplace
               </Link>
             </Button>
           </div>
