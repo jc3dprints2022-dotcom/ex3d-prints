@@ -27,6 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import ProductCard from "@/components/marketplace/ProductCard";
 import MakerDashboardContent from "@/components/makers/MakerDashboardContent";
 import SubscriptionManagement from "@/components/consumer/SubscriptionManagement";
+import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
 
 export default function ConsumerDashboard() {
   const [user, setUser] = useState(null);
@@ -311,6 +312,7 @@ export default function ConsumerDashboard() {
     { id: "overview", label: "Overview", icon: TrendingUp },
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Hub", icon: Package }] : []),
+    { id: "exp", label: "EXP & Rewards", icon: Gift },
     { id: "subscriptions", label: "My Subscriptions", icon: Package },
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
@@ -657,6 +659,11 @@ export default function ConsumerDashboard() {
                   </Button>
                 </CardContent>
               </Card>
+            )}
+
+            {/* EXP & Rewards Section */}
+            {activeSection === "exp" && (
+              <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* Subscriptions Section */}
