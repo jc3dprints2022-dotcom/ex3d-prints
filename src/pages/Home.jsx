@@ -123,16 +123,10 @@ export default function Home() {
             </Card>
           </div>
           
-          <div className="text-center flex flex-wrap gap-4 justify-center">
+          <div className="text-center">
             <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
               <Link to={createPageUrl("BusinessSubscriptions")}>
                 For Businesses
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
-              <Link to={createPageUrl("Marketplace")}>
-                Browse Marketplace
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
@@ -177,7 +171,7 @@ export default function Home() {
                 <p className="text-slate-600 text-sm mb-4">
                   Upload your file or describe your idea for a custom quote
                 </p>
-                <Button asChild size="sm" variant="outline" className="w-full">
+                <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
                   <Link to={createPageUrl("CustomPrintRequest")}>
                     Request Custom Print
                   </Link>
