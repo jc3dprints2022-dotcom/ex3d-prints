@@ -81,56 +81,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* For Shoppers Section */}
-      <section className="bg-gray-50 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-slate-900 mb-4">For Shoppers</h3>
-            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
-              Browse unique 3D printed designs or request custom creations
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-2 gap-8 mb-8">
-            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 text-teal-600 mb-4">
-                  <Package className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-3">Browse the Marketplace</h4>
-                <p className="text-slate-600 mb-4">
-                  Explore thousands of unique 3D printed products from talented designers. Find everything from home decor to functional tools.
-                </p>
-                <Button asChild variant="outline" className="w-full">
-                  <Link to={createPageUrl("Marketplace")}>
-                    Visit Marketplace
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                  <Printer className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-3">Request Custom Prints</h4>
-                <p className="text-slate-600 mb-4">
-                  Have a specific design in mind? Upload your file or describe your idea and get a custom quote from local makers.
-                </p>
-                <Button asChild variant="outline" className="w-full">
-                  <Link to={createPageUrl("CustomPrintRequest")}>
-                    Request Custom Print
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
       {/* For Businesses Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -173,16 +123,72 @@ export default function Home() {
             </Card>
           </div>
           
-          <div className="text-center">
+          <div className="text-center flex flex-wrap gap-4 justify-center">
             <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
               <Link to={createPageUrl("BusinessSubscriptions")}>
                 For Businesses
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
+            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
+              <Link to={createPageUrl("Marketplace")}>
+                Browse Marketplace
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
           </div>
         </div>
       </section>
+
+      {/* For Shoppers Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">For Shoppers</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+              Browse unique 3D printed designs or request custom creations
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 text-teal-600 mb-3">
+                  <Package className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Browse the Marketplace</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Explore unique 3D printed products from talented designers
+                </p>
+                <Button asChild size="sm" className="w-full bg-teal-600 hover:bg-teal-700">
+                  <Link to={createPageUrl("Marketplace")}>
+                    Visit Marketplace
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-3">
+                  <Printer className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Request Custom Prints</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Upload your file or describe your idea for a custom quote
+                </p>
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link to={createPageUrl("CustomPrintRequest")}>
+                    Request Custom Print
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      <HowItWorksSection />
 
       {/* For Designers Section */}
       <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-16">
@@ -237,7 +243,6 @@ export default function Home() {
         </div>
       </section>
 
-      <HowItWorksSection />
       <TestimonialsSection />
     </div>
   );
