@@ -127,10 +127,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Simple Two Column Section */}
+      {/* Three Column Section */}
       <section className="bg-gray-50 py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-2 gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8">
             <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
               <CardContent className="p-8 text-center">
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 text-teal-600 mb-4">
@@ -143,6 +143,23 @@ export default function Home() {
                 <Button asChild size="lg" className="w-full bg-teal-600 hover:bg-teal-700">
                   <Link to={createPageUrl("Marketplace")}>
                     Shop Now
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-8 text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-4">
+                  <Printer className="w-8 h-8" />
+                </div>
+                <h4 className="text-xl font-semibold text-slate-900 mb-3">Become a Maker</h4>
+                <p className="text-slate-600 mb-6">
+                  Print for businesses and earn money
+                </p>
+                <Button asChild size="lg" className="w-full bg-orange-600 hover:bg-orange-700">
+                  <Link to={createPageUrl("ForMakers")}>
+                    Get Started
                   </Link>
                 </Button>
               </CardContent>

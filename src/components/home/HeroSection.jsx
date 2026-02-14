@@ -166,22 +166,17 @@ export default function HeroSection() {
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
-          <div className="flex justify-center flex-wrap gap-2 mb-6">
-            <Badge className="bg-teal-500 text-white border-0 text-sm">Locally Made</Badge>
-            <Badge className="bg-teal-500 text-white border-0 text-sm">Fast Turnaround</Badge>
-            <Badge className="bg-teal-500 text-white border-0 text-sm">No Bulk Minimums</Badge>
-          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
             Get Custom Items Made<br />
             <span className="text-teal-400">in Days — Not Weeks</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Small batches. One-offs. Local production. We help businesses make custom parts, promo items, and prototypes fast — without bulk minimums or long lead times.
+            Small batches. One-offs. Custom manufacturing.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-4">
+          <div className="flex flex-wrap justify-center gap-4">
             <Button
               asChild
               size="lg"
@@ -203,9 +198,6 @@ export default function HeroSection() {
               </Link>
             </Button>
           </div>
-          <p className="text-teal-200 text-sm mt-4">
-            💡 Typical turnaround: 3-7 days • Made locally by student makers
-          </p>
 
           {/* Slideshow Dots */}
           {products.length > 1 && (
