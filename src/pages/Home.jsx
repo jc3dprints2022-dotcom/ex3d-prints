@@ -85,52 +85,108 @@ export default function Home() {
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl mb-6">
-              <Building2 className="w-8 h-8 text-white"/>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Businesses</h3>
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">Fast Custom Manufacturing — Without the Hassle</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              We're not a bulk factory. We're your local manufacturing partner for custom items that need to be made quickly.
+            </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                  <Package className="w-8 h-8" />
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 text-teal-600 mb-3">
+                  <Package className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Made for Dental Offices</h4>
-                <p className="text-slate-600">We create custom 3D printed reward items designed for pediatric patients. Each item is branded with your office name or logo and built to support a better patient experience.</p>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">One-off Custom Items</h4>
+                <p className="text-slate-600 text-sm">Just need one? No problem.</p>
               </CardContent>
             </Card>
             
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 mb-4">
-                  <Printer className="w-8 h-8" />
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-3">
+                  <Building2 className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Produced Locally</h4>
-                <p className="text-slate-600">All products are manufactured locally by student makers in your community. This means fast turnaround, consistent quality, and reliable monthly delivery.</p>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Small Batch Runs</h4>
+                <p className="text-slate-600 text-sm">Perfect for events, teams, or offices (10-200 units)</p>
               </CardContent>
             </Card>
             
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
-                  <CheckCircle className="w-8 h-8" />
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-purple-100 text-purple-600 mb-3">
+                  <Printer className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fully Automatic</h4>
-                <p className="text-slate-600">We handle design, production, and restocking. No inventory tracking. No vendor calls. Just dependable, ready-to-use rewards delivered on schedule.</p>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Prototypes & Weird Parts</h4>
+                <p className="text-slate-600 text-sm">We love unusual requests</p>
               </CardContent>
             </Card>
+
+            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-orange-100 text-orange-600 mb-3">
+                  <CheckCircle className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Branded Promo Items</h4>
+                <p className="text-slate-600 text-sm">Add your logo for free</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-100 text-green-600 mb-3">
+                  <CheckCircle className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Fast Turnaround</h4>
+                <p className="text-slate-600 text-sm">3-7 days, made locally</p>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
+              <CardContent className="p-6">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-pink-100 text-pink-600 mb-3">
+                  <CheckCircle className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Delivered Quickly</h4>
+                <p className="text-slate-600 text-sm">Campus pickup or ship anywhere</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="bg-slate-100 rounded-lg p-6 mb-8 max-w-2xl mx-auto">
+            <h4 className="font-bold text-slate-900 mb-2 text-center">What we're NOT:</h4>
+            <ul className="space-y-2 text-slate-600 text-sm text-center">
+              <li>❌ Bulk factory manufacturing</li>
+              <li>❌ Cheapest option per unit</li>
+              <li>❌ Mass commodity suppliers</li>
+            </ul>
           </div>
           
           <div className="text-center">
-            <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-              <Link to={createPageUrl("BusinessSubscriptions")}>
-                For Businesses
+            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
+              <Link to={createPageUrl("CustomPrintRequest")}>
+                Tell Us What You Need
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Need Recurring Items Section */}
+      <section className="bg-gray-100 py-12">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h3 className="text-2xl font-bold text-slate-900 mb-3">
+            Need the Same Thing Every Month?
+          </h3>
+          <p className="text-slate-600 mb-6">
+            If you end up reordering the same items regularly, we can simplify it with a subscription plan. Get consistent monthly deliveries without having to reorder each time.
+          </p>
+          <Button asChild size="lg" variant="outline" className="border-2">
+            <Link to={createPageUrl("BusinessSubscriptions")}>
+              Explore Subscription Options
+            </Link>
+          </Button>
         </div>
       </section>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, ShoppingBag, DollarSign, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -165,38 +166,46 @@ export default function HeroSection() {
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
+          <div className="flex justify-center flex-wrap gap-2 mb-6">
+            <Badge className="bg-teal-500 text-white border-0 text-sm">Locally Made</Badge>
+            <Badge className="bg-teal-500 text-white border-0 text-sm">Fast Turnaround</Badge>
+            <Badge className="bg-teal-500 text-white border-0 text-sm">No Bulk Minimums</Badge>
+          </div>
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Fast, Affordable, <br />
-            <span className="text-teal-400">3D Printed Items</span>
+            Get Custom Items Made<br />
+            <span className="text-teal-400">in Days — Not Weeks</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Locally produced. Customizable. Delivered monthly.
+            Small batches. One-offs. Local production. We help businesses make custom parts, promo items, and prototypes fast — without bulk minimums or long lead times.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <Button
-              asChild
-              size="lg"
-              onClick={scrollToTop}
-              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
-            >
-              <Link to={createPageUrl("BusinessSubscriptions")}>
-                For Businesses
-              </Link>
-            </Button>
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
               className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
             >
+              <Link to={createPageUrl("CustomPrintRequest")}>
+                Request a Fast Custom Quote
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              onClick={scrollToTop}
+              className="h-20 px-16 bg-white hover:bg-gray-100 text-teal-600 text-2xl font-bold shadow-2xl"
+            >
               <Link to={createPageUrl("Marketplace")}>
-                Marketplace
+                See Examples
               </Link>
             </Button>
           </div>
+          <p className="text-teal-200 text-sm mt-4">
+            💡 Typical turnaround: 3-7 days • Made locally by student makers
+          </p>
 
           {/* Slideshow Dots */}
           {products.length > 1 && (
