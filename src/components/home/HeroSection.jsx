@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, ShoppingBag, DollarSign, Upload } from "lucide-react";
 import { base44 } from "@/api/base44Client";
@@ -167,34 +166,34 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Get Custom Items Made<br />
-            <span className="text-teal-400">in Days — Not Weeks</span>
+            Fast, Affordable, <br />
+            <span className="text-teal-400">3D Printed Items</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Small batches. One-offs. Custom manufacturing.
+            Locally produced. Customizable. Delivered monthly.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4">
+          <div className="flex flex-wrap justify-center gap-4 mb-8">
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
             >
-              <Link to={createPageUrl("CustomPrintRequest")}>
-                Request a Fast Custom Quote
+              <Link to={createPageUrl("BusinessSubscriptions")}>
+                For Businesses
               </Link>
             </Button>
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-16 bg-white hover:bg-gray-100 text-teal-600 text-2xl font-bold shadow-2xl"
+              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
             >
               <Link to={createPageUrl("Marketplace")}>
-                See Examples
+                Marketplace
               </Link>
             </Button>
           </div>

@@ -72,54 +72,61 @@ export default function Home() {
     <div className="min-h-screen">
       <HeroSection />
       
+      {/* How It Works Header */}
+      <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl md:text-4xl font-bold text-white">
+            How EX3D Prints Works
+          </h2>
+        </div>
+      </div>
 
-
-      {/* What We Do Section */}
+      {/* For Businesses Section */}
       <section className="bg-white py-16">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-10">
-            <h3 className="text-3xl font-bold text-slate-900 mb-3">What We Make</h3>
-            <p className="text-lg text-slate-600">
-              Custom items delivered fast — no bulk minimums
-            </p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl mb-6">
+              <Building2 className="w-8 h-8 text-white"/>
+            </div>
+            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Businesses</h3>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-6 mb-10">
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 text-teal-600 mb-3">
-                  <Package className="w-7 h-7" />
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
+                  <Package className="w-8 h-8" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-1">One-offs & Small Batches</h4>
-                <p className="text-slate-600 text-sm">1-200 units</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Made for Dental Offices</h4>
+                <p className="text-slate-600">We create custom 3D printed reward items designed for pediatric patients. Each item is branded with your office name or logo and built to support a better patient experience.</p>
               </CardContent>
             </Card>
             
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-purple-100 text-purple-600 mb-3">
-                  <Printer className="w-7 h-7" />
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 mb-4">
+                  <Printer className="w-8 h-8" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-1">Prototypes & Parts</h4>
-                <p className="text-slate-600 text-sm">Custom designs welcome</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Produced Locally</h4>
+                <p className="text-slate-600">All products are manufactured locally by student makers in your community. This means fast turnaround, consistent quality, and reliable monthly delivery.</p>
               </CardContent>
             </Card>
-
+            
             <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-6">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-3">
-                  <CheckCircle className="w-7 h-7" />
+              <CardContent className="p-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+                  <CheckCircle className="w-8 h-8" />
                 </div>
-                <h4 className="text-lg font-semibold text-slate-900 mb-1">Branded Items</h4>
-                <p className="text-slate-600 text-sm">Add your logo free</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fully Automatic</h4>
+                <p className="text-slate-600">We handle design, production, and restocking. No inventory tracking. No vendor calls. Just dependable, ready-to-use rewards delivered on schedule.</p>
               </CardContent>
             </Card>
           </div>
           
           <div className="text-center">
-            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700">
-              <Link to={createPageUrl("CustomPrintRequest")}>
-                Request a Quote
+            <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
+              <Link to={createPageUrl("BusinessSubscriptions")}>
+                For Businesses
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>
@@ -127,56 +134,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Three Column Section */}
+      {/* For Shoppers Section */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-teal-100 text-teal-600 mb-4">
-                  <Package className="w-8 h-8" />
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">For Shoppers</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+              Browse unique 3D printed designs or request custom creations
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 text-teal-600 mb-3">
+                  <Package className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-3">Browse Marketplace</h4>
-                <p className="text-slate-600 mb-6">
-                  Explore unique designs from our community
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Browse the Marketplace</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Explore unique 3D printed products from talented designers
                 </p>
-                <Button asChild size="lg" className="w-full bg-teal-600 hover:bg-teal-700">
+                <Button asChild size="sm" className="w-full bg-teal-600 hover:bg-teal-700">
                   <Link to={createPageUrl("Marketplace")}>
-                    Shop Now
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-orange-100 text-orange-600 mb-4">
-                  <Printer className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-3">Become a Maker</h4>
-                <p className="text-slate-600 mb-6">
-                  Print for businesses and earn money
-                </p>
-                <Button asChild size="lg" className="w-full bg-orange-600 hover:bg-orange-700">
-                  <Link to={createPageUrl("ForMakers")}>
-                    Get Started
+                    Visit Marketplace
                   </Link>
                 </Button>
               </CardContent>
             </Card>
             
-            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                  <Printer className="w-8 h-8" />
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-3">
+                  <Printer className="w-7 h-7" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-3">Sell Your Designs</h4>
-                <p className="text-slate-600 mb-6">
-                  Join as a designer and earn from your work
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Request Custom Prints</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Upload your file or describe your idea for a custom quote
                 </p>
-                <Button asChild size="lg" className="w-full bg-blue-600 hover:bg-blue-700">
-                  <Link to={createPageUrl("ForDesigners")}>
-                    Get Started
+                <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Link to={createPageUrl("CustomPrintRequest")}>
+                    Request Custom Print
                   </Link>
                 </Button>
               </CardContent>
@@ -185,7 +182,62 @@ export default function Home() {
         </div>
       </section>
 
+      <HowItWorksSection />
 
+      {/* For Designers Section */}
+      <section className="bg-gradient-to-br from-blue-50 to-indigo-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">For Designers</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto">
+              Turn your 3D designs into income. Join our marketplace and reach thousands of customers.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 mb-8">
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-4">
+                  <Package className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Sell Your Designs</h4>
+                <p className="text-slate-600 text-sm">Upload your 3D models and earn from every sale. Set your own prices and control your inventory.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-green-100 text-green-600 mb-4">
+                  <CheckCircle className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">We Handle Production</h4>
+                <p className="text-slate-600 text-sm">Focus on creating. Our network of makers handles printing, packaging, and delivery to customers.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-lg hover:shadow-xl transition-shadow bg-white">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-purple-100 text-purple-600 mb-4">
+                  <Printer className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Grow Your Brand</h4>
+                <p className="text-slate-600 text-sm">Build your reputation, gain followers, and establish yourself in the 3D printing community.</p>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="text-center">
+            <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+              <Link to={createPageUrl("ForDesigners")}>
+                Learn More
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      <TestimonialsSection />
     </div>
   );
 }
