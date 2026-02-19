@@ -14,6 +14,7 @@ export default function ProductCard({ product }) {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [isInWishlist, setIsInWishlist] = React.useState(false);
   const [user, setUser] = React.useState(null);
+  const [imageLoaded, setImageLoaded] = React.useState(false);
 
   React.useEffect(() => {
     loadUser();
@@ -179,10 +180,15 @@ export default function ProductCard({ product }) {
         <div className="relative w-full" style={{ paddingBottom: '66.67%' }}>
           {product.images && product.images.length > 0 ? (
             <>
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+              )}
               <img 
                 src={product.images[currentImageIndex] || product.images[0]} 
                 alt={product.name}
-                className="absolute top-0 left-0 w-full h-full object-cover"
+                className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
                 key={currentImageIndex}
               />
               {product.images.length > 1 && (
