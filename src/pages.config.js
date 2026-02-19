@@ -80,6 +80,12 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
+import BusinessMarketplace from './pages/BusinessMarketplace';
+import BusinessProductDetail from './pages/BusinessProductDetail';
+import BusinessCart from './pages/BusinessCart';
+import BusinessCheckout from './pages/BusinessCheckout';
+import MakerBusinessPortal from './pages/MakerBusinessPortal';
+import MakerNewListing from './pages/MakerNewListing';
 import __Layout from './Layout.jsx';
 
 
@@ -117,6 +123,12 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
+    "BusinessMarketplace": BusinessMarketplace,
+    "BusinessProductDetail": BusinessProductDetail,
+    "BusinessCart": BusinessCart,
+    "BusinessCheckout": BusinessCheckout,
+    "MakerBusinessPortal": MakerBusinessPortal,
+    "MakerNewListing": MakerNewListing,
 }
 
 export const pagesConfig = {

@@ -1,7 +1,7 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
-import Stripe from 'npm:stripe@17.5.0';
+import Stripe from 'npm:stripe';
 
-const stripe = new Stripe(Deno.env.get('Stripe_Secret_Key'));
+const stripe = new Stripe(Deno.env.get('Stripe_Secret_Key'), { apiVersion: '2023-10-16' });
 
 Deno.serve(async (req) => {
   try {
@@ -12,81 +12,108 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { subscriptionId, planType, amount, isSubscription, billingCycle } = await req.json();
+    const { cartItems, deliveryMethod, recurringEnabled, frequency, businessInfo, bulkDiscount, total } = await req.json();
 
-    // Get or create Stripe customer
+    // Create or get Stripe customer
     let customerId = user.stripe_customer_id;
     if (!customerId) {
       const customer = await stripe.customers.create({
         email: user.email,
-        name: user.full_name,
+        name: businessInfo.businessName,
         metadata: { user_id: user.id }
       });
       customerId = customer.id;
       await base44.auth.updateMe({ stripe_customer_id: customerId });
     }
 
-    const successUrl = `${req.headers.get('origin')}/pages/SubscriptionConfirmation?subscription_id=${subscriptionId}`;
-    const cancelUrl = `${req.headers.get('origin')}/pages/BusinessSubscriptions`;
+    const origin = new URL(req.url).origin;
 
-    if (isSubscription) {
-      // Create subscription checkout
-      const interval = billingCycle === 'yearly' ? 'year' : 'month';
-      
+    if (recurringEnabled) {
+      // Create subscription
+      const lineItems = cartItems.map(item => ({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: item.product_name || 'Product' },
+          unit_amount: Math.round(item.unit_price * 100),
+          recurring: {
+            interval: frequency === 'weekly' ? 'week' : frequency === 'biweekly' ? 'week' : 'month',
+            interval_count: frequency === 'biweekly' ? 2 : 1
+          }
+        },
+        quantity: item.quantity
+      }));
+
+      // Apply bulk discount as a coupon
+      let coupon = null;
+      if (bulkDiscount > 0) {
+        const discountPercent = bulkDiscount / (total + bulkDiscount) * 100;
+        coupon = await stripe.coupons.create({
+          percent_off: Math.round(discountPercent),
+          duration: 'repeating',
+          duration_in_months: 12,
+          name: `Bulk Discount ${Math.round(discountPercent)}%`
+        });
+      }
+
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: 'subscription',
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Business Subscription - ${planType}`,
-              description: 'Custom pediatric engagement rewards'
-            },
-            unit_amount: Math.round(amount * 100),
-            recurring: { interval }
-          },
-          quantity: 1
-        }],
-        success_url: successUrl,
-        cancel_url: cancelUrl,
+        line_items: lineItems,
+        discounts: coupon ? [{ coupon: coupon.id }] : [],
+        success_url: `${origin}${'/payment-success'}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}${'/business/cart'}`,
         metadata: {
-          subscription_id: subscriptionId,
           user_id: user.id,
-          plan_type: planType
+          marketplace_type: 'business',
+          recurring: 'true',
+          frequency,
+          delivery_method: deliveryMethod,
+          bulk_discount: bulkDiscount.toString()
         }
       });
 
-      return Response.json({ url: session.url, sessionId: session.id });
+      return Response.json({ url: session.url });
     } else {
-      // One-time payment
+      // One-time checkout
+      const lineItems = cartItems.map(item => ({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: item.product_name || 'Product' },
+          unit_amount: Math.round(item.unit_price * 100)
+        },
+        quantity: item.quantity
+      }));
+
+      // Add discount as a negative line item
+      if (bulkDiscount > 0) {
+        lineItems.push({
+          price_data: {
+            currency: 'usd',
+            product_data: { name: 'Bulk Discount' },
+            unit_amount: -Math.round(bulkDiscount * 100)
+          },
+          quantity: 1
+        });
+      }
+
       const session = await stripe.checkout.sessions.create({
         customer: customerId,
         mode: 'payment',
-        line_items: [{
-          price_data: {
-            currency: 'usd',
-            product_data: {
-              name: `Bulk Purchase - ${planType}`,
-              description: 'Custom pediatric engagement rewards'
-            },
-            unit_amount: Math.round(amount * 100)
-          },
-          quantity: 1
-        }],
-        success_url: successUrl,
-        cancel_url: cancelUrl,
+        line_items: lineItems,
+        success_url: `${origin}${'/payment-success'}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${origin}${'/business/cart'}`,
         metadata: {
-          subscription_id: subscriptionId,
           user_id: user.id,
-          plan_type: planType
+          marketplace_type: 'business',
+          delivery_method: deliveryMethod,
+          bulk_discount: bulkDiscount.toString()
         }
       });
 
-      return Response.json({ url: session.url, sessionId: session.id });
+      return Response.json({ url: session.url });
     }
   } catch (error) {
-    console.error('Checkout error:', error);
+    console.error('Business checkout error:', error);
     return Response.json({ error: error.message }, { status: 500 });
   }
 });
