@@ -475,6 +475,41 @@ export default function Layout({ children, currentPageName }) {
             </nav>
 
             <div className="flex items-center space-x-4">
+              {/* Search Bar - Desktop */}
+              <div className="hidden md:block relative w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10 h-9"
+                />
+              </div>
+
+              {/* Cart Icon */}
+              <Link to={createPageUrl("Cart")} className="relative">
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              {/* Wishlist Icon */}
+              <Link to={createPageUrl("Wishlist")} className="relative">
+                <Button variant="ghost" size="icon">
+                  <Heart className="w-5 h-5" />
+                  {wishlistCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {wishlistCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
 
               {user ? (
                 <DropdownMenu>

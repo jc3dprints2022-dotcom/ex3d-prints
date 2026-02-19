@@ -8,6 +8,7 @@ import { Building2, Package, Printer, CheckCircle, ArrowRight } from "lucide-rea
 import HeroSection from "../components/home/HeroSection";
 import HowItWorksSection from "../components/home/HowItWorksSection";
 import TestimonialsSection from "../components/home/TestimonialsSection";
+import EmailSignupReward from "../components/shared/EmailSignupReward";
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -238,6 +239,8 @@ export default function Home() {
       </section>
 
       <TestimonialsSection />
+      
+      <EmailSignupReward />
     </div>
   );
 }

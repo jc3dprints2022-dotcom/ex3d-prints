@@ -53,16 +53,30 @@ export default function HeroSection() {
 
   const loadProducts = async () => {
     try {
+      // Load featured products for the homepage hero slideshow
+      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
+      
+      if (featuredList.length > 0) {
+        featuredList.sort((a, b) => a.display_order - b.display_order);
+        const productPromises = featuredList.map(f =>
+          base44.entities.Product.get(f.product_id).catch(() => null)
+        );
+        const productsData = await Promise.all(productPromises);
+        const validProducts = productsData.filter(p => p && p.status === 'active' && p.images && p.images.length > 0);
+        
+        if (validProducts.length > 0) {
+          setProducts(validProducts);
+          return;
+        }
+      }
+      
+      // Fallback to most viewed products
       const allProducts = await base44.entities.Product.list();
-      const coreNames = [
-        "Rotating Rings Toy",
-        "Interlocking Stars - Fidget Toy",
-        "Cone Fidget Passthrough",
-        "Infinity Cube",
-        "Toothbrush Travel Case"
-      ];
-      const coreProducts = allProducts.filter(p => coreNames.includes(p.name) && p.images && p.images.length > 0);
-      setProducts(coreProducts);
+      const activeWithImages = allProducts.filter(p => p.status === 'active' && p.images && p.images.length > 0);
+      const topProducts = activeWithImages
+        .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+        .slice(0, 5);
+      setProducts(topProducts);
     } catch (error) {
       console.error("Failed to load products for slideshow:", error);
     }
@@ -171,7 +185,7 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Locally produced. Customizable. Delivered monthly.
+            Wholesale 3D prints. Customizable. Delivered on schedule.
           </p>
 
           {/* CTA Buttons */}
@@ -180,20 +194,20 @@ export default function HeroSection() {
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
+              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
             >
-              <Link to={createPageUrl("BusinessSubscriptions")}>
-                For Businesses
+              <Link to={createPageUrl("Marketplace")}>
+                Marketplace
               </Link>
             </Button>
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
             >
-              <Link to={createPageUrl("Marketplace")}>
-                Marketplace
+              <Link to={createPageUrl("BusinessSubscriptions")}>
+                For Businesses
               </Link>
             </Button>
           </div>
