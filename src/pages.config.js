@@ -50,6 +50,10 @@
 import AccountInfo from './pages/AccountInfo';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
+import BusinessCart from './pages/BusinessCart';
+import BusinessCheckout from './pages/BusinessCheckout';
+import BusinessMarketplace from './pages/BusinessMarketplace';
+import BusinessProductDetail from './pages/BusinessProductDetail';
 import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -79,10 +83,6 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import BusinessMarketplace from './pages/BusinessMarketplace';
-import BusinessProductDetail from './pages/BusinessProductDetail';
-import BusinessCart from './pages/BusinessCart';
-import BusinessCheckout from './pages/BusinessCheckout';
 import __Layout from './Layout.jsx';
 
 
@@ -90,6 +90,10 @@ export const PAGES = {
     "AccountInfo": AccountInfo,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
+    "BusinessCart": BusinessCart,
+    "BusinessCheckout": BusinessCheckout,
+    "BusinessMarketplace": BusinessMarketplace,
+    "BusinessProductDetail": BusinessProductDetail,
     "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
@@ -119,10 +123,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "BusinessMarketplace": BusinessMarketplace,
-    "BusinessProductDetail": BusinessProductDetail,
-    "BusinessCart": BusinessCart,
-    "BusinessCheckout": BusinessCheckout,
 }
 
 export const pagesConfig = {
