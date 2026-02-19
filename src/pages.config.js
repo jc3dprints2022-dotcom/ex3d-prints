@@ -50,7 +50,9 @@
 import AccountInfo from './pages/AccountInfo';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
+import BusinessCADUpload from './pages/BusinessCADUpload';
 import BusinessCart from './pages/BusinessCart';
+import BusinessCatalog from './pages/BusinessCatalog';
 import BusinessCheckout from './pages/BusinessCheckout';
 import BusinessMarketplace from './pages/BusinessMarketplace';
 import BusinessProductDetail from './pages/BusinessProductDetail';
@@ -83,8 +85,7 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import BusinessCADUpload from './pages/BusinessCADUpload';
-import BusinessCatalog from './pages/BusinessCatalog';
+import BusinessDashboard from './pages/BusinessDashboard';
 import __Layout from './Layout.jsx';
 
 
@@ -92,7 +93,9 @@ export const PAGES = {
     "AccountInfo": AccountInfo,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
+    "BusinessCADUpload": BusinessCADUpload,
     "BusinessCart": BusinessCart,
+    "BusinessCatalog": BusinessCatalog,
     "BusinessCheckout": BusinessCheckout,
     "BusinessMarketplace": BusinessMarketplace,
     "BusinessProductDetail": BusinessProductDetail,
@@ -125,8 +128,7 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "BusinessCADUpload": BusinessCADUpload,
-    "BusinessCatalog": BusinessCatalog,
+    "BusinessDashboard": BusinessDashboard,
 }
 
 export const pagesConfig = {
