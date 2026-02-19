@@ -85,6 +85,10 @@ export default function ModelManagementSection() {
     infill_percentage: 15,
     use_shown_colors: false,
     shown_color_specs: [],
+    marketplace_type: 'consumer',
+    wholesale_price: '',
+    moq: 20,
+    lead_time_days: '',
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -269,9 +273,9 @@ export default function ModelManagementSection() {
     setFormData({
       name: product.name,
       description: product.description,
-      price: product.price.toString(),
-      print_time_hours: product.print_time_hours.toString(),
-      weight_grams: product.weight_grams.toString(),
+      price: product.price?.toString() || '',
+      print_time_hours: product.print_time_hours?.toString() || '',
+      weight_grams: product.weight_grams?.toString() || '',
       dimensions: product.dimensions || { length: '', width: '', height: '' },
       category: product.category,
       materials: product.materials || [],
@@ -285,6 +289,10 @@ export default function ModelManagementSection() {
       infill_percentage: product.infill_percentage || 15,
       use_shown_colors: product.use_shown_colors || false,
       shown_color_specs: product.shown_color_specs || [],
+      marketplace_type: product.marketplace_type || 'consumer',
+      wholesale_price: product.wholesale_price?.toString() || '',
+      moq: product.moq || 20,
+      lead_time_days: product.lead_time_days?.toString() || '',
     });
     setLicenseVerified(true);
     setShowForm(true);
@@ -363,17 +371,33 @@ export default function ModelManagementSection() {
       }
     }
 
-    // Auto-calculate price based on formula: (((grams/1000)*20 + print_time/5))*4.5
+    // Auto-calculate price for consumer marketplace
     let calculatedPrice = 0;
-    if (formData.weight_grams && formData.print_time_hours) {
-      const grams = parseFloat(formData.weight_grams);
-      const printTime = parseFloat(formData.print_time_hours);
-
-      const rawPrice = (grams / 1000 * 20 + printTime / 5) * 4.5;
-      calculatedPrice = Math.ceil(rawPrice);
-    } else {
-        toast({ title: "Weight and Print Time are required for price calculation.", variant: "destructive" });
+    if (formData.marketplace_type === 'consumer') {
+      if (formData.weight_grams && formData.print_time_hours) {
+        const grams = parseFloat(formData.weight_grams);
+        const printTime = parseFloat(formData.print_time_hours);
+        const rawPrice = (grams / 1000 * 20 + printTime / 5) * 4.5;
+        calculatedPrice = Math.ceil(rawPrice);
+      } else {
+        toast({ title: "Weight and Print Time are required for consumer products.", variant: "destructive" });
         return;
+      }
+    } else {
+      // Business marketplace - use manual price input
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        toast({ title: "Please enter a valid price for consumer purchases", variant: "destructive" });
+        return;
+      }
+      if (!formData.wholesale_price || parseFloat(formData.wholesale_price) <= 0) {
+        toast({ title: "Please enter a valid wholesale price", variant: "destructive" });
+        return;
+      }
+      if (!formData.lead_time_days || parseInt(formData.lead_time_days) <= 0) {
+        toast({ title: "Please enter lead time for business products", variant: "destructive" });
+        return;
+      }
+      calculatedPrice = parseFloat(formData.price);
     }
 
     setSaving(true);
@@ -382,8 +406,11 @@ export default function ModelManagementSection() {
         name: formData.name,
         description: formData.description,
         price: calculatedPrice,
-        print_time_hours: parseFloat(formData.print_time_hours),
-        weight_grams: parseFloat(formData.weight_grams),
+        marketplace_type: formData.marketplace_type,
+        product_type: 'print',
+        seller_type: 'maker',
+        print_time_hours: formData.print_time_hours ? parseFloat(formData.print_time_hours) : null,
+        weight_grams: formData.weight_grams ? parseFloat(formData.weight_grams) : null,
         dimensions: {
           length: parseFloat(formData.dimensions.length),
           width: parseFloat(formData.dimensions.width),
@@ -410,6 +437,13 @@ export default function ModelManagementSection() {
         sales_count: editingProduct ? editingProduct.sales_count : 0, // Preserve on update
         rejection_count: editingProduct ? editingProduct.rejection_count : 0, // Preserve on update
       };
+
+      // Add business-specific fields
+      if (formData.marketplace_type === 'business') {
+        productData.wholesale_price = parseFloat(formData.wholesale_price);
+        productData.moq = parseInt(formData.moq);
+        productData.lead_time_days = parseInt(formData.lead_time_days);
+      }
 
       if (editingProduct) {
         await base44.entities.Product.update(editingProduct.id, productData);
@@ -522,7 +556,7 @@ export default function ModelManagementSection() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid md:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="name" className="text-white">Product Name *</Label>
                   <Input
@@ -564,6 +598,21 @@ export default function ModelManagementSection() {
                     </SelectContent>
                     </Select>
                 </div>
+                <div>
+                  <Label htmlFor="marketplace_type" className="text-white">Marketplace *</Label>
+                  <Select
+                    value={formData.marketplace_type}
+                    onValueChange={(value) => setFormData({ ...formData, marketplace_type: value })}
+                  >
+                    <SelectTrigger id="marketplace_type" className="text-white bg-transparent">
+                      <SelectValue placeholder="Select marketplace" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 text-white">
+                      <SelectItem value="consumer">Consumer Marketplace</SelectItem>
+                      <SelectItem value="business">Business Marketplace</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div>
@@ -593,7 +642,7 @@ export default function ModelManagementSection() {
               {/* Updated grid for new custom_scale and infill inputs */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
-                  <Label htmlFor="print_time" className="text-white">Print Time (hrs) *</Label>
+                  <Label htmlFor="print_time" className="text-white">Print Time (hrs) {formData.marketplace_type === 'consumer' ? '*' : ''}</Label>
                   <Input
                     id="print_time"
                     type="number"
@@ -603,12 +652,12 @@ export default function ModelManagementSection() {
                     onChange={(e) => setFormData({...formData, print_time_hours: e.target.value})}
                     className="bg-slate-800 border-cyan-500/30 text-white"
                     placeholder="e.g., 2.5"
-                    required
+                    required={formData.marketplace_type === 'consumer'}
                   />
                 </div>
 
                 <div>
-                  <Label htmlFor="weight" className="text-white">Weight (g) *</Label>
+                  <Label htmlFor="weight" className="text-white">Weight (g) {formData.marketplace_type === 'consumer' ? '*' : ''}</Label>
                   <Input
                     id="weight"
                     type="number"
@@ -617,7 +666,7 @@ export default function ModelManagementSection() {
                     value={formData.weight_grams}
                     onChange={(e) => setFormData({...formData, weight_grams: e.target.value})}
                     className="bg-slate-800 border-cyan-500/30 text-white"
-                    required
+                    required={formData.marketplace_type === 'consumer'}
                   />
                 </div>
 
@@ -653,24 +702,73 @@ export default function ModelManagementSection() {
                 </div>
 
                 <div>
-                  <Label htmlFor="price" className="text-white">Price ($) - Auto-Calculated *</Label>
+                  <Label htmlFor="price" className="text-white">
+                    {formData.marketplace_type === 'consumer' ? 'Price ($) - Auto' : 'Consumer Price'} *
+                  </Label>
                   <Input
                     id="price"
                     type="number"
                     step="0.01"
                     min="0"
                     value={
-                      formData.weight_grams && formData.print_time_hours
+                      formData.marketplace_type === 'consumer' && formData.weight_grams && formData.print_time_hours
                         ? Math.ceil((((parseFloat(formData.weight_grams) / 1000) * 20) + 1 + (parseFloat(formData.print_time_hours) / 5)) * 4)
-                        : '' // Display empty if not calculable
+                        : formData.price
                     }
-                    readOnly
+                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                    readOnly={formData.marketplace_type === 'consumer'}
                     className="bg-slate-700 border-cyan-500/30 text-white read-only:bg-gray-700 read-only:text-gray-300"
-                    placeholder="Auto-calculated from weight and time"
+                    placeholder={formData.marketplace_type === 'consumer' ? "Auto-calculated" : "Enter price"}
                   />
-                  <p className="text-xs text-gray-400 mt-1">Formula: (((grams/1000)*20)+(hrs/5))*4.5</p>
+                  {formData.marketplace_type === 'consumer' && (
+                    <p className="text-xs text-gray-400 mt-1">Formula: (((grams/1000)*20)+(hrs/5))*4.5</p>
+                  )}
                 </div>
               </div>
+
+              {formData.marketplace_type === 'business' && (
+                <div className="grid md:grid-cols-3 gap-4 p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
+                  <div>
+                    <Label htmlFor="wholesale_price" className="text-white">Wholesale Price (per unit) *</Label>
+                    <Input
+                      id="wholesale_price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.wholesale_price}
+                      onChange={(e) => setFormData({...formData, wholesale_price: e.target.value})}
+                      className="bg-slate-800 border-purple-500/30 text-white"
+                      placeholder="0.00"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="moq" className="text-white">MOQ (Minimum Order) *</Label>
+                    <Input
+                      id="moq"
+                      type="number"
+                      min="1"
+                      value={formData.moq}
+                      onChange={(e) => setFormData({...formData, moq: parseInt(e.target.value) || 20})}
+                      className="bg-slate-800 border-purple-500/30 text-white"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="lead_time" className="text-white">Lead Time (days) *</Label>
+                    <Input
+                      id="lead_time"
+                      type="number"
+                      min="1"
+                      value={formData.lead_time_days}
+                      onChange={(e) => setFormData({...formData, lead_time_days: e.target.value})}
+                      className="bg-slate-800 border-purple-500/30 text-white"
+                      placeholder="e.g., 7"
+                      required
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <Label className="text-white">Dimensions (mm) *</Label>
