@@ -9,10 +9,31 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "ASA", "Nylon"];
 const CATEGORIES = [
-  "Promotional Items", "Branded Products", "Engineering Parts", 
-  "Replacement Parts", "Tools & Fixtures", "Prototypes"
+  { value: "home_decor", label: "Home Decor" },
+  { value: "office_supplies", label: "Office Supplies" },
+  { value: "accessories", label: "Accessories" },
+  { value: "toys_and_games", label: "Toys & Games" },
+  { value: "collectibles", label: "Collectibles" },
+  { value: "gadgets", label: "Gadgets" },
+  { value: "art", label: "Art" },
+  { value: "misc", label: "Misc" }
+];
+
+const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
+const COLORS = ["White", "Black", "Gray", "Red", "Blue", "Yellow", "Green", "Orange", "Purple", "Pink"];
+const PRICE_RANGES = [
+  { label: "Under $5", min: 0, max: 5 },
+  { label: "$5 - $15", min: 5, max: 15 },
+  { label: "$15 - $30", min: 15, max: 30 },
+  { label: "$30 - $50", min: 30, max: 50 },
+  { label: "$50+", min: 50, max: 10000 }
+];
+const SORT_OPTIONS = [
+  { value: "popular", label: "Most Popular" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "newest", label: "Newest" }
 ];
 
 export default function BusinessCatalog() {
@@ -21,11 +42,12 @@ export default function BusinessCatalog() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [filters, setFilters] = useState({
     materials: [],
-    categories: [],
-    priceRange: [0, 1000],
-    moqRange: [20, 500]
+    colors: [],
+    priceRange: null,
+    sortBy: "popular"
   });
 
   useEffect(() => {
@@ -60,14 +82,41 @@ export default function BusinessCatalog() {
       );
     }
 
+    if (selectedCategory) {
+      tempProducts = tempProducts.filter(p => p.category === selectedCategory);
+    }
+
     if (filters.materials.length > 0) {
       tempProducts = tempProducts.filter(p =>
         p.materials && p.materials.some(mat => filters.materials.includes(mat))
       );
     }
 
+    if (filters.colors.length > 0) {
+      tempProducts = tempProducts.filter(p =>
+        p.colors && p.colors.some(color => filters.colors.includes(color))
+      );
+    }
+
+    if (filters.priceRange) {
+      tempProducts = tempProducts.filter(p =>
+        p.wholesale_price >= filters.priceRange.min && p.wholesale_price <= filters.priceRange.max
+      );
+    }
+
+    // Sort
+    if (filters.sortBy === 'price_asc') {
+      tempProducts.sort((a, b) => (a.wholesale_price || 0) - (b.wholesale_price || 0));
+    } else if (filters.sortBy === 'price_desc') {
+      tempProducts.sort((a, b) => (b.wholesale_price || 0) - (a.wholesale_price || 0));
+    } else if (filters.sortBy === 'newest') {
+      tempProducts.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
+    } else {
+      tempProducts.sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
+    }
+
     setFilteredProducts(tempProducts);
-  }, [filters, products, searchQuery]);
+  }, [filters, products, searchQuery, selectedCategory]);
 
   const toggleFilter = (type, value) => {
     setFilters(prev => {
@@ -116,13 +165,61 @@ export default function BusinessCatalog() {
         </div>
       </div>
 
+      {/* Category Navigation */}
+      <div className="bg-white border-b sticky top-[73px] z-20">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex items-center gap-2 overflow-x-auto py-3">
+            <Button
+              variant={!selectedCategory ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setSelectedCategory(null)}
+            >
+              All
+            </Button>
+            {CATEGORIES.map(cat => (
+              <Button
+                key={cat.value}
+                variant={selectedCategory === cat.value ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setSelectedCategory(cat.value)}
+                className="whitespace-nowrap"
+              >
+                {cat.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex gap-6">
           {/* Filters Sidebar */}
           <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-64 flex-shrink-0`}>
-            <div className="bg-white rounded-lg shadow p-4 sticky top-24 space-y-6">
+            <div className="bg-white rounded-lg shadow p-4 sticky top-[146px] space-y-6">
               <h3 className="font-semibold text-lg">Filters</h3>
 
+              {/* Price Range */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Wholesale Price</label>
+                <div className="space-y-2">
+                  {PRICE_RANGES.map(range => (
+                    <label key={range.label} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.priceRange?.label === range.label}
+                        onCheckedChange={(checked) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            priceRange: checked ? range : null
+                          }));
+                        }}
+                      />
+                      <span className="text-sm">{range.label}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Materials */}
               <div>
                 <label className="text-sm font-medium mb-2 block">Materials</label>
                 <div className="space-y-2">
@@ -138,16 +235,17 @@ export default function BusinessCatalog() {
                 </div>
               </div>
 
+              {/* Colors */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Categories</label>
-                <div className="space-y-2">
-                  {CATEGORIES.map(cat => (
-                    <label key={cat} className="flex items-center gap-2 cursor-pointer">
+                <label className="text-sm font-medium mb-2 block">Colors</label>
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {COLORS.map(color => (
+                    <label key={color} className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
-                        checked={filters.categories.includes(cat)}
-                        onCheckedChange={() => toggleFilter('categories', cat)}
+                        checked={filters.colors.includes(color)}
+                        onCheckedChange={() => toggleFilter('colors', color)}
                       />
-                      <span className="text-sm">{cat}</span>
+                      <span className="text-sm">{color}</span>
                     </label>
                   ))}
                 </div>
@@ -159,6 +257,15 @@ export default function BusinessCatalog() {
           <main className="flex-1">
             <div className="mb-4 flex justify-between items-center">
               <p className="text-sm text-gray-600">{filteredProducts.length} products available</p>
+              <select
+                value={filters.sortBy}
+                onChange={(e) => setFilters(prev => ({ ...prev, sortBy: e.target.value }))}
+                className="border rounded px-3 py-1 text-sm"
+              >
+                {SORT_OPTIONS.map(opt => (
+                  <option key={opt.value} value={opt.value}>{opt.label}</option>
+                ))}
+              </select>
             </div>
 
             {loading ? (
@@ -187,34 +294,53 @@ export default function BusinessCatalog() {
                         )}
                       </div>
                       <CardContent className="p-4">
-                        <h3 className="font-bold text-lg mb-2">{product.name}</h3>
+                        <h3 className="font-bold text-lg mb-2 line-clamp-1">{product.name}</h3>
                         <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
                         
-                        <div className="space-y-2 mb-4">
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">MOQ:</span>
-                            <span className="font-semibold">{product.moq || 20} units</span>
+                        {/* Specs Grid */}
+                        <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-gray-500">MOQ</div>
+                            <div className="font-semibold">{product.moq || 20} units</div>
                           </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">Lead Time:</span>
-                            <span className="font-semibold">{product.lead_time_days || 'TBD'} days</span>
+                          <div className="bg-gray-50 p-2 rounded">
+                            <div className="text-gray-500">Lead Time</div>
+                            <div className="font-semibold">{product.lead_time_days || 'TBD'} days</div>
                           </div>
+                          {product.materials && product.materials.length > 0 && (
+                            <div className="bg-gray-50 p-2 rounded">
+                              <div className="text-gray-500">Materials</div>
+                              <div className="font-semibold truncate">{product.materials.join(', ')}</div>
+                            </div>
+                          )}
+                          {product.dimensions && (
+                            <div className="bg-gray-50 p-2 rounded">
+                              <div className="text-gray-500">Size</div>
+                              <div className="font-semibold truncate">
+                                {product.dimensions.length}x{product.dimensions.width}x{product.dimensions.height}mm
+                              </div>
+                            </div>
+                          )}
                         </div>
 
+                        {/* Pricing */}
                         <div className="border-t pt-3">
+                          <div className="text-xs text-gray-500 mb-1">Starting at</div>
                           <div className="flex items-baseline gap-2 mb-2">
                             <span className="text-2xl font-bold text-slate-800">
                               ${product.wholesale_price?.toFixed(2)}
                             </span>
                             <span className="text-sm text-gray-500">/unit</span>
                           </div>
-                          <div className="flex gap-2">
-                            <Badge variant="outline" className="text-xs">
-                              50+: ${(product.wholesale_price * 0.9).toFixed(2)}
-                            </Badge>
-                            <Badge variant="outline" className="text-xs text-green-600">
-                              100+: ${(product.wholesale_price * 0.8).toFixed(2)}
-                            </Badge>
+                          <div className="text-xs text-gray-600 space-y-1">
+                            <div className="flex justify-between">
+                              <span>50-99 units:</span>
+                              <span className="font-semibold">${(product.wholesale_price * 0.95).toFixed(2)}/ea</span>
+                            </div>
+                            <div className="flex justify-between text-green-600">
+                              <span>100+ units:</span>
+                              <span className="font-semibold">${(product.wholesale_price * 0.85).toFixed(2)}/ea</span>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
