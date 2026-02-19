@@ -50,7 +50,6 @@
 import AccountInfo from './pages/AccountInfo';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
-import BusinessSubscriptions from './pages/BusinessSubscriptions';
 import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
@@ -84,8 +83,6 @@ import BusinessMarketplace from './pages/BusinessMarketplace';
 import BusinessProductDetail from './pages/BusinessProductDetail';
 import BusinessCart from './pages/BusinessCart';
 import BusinessCheckout from './pages/BusinessCheckout';
-import MakerBusinessPortal from './pages/MakerBusinessPortal';
-import MakerNewListing from './pages/MakerNewListing';
 import __Layout from './Layout.jsx';
 
 
@@ -93,7 +90,6 @@ export const PAGES = {
     "AccountInfo": AccountInfo,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
-    "BusinessSubscriptions": BusinessSubscriptions,
     "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
@@ -127,8 +123,6 @@ export const PAGES = {
     "BusinessProductDetail": BusinessProductDetail,
     "BusinessCart": BusinessCart,
     "BusinessCheckout": BusinessCheckout,
-    "MakerBusinessPortal": MakerBusinessPortal,
-    "MakerNewListing": MakerNewListing,
 }
 
 export const pagesConfig = {

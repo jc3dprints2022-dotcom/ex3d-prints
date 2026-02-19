@@ -174,8 +174,8 @@ export default function Home() {
           
           <div className="text-center">
             <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-              <Link to={createPageUrl("BusinessSubscriptions")}>
-                For Businesses
+              <Link to={createPageUrl("BusinessMarketplace")}>
+                Browse Business Marketplace
                 <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </Button>

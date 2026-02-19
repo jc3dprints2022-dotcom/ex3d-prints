@@ -384,10 +384,10 @@ export default function Layout({ children, currentPageName }) {
               </Link>
 
               <Link
-                to={createPageUrl("BusinessSubscriptions")}
+                to={createPageUrl("BusinessMarketplace")}
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === createPageUrl("BusinessSubscriptions")
+                  location.pathname === createPageUrl("BusinessMarketplace")
                     ? "bg-purple-500 text-white"
                     : "bg-purple-50 text-purple-700 hover:bg-purple-100"
                 }`}

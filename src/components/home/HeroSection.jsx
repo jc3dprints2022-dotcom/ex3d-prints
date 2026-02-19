@@ -206,7 +206,7 @@ export default function HeroSection() {
               onClick={scrollToTop}
               className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
             >
-              <Link to={createPageUrl("BusinessSubscriptions")}>
+              <Link to={createPageUrl("BusinessMarketplace")}>
                 For Businesses
               </Link>
             </Button>
