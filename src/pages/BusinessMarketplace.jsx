@@ -9,46 +9,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const USE_CASES = [
   { 
-    id: "promotional", 
-    label: "Promotional/Event Merchandise",
-    icon: Package,
-    description: "Branded giveaways, trade show items, event swag",
+    id: "prototypes", 
+    label: "Custom Parts & Prototypes",
+    icon: Cog,
+    description: "Engineering parts, one-offs, and prototype work",
     color: "from-blue-500 to-blue-600"
   },
   { 
     id: "branded", 
-    label: "Custom Branded Products",
+    label: "Branded & Promotional Products",
     icon: Award,
-    description: "Corporate gifts, branded accessories, company merchandise",
+    description: "Event merch, custom branded goods, marketing materials",
     color: "from-purple-500 to-purple-600"
   },
   { 
-    id: "engineering", 
-    label: "Engineering/Prototype Parts",
-    icon: Cog,
-    description: "Functional prototypes, test parts, product development",
-    color: "from-orange-500 to-orange-600"
-  },
-  { 
     id: "replacement", 
-    label: "Replacement/Functional Components",
+    label: "Replacement & Functional Components",
     icon: Wrench,
-    description: "Parts, fixtures, tools, maintenance components",
+    description: "Repeat/bulk orders of functional parts, replacements for existing designs",
     color: "from-green-500 to-green-600"
   },
   { 
-    id: "bulk", 
-    label: "Bulk Production of Existing Design",
-    icon: TrendingUp,
-    description: "High-volume manufacturing, repeat orders",
-    color: "from-red-500 to-red-600"
-  },
-  { 
-    id: "cad", 
-    label: "I Have a CAD File",
-    icon: FileText,
-    description: "Custom manufacturing from your design files",
-    color: "from-teal-500 to-teal-600"
+    id: "reseller", 
+    label: "Reseller & Retail Products",
+    icon: Package,
+    description: "Parts or products we manufacture and sell through your shop",
+    color: "from-orange-500 to-orange-600"
   }
 ];
 
@@ -123,8 +109,7 @@ export default function BusinessMarketplace() {
   };
 
   const handleViewCatalog = () => {
-    setShowCatalog(true);
-    handleUseCaseSelect('all');
+    window.location.href = createPageUrl("BusinessCatalog");
   };
 
   const handleReset = () => {
@@ -187,7 +172,7 @@ export default function BusinessMarketplace() {
           </div>
 
           <div className="flex gap-4 justify-center">
-            <Button onClick={() => handleUseCaseSelect(selectedUseCase)} size="lg" className="bg-slate-800 hover:bg-slate-700">
+            <Button onClick={() => window.location.href = createPageUrl("BusinessCatalog")} size="lg" className="bg-slate-800 hover:bg-slate-700">
               <Search className="w-5 h-5 mr-2" />
               View Curated Products
             </Button>
@@ -308,7 +293,7 @@ export default function BusinessMarketplace() {
           Select your use case to view curated solutions with transparent pricing and production timelines
         </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {USE_CASES.map((useCase) => {
             const Icon = useCase.icon;
             return (
@@ -334,6 +319,32 @@ export default function BusinessMarketplace() {
             <Search className="w-5 h-5 mr-2" />
             Browse Full Manufacturing Catalog
           </Button>
+        </div>
+      </div>
+
+      {/* CAD File Upload Bar */}
+      <div className="bg-slate-100 border-t border-b py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <Link to={createPageUrl("BusinessCADUpload")}>
+            <Card className="cursor-pointer hover:shadow-xl transition-all border-2 hover:border-teal-600">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                      <FileText className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-lg font-bold">I Have a CAD File</h3>
+                      <p className="text-gray-600 text-sm">Upload your design files for custom manufacturing quote</p>
+                    </div>
+                  </div>
+                  <Button className="bg-teal-600 hover:bg-teal-700">
+                    Get Quote →
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
         </div>
       </div>
 
