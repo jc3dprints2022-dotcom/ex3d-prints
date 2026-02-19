@@ -81,6 +81,54 @@ export default function Home() {
         </div>
       </div>
 
+      {/* For Shoppers Section */}
+      <section className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-8">
+            <h3 className="text-3xl font-bold text-slate-900 mb-4">For Shoppers</h3>
+            <p className="text-lg text-slate-600 max-w-2xl mx-auto mb-8">
+              Browse unique 3D printed designs or request custom creations
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-teal-100 text-teal-600 mb-3">
+                  <Package className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Browse the Marketplace</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Explore unique 3D printed products from talented designers
+                </p>
+                <Button asChild size="sm" className="w-full bg-teal-600 hover:bg-teal-700">
+                  <Link to={createPageUrl("Marketplace")}>
+                    Visit Marketplace
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-none shadow-md hover:shadow-lg transition-shadow">
+              <CardContent className="p-6 text-center">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-100 text-blue-600 mb-3">
+                  <Printer className="w-7 h-7" />
+                </div>
+                <h4 className="text-lg font-semibold text-slate-900 mb-2">Request Custom Prints</h4>
+                <p className="text-slate-600 text-sm mb-4">
+                  Upload your file or describe your idea for a custom quote
+                </p>
+                <Button asChild size="sm" className="w-full bg-blue-600 hover:bg-blue-700">
+                  <Link to={createPageUrl("CustomPrintRequest")}>
+                    Request Custom Print
+                  </Link>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* For Businesses Section */}
       <section className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -97,8 +145,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
                   <Package className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Made for Dental Offices</h4>
-                <p className="text-slate-600">We create custom 3D printed reward items designed for pediatric patients. Each item is branded with your office name or logo and built to support a better patient experience.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Wholesale Pricing</h4>
+                <p className="text-slate-600">Access bulk pricing on custom 3D printed products for retail stores. Order in volume with automatic discounts and flexible delivery options.</p>
               </CardContent>
             </Card>
             
@@ -107,8 +155,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 mb-4">
                   <Printer className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Produced Locally</h4>
-                <p className="text-slate-600">All products are manufactured locally by student makers in your community. This means fast turnaround, consistent quality, and reliable monthly delivery.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fast Production</h4>
+                <p className="text-slate-600">Locally produced by our network of makers. Quick turnaround times with consistent quality and reliable delivery schedules.</p>
               </CardContent>
             </Card>
             
@@ -117,8 +165,8 @@ export default function Home() {
                 <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
                   <CheckCircle className="w-8 h-8" />
                 </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fully Automatic</h4>
-                <p className="text-slate-600">We handle design, production, and restocking. No inventory tracking. No vendor calls. Just dependable, ready-to-use rewards delivered on schedule.</p>
+                <h4 className="text-xl font-semibold text-slate-900 mb-2">Recurring Orders</h4>
+                <p className="text-slate-600">Set up automatic weekly, biweekly, or monthly reorders. Never run out of inventory with flexible subscription management.</p>
               </CardContent>
             </Card>
           </div>
