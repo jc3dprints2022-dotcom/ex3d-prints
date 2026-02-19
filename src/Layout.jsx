@@ -371,113 +371,107 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-8">
-              {(location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))) ? (
-                <>
-                  <Link
-                    to={createPageUrl("Marketplace")}
-                    onClick={scrollToTop}
-                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                      location.pathname === createPageUrl("Marketplace")
-                        ? "bg-teal-500 text-white"
-                        : "bg-teal-50 text-teal-700 hover:bg-teal-100"
-                    }`}
-                  >
-                    Marketplace
-                  </Link>
+              <Link
+                to={createPageUrl("Marketplace")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
+                    ? "bg-teal-500 text-white"
+                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                }`}
+              >
+                Marketplace
+              </Link>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                          location.pathname === createPageUrl("ForDesigners")
-                            ? "bg-blue-500 text-white"
-                            : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-                        } flex items-center gap-1`}
-                      >
-                        For Designers
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem asChild>
-                        <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
-                      </DropdownMenuItem>
-                      {user && user.designer_id && (user.business_roles?.includes('designer')) && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Designer Hub
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
-                            <span className="text-blue-600 font-semibold">Get Started</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              ) : (
-                <>
-                  <Link
-                    to={createPageUrl("BusinessSubscriptions")}
-                    onClick={scrollToTop}
-                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                      location.pathname === createPageUrl("BusinessSubscriptions")
-                        ? "bg-purple-500 text-white"
-                        : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-                    }`}
-                  >
-                    Businesses
-                  </Link>
+              <Link
+                to={createPageUrl("BusinessSubscriptions")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("BusinessSubscriptions")
+                    ? "bg-purple-500 text-white"
+                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                }`}
+              >
+                For Businesses
+              </Link>
 
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                          location.pathname === createPageUrl("ForMakers")
-                            ? "bg-orange-500 text-white"
-                            : "bg-orange-50 text-orange-700 hover:bg-orange-100"
-                        } flex items-center gap-1`}
-                      >
-                        For Makers
-                        <ChevronDown className="w-4 h-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForMakers")
+                        ? "bg-orange-500 text-white"
+                        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Makers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForMakers")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.maker_id && (user.business_roles?.includes('maker')) && (
+                    <>
+                      <DropdownMenuSeparator />
                       <DropdownMenuItem asChild>
-                        <Link to={createPageUrl("ForMakers")} onClick={scrollToTop}>Overview</Link>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=maker`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Maker Hub
+                        </Link>
                       </DropdownMenuItem>
-                      {user && user.maker_id && (user.business_roles?.includes('maker')) && (
-                        <>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem asChild>
-                            <Link to={`${createPageUrl("ConsumerDashboard")}?tab=maker`} onClick={scrollToTop}>
-                              <Settings className="w-4 h-4 mr-2" />
-                              Maker Hub
-                            </Link>
-                          </DropdownMenuItem>
-                        </>
-                      )}
-                      {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
-                        <DropdownMenuItem asChild>
-                          <Link to={createPageUrl("MakerSignup")} onClick={scrollToTop}>
-                            <span className="text-orange-600 font-semibold">Get Started</span>
-                          </Link>
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </>
-              )}
+                    </>
+                  )}
+                  {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("MakerSignup")} onClick={scrollToTop}>
+                        <span className="text-orange-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForDesigners")
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Designers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.designer_id && (user.business_roles?.includes('designer')) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Designer Hub
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                        <span className="text-blue-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             <div className="flex items-center space-x-4">
