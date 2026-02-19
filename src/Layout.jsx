@@ -323,6 +323,10 @@ export default function Layout({ children, currentPageName }) {
 
     const roles = user.business_roles || [];
     if (roles.includes('campus_manager')) return createPageUrl("CampusManagementCenter");
+    
+    // Business accounts go to business dashboard
+    if (user.account_type === 'business') return createPageUrl("BusinessDashboard");
+    
     return createPageUrl("ConsumerDashboard");
   };
 
@@ -333,6 +337,7 @@ export default function Layout({ children, currentPageName }) {
 
     const roles = user.business_roles || [];
     if (roles.includes('campus_manager')) return "Campus Management";
+    if (user.account_type === 'business') return "Business Dashboard";
     if (roles.includes('maker')) return "Maker Dashboard";
     return "My Dashboard";
   };
@@ -342,8 +347,12 @@ export default function Layout({ children, currentPageName }) {
 
     const dashboards = [];
 
-    // Always show consumer dashboard (includes maker/designer hubs as tabs)
-    dashboards.push({ name: 'My Dashboard', url: createPageUrl("ConsumerDashboard") });
+    // Show appropriate dashboard based on account type
+    if (user.account_type === 'business') {
+      dashboards.push({ name: 'Business Dashboard', url: createPageUrl("BusinessDashboard") });
+    } else {
+      dashboards.push({ name: 'My Dashboard', url: createPageUrl("ConsumerDashboard") });
+    }
 
     // Show campus management center if user is a campus manager
     if (user.business_roles?.includes('campus_manager') && user.managed_campus) {
@@ -541,9 +550,9 @@ export default function Layout({ children, currentPageName }) {
                     <DropdownMenuSeparator />
 
                     <DropdownMenuItem asChild>
-                      <Link to={createPageUrl("ConsumerDashboard")} onClick={scrollToTop} className="flex items-center">
+                      <Link to={getDashboardUrl()} onClick={scrollToTop} className="flex items-center">
                         <Settings className="w-4 h-4 mr-2" />
-                        My Dashboard
+                        {getDashboardLabel()}
                       </Link>
                     </DropdownMenuItem>
 
