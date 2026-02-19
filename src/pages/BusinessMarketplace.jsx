@@ -9,32 +9,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const USE_CASES = [
   { 
-    id: "prototypes", 
-    label: "Custom Parts & Prototypes",
-    icon: Cog,
-    description: "Engineering parts, one-offs, and prototype work",
-    color: "from-blue-500 to-blue-600"
+    id: "retail", 
+    label: "Retail Products",
+    icon: Package,
+    description: "Products we manufacture for you to sell in your store or online shop",
+    color: "from-orange-500 to-orange-600"
   },
   { 
     id: "branded", 
     label: "Branded & Promotional Products",
     icon: Award,
-    description: "Event merch, custom branded goods, marketing materials",
+    description: "Event merch, custom branded goods, marketing materials for your brand",
     color: "from-purple-500 to-purple-600"
   },
   { 
     id: "replacement", 
     label: "Replacement & Functional Components",
     icon: Wrench,
-    description: "Repeat/bulk orders of functional parts, replacements for existing designs",
+    description: "Repeat/bulk production of functional parts for your operations",
     color: "from-green-500 to-green-600"
   },
   { 
-    id: "reseller", 
-    label: "Reseller & Retail Products",
-    icon: Package,
-    description: "Parts or products we manufacture and sell through your shop",
-    color: "from-orange-500 to-orange-600"
+    id: "prototypes", 
+    label: "Custom Parts & Prototypes",
+    icon: Cog,
+    description: "Engineering parts, one-offs, and prototype work for your projects",
+    color: "from-blue-500 to-blue-600"
   }
 ];
 
@@ -281,16 +281,16 @@ export default function BusinessMarketplace() {
           </div>
           <h1 className="text-5xl font-bold mb-4">Enterprise 3D Manufacturing</h1>
           <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
-            Distributed production capacity. Quality-controlled processes. Scalable manufacturing solutions for your business.
+            We manufacture products for your business. Distributed production capacity. Quality-controlled processes. Scalable solutions.
           </p>
         </div>
       </div>
 
       {/* What are you looking to produce? */}
       <div className="max-w-7xl mx-auto px-4 py-16">
-        <h2 className="text-3xl font-bold text-center mb-4">What are you looking to produce?</h2>
+        <h2 className="text-3xl font-bold text-center mb-4">What do you need manufactured?</h2>
         <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-          Select your use case to view curated solutions with transparent pricing and production timelines
+          We produce high-quality 3D printed products for your business to sell or use
         </p>
 
         <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
