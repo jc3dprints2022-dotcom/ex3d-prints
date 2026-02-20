@@ -275,10 +275,6 @@ export default function BusinessMarketplace() {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-16">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-slate-700/50 px-4 py-2 rounded-full text-sm mb-6">
-            <CheckCircle className="w-4 h-4 text-green-400" />
-            <span>ISO 9001 Certified Production Network</span>
-          </div>
           <h1 className="text-5xl font-bold mb-4">Enterprise 3D Manufacturing</h1>
           <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
             We manufacture products for your business. Distributed production capacity. Quality-controlled processes. Scalable solutions.
