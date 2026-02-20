@@ -86,7 +86,6 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import businessmarketplaceArchived from './pages/BusinessMarketplace.archived';
 import __Layout from './Layout.jsx';
 
 
@@ -130,7 +129,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "BusinessMarketplace.archived": businessmarketplaceArchived,
 }
 
 export const pagesConfig = {

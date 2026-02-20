@@ -43,6 +43,9 @@ export default function BusinessCatalog() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedIndustry, setSelectedIndustry] = useState(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(null);
+  const [selectedBudget, setSelectedBudget] = useState(null);
   const [filters, setFilters] = useState({
     materials: [],
     colors: [],
@@ -52,6 +55,16 @@ export default function BusinessCatalog() {
 
   useEffect(() => {
     loadProducts();
+    
+    // Get URL parameters for pre-selected filters
+    const urlParams = new URLSearchParams(window.location.search);
+    const industry = urlParams.get('industry');
+    const quantity = urlParams.get('quantity');
+    const budget = urlParams.get('budget');
+    
+    if (industry) setSelectedIndustry(industry);
+    if (quantity) setSelectedQuantity(quantity);
+    if (budget) setSelectedBudget(budget);
   }, []);
 
   const loadProducts = async () => {
@@ -144,23 +157,59 @@ export default function BusinessCatalog() {
       {/* Search Bar */}
       <div className="bg-white border-b sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <Input
-                placeholder="Search products..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+          <div className="flex flex-col gap-4">
+            <div className="flex gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search products..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowFilters(!showFilters)}
+                className="md:hidden"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+              </Button>
             </div>
-            <Button 
-              variant="outline" 
-              onClick={() => setShowFilters(!showFilters)}
-              className="md:hidden"
-            >
-              <SlidersHorizontal className="w-4 h-4" />
-            </Button>
+            
+            {/* Active Filters Display */}
+            {(selectedIndustry || selectedQuantity || selectedBudget) && (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-gray-600">Your selections:</span>
+                {selectedIndustry && (
+                  <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedIndustry(null)}>
+                    {selectedIndustry} ✕
+                  </Badge>
+                )}
+                {selectedQuantity && (
+                  <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedQuantity(null)}>
+                    {selectedQuantity} units ✕
+                  </Badge>
+                )}
+                {selectedBudget && (
+                  <Badge variant="secondary" className="cursor-pointer" onClick={() => setSelectedBudget(null)}>
+                    ${selectedBudget} ✕
+                  </Badge>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => {
+                    setSelectedIndustry(null);
+                    setSelectedQuantity(null);
+                    setSelectedBudget(null);
+                  }}
+                  className="text-xs"
+                >
+                  Clear all
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
