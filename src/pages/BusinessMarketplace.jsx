@@ -47,7 +47,7 @@ export default function BusinessMarketplace() {
     window.location.href = `${createPageUrl("BusinessCatalog")}?${params.toString()}`;
   };
 
-  const canProceed = industry && quantity && budget;
+  const canProceed = industry || quantity || budget;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
