@@ -54,6 +54,7 @@ import BusinessCADUpload from './pages/BusinessCADUpload';
 import BusinessCart from './pages/BusinessCart';
 import BusinessCatalog from './pages/BusinessCatalog';
 import BusinessCheckout from './pages/BusinessCheckout';
+import BusinessDashboard from './pages/BusinessDashboard';
 import BusinessMarketplace from './pages/BusinessMarketplace';
 import BusinessProductDetail from './pages/BusinessProductDetail';
 import CampusManagementCenter from './pages/CampusManagementCenter';
@@ -85,7 +86,7 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import BusinessDashboard from './pages/BusinessDashboard';
+import businessmarketplaceArchived from './pages/BusinessMarketplace.archived';
 import __Layout from './Layout.jsx';
 
 
@@ -97,6 +98,7 @@ export const PAGES = {
     "BusinessCart": BusinessCart,
     "BusinessCatalog": BusinessCatalog,
     "BusinessCheckout": BusinessCheckout,
+    "BusinessDashboard": BusinessDashboard,
     "BusinessMarketplace": BusinessMarketplace,
     "BusinessProductDetail": BusinessProductDetail,
     "CampusManagementCenter": CampusManagementCenter,
@@ -128,7 +130,7 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "BusinessDashboard": BusinessDashboard,
+    "BusinessMarketplace.archived": businessmarketplaceArchived,
 }
 
 export const pagesConfig = {
