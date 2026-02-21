@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
+import RecurringOrderManager from "@/components/business/RecurringOrderManager";
 
 export default function BusinessDashboard() {
   const [user, setUser] = useState(null);
@@ -150,8 +151,8 @@ export default function BusinessDashboard() {
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Subscriptions</p>
-                  <p className="text-2xl font-bold text-orange-600">{subscriptions.length}</p>
+                  <p className="text-sm text-gray-600">Recurring Orders</p>
+                  <p className="text-2xl font-bold text-orange-600">{subscriptions.filter(s => s.status === 'active').length}</p>
                 </div>
                 <Calendar className="w-8 h-8 text-orange-600" />
               </div>
@@ -163,7 +164,7 @@ export default function BusinessDashboard() {
         <Tabs defaultValue="orders" className="space-y-6">
           <TabsList>
             <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="subscriptions">Subscriptions</TabsTrigger>
+            <TabsTrigger value="recurring">Recurring Orders</TabsTrigger>
             <TabsTrigger value="recommended">Recommended</TabsTrigger>
           </TabsList>
 
@@ -233,61 +234,13 @@ export default function BusinessDashboard() {
             )}
           </TabsContent>
 
-          {/* Subscriptions Tab */}
-          <TabsContent value="subscriptions" className="space-y-4">
-            {subscriptions.length === 0 ? (
-              <Card>
-                <CardContent className="py-12 text-center">
-                  <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">No active subscriptions</h3>
-                  <p className="text-gray-600 mb-4">Save time with recurring orders</p>
-                  <Button asChild variant="outline">
-                    <Link to={createPageUrl("BusinessMarketplace")}>
-                      Explore Products
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="space-y-4">
-                {subscriptions.map(sub => (
-                  <Card key={sub.id}>
-                    <CardHeader>
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-lg">
-                          {sub.frequency} Subscription
-                        </CardTitle>
-                        <Badge className={
-                          sub.status === 'active' ? 'bg-green-100 text-green-800' :
-                          sub.status === 'paused' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-gray-100 text-gray-800'
-                        }>
-                          {sub.status}
-                        </Badge>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Items:</span>
-                          <span className="font-medium">{sub.items?.length || 0} products</span>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-gray-600">Per cycle:</span>
-                          <span className="font-medium">${sub.total_per_cycle?.toFixed(2)}</span>
-                        </div>
-                        {sub.next_order_date && (
-                          <div className="flex justify-between text-sm">
-                            <span className="text-gray-600">Next order:</span>
-                            <span className="font-medium">{formatDate(sub.next_order_date)}</span>
-                          </div>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
+          {/* Recurring Orders Tab */}
+          <TabsContent value="recurring">
+            <RecurringOrderManager 
+              user={user} 
+              subscriptions={subscriptions} 
+              onUpdate={loadDashboardData} 
+            />
           </TabsContent>
 
           {/* Recommended Tab */}

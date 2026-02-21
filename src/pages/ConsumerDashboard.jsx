@@ -315,7 +315,6 @@ export default function ConsumerDashboard() {
     ...(user?.business_roles?.includes('maker') ? [{ id: "maker", label: "Maker Hub", icon: Package }] : []),
     ...(user?.business_roles?.includes('designer') ? [{ id: "designer", label: "Designer Hub", icon: Package }] : []),
     { id: "exp", label: "EXP & Rewards", icon: Gift },
-    { id: "subscriptions", label: "My Subscriptions", icon: Package },
     { id: "settings", label: "Account Settings", icon: Settings }
   ];
 
@@ -668,10 +667,7 @@ export default function ConsumerDashboard() {
               <ExpRedeemTab user={user} onUpdate={loadDashboardData} />
             )}
 
-            {/* Subscriptions Section */}
-            {activeSection === "subscriptions" && (
-              <SubscriptionManagement user={user} onUpdate={loadDashboardData} />
-            )}
+
 
 
 

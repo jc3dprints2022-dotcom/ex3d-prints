@@ -1,60 +1,70 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { X, Gift, Mail, Check } from "lucide-react";
+import { Gift } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function EmailSignupReward() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [claimed, setClaimed] = useState(false);
+  const [show, setShow] = useState(false);
   const { toast } = useToast();
 
-  const handleClaim = async () => {
-    if (!email || !email.includes("@")) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
-        variant: "destructive"
-      });
-      return;
-    }
+  useEffect(() => {
+    checkEligibility();
+  }, []);
 
-    setLoading(true);
+  const checkEligibility = async () => {
     try {
-      // Check if user is logged in
+      const user = await base44.auth.me().catch(() => null);
+      
+      // Hide if already signed in or already claimed
+      if (user) {
+        setShow(false);
+        return;
+      }
+      
+      // Check localStorage to see if dismissed
+      const dismissed = localStorage.getItem('email_signup_dismissed');
+      if (dismissed) {
+        setShow(false);
+        return;
+      }
+      
+      setShow(true);
+    } catch (error) {
+      setShow(false);
+    }
+  };
+
+  const handleClick = async () => {
+    try {
       const user = await base44.auth.me().catch(() => null);
       
       if (!user) {
-        // Not logged in - prompt to sign up
+        // Not logged in - redirect to sign up
         toast({
-          title: "Sign Up Required",
-          description: "Please create an account to claim your $5 reward!",
-          duration: 5000
+          title: "Sign Up to Get $5 Off! 🎁",
+          description: "Create an account to claim your welcome reward.",
+          duration: 3000
         });
         
-        // Redirect to login/signup
         setTimeout(() => {
           base44.auth.redirectToLogin(window.location.href);
-        }, 1500);
+        }, 1000);
         return;
       }
-
-      // Check if already claimed
+      
+      // User is logged in - check if already claimed
       if (user.email_signup_coupon_claimed) {
         toast({
-          title: "Already Claimed",
-          description: "You've already claimed your email signup reward!",
-          variant: "destructive"
+          title: "Already Claimed! ✓",
+          description: "You've already received your $5 welcome reward.",
+          duration: 4000
         });
-        setLoading(false);
+        setShow(false);
         return;
       }
-
-      // Create $5 coupon
-      const couponCode = `EMAIL5-${user.id.substring(0, 8).toUpperCase()}`;
+      
+      // Create and send reward
+      const couponCode = `WELCOME5-${user.id.substring(0, 8).toUpperCase()}`;
       
       await base44.entities.Coupon.create({
         code: couponCode,
@@ -66,23 +76,25 @@ export default function EmailSignupReward() {
         is_active: true
       });
 
-      // Update user to mark as claimed
       await base44.auth.updateMe({
         email_signup_coupon_claimed: true,
         email_signup_coupon_code: couponCode
       });
 
-      setClaimed(true);
-      toast({
-        title: "🎉 $5 Reward Unlocked!",
-        description: `Your coupon code: ${couponCode}`,
-        duration: 8000
-      });
+      // Send email notification
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: "Your $5 Welcome Reward is Ready! 🎁",
+        body: `Hi ${user.full_name},\n\nThank you for joining EX3D Prints! Here's your $5 off coupon code:\n\n${couponCode}\n\nThis code has been automatically applied to your account and will be available at checkout.\n\nHappy shopping!\n\nThe EX3D Prints Team`
+      }).catch(err => console.log('Email send skipped:', err));
 
-      // Auto-dismiss after showing success
-      setTimeout(() => {
-        setDismissed(true);
-      }, 5000);
+      toast({
+        title: "🎉 $5 Reward Claimed!",
+        description: `Coupon code ${couponCode} sent to your email!`,
+        duration: 6000
+      });
+      
+      setShow(false);
     } catch (error) {
       console.error("Failed to claim reward:", error);
       toast({
@@ -91,56 +103,33 @@ export default function EmailSignupReward() {
         variant: "destructive"
       });
     }
-    setLoading(false);
   };
 
-  if (dismissed) return null;
+  const handleDismiss = () => {
+    localStorage.setItem('email_signup_dismissed', 'true');
+    setShow(false);
+  };
+
+  if (!show) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm bg-gradient-to-r from-green-500 to-teal-600 text-white rounded-lg shadow-2xl p-6 animate-in slide-in-from-bottom">
+    <div className="fixed bottom-24 md:bottom-6 right-4 z-40">
       <button
-        onClick={() => setDismissed(true)}
-        className="absolute top-2 right-2 text-white/80 hover:text-white"
+        onClick={handleClick}
+        className="relative group bg-gradient-to-r from-green-500 to-teal-600 text-white p-4 rounded-full shadow-2xl hover:shadow-xl transition-all transform hover:scale-110 animate-bounce"
+        style={{ animationDuration: '2s' }}
       >
-        <X className="w-4 h-4" />
+        <Gift className="w-6 h-6" />
+        <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+          $5
+        </span>
       </button>
-
-      <div className="flex items-start gap-4">
-        <div className="bg-white/20 rounded-full p-3">
-          <Gift className="w-6 h-6" />
-        </div>
-        <div className="flex-1">
-          <h3 className="font-bold text-lg mb-1">Get $5 Off!</h3>
-          <p className="text-sm text-white/90 mb-3">
-            Sign up and get $5 off your first order
-          </p>
-
-          {!claimed ? (
-            <div className="flex gap-2">
-              <Input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="bg-white/90 border-none text-gray-900 placeholder:text-gray-500"
-                disabled={loading}
-              />
-              <Button
-                onClick={handleClaim}
-                disabled={loading}
-                className="bg-white text-teal-600 hover:bg-white/90 font-semibold"
-              >
-                {loading ? "..." : "Claim"}
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 bg-white/20 rounded-lg px-4 py-2">
-              <Check className="w-5 h-5" />
-              <span className="font-semibold">Claimed! Check your account</span>
-            </div>
-          )}
-        </div>
-      </div>
+      <button
+        onClick={handleDismiss}
+        className="absolute -top-2 -left-2 bg-gray-800 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-gray-700"
+      >
+        ×
+      </button>
     </div>
   );
 }
