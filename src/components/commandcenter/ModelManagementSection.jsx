@@ -35,6 +35,14 @@ const CATEGORIES = [
   { value: "misc", label: "Misc" }
 ];
 
+const BUSINESS_INDUSTRIES = [
+  "Local Souvenir Shops",
+  "Campus, Dorm & Student Living",
+  "Health & Personal Care",
+  "Office & Desk",
+  "Outdoor Lifestyle"
+];
+
 const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
 const COLORS = [
   "White", "Black", "Gray", "Silver", "Gold", "Brown",
@@ -87,8 +95,8 @@ export default function ModelManagementSection() {
     shown_color_specs: [],
     marketplace_type: 'consumer',
     wholesale_price: '',
-    moq: 20,
     lead_time_days: '',
+    business_industry: '',
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -291,8 +299,8 @@ export default function ModelManagementSection() {
       shown_color_specs: product.shown_color_specs || [],
       marketplace_type: product.marketplace_type || 'consumer',
       wholesale_price: product.wholesale_price?.toString() || '',
-      moq: product.moq || 20,
       lead_time_days: product.lead_time_days?.toString() || '',
+      business_industry: product.business_industry || '',
     });
     setLicenseVerified(true);
     setShowForm(true);
@@ -397,6 +405,10 @@ export default function ModelManagementSection() {
         toast({ title: "Please enter lead time for business products", variant: "destructive" });
         return;
       }
+      if (!formData.business_industry) {
+        toast({ title: "Please select an industry for business products", variant: "destructive" });
+        return;
+      }
       calculatedPrice = parseFloat(formData.price);
     }
 
@@ -441,8 +453,8 @@ export default function ModelManagementSection() {
       // Add business-specific fields
       if (formData.marketplace_type === 'business') {
         productData.wholesale_price = parseFloat(formData.wholesale_price);
-        productData.moq = parseInt(formData.moq);
         productData.lead_time_days = parseInt(formData.lead_time_days);
+        productData.business_industry = formData.business_industry;
       }
 
       if (editingProduct) {
@@ -743,18 +755,6 @@ export default function ModelManagementSection() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="moq" className="text-white">MOQ (Minimum Order) *</Label>
-                    <Input
-                      id="moq"
-                      type="number"
-                      min="1"
-                      value={formData.moq}
-                      onChange={(e) => setFormData({...formData, moq: parseInt(e.target.value) || 20})}
-                      className="bg-slate-800 border-purple-500/30 text-white"
-                      required
-                    />
-                  </div>
-                  <div>
                     <Label htmlFor="lead_time" className="text-white">Lead Time (days) *</Label>
                     <Input
                       id="lead_time"
@@ -766,6 +766,24 @@ export default function ModelManagementSection() {
                       placeholder="e.g., 7"
                       required
                     />
+                  </div>
+                  <div>
+                    <Label htmlFor="business_industry" className="text-white">Industry / Retail Type *</Label>
+                    <Select
+                      value={formData.business_industry}
+                      onValueChange={(value) => setFormData({ ...formData, business_industry: value })}
+                    >
+                      <SelectTrigger id="business_industry" className="bg-slate-800 text-white border-purple-500/30">
+                        <SelectValue placeholder="Select industry" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-900 text-white border border-gray-700">
+                        {BUSINESS_INDUSTRIES.map(industry => (
+                          <SelectItem key={industry} value={industry} className="text-white focus:text-white hover:text-white">
+                            {industry}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
               )}
