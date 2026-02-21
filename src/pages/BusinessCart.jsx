@@ -231,18 +231,21 @@ export default function BusinessCart() {
                   )}
 
                   <Button 
-                    asChild={canCheckout} 
                     size="lg" 
                     className="w-full bg-purple-600 hover:bg-purple-700"
-                    disabled={!canCheckout}
+                    onClick={() => {
+                      if (!canCheckout) {
+                        toast({
+                          title: "Minimum order not met",
+                          description: `Please add ${30 - totalUnits} more items to reach the 30 item minimum for business orders`,
+                          variant: "destructive"
+                        });
+                      } else {
+                        window.location.href = createPageUrl("BusinessCheckout");
+                      }
+                    }}
                   >
-                    {canCheckout ? (
-                      <Link to={createPageUrl("BusinessCheckout")}>
-                        Proceed to Checkout
-                      </Link>
-                    ) : (
-                      <span>Minimum 30 Items Required</span>
-                    )}
+                    {canCheckout ? "Proceed to Checkout" : `Add ${30 - totalUnits} More Items`}
                   </Button>
                 </CardContent>
               </Card>

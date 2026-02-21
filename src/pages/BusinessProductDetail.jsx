@@ -56,6 +56,16 @@ export default function BusinessProductDetail() {
       return;
     }
 
+    // Check if user has business account
+    if (user.account_type !== 'business') {
+      toast({ 
+        title: "Business account required", 
+        description: "This product is only available for business accounts",
+        variant: "destructive" 
+      });
+      return;
+    }
+
     if (quantity < 1) {
       toast({ title: "Invalid quantity", description: "Quantity must be at least 1", variant: "destructive" });
       return;

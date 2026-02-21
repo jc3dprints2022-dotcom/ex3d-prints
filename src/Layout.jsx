@@ -77,6 +77,12 @@ export default function Layout({ children, currentPageName }) {
       const currentUser = await base44.auth.me();
       if (!currentUser) return;
 
+      // Check if user needs to select account type
+      if (!currentUser.account_type) {
+        window.location.href = createPageUrl("AccountTypeSelect");
+        return;
+      }
+
       // Check if user was just created (within last 10 seconds) and hasn't received welcome bonus
       const userCreatedAt = new Date(currentUser.created_date);
       const now = new Date();
@@ -380,29 +386,33 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-8">
-              <Link
-                to={createPageUrl("Marketplace")}
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
-                    ? "bg-teal-500 text-white"
-                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
-                }`}
-              >
-                Marketplace
-              </Link>
+              {(!user || user.account_type === 'consumer') && (
+                <Link
+                  to={createPageUrl("Marketplace")}
+                  onClick={scrollToTop}
+                  className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                    location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
+                      ? "bg-teal-500 text-white"
+                      : "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                  }`}
+                >
+                  Marketplace
+                </Link>
+              )}
 
-              <Link
-                to={createPageUrl("BusinessMarketplace")}
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === createPageUrl("BusinessMarketplace")
-                    ? "bg-purple-500 text-white"
-                    : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-                }`}
-              >
-                For Businesses
-              </Link>
+              {(!user || user.account_type === 'business') && (
+                <Link
+                  to={createPageUrl("BusinessMarketplace")}
+                  onClick={scrollToTop}
+                  className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                    location.pathname === createPageUrl("BusinessMarketplace")
+                      ? "bg-purple-500 text-white"
+                      : "bg-purple-50 text-purple-700 hover:bg-purple-100"
+                  }`}
+                >
+                  For Businesses
+                </Link>
+              )}
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -573,26 +583,30 @@ export default function Layout({ children, currentPageName }) {
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
               {/* Marketplace Section */}
-              <div className="pt-2">
-                <Link
-                  to={createPageUrl("Marketplace")}
-                  className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                >
-                  Marketplace
-                </Link>
-              </div>
+              {(!user || user.account_type === 'consumer') && (
+                <div className="pt-2">
+                  <Link
+                    to={createPageUrl("Marketplace")}
+                    className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Marketplace
+                  </Link>
+                </div>
+              )}
 
               {/* Businesses Section */}
-              <div className="border-t border-gray-100 mt-2 pt-2">
-                <Link
-                  to={createPageUrl("BusinessSubscriptions")}
-                  className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                >
-                  Businesses
-                </Link>
-              </div>
+              {(!user || user.account_type === 'business') && (
+                <div className="border-t border-gray-100 mt-2 pt-2">
+                  <Link
+                    to={createPageUrl("BusinessMarketplace")}
+                    className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    For Businesses
+                  </Link>
+                </div>
+              )}
 
               {/* For Makers Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
