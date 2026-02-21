@@ -9,6 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 
+const INDUSTRIES = [
+  "Retail & E-commerce",
+  "Healthcare & Medical",
+  "Manufacturing & Industrial",
+  "Technology & Electronics",
+  "Hospitality & Events"
+];
+
 const CATEGORIES = [
   { value: "home_decor", label: "Home Decor" },
   { value: "office_supplies", label: "Office Supplies" },
@@ -111,9 +119,36 @@ export default function BusinessCatalog() {
       );
     }
 
-    if (filters.priceRange) {
+    // Calculate target price per unit based on budget and quantity
+    let targetPriceMin = null;
+    let targetPriceMax = null;
+    
+    if (selectedBudget && selectedQuantity) {
+      const budgetParts = selectedBudget.split('-');
+      const quantityParts = selectedQuantity.split('-');
+      
+      const budgetMin = parseInt(budgetParts[0]) || 0;
+      const budgetMax = budgetParts[1] === '+' ? parseInt(budgetParts[0]) * 2 : parseInt(budgetParts[1]);
+      
+      const quantityMin = parseInt(quantityParts[0]) || 30;
+      const quantityMax = quantityParts[1] === '+' ? parseInt(quantityParts[0]) * 2 : parseInt(quantityParts[1]);
+      
+      // Calculate average price per unit from budget/quantity
+      const avgQuantity = (quantityMin + quantityMax) / 2;
+      const avgBudget = (budgetMin + budgetMax) / 2;
+      const targetPrice = avgBudget / avgQuantity;
+      
+      // Show products 30% below to 50% above target price
+      targetPriceMin = targetPrice * 0.7;
+      targetPriceMax = targetPrice * 1.5;
+    } else if (filters.priceRange) {
+      targetPriceMin = filters.priceRange.min;
+      targetPriceMax = filters.priceRange.max;
+    }
+    
+    if (targetPriceMin !== null && targetPriceMax !== null) {
       tempProducts = tempProducts.filter(p =>
-        p.wholesale_price >= filters.priceRange.min && p.wholesale_price <= filters.priceRange.max
+        p.wholesale_price >= targetPriceMin && p.wholesale_price <= targetPriceMax
       );
     }
 
@@ -129,7 +164,7 @@ export default function BusinessCatalog() {
     }
 
     setFilteredProducts(tempProducts);
-  }, [filters, products, searchQuery, selectedCategory]);
+  }, [filters, products, searchQuery, selectedCategory, selectedBudget, selectedQuantity]);
 
   const toggleFilter = (type, value) => {
     setFilters(prev => {
@@ -214,28 +249,52 @@ export default function BusinessCatalog() {
         </div>
       </div>
 
-      {/* Category Navigation */}
+      {/* Industry & Category Navigation */}
       <div className="bg-white border-b sticky top-[73px] z-20">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center gap-2 overflow-x-auto py-3">
-            <Button
-              variant={!selectedCategory ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setSelectedCategory(null)}
-            >
-              All
-            </Button>
-            {CATEGORIES.map(cat => (
+          {/* Industry Filter */}
+          {!selectedIndustry && (
+            <div className="py-3 border-b">
+              <p className="text-xs font-semibold text-gray-500 mb-2">FILTER BY INDUSTRY</p>
+              <div className="flex items-center gap-2 overflow-x-auto">
+                {INDUSTRIES.map(ind => (
+                  <Button
+                    key={ind}
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedIndustry(ind)}
+                    className="whitespace-nowrap"
+                  >
+                    {ind}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Category Filter */}
+          <div className="py-3">
+            <p className="text-xs font-semibold text-gray-500 mb-2">BROWSE BY CATEGORY</p>
+            <div className="flex items-center gap-2 overflow-x-auto">
               <Button
-                key={cat.value}
-                variant={selectedCategory === cat.value ? "default" : "ghost"}
+                variant={!selectedCategory ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setSelectedCategory(cat.value)}
-                className="whitespace-nowrap"
+                onClick={() => setSelectedCategory(null)}
               >
-                {cat.label}
+                All
               </Button>
-            ))}
+              {CATEGORIES.map(cat => (
+                <Button
+                  key={cat.value}
+                  variant={selectedCategory === cat.value ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setSelectedCategory(cat.value)}
+                  className="whitespace-nowrap"
+                >
+                  {cat.label}
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
       </div>
@@ -246,27 +305,6 @@ export default function BusinessCatalog() {
           <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-64 flex-shrink-0`}>
             <div className="bg-white rounded-lg shadow p-4 sticky top-[146px] space-y-6">
               <h3 className="font-semibold text-lg">Filters</h3>
-
-              {/* Price Range */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Wholesale Price</label>
-                <div className="space-y-2">
-                  {PRICE_RANGES.map(range => (
-                    <label key={range.label} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={filters.priceRange?.label === range.label}
-                        onCheckedChange={(checked) => {
-                          setFilters(prev => ({
-                            ...prev,
-                            priceRange: checked ? range : null
-                          }));
-                        }}
-                      />
-                      <span className="text-sm">{range.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
 
               {/* Materials */}
               <div>
@@ -299,6 +337,29 @@ export default function BusinessCatalog() {
                   ))}
                 </div>
               </div>
+              
+              {/* Manual Price Override (only if not using budget/quantity) */}
+              {!selectedBudget && !selectedQuantity && (
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Price Per Unit</label>
+                  <div className="space-y-2">
+                    {PRICE_RANGES.map(range => (
+                      <label key={range.label} className="flex items-center gap-2 cursor-pointer">
+                        <Checkbox
+                          checked={filters.priceRange?.label === range.label}
+                          onCheckedChange={(checked) => {
+                            setFilters(prev => ({
+                              ...prev,
+                              priceRange: checked ? range : null
+                            }));
+                          }}
+                        />
+                        <span className="text-sm">{range.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </aside>
 
@@ -350,7 +411,7 @@ export default function BusinessCatalog() {
                         <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
                           <div className="bg-gray-50 p-2 rounded">
                             <div className="text-gray-500">MOQ</div>
-                            <div className="font-semibold">{product.moq || 20} units</div>
+                            <div className="font-semibold">{product.moq || 30} units</div>
                           </div>
                           <div className="bg-gray-50 p-2 rounded">
                             <div className="text-gray-500">Lead Time</div>
