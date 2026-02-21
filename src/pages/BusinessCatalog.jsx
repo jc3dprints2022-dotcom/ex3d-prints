@@ -10,11 +10,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 
 const INDUSTRIES = [
-  "Retail & E-commerce",
-  "Healthcare & Medical",
-  "Manufacturing & Industrial",
-  "Technology & Electronics",
-  "Hospitality & Events"
+  "Local Souvenir Shops",
+  "Campus, Dorm & Student Living",
+  "Health & Personal Care",
+  "Office & Desk",
+  "Outdoor Lifestyle"
 ];
 
 const CATEGORIES = [
@@ -28,8 +28,22 @@ const CATEGORIES = [
   { value: "misc", label: "Misc" }
 ];
 
-const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
-const COLORS = ["White", "Black", "Gray", "Red", "Blue", "Yellow", "Green", "Orange", "Purple", "Pink"];
+const QUANTITY_RANGES = [
+  { value: "30-100", label: "30-100 units" },
+  { value: "100-250", label: "100-250 units" },
+  { value: "250-500", label: "250-500 units" },
+  { value: "500-1000", label: "500-1,000 units" },
+  { value: "1000+", label: "1,000+ units" }
+];
+
+const BUDGET_RANGES = [
+  { value: "0-100", label: "Under $100" },
+  { value: "100-500", label: "$100 - $500" },
+  { value: "500-2000", label: "$500 - $2,000" },
+  { value: "2000-5000", label: "$2,000 - $5,000" },
+  { value: "5000+", label: "$5,000+" }
+];
+
 const PRICE_RANGES = [
   { label: "Under $5", min: 0, max: 5 },
   { label: "$5 - $15", min: 5, max: 15 },
@@ -55,8 +69,8 @@ export default function BusinessCatalog() {
   const [selectedQuantity, setSelectedQuantity] = useState(null);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [filters, setFilters] = useState({
-    materials: [],
-    colors: [],
+    quantityRange: null,
+    budgetRange: null,
     priceRange: null,
     sortBy: "popular"
   });
@@ -103,29 +117,23 @@ export default function BusinessCatalog() {
       );
     }
 
-    if (selectedCategory) {
-      tempProducts = tempProducts.filter(p => p.category === selectedCategory);
+    if (selectedIndustry) {
+      tempProducts = tempProducts.filter(p => p.business_industry === selectedIndustry);
     }
 
-    if (filters.materials.length > 0) {
-      tempProducts = tempProducts.filter(p =>
-        p.materials && p.materials.some(mat => filters.materials.includes(mat))
-      );
-    }
-
-    if (filters.colors.length > 0) {
-      tempProducts = tempProducts.filter(p =>
-        p.colors && p.colors.some(color => filters.colors.includes(color))
-      );
-    }
-
+    // Apply filter quantity range
+    const quantityFilter = filters.quantityRange || selectedQuantity;
+    
+    // Apply filter budget range
+    const budgetFilter = filters.budgetRange || selectedBudget;
+    
     // Calculate target price per unit based on budget and quantity
     let targetPriceMin = null;
     let targetPriceMax = null;
     
-    if (selectedBudget && selectedQuantity) {
-      const budgetParts = selectedBudget.split('-');
-      const quantityParts = selectedQuantity.split('-');
+    if (budgetFilter && quantityFilter) {
+      const budgetParts = budgetFilter.split('-');
+      const quantityParts = quantityFilter.split('-');
       
       const budgetMin = parseInt(budgetParts[0]) || 0;
       const budgetMax = budgetParts[1] === '+' ? parseInt(budgetParts[0]) * 2 : parseInt(budgetParts[1]);
@@ -133,14 +141,20 @@ export default function BusinessCatalog() {
       const quantityMin = parseInt(quantityParts[0]) || 30;
       const quantityMax = quantityParts[1] === '+' ? parseInt(quantityParts[0]) * 2 : parseInt(quantityParts[1]);
       
-      // Calculate average price per unit from budget/quantity
-      const avgQuantity = (quantityMin + quantityMax) / 2;
-      const avgBudget = (budgetMin + budgetMax) / 2;
-      const targetPrice = avgBudget / avgQuantity;
-      
-      // Show products 30% below to 50% above target price
-      targetPriceMin = targetPrice * 0.7;
-      targetPriceMax = targetPrice * 1.5;
+      // Special handling for under $100 budget
+      if (budgetFilter === "0-100") {
+        targetPriceMax = 3.3;
+        targetPriceMin = 0;
+      } else {
+        // Calculate average price per unit from budget/quantity
+        const avgQuantity = (quantityMin + quantityMax) / 2;
+        const avgBudget = (budgetMin + budgetMax) / 2;
+        const targetPrice = avgBudget / avgQuantity;
+        
+        // Show products 30% below to 50% above target price
+        targetPriceMin = targetPrice * 0.7;
+        targetPriceMax = targetPrice * 1.5;
+      }
     } else if (filters.priceRange) {
       targetPriceMin = filters.priceRange.min;
       targetPriceMax = filters.priceRange.max;
@@ -249,10 +263,10 @@ export default function BusinessCatalog() {
         </div>
       </div>
 
-      {/* Industry Navigation */}
+      {/* Retail Type Navigation */}
       <div className="bg-white border-b sticky top-[73px] z-20">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <p className="text-xs font-semibold text-gray-500 mb-2">FILTER BY INDUSTRY</p>
+          <p className="text-xs font-semibold text-gray-500 mb-2">YOUR RETAIL TYPE</p>
           <div className="flex items-center gap-2 overflow-x-auto">
             <Button
               variant={!selectedIndustry ? "default" : "ghost"}
@@ -283,60 +297,68 @@ export default function BusinessCatalog() {
             <div className="bg-white rounded-lg shadow p-4 sticky top-[146px] space-y-6">
               <h3 className="font-semibold text-lg">Filters</h3>
 
-              {/* Materials */}
+              {/* Order Quantity */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Materials</label>
+                <label className="text-sm font-medium mb-2 block">Order Quantity</label>
                 <div className="space-y-2">
-                  {MATERIALS.map(mat => (
-                    <label key={mat} className="flex items-center gap-2 cursor-pointer">
+                  {QUANTITY_RANGES.map(range => (
+                    <label key={range.value} className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
-                        checked={filters.materials.includes(mat)}
-                        onCheckedChange={() => toggleFilter('materials', mat)}
+                        checked={filters.quantityRange === range.value}
+                        onCheckedChange={(checked) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            quantityRange: checked ? range.value : null
+                          }));
+                        }}
                       />
-                      <span className="text-sm">{mat}</span>
+                      <span className="text-sm">{range.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
 
-              {/* Colors */}
+              {/* Budget Range */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Colors</label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {COLORS.map(color => (
-                    <label key={color} className="flex items-center gap-2 cursor-pointer">
+                <label className="text-sm font-medium mb-2 block">Budget</label>
+                <div className="space-y-2">
+                  {BUDGET_RANGES.map(range => (
+                    <label key={range.value} className="flex items-center gap-2 cursor-pointer">
                       <Checkbox
-                        checked={filters.colors.includes(color)}
-                        onCheckedChange={() => toggleFilter('colors', color)}
+                        checked={filters.budgetRange === range.value}
+                        onCheckedChange={(checked) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            budgetRange: checked ? range.value : null
+                          }));
+                        }}
                       />
-                      <span className="text-sm">{color}</span>
+                      <span className="text-sm">{range.label}</span>
                     </label>
                   ))}
                 </div>
               </div>
               
-              {/* Manual Price Override (only if not using budget/quantity) */}
-              {!selectedBudget && !selectedQuantity && (
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Price Per Unit</label>
-                  <div className="space-y-2">
-                    {PRICE_RANGES.map(range => (
-                      <label key={range.label} className="flex items-center gap-2 cursor-pointer">
-                        <Checkbox
-                          checked={filters.priceRange?.label === range.label}
-                          onCheckedChange={(checked) => {
-                            setFilters(prev => ({
-                              ...prev,
-                              priceRange: checked ? range : null
-                            }));
-                          }}
-                        />
-                        <span className="text-sm">{range.label}</span>
-                      </label>
-                    ))}
-                  </div>
+              {/* Price Per Unit */}
+              <div>
+                <label className="text-sm font-medium mb-2 block">Price Per Unit</label>
+                <div className="space-y-2">
+                  {PRICE_RANGES.map(range => (
+                    <label key={range.label} className="flex items-center gap-2 cursor-pointer">
+                      <Checkbox
+                        checked={filters.priceRange?.label === range.label}
+                        onCheckedChange={(checked) => {
+                          setFilters(prev => ({
+                            ...prev,
+                            priceRange: checked ? range : null
+                          }));
+                        }}
+                      />
+                      <span className="text-sm">{range.label}</span>
+                    </label>
+                  ))}
                 </div>
-              )}
+              </div>
             </div>
           </aside>
 

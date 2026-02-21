@@ -510,12 +510,23 @@ export default function Layout({ children, currentPageName }) {
                     </div>
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem asChild>
-                      <Link to={getDashboardUrl()} onClick={scrollToTop} className="flex items-center">
-                        <Settings className="w-4 h-4 mr-2" />
-                        {getDashboardLabel()}
-                      </Link>
-                    </DropdownMenuItem>
+                    {user.account_type !== 'business' && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("ConsumerDashboard")} onClick={scrollToTop} className="flex items-center">
+                          <Settings className="w-4 h-4 mr-2" />
+                          My Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    {user.account_type === 'business' && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("BusinessDashboard")} onClick={scrollToTop} className="flex items-center">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Business Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
 
                     {user.role === 'admin' && (
                       <DropdownMenuItem asChild>

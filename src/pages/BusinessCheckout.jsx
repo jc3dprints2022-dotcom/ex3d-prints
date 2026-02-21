@@ -307,9 +307,9 @@ export default function BusinessCheckout() {
 
                 <div className="space-y-3 mb-6">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span>{item.product_name} x{item.quantity}</span>
-                      <span>${item.total_price.toFixed(2)}</span>
+                    <div key={item.id} className="flex justify-between text-sm gap-2">
+                      <span className="truncate">{item.product_name} x{item.quantity}</span>
+                      <span className="flex-shrink-0">${item.total_price.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>

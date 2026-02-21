@@ -21,6 +21,13 @@ export default function EmailSignupReward() {
         return;
       }
       
+      // Check if on mobile
+      const isMobile = window.innerWidth < 768;
+      if (isMobile) {
+        setShow(false);
+        return;
+      }
+      
       // Check localStorage to see if dismissed
       const dismissed = localStorage.getItem('email_signup_dismissed');
       if (dismissed) {

@@ -12,9 +12,8 @@ export default function BusinessProductDetail() {
   const [product, setProduct] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(20);
+  const [quantity, setQuantity] = useState(1);
   const [selectedColor, setSelectedColor] = useState("");
-  const [selectedMaterial, setSelectedMaterial] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,9 +42,8 @@ export default function BusinessProductDetail() {
     try {
       const productData = await base44.entities.Product.get(productId);
       setProduct(productData);
-      setQuantity(30);
+      setQuantity(1);
       setSelectedColor(productData.colors?.[0] || "");
-      setSelectedMaterial(productData.materials?.[0] || "PLA");
     } catch (error) {
       console.error("Failed to load product:", error);
     }
@@ -58,8 +56,8 @@ export default function BusinessProductDetail() {
       return;
     }
 
-    if (quantity < 30) {
-      toast({ title: "Minimum order not met", description: `Minimum order per item is 30 units`, variant: "destructive" });
+    if (quantity < 1) {
+      toast({ title: "Invalid quantity", description: "Quantity must be at least 1", variant: "destructive" });
       return;
     }
 
@@ -83,7 +81,6 @@ export default function BusinessProductDetail() {
           product_id: product.id,
           product_name: product.name,
           quantity,
-          selected_material: selectedMaterial,
           selected_color: selectedColor,
           unit_price: product.wholesale_price,
           total_price: quantity * product.wholesale_price
@@ -172,28 +169,13 @@ export default function BusinessProductDetail() {
                 </div>
               )}
 
-              {product.materials && product.materials.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium mb-2">Material</label>
-                  <select
-                    value={selectedMaterial}
-                    onChange={(e) => setSelectedMaterial(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2"
-                  >
-                    {product.materials.map(mat => (
-                      <option key={mat} value={mat}>{mat}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
-
               <div>
-                <label className="block text-sm font-medium mb-2">Quantity (Min: 30)</label>
+                <label className="block text-sm font-medium mb-2">Quantity</label>
                 <input
                   type="number"
-                  min={30}
+                  min={1}
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 30)}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
                   className="w-full border rounded-lg px-3 py-2"
                 />
               </div>

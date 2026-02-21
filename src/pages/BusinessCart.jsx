@@ -43,8 +43,8 @@ export default function BusinessCart() {
   };
 
   const updateQuantity = async (itemId, newQuantity, moq) => {
-    if (newQuantity < 30) {
-      toast({ title: `Minimum order per item is 30 units`, variant: "destructive" });
+    if (newQuantity < 1) {
+      toast({ title: `Quantity must be at least 1`, variant: "destructive" });
       return;
     }
 
@@ -146,7 +146,7 @@ export default function BusinessCart() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1, 30)}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, 1)}
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -154,13 +154,10 @@ export default function BusinessCart() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, 30)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, 1)}
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
-                          <span className="text-sm text-gray-500 ml-2">
-                            (Min: 30 per item)
-                          </span>
                         </div>
                       </div>
 
