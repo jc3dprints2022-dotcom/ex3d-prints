@@ -7,24 +7,31 @@ import { base44 } from "@/api/base44Client";
 export default function BottomNav() {
   const location = useLocation();
   const [cartCount, setCartCount] = useState(0);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    loadCartCount();
-    window.addEventListener('cartUpdated', loadCartCount);
-    return () => window.removeEventListener('cartUpdated', loadCartCount);
+    loadUserAndCart();
+    window.addEventListener('cartUpdated', loadUserAndCart);
+    return () => window.removeEventListener('cartUpdated', loadUserAndCart);
   }, []);
 
-  const loadCartCount = async () => {
+  const loadUserAndCart = async () => {
     try {
       const userData = await base44.auth.me();
+      setUser(userData);
       if (userData) {
-        const cartItems = await base44.entities.Cart.filter({ user_id: userData.id });
+        const marketplaceType = userData.account_type === 'business' ? 'business' : 'consumer';
+        const cartItems = await base44.entities.Cart.filter({ 
+          user_id: userData.id,
+          marketplace_type: marketplaceType 
+        });
         setCartCount(cartItems.length);
       } else {
         const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
         setCartCount(localCart.length);
       }
     } catch (error) {
+      setUser(null);
       const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
       setCartCount(localCart.length);
     }
@@ -32,12 +39,20 @@ export default function BottomNav() {
 
   const isActive = (path) => location.pathname === path;
 
-  const navItems = [
-    { icon: Home, label: "Home", path: createPageUrl("Home") },
-    { icon: ShoppingBag, label: "Marketplace", path: createPageUrl("Marketplace") },
-    { icon: ShoppingCart, label: "Cart", path: createPageUrl("Cart"), badge: cartCount },
-    { icon: LayoutDashboard, label: "Dashboard", path: createPageUrl("ConsumerDashboard") },
-  ];
+  const getNavItems = () => {
+    const cartPath = user?.account_type === 'business' ? createPageUrl("BusinessCart") : createPageUrl("Cart");
+    const marketplacePath = user?.account_type === 'business' ? createPageUrl("BusinessMarketplace") : createPageUrl("Marketplace");
+    const dashboardPath = user?.account_type === 'business' ? createPageUrl("BusinessDashboard") : createPageUrl("ConsumerDashboard");
+
+    return [
+      { icon: Home, label: "Home", path: createPageUrl("Home") },
+      { icon: ShoppingBag, label: user?.account_type === 'business' ? "Business" : "Marketplace", path: marketplacePath },
+      { icon: ShoppingCart, label: "Cart", path: cartPath, badge: cartCount },
+      { icon: LayoutDashboard, label: "Dashboard", path: dashboardPath },
+    ];
+  };
+
+  const navItems = getNavItems();
 
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 z-50 safe-area-bottom shadow-lg">

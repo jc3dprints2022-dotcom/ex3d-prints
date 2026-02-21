@@ -222,28 +222,28 @@ export default function ProductCard({ product }) {
             </Badge>
           )}
         </div>
-        <CardContent className="p-4">
-          <h3 className="font-semibold text-lg mb-2 truncate" title={product.name}>
-            {truncateTitle(product.name)}
+        <CardContent className="p-3 sm:p-4">
+          <h3 className="font-semibold text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2" title={product.name}>
+            {product.name}
           </h3>
           
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-1 sm:gap-2 mb-2">
             <div className="flex items-center">
-              <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-              <span className="text-sm ml-1">{product.rating?.toFixed(1) || '0.0'}</span>
+              <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+              <span className="text-xs sm:text-sm ml-1">{product.rating?.toFixed(1) || '0.0'}</span>
             </div>
-            <span className="text-sm text-gray-500">
-              ({product.review_count || 0} reviews)
+            <span className="text-xs sm:text-sm text-gray-500 truncate">
+              ({product.review_count || 0})
             </span>
           </div>
 
-          <div className="mt-4">
+          <div className="mt-2 sm:mt-4">
             <Button
               onClick={handleAddToCart}
               disabled={addingToCart}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-lg font-semibold py-6"
+              className="w-full bg-teal-600 hover:bg-teal-700 text-sm sm:text-lg font-semibold py-4 sm:py-6"
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
               {addingToCart ? 'Adding...' : `$${product.price?.toFixed(2)}`}
             </Button>
           </div>

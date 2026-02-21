@@ -155,13 +155,13 @@ export default function BusinessCheckout() {
   const allLocalEligible = cartItems.every(item => item.product?.local_delivery_eligible);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8">Business Checkout</h1>
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8 mb-16 sm:mb-0">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-4 sm:mb-8">Business Checkout</h1>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
           {/* Checkout Form */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Business Information */}
             <Card>
               <CardContent className="p-6">
@@ -195,8 +195,8 @@ export default function BusinessCheckout() {
                       placeholder="123 Main St"
                     />
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                    <div className="col-span-2 sm:col-span-1">
                       <label className="block text-sm font-medium mb-1">City *</label>
                       <Input
                         value={businessInfo.address.city}
@@ -204,6 +204,7 @@ export default function BusinessCheckout() {
                           ...businessInfo,
                           address: { ...businessInfo.address, city: e.target.value }
                         })}
+                        className="text-sm"
                       />
                     </div>
                     <div>
@@ -214,6 +215,7 @@ export default function BusinessCheckout() {
                           ...businessInfo,
                           address: { ...businessInfo.address, state: e.target.value }
                         })}
+                        className="text-sm"
                       />
                     </div>
                     <div>
@@ -224,6 +226,7 @@ export default function BusinessCheckout() {
                           ...businessInfo,
                           address: { ...businessInfo.address, zip: e.target.value }
                         })}
+                        className="text-sm"
                       />
                     </div>
                   </div>
@@ -308,9 +311,9 @@ export default function BusinessCheckout() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
-                <div className="space-y-2 mb-6 max-h-48 overflow-y-auto">
+                <div className="space-y-2 mb-4 sm:mb-6 max-h-48 overflow-y-auto">
                   {cartItems.map(item => (
-                    <div key={item.id} className="flex justify-between text-sm gap-2">
+                    <div key={item.id} className="flex justify-between text-xs sm:text-sm gap-2">
                       <span className="truncate flex-1 min-w-0">{item.product_name} x{item.quantity}</span>
                       <span className="flex-shrink-0 font-medium">${item.total_price.toFixed(2)}</span>
                     </div>
