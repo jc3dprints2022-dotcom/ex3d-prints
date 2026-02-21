@@ -80,7 +80,7 @@ export default function BusinessMarketplace() {
                 </div>
                 <div>
                   <h3 className="font-bold">Industry</h3>
-                  <p className="text-xs text-gray-600">Your business type</p>
+                  <p className="text-xs text-gray-600">Your retail type</p>
                 </div>
               </div>
               <div className="space-y-2">
