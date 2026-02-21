@@ -81,6 +81,17 @@ export default function BusinessCheckout() {
       return;
     }
 
+    // Check minimum order quantity of 30 for business accounts
+    const totalQuantity = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+    if (totalQuantity < 30) {
+      toast({ 
+        title: "Minimum order not met", 
+        description: `Please order at least 30 total items to proceed. Current: ${totalQuantity} items`,
+        variant: "destructive" 
+      });
+      return;
+    }
+
     setProcessing(true);
     try {
       // Update user business info

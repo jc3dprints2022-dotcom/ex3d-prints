@@ -391,8 +391,8 @@ export default function BusinessCatalog() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map(product => (
-                  <Link key={product.id} to={`${createPageUrl("BusinessProductDetail")}?id=${product.id}`}>
-                    <Card className="overflow-hidden hover:shadow-xl transition-all h-full">
+                  <Link key={product.id} to={`${createPageUrl("BusinessProductDetail")}?id=${product.id}`} className="block">
+                    <Card className="overflow-hidden hover:shadow-xl transition-all h-full flex flex-col">
                       <div className="relative aspect-square">
                         {product.images?.[0] ? (
                           <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
@@ -402,18 +402,12 @@ export default function BusinessCatalog() {
                           </div>
                         )}
                       </div>
-                      <CardContent className="p-4">
+                      <CardContent className="p-4 flex flex-col flex-1">
                         <h3 className="font-bold text-lg mb-2 line-clamp-1">{product.name}</h3>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{product.description}</p>
-                        
-                        {/* Specs Grid */}
-                        <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-
-
-                        </div>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2 flex-1">{product.description}</p>
 
                         {/* Pricing */}
-                        <div className="border-t pt-3">
+                        <div className="border-t pt-3 mt-auto">
                           <div className="text-xs text-gray-500 mb-1">Starting at</div>
                           <div className="flex items-baseline gap-2 mb-2">
                             <span className="text-2xl font-bold text-slate-800">
