@@ -124,52 +124,53 @@ export default function BusinessCart() {
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="flex gap-4">
-                      <div className="w-24 h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
                         {item.product?.images?.[0] ? (
                           <img src={item.product.images[0]} alt={item.product_name} className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <ShoppingCart className="w-8 h-8 text-gray-400" />
+                            <ShoppingCart className="w-6 h-6 md:w-8 md:h-8 text-gray-400" />
                           </div>
                         )}
                       </div>
 
-                      <div className="flex-1">
-                        <h3 className="font-semibold mb-1">{item.product_name}</h3>
-                        <div className="text-sm text-gray-600 space-y-1">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold mb-1 text-sm md:text-base">{item.product_name}</h3>
+                        <div className="text-xs md:text-sm text-gray-600 space-y-1">
                           <p>Color: {item.selected_color}</p>
-                          <p>Material: {item.selected_material}</p>
-                          <p className="text-purple-600 font-medium">${item.unit_price?.toFixed(2)} per unit</p>
+                          <p className="text-purple-600 font-medium">${item.unit_price?.toFixed(2)}/unit</p>
                         </div>
 
-                        <div className="flex items-center gap-3 mt-3">
+                        <div className="flex items-center gap-2 mt-3">
                           <Button
                             size="icon"
                             variant="outline"
                             onClick={() => updateQuantity(item.id, item.quantity - 1, 1)}
+                            className="h-8 w-8"
                           >
-                            <Minus className="w-4 h-4" />
+                            <Minus className="w-3 h-3" />
                           </Button>
-                          <span className="font-medium w-12 text-center">{item.quantity}</span>
+                          <span className="font-medium w-10 text-center text-sm">{item.quantity}</span>
                           <Button
                             size="icon"
                             variant="outline"
                             onClick={() => updateQuantity(item.id, item.quantity + 1, 1)}
+                            className="h-8 w-8"
                           >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-3 h-3" />
                           </Button>
                         </div>
                       </div>
 
-                      <div className="text-right">
-                        <p className="font-bold text-lg mb-2">${item.total_price?.toFixed(2)}</p>
+                      <div className="text-right flex flex-col justify-between">
+                        <p className="font-bold text-sm md:text-lg">${item.total_price?.toFixed(2)}</p>
                         <Button
                           size="icon"
                           variant="ghost"
                           onClick={() => removeItem(item.id)}
-                          className="text-red-500 hover:text-red-700"
+                          className="text-red-500 hover:text-red-700 h-8 w-8"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>
                     </div>
