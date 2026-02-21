@@ -48,6 +48,7 @@
  * The mainPage value must match a key in the PAGES object exactly.
  */
 import AccountInfo from './pages/AccountInfo';
+import AccountTypeSelect from './pages/AccountTypeSelect';
 import AdminAuditLogs from './pages/AdminAuditLogs';
 import AdminPortalJC3D from './pages/AdminPortalJC3D';
 import BusinessCADUpload from './pages/BusinessCADUpload';
@@ -87,12 +88,12 @@ import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
-import AccountTypeSelect from './pages/AccountTypeSelect';
 import __Layout from './Layout.jsx';
 
 
 export const PAGES = {
     "AccountInfo": AccountInfo,
+    "AccountTypeSelect": AccountTypeSelect,
     "AdminAuditLogs": AdminAuditLogs,
     "AdminPortalJC3D": AdminPortalJC3D,
     "BusinessCADUpload": BusinessCADUpload,
@@ -132,7 +133,6 @@ export const PAGES = {
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
-    "AccountTypeSelect": AccountTypeSelect,
 }
 
 export const pagesConfig = {

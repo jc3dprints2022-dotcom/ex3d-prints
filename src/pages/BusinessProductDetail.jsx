@@ -62,24 +62,28 @@ export default function BusinessProductDetail() {
     }
 
     try {
+      // Find existing cart item with SAME product AND SAME color
       const existingItems = await base44.entities.Cart.filter({
         user_id: user.id,
         product_id: product.id,
-        marketplace_type: 'business'
+        marketplace_type: 'business',
+        selected_color: selectedColor
       });
 
       if (existingItems.length > 0) {
+        // Same product + same color exists - update quantity
         const item = existingItems[0];
         await base44.entities.Cart.update(item.id, {
           quantity: item.quantity + quantity,
           total_price: (item.quantity + quantity) * product.wholesale_price
         });
       } else {
+        // New product + color combination - create new cart item
         await base44.entities.Cart.create({
           user_id: user.id,
           marketplace_type: 'business',
           product_id: product.id,
-          product_name: product.name,
+          product_name: `${product.name} - ${selectedColor}`,
           quantity,
           selected_color: selectedColor,
           unit_price: product.wholesale_price,
