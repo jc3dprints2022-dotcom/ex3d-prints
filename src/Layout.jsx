@@ -468,7 +468,10 @@ export default function Layout({ children, currentPageName }) {
               </div>
 
               {/* Cart Icon */}
-              <Link to={createPageUrl("Cart")} className="relative">
+              <Link
+                to={createPageUrl(user?.account_type === "business" ? "BusinessCart" : "Cart")}
+                className="relative"
+              >
                 <Button variant="ghost" size="icon">
                   <ShoppingCart className="w-5 h-5" />
                   {cartCount > 0 && (
