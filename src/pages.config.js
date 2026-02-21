@@ -55,6 +55,7 @@ import BusinessCart from './pages/BusinessCart';
 import BusinessCatalog from './pages/BusinessCatalog';
 import BusinessCheckout from './pages/BusinessCheckout';
 import BusinessDashboard from './pages/BusinessDashboard';
+import businessmarketplaceArchived from './pages/BusinessMarketplace.archived';
 import BusinessMarketplace from './pages/BusinessMarketplace';
 import BusinessProductDetail from './pages/BusinessProductDetail';
 import CampusManagementCenter from './pages/CampusManagementCenter';
@@ -98,6 +99,7 @@ export const PAGES = {
     "BusinessCatalog": BusinessCatalog,
     "BusinessCheckout": BusinessCheckout,
     "BusinessDashboard": BusinessDashboard,
+    "BusinessMarketplace.archived": businessmarketplaceArchived,
     "BusinessMarketplace": BusinessMarketplace,
     "BusinessProductDetail": BusinessProductDetail,
     "CampusManagementCenter": CampusManagementCenter,

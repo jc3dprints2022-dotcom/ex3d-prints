@@ -11,26 +11,23 @@ const INDUSTRIES = [
   "Healthcare & Medical",
   "Manufacturing & Industrial",
   "Technology & Electronics",
-  "Hospitality & Events",
-  "Education & Research",
-  "Consumer Goods",
-  "Other"
+  "Hospitality & Events"
 ];
 
 const QUANTITIES = [
-  { value: "20-50", label: "20-50 units" },
-  { value: "50-100", label: "50-100 units" },
-  { value: "100-500", label: "100-500 units" },
-  { value: "500-1000", label: "500-1,000 units" },
-  { value: "1000+", label: "1,000+ units" }
+  { value: "30-100", label: "30-100 units", min: 30, max: 100 },
+  { value: "100-250", label: "100-250 units", min: 100, max: 250 },
+  { value: "250-500", label: "250-500 units", min: 250, max: 500 },
+  { value: "500-1000", label: "500-1,000 units", min: 500, max: 1000 },
+  { value: "1000+", label: "1,000+ units", min: 1000, max: 2000 }
 ];
 
 const BUDGETS = [
-  { value: "0-500", label: "Under $500" },
-  { value: "500-2000", label: "$500 - $2,000" },
-  { value: "2000-5000", label: "$2,000 - $5,000" },
-  { value: "5000-10000", label: "$5,000 - $10,000" },
-  { value: "10000+", label: "$10,000+" }
+  { value: "0-500", label: "Under $500", min: 0, max: 500 },
+  { value: "500-2000", label: "$500 - $2,000", min: 500, max: 2000 },
+  { value: "2000-5000", label: "$2,000 - $5,000", min: 2000, max: 5000 },
+  { value: "5000-10000", label: "$5,000 - $10,000", min: 5000, max: 10000 },
+  { value: "10000+", label: "$10,000+", min: 10000, max: 20000 }
 ];
 
 export default function BusinessMarketplace() {
@@ -76,33 +73,33 @@ export default function BusinessMarketplace() {
           </p>
         </div>
 
-        <div className="space-y-8">
+        {/* 3-Column Selection Interface */}
+        <div className="grid md:grid-cols-3 gap-6">
           {/* Industry Selection */}
           <Card className={`transition-all ${industry ? 'ring-2 ring-teal-500' : ''}`}>
-            <CardContent className="p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
                   1
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Select Your Industry</h3>
-                  <p className="text-sm text-gray-600">What type of business do you operate?</p>
+                  <h3 className="font-bold">Industry</h3>
+                  <p className="text-xs text-gray-600">Your business type</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div className="space-y-2">
                 {INDUSTRIES.map(ind => (
-                  <Badge
+                  <div
                     key={ind}
-                    variant={industry === ind ? "default" : "outline"}
-                    className={`cursor-pointer py-3 px-4 text-center justify-center transition-all ${
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
                       industry === ind 
-                        ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                        : 'hover:bg-slate-100'
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
                     }`}
                     onClick={() => setIndustry(ind)}
                   >
                     {ind}
-                  </Badge>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -110,30 +107,29 @@ export default function BusinessMarketplace() {
 
           {/* Quantity Selection */}
           <Card className={`transition-all ${quantity ? 'ring-2 ring-teal-500' : ''}`}>
-            <CardContent className="p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
                   2
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Choose Your Quantity</h3>
-                  <p className="text-sm text-gray-600">How many units do you need manufactured?</p>
+                  <h3 className="font-bold">Quantity</h3>
+                  <p className="text-xs text-gray-600">Units needed</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="space-y-2">
                 {QUANTITIES.map(q => (
-                  <Badge
+                  <div
                     key={q.value}
-                    variant={quantity === q.value ? "default" : "outline"}
-                    className={`cursor-pointer py-3 px-4 text-center justify-center transition-all ${
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
                       quantity === q.value 
-                        ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                        : 'hover:bg-slate-100'
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
                     }`}
                     onClick={() => setQuantity(q.value)}
                   >
                     {q.label}
-                  </Badge>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -141,30 +137,29 @@ export default function BusinessMarketplace() {
 
           {/* Budget Selection */}
           <Card className={`transition-all ${budget ? 'ring-2 ring-teal-500' : ''}`}>
-            <CardContent className="p-8">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-10 h-10 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
                   3
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold">Set Your Budget</h3>
-                  <p className="text-sm text-gray-600">What's your estimated budget for this project?</p>
+                  <h3 className="font-bold">Budget</h3>
+                  <p className="text-xs text-gray-600">Project budget</p>
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              <div className="space-y-2">
                 {BUDGETS.map(b => (
-                  <Badge
+                  <div
                     key={b.value}
-                    variant={budget === b.value ? "default" : "outline"}
-                    className={`cursor-pointer py-3 px-4 text-center justify-center transition-all ${
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
                       budget === b.value 
-                        ? 'bg-teal-600 hover:bg-teal-700 text-white' 
-                        : 'hover:bg-slate-100'
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
                     }`}
                     onClick={() => setBudget(b.value)}
                   >
                     {b.label}
-                  </Badge>
+                  </div>
                 ))}
               </div>
             </CardContent>
@@ -188,7 +183,7 @@ export default function BusinessMarketplace() {
           </Button>
           {!canProceed && (
             <p className="text-sm text-gray-500 mt-3">
-              Please select all three options to continue
+              Select at least one option to see curated products
             </p>
           )}
         </div>
@@ -201,12 +196,24 @@ export default function BusinessMarketplace() {
           <div className="grid md:grid-cols-3 gap-8">
             <Card>
               <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ArrowRight className="w-7 h-7 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Lightning Fast</h3>
+                <p className="text-sm text-gray-600">
+                  24-48 hour production start. Most orders completed within 3-5 business days
+                </p>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardContent className="p-6 text-center">
                 <div className="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Building2 className="w-7 h-7 text-teal-600" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">Distributed Network</h3>
+                <h3 className="font-bold text-lg mb-2">Made Locally</h3>
                 <p className="text-sm text-gray-600">
-                  Access to hundreds of verified manufacturers ensures we meet your production deadlines
+                  Network of U.S.-based manufacturers ensures quality control and supports local economy
                 </p>
               </CardContent>
             </Card>
@@ -216,21 +223,9 @@ export default function BusinessMarketplace() {
                 <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <CheckCircle className="w-7 h-7 text-green-600" />
                 </div>
-                <h3 className="font-bold text-lg mb-2">Quality Guaranteed</h3>
+                <h3 className="font-bold text-lg mb-2">Cost Effective</h3>
                 <p className="text-sm text-gray-600">
-                  Multi-stage quality control process ensures every product meets professional standards
-                </p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardContent className="p-6 text-center">
-                <div className="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <ArrowRight className="w-7 h-7 text-blue-600" />
-                </div>
-                <h3 className="font-bold text-lg mb-2">Fast & Scalable</h3>
-                <p className="text-sm text-gray-600">
-                  From prototypes to thousands of units with competitive volume pricing
+                  Competitive pricing with volume discounts up to 25% off. No minimum order surprises
                 </p>
               </CardContent>
             </Card>
