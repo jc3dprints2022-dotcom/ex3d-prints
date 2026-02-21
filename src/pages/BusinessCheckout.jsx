@@ -172,15 +172,7 @@ export default function BusinessCheckout() {
                     <Input
                       value={businessInfo.businessName}
                       onChange={(e) => setBusinessInfo({ ...businessInfo, businessName: e.target.value })}
-                      placeholder="Your Business LLC"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Tax ID (Optional)</label>
-                    <Input
-                      value={businessInfo.taxId}
-                      onChange={(e) => setBusinessInfo({ ...businessInfo, taxId: e.target.value })}
-                      placeholder="12-3456789"
+                      placeholder="Your Business Name"
                     />
                   </div>
                 </div>
@@ -242,7 +234,7 @@ export default function BusinessCheckout() {
             {/* Delivery Method */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4">Delivery Method</h2>
+                <h2 className="text-xl font-bold mb-4">Local Delivery</h2>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
