@@ -234,7 +234,7 @@ export default function BusinessCheckout() {
             {/* Delivery Method */}
             <Card>
               <CardContent className="p-6">
-                <h2 className="text-xl font-bold mb-4">Local Delivery</h2>
+                <h2 className="text-xl font-bold mb-4">Delivery Method</h2>
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
                     <input
@@ -246,8 +246,8 @@ export default function BusinessCheckout() {
                     />
                     <Truck className="w-5 h-5" />
                     <div>
-                      <div className="font-medium">Ship to Address</div>
-                      <div className="text-sm text-gray-500">Standard delivery</div>
+                      <div className="font-medium">Local Delivery</div>
+                      <div className="text-sm text-gray-500">Standard</div>
                     </div>
                   </label>
                   {allLocalEligible && (
