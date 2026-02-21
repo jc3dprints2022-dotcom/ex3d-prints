@@ -7,11 +7,11 @@ import { createPageUrl } from "@/utils";
 import { Building2, ArrowRight, CheckCircle } from "lucide-react";
 
 const INDUSTRIES = [
-  "Retail & E-commerce",
-  "Healthcare & Medical",
-  "Manufacturing & Industrial",
-  "Technology & Electronics",
-  "Hospitality & Events"
+  "Local Souvenir Shops",
+  "Campus, Dorm & Student Living",
+  "Health & Personal Care",
+  "Office & Desk",
+  "Outdoor Lifestyle"
 ];
 
 const QUANTITIES = [
