@@ -52,7 +52,7 @@ export default function BusinessMarketplace() {
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-20">
         <div className="max-w-6xl mx-auto px-4 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            Manufacturing Solutions for Your Business
+            3D Printing for Your Business
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
             We manufacture high-quality 3D printed products for businesses to sell.
