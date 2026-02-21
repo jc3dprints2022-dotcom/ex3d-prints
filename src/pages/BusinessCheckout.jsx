@@ -241,7 +241,7 @@ export default function BusinessCheckout() {
                       type="radio"
                       name="delivery"
                       value="shipping"
-                      checked={deliveryMethod === "shipping"}
+                      checked={deliveryMethod === "local"}
                       onChange={(e) => setDeliveryMethod(e.target.value)}
                     />
                     <Truck className="w-5 h-5" />
