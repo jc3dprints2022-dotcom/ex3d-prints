@@ -23,11 +23,11 @@ const QUANTITIES = [
 ];
 
 const BUDGETS = [
-  { value: "0-500", label: "Under $500", min: 0, max: 500 },
+  { value: "0-100", label: "Under $100", min: 0, max: 100 },
+  { value: "100-500", label: "$100 - $500", min: 100, max: 500 },
   { value: "500-2000", label: "$500 - $2,000", min: 500, max: 2000 },
-  { value: "2000-5000", label: "$2,000 - $5,000", min: 2000, max: 5000 },
-  { value: "5000-10000", label: "$5,000 - $10,000", min: 5000, max: 10000 },
-  { value: "10000+", label: "$10,000+", min: 10000, max: 20000 }
+  { value: "2000-5000", label: "$2,000 - $5,000", min: 2000, max: 50000 },
+  { value: "5000+", label: "$5,000+", min: 5000, max: 20000 }
 ];
 
 export default function BusinessMarketplace() {
@@ -51,15 +51,11 @@ export default function BusinessMarketplace() {
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-20">
         <div className="max-w-6xl mx-auto px-4 text-center">
-          <div className="inline-flex items-center gap-2 bg-teal-600/20 border border-teal-500/30 px-4 py-2 rounded-full text-sm mb-6">
-            <CheckCircle className="w-4 h-4 text-teal-400" />
-            <span>Trusted by 500+ Businesses</span>
-          </div>
           <h1 className="text-5xl md:text-6xl font-bold mb-6">
             Manufacturing Solutions for Your Business
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
-            We manufacture high-quality 3D printed products for businesses to sell, distribute, and use. Tell us what you need, and we'll provide curated options.
+            We manufacture high-quality 3D printed products for businesses to sell.
           </p>
         </div>
       </div>
