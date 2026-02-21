@@ -256,7 +256,7 @@ export default function BusinessCheckout() {
                         type="radio"
                         name="delivery"
                         value="shipping"
-                        checked={deliveryMethod === "shipping"}
+                        checked={deliveryMethod === "local"}
                         onChange={(e) => setDeliveryMethod(e.target.value)}
                       />
                       <MapPin className="w-5 h-5 text-green-600" />
