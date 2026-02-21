@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { AlertCircle, CreditCard, Truck, MapPin, RefreshCw } from "lucide-react";
+import { AlertCircle, CreditCard, Package, MapPin, RefreshCw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { createPageUrl } from "@/utils";
 
@@ -244,7 +244,7 @@ export default function BusinessCheckout() {
                       checked={deliveryMethod === "local"}
                       onChange={(e) => setDeliveryMethod(e.target.value)}
                     />
-                    <Truck className="w-5 h-5" />
+                    <Package className="w-5 h-5" />
                     <div>
                       <div className="font-medium">Local Delivery</div>
                       <div className="text-sm text-gray-500">Standard</div>
