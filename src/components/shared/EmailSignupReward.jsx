@@ -120,7 +120,7 @@ export default function EmailSignupReward() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-24 md:bottom-6 right-4 z-40">
+    <div className="hidden md:block fixed bottom-6 right-4 z-40">
       <button
         onClick={handleClick}
         className="relative group bg-gradient-to-r from-green-500 to-teal-600 text-white p-4 rounded-full shadow-2xl hover:shadow-xl transition-all transform hover:scale-110 animate-bounce"

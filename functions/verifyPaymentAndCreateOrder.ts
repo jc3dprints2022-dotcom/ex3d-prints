@@ -276,14 +276,22 @@ Deno.serve(async (req) => {
         // If order contains custom requests, DON'T update their status - keep them available for re-purchase
         // Custom requests now stay as "accepted" for 30 days from acceptance date
 
-        // Assign to maker
+        // Assign to maker(s) based on total print time
         try {
             console.log('Assigning order to maker...');
+            const totalPrintTime = enrichedItems.reduce((sum, item) => 
+                sum + ((item.print_time_hours || 0) * item.quantity), 0
+            );
+            console.log('Total print time:', totalPrintTime, 'hours');
+            
+            // Determine if we need multiple makers
+            const assignToMultiple = totalPrintTime > 5;
+            
             await base44.functions.invoke('assignOrderToMaker', { 
                 orderId: newOrder.id,
-                assignToMultiple: false
+                assignToMultiple
             });
-            console.log('✅ Order assigned to maker');
+            console.log('✅ Order assigned to maker(s)');
         } catch (assignError) {
             console.error('⚠️ Maker assignment failed:', assignError);
         }
