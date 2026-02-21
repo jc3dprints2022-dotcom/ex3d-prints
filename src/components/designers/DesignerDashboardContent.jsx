@@ -4,15 +4,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, HelpCircle, Upload } from "lucide-react";
-import DesignerProductForm from "../designers/DesignerProductForm";
-import BankInfoManager from "../shared/BankInfoManager";
-import DesignerExpRedeemTab from "../designers/DesignerExpRedeemTab";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2 } from "lucide-react";
+import DesignerProductForm from "./DesignerProductForm";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,63 +17,26 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
-  const [user, setUser] = useState(propUser);
-  const [loading, setLoading] = useState(true);
+export default function DesignerDashboardContent({ user, onUpdate }) {
   const [products, setProducts] = useState([]);
-  const [activeTab, setActiveTab] = useState('products');
+  const [loading, setLoading] = useState(true);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [deletingProduct, setDeletingProduct] = useState(null);
-  const [editingInfo, setEditingInfo] = useState(false);
-  const [infoFormData, setInfoFormData] = useState({
-    email: '',
-    phone: '',
-    designer_name: '',
-    bio: '',
-    profile_image: ''
-  });
-  const [uploadingProfileImage, setUploadingProfileImage] = useState(false);
-  const [importUrl, setImportUrl] = useState('');
-  const [importPlatform, setImportPlatform] = useState('');
-  const [importing, setImporting] = useState(false);
   const { toast } = useToast();
 
-  const tabs = [
-    { value: 'products', label: 'My Designs', icon: Package },
-    { value: 'import', label: 'Import Designs', icon: Upload },
-    { value: 'exp', label: 'Redeem EXP', icon: PlusCircle },
-    { value: 'guide', label: 'Guide', icon: HelpCircle },
-    { value: 'settings', label: 'Settings', icon: Settings },
-  ];
-
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    loadProducts();
+  }, [user]);
 
-  const loadDashboardData = async () => {
+  const loadProducts = async () => {
     setLoading(true);
     try {
-      const currentUser = propUser || await base44.auth.me();
-      setUser(currentUser);
-
       const allProducts = await base44.entities.Product.list();
-      const myProducts = allProducts.filter(p => p.designer_id === currentUser.designer_id);
+      const myProducts = allProducts.filter(p => p.designer_id === user?.designer_id);
       setProducts(myProducts);
-      
-      setInfoFormData({
-        email: currentUser.email || '',
-        phone: currentUser.phone || '',
-        designer_name: currentUser.designer_name || '',
-        bio: currentUser.bio || '',
-        profile_image: currentUser.profile_image || ''
-      });
     } catch (error) {
-      console.error("Failed to load dashboard:", error);
-      toast({
-        title: "Error loading dashboard",
-        variant: "destructive"
-      });
+      console.error("Failed to load products:", error);
     }
     setLoading(false);
   };
@@ -88,7 +44,8 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
   const handleProductCreated = () => {
     setShowUploadForm(false);
     setEditingProduct(null);
-    loadDashboardData();
+    loadProducts();
+    if (onUpdate) onUpdate();
   };
 
   const handleEditProduct = (product) => {
@@ -104,620 +61,196 @@ export default function DesignerDashboardContent({ user: propUser, onUpdate }) {
       await base44.entities.Product.delete(deletingProduct.id);
       toast({ title: "Product deleted successfully" });
       setDeletingProduct(null);
-      loadDashboardData();
+      loadProducts();
+      if (onUpdate) onUpdate();
     } catch (error) {
       console.error("Failed to delete product:", error);
       toast({ title: "Failed to delete product", variant: "destructive" });
     }
   };
 
+  const totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
+  const totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * p.price * 0.10), 0);
+
+  const stats = {
+    total: products.length,
+    orders: totalOrders,
+    totalRevenue: totalRevenue,
+  };
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <Loader2 className="w-12 h-12 animate-spin text-red-600" />
+      <div className="flex justify-center items-center py-12">
+        <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
       </div>
     );
   }
 
-  const totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
-  const totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * p.price * 0.10), 0);
-  const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthlyRevenue = 0;
-  
-  const stats = {
-    total: products.length,
-    orders: totalOrders,
-    monthlyRevenue: monthlyRevenue,
-    totalRevenue: totalRevenue,
-  };
-
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Designer Studio</h2>
-          <p className="text-gray-600">Create and manage your 3D designs</p>
-        </div>
-        <Card className="bg-blue-50 border-blue-200">
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="text-sm text-gray-600">Next Payout</p>
-                <p className="font-semibold text-blue-900">
-                  {(() => {
-                    const today = new Date();
-                    const lastDayOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0);
-                    return lastDayOfMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                  })()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <h2 className="text-2xl font-bold">Designer Hub</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      {/* Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Designs</p>
-                <p className="text-3xl font-bold">{stats.total}</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
               </div>
-              <Package className="w-10 h-10 text-red-600" />
+              <Package className="w-8 h-8 text-blue-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Orders</p>
-                <p className="text-3xl font-bold text-green-600">{stats.orders}</p>
+                <p className="text-sm text-gray-600">Total Orders</p>
+                <p className="text-2xl font-bold text-green-600">{stats.orders}</p>
               </div>
-              <ShoppingCart className="w-10 h-10 text-green-600" />
+              <ShoppingCart className="w-8 h-8 text-green-600" />
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Monthly Revenue</p>
-                <p className="text-3xl font-bold text-teal-600">${stats.monthlyRevenue.toFixed(2)}</p>
-              </div>
-              <TrendingUp className="w-10 h-10 text-teal-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
+          <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-3xl font-bold text-blue-600">${stats.totalRevenue.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-teal-600">${stats.totalRevenue.toFixed(2)}</p>
               </div>
-              <DollarSign className="w-10 h-10 text-blue-600" />
+              <DollarSign className="w-8 h-8 text-teal-600" />
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          {tabs.map(tab => (
-            <TabsTrigger key={tab.value} value={tab.value}>
-              <tab.icon className="w-4 h-4 mr-2" />
-              {tab.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+      {/* Upload Form */}
+      {showUploadForm && (
+        <Card>
+          <CardHeader>
+            <CardTitle>{editingProduct ? 'Edit Design' : 'Upload New Design'}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <DesignerProductForm 
+              designerId={user?.designer_id}
+              designerName={user?.designer_name || user?.full_name}
+              existingProduct={editingProduct}
+              onSuccess={handleProductCreated}
+              onCancel={() => { setShowUploadForm(false); setEditingProduct(null); }}
+            />
+          </CardContent>
+        </Card>
+      )}
 
-        <TabsContent value="products" className="space-y-6 mt-6">
-          {showUploadForm && (
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle>{editingProduct ? 'Edit Design' : 'Upload New Design'}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <DesignerProductForm 
-                  designerId={user?.designer_id}
-                  designerName={user?.designer_name || user?.full_name}
-                  existingProduct={editingProduct}
-                  onSuccess={handleProductCreated}
-                  onCancel={() => { setShowUploadForm(false); setEditingProduct(null); }}
-                />
+      {/* Products List */}
+      {!showUploadForm && (
+        <>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowUploadForm(true)} className="bg-blue-600 hover:bg-blue-700">
+              <PlusCircle className="w-5 h-5 mr-2" />
+              Upload New Design
+            </Button>
+          </div>
+
+          {products.length === 0 ? (
+            <Card>
+              <CardContent className="text-center py-12">
+                <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                <p className="text-gray-600 mb-4">No designs yet. Upload your first design!</p>
+                <Button onClick={() => setShowUploadForm(true)} className="bg-blue-600 hover:bg-blue-700">
+                  <PlusCircle className="w-5 h-5 mr-2" />
+                  Upload Design
+                </Button>
               </CardContent>
             </Card>
-          )}
-          
-          {!showUploadForm && (
-            <>
-              <div className="flex justify-end">
-                <Button onClick={() => setShowUploadForm(true)} className="bg-red-600 hover:bg-red-700">
-                  <PlusCircle className="w-5 h-5 mr-2" />
-                  Upload New Design
-                </Button>
-              </div>
-
-              {products.length === 0 ? (
-                <Card>
-                  <CardContent className="text-center py-12">
-                    <Package className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">No designs yet. Upload your first design!</p>
-                    <Button onClick={() => setShowUploadForm(true)} className="bg-red-600 hover:bg-red-700">
-                      <PlusCircle className="w-5 h-5 mr-2" />
-                      Upload Design
-                    </Button>
-                  </CardContent>
-                </Card>
-              ) : (
-                <div className="space-y-4">
-                  {products.map(product => (
-                    <Card key={product.id} className={`border-2 ${
-                      product.status === 'rejected' ? 'border-red-300 bg-red-50' : ''
-                    }`}>
-                      <CardContent className="p-6">
-                        <div className="flex gap-4">
-                          {product.images?.[0] && (
-                            <img src={product.images[0]} alt={product.name} className="w-24 h-24 object-cover rounded" />
-                          )}
-                          <div className="flex-1">
-                            <div className="flex justify-between items-start mb-2">
-                              <div className="flex-1">
-                                <h3 className="font-bold text-lg">{product.name}</h3>
-                                <p className="text-sm text-gray-600 mt-1">{product.description}</p>
-                                {product.status === 'rejected' && product.admin_feedback && (
-                                  <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded">
-                                    <p className="text-sm font-semibold text-red-800">Declined Reason:</p>
-                                    <p className="text-sm text-red-700 mt-1">{product.admin_feedback}</p>
-                                  </div>
-                                )}
-                              </div>
-                              <div className="flex flex-col gap-2">
-                               <div className="flex items-center gap-2">
-                                 <Badge className={
-                                   product.status === 'active' ? 'bg-green-500' :
-                                   product.status === 'pending' ? 'bg-yellow-500' :
-                                   product.status === 'rejected' ? 'bg-red-500' :
-                                   'bg-red-500'
-                                 }>
-                                   {product.status === 'rejected' ? 'Declined' : product.status}
-                                 </Badge>
-                                 <Button
-                                   variant="outline"
-                                   size="sm"
-                                   onClick={() => handleEditProduct(product)}
-                                 >
-                                   <Pencil className="w-4 h-4 mr-2" />
-                                   {product.status === 'rejected' ? 'Edit & Resubmit' : 'Edit'}
-                                 </Button>
-                                 <Button
-                                   variant="destructive"
-                                   size="sm"
-                                   onClick={() => setDeletingProduct(product)}
-                                 >
-                                   <Trash2 className="w-4 h-4" />
-                                 </Button>
-                               </div>
-                               {product.status === 'active' && product.boost_pending_payment && product.boost_duration_weeks && (
-                                 <div className="flex flex-col gap-2 w-full">
-                                   <Button
-                                     variant="default"
-                                     size="sm"
-                                     className="bg-yellow-600 hover:bg-yellow-700 w-full"
-                                     onClick={async () => {
-                                       try {
-                                         const { data } = await base44.functions.invoke('createBoostCheckout', {
-                                           productId: product.id,
-                                           boostWeeks: product.boost_duration_weeks
-                                         });
-                                         if (data.url) {
-                                           window.location.href = data.url;
-                                         }
-                                       } catch (error) {
-                                         toast({ title: 'Failed to create checkout', variant: 'destructive' });
-                                       }
-                                     }}
-                                   >
-                                     💳 Pay ${product.boost_duration_weeks * 5} ({product.boost_duration_weeks}w)
-                                   </Button>
-                                   <Button
-                                     variant="outline"
-                                     size="sm"
-                                     className="w-full border-purple-300 text-purple-600 hover:bg-purple-50"
-                                     onClick={async () => {
-                                       const expCost = Math.ceil(product.boost_duration_weeks * 350);
-                                       if (confirm(`Use ${expCost} EXP to boost for ${product.boost_duration_weeks} week${product.boost_duration_weeks > 1 ? 's' : ''}?`)) {
-                                         try {
-                                           const { data } = await base44.functions.invoke('redeemExpForBoost', {
-                                             productId: product.id,
-                                             boostWeeks: product.boost_duration_weeks
-                                           });
-                                           if (data.success) {
-                                             toast({ 
-                                               title: "Boost Activated!", 
-                                               description: `Used ${expCost} EXP to boost for ${product.boost_duration_weeks} weeks` 
-                                             });
-                                             await loadDashboardData();
-                                           }
-                                         } catch (error) {
-                                           toast({ title: 'Failed to redeem', description: error.message, variant: 'destructive' });
-                                         }
-                                       }
-                                     }}
-                                   >
-                                     ⭐ Use {Math.ceil(product.boost_duration_weeks * 350)} EXP ({product.boost_duration_weeks}w)
-                                   </Button>
-                                 </div>
-                               )}
-                              </div>
-                            </div>
-                            {product.status !== 'rejected' && (
-                              <div className="grid grid-cols-3 gap-4 mt-4">
-                                <div className="flex items-center gap-2">
-                                  <Eye className="w-4 h-4 text-blue-500" />
-                                  <div>
-                                    <p className="text-xs text-gray-500">Views</p>
-                                    <p className="font-bold">{product.view_count || 0}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <ShoppingCart className="w-4 h-4 text-green-500" />
-                                  <div>
-                                    <p className="text-xs text-gray-500">Sales</p>
-                                    <p className="font-bold">{product.sales_count || 0}</p>
-                                  </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                  <DollarSign className="w-4 h-4 text-teal-500" />
-                                  <div>
-                                    <p className="text-xs text-gray-500">Earned</p>
-                                    <p className="font-bold">${((product.sales_count || 0) * product.price * 0.10).toFixed(2)}</p>
-                                  </div>
-                                </div>
+          ) : (
+            <div className="space-y-4">
+              {products.map(product => (
+                <Card key={product.id} className={`border-2 ${
+                  product.status === 'rejected' ? 'border-red-300 bg-red-50' : ''
+                }`}>
+                  <CardContent className="p-4 md:p-6">
+                    <div className="flex flex-col md:flex-row gap-4">
+                      {product.images?.[0] && (
+                        <img src={product.images[0]} alt={product.name} className="w-full md:w-24 h-24 object-cover rounded" />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-col md:flex-row justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-lg truncate">{product.name}</h3>
+                            <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                            {product.status === 'rejected' && product.admin_feedback && (
+                              <div className="mt-3 p-3 bg-red-100 border border-red-300 rounded">
+                                <p className="text-sm font-semibold text-red-800">Declined Reason:</p>
+                                <p className="text-sm text-red-700 mt-1">{product.admin_feedback}</p>
                               </div>
                             )}
                           </div>
+                          <div className="flex flex-row md:flex-col gap-2">
+                            <Badge className={
+                              product.status === 'active' ? 'bg-green-500' :
+                              product.status === 'pending' ? 'bg-yellow-500' :
+                              'bg-red-500'
+                            }>
+                              {product.status === 'rejected' ? 'Declined' : product.status}
+                            </Badge>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditProduct(product)}
+                              className="flex-1 md:flex-none"
+                            >
+                              <Pencil className="w-4 h-4 mr-2" />
+                              Edit
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setDeletingProduct(product)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              )}
-            </>
+                        {product.status !== 'rejected' && (
+                          <div className="grid grid-cols-3 gap-4 mt-4">
+                            <div className="flex items-center gap-2">
+                              <Eye className="w-4 h-4 text-blue-500" />
+                              <div>
+                                <p className="text-xs text-gray-500">Views</p>
+                                <p className="font-bold">{product.view_count || 0}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <ShoppingCart className="w-4 h-4 text-green-500" />
+                              <div>
+                                <p className="text-xs text-gray-500">Sales</p>
+                                <p className="font-bold">{product.sales_count || 0}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <DollarSign className="w-4 h-4 text-teal-500" />
+                              <div>
+                                <p className="text-xs text-gray-500">Earned</p>
+                                <p className="font-bold">${((product.sales_count || 0) * product.price * 0.10).toFixed(2)}</p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           )}
-        </TabsContent>
-
-        <TabsContent value="import">
-          <Card>
-            <CardHeader>
-              <CardTitle>Import Designs from Other Platforms</CardTitle>
-              <p className="text-sm text-gray-600 mt-2">
-                Import your existing designs from Thingiverse, Printables, or other platforms
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="platform">Platform</Label>
-                <Select value={importPlatform} onValueChange={setImportPlatform}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select platform" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="thingiverse">Thingiverse</SelectItem>
-                    <SelectItem value="printables">Printables</SelectItem>
-                    <SelectItem value="cults3d">Cults3D</SelectItem>
-                    <SelectItem value="myminifactory">MyMiniFactory</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <Label htmlFor="profileUrl">Your Profile URL</Label>
-                <Input
-                  id="profileUrl"
-                  value={importUrl}
-                  onChange={(e) => setImportUrl(e.target.value)}
-                  placeholder="https://www.thingiverse.com/username/designs"
-                />
-              </div>
-
-              <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                <p className="text-sm text-yellow-800">
-                  <strong>Note:</strong> This will create draft listings for all your designs. 
-                  You'll need to edit each listing to add print files, set pricing, and verify details before they go live.
-                </p>
-              </div>
-
-              <Button
-                onClick={async () => {
-                  if (!importUrl || !importPlatform) {
-                    toast({ title: "Please select platform and enter URL", variant: "destructive" });
-                    return;
-                  }
-
-                  setImporting(true);
-                  try {
-                    const { data } = await base44.functions.invoke('importDesignsFromPlatform', {
-                      profileUrl: importUrl,
-                      platform: importPlatform
-                    });
-
-                    if (data.error) {
-                      toast({ 
-                        title: "Import failed", 
-                        description: data.error,
-                        variant: "destructive" 
-                      });
-                    } else {
-                      toast({ 
-                        title: "Import successful!", 
-                        description: `Imported ${data.imported} of ${data.total} designs. They're now in your products list as drafts.`
-                      });
-                      setImportUrl('');
-                      setImportPlatform('');
-                      setActiveTab('products');
-                      await loadDashboardData();
-                    }
-                  } catch (error) {
-                    toast({ 
-                      title: "Import failed", 
-                      description: error.message,
-                      variant: "destructive" 
-                    });
-                  }
-                  setImporting(false);
-                }}
-                disabled={importing}
-                className="w-full bg-red-600 hover:bg-red-700"
-              >
-                {importing ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Importing Designs...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="w-4 h-4 mr-2" />
-                    Import All Designs
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="exp">
-          <DesignerExpRedeemTab user={user} onExpUpdate={loadDashboardData} />
-        </TabsContent>
-
-        <TabsContent value="guide">
-          <Card>
-            <CardHeader>
-              <CardTitle>Designer Guide</CardTitle>
-              <p className="text-sm text-gray-600 mt-2">
-                Essential information for uploading and managing your designs
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">📐 File Naming for "Shown Colors" Mode</h3>
-                  <p className="text-sm text-gray-700 mb-3">
-                    When you enable "Use Shown Colors" (ideal for multi-part models like rockets or spacecraft), you can assign specific colors to each file. Proper naming helps makers know exactly how to print your design.
-                  </p>
-                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <p className="text-sm font-semibold mb-2">File Naming Best Practices:</p>
-                    <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
-                      <li><strong>Include color in the filename:</strong> Starship_Booster_White.stl, SLS_Core_Orange.stl</li>
-                      <li><strong>Indicate quantity if printing multiple:</strong> Wing_Red_x2.stl → prints 2 copies in red</li>
-                      <li><strong>Be descriptive:</strong> Rocket_Fins_Black_x4.stl → clearly communicates instructions</li>
-                      <li><strong>Number parts:</strong> Part1_Body_White.stl, Part2_Nose_Red.stl, etc.</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">✅ Design Upload Checklist</h3>
-                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-                    <p className="text-sm font-semibold mb-2">Before uploading, make sure your design meets these standards:</p>
-                    <ul className="text-sm text-gray-700 space-y-2">
-                      <li>✓ Clear, high-quality images showing the finished print</li>
-                      <li>✓ Accurate print time and weight measurements</li>
-                      <li>✓ Correct dimensions (L × W × H in mm)</li>
-                      <li>✓ All 3D files included (.stl, .obj, or .3mf)</li>
-                      <li>✓ Descriptive filenames and detailed descriptions</li>
-                      <li>✓ Appropriate category selected</li>
-                      <li>✓ License verified (must allow commercial use)</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="font-semibold text-lg mb-2">💡 Tips for Success</h3>
-                  <div className="bg-pink-50 p-4 rounded-lg border border-pink-200">
-                    <ul className="text-sm text-gray-700 space-y-2 list-disc pl-5">
-                      <li>Test print your designs to ensure quality</li>
-                      <li>Use clear, well-lit photos from multiple angles</li>
-                      <li>Write detailed descriptions, including assembly instructions if needed</li>
-                      <li>Select all compatible materials and colors</li>
-                      <li>Tag your designs for better discoverability</li>
-                      <li>Respond to feedback and update designs based on user reviews</li>
-                      <li>Boost your best-performing designs to maximize visibility</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Profile Information</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">Your public profile details</p>
-                </div>
-                {!editingInfo && (
-                  <Button variant="outline" onClick={() => setEditingInfo(true)}>
-                    Change Information
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!editingInfo ? (
-                <div className="space-y-3">
-                  <div>
-                    <p className="text-sm text-gray-600">Profile Image</p>
-                    {user?.profile_image ? (
-                      <img src={user.profile_image} alt="Profile" className="w-20 h-20 rounded-full object-cover mt-2" />
-                    ) : (
-                      <p className="font-medium">Not set</p>
-                    )}
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Designer Name</p>
-                    <p className="font-medium">{user?.designer_name || 'Not set'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Bio</p>
-                    <p className="font-medium">{user?.bio || 'Not set'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Email</p>
-                    <p className="font-medium">{user?.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Phone</p>
-                    <p className="font-medium">{user?.phone || 'Not set'}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div>
-                    <Label htmlFor="profile_image">Profile Image</Label>
-                    {infoFormData.profile_image && (
-                      <img src={infoFormData.profile_image} alt="Profile" className="w-20 h-20 rounded-full object-cover mt-2 mb-2" />
-                    )}
-                    <Input
-                      id="profile_image"
-                      type="file"
-                      accept="image/*"
-                      disabled={uploadingProfileImage}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (!file) return;
-                        
-                        setUploadingProfileImage(true);
-                        try {
-                          const { file_url } = await base44.integrations.Core.UploadFile({ file });
-                          setInfoFormData({...infoFormData, profile_image: file_url});
-                        } catch (error) {
-                          toast({ title: "Failed to upload image", variant: "destructive" });
-                        }
-                        setUploadingProfileImage(false);
-                      }}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="designer_name">Designer Name</Label>
-                    <Input
-                      id="designer_name"
-                      value={infoFormData.designer_name}
-                      onChange={(e) => setInfoFormData({...infoFormData, designer_name: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea
-                      id="bio"
-                      value={infoFormData.bio}
-                      onChange={(e) => setInfoFormData({...infoFormData, bio: e.target.value})}
-                      rows={3}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={infoFormData.email}
-                      onChange={(e) => setInfoFormData({...infoFormData, email: e.target.value})}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone">Phone</Label>
-                    <Input
-                      id="phone"
-                      value={infoFormData.phone}
-                      onChange={(e) => setInfoFormData({...infoFormData, phone: e.target.value})}
-                    />
-                  </div>
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        setEditingInfo(false);
-                        setInfoFormData({
-                          email: user?.email || '',
-                          phone: user?.phone || '',
-                          designer_name: user?.designer_name || '',
-                          bio: user?.bio || '',
-                          profile_image: user?.profile_image || ''
-                        });
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      onClick={async () => {
-                        try {
-                          await base44.auth.updateMe({
-                            designer_name: infoFormData.designer_name,
-                            bio: infoFormData.bio,
-                            profile_image: infoFormData.profile_image,
-                            email: infoFormData.email,
-                            phone: infoFormData.phone
-                          });
-                          toast({ title: "Profile information updated!" });
-                          setEditingInfo(false);
-                          await loadDashboardData();
-                          if (onUpdate) onUpdate();
-                        } catch (error) {
-                          toast({ title: "Failed to update information", variant: "destructive" });
-                        }
-                      }}
-                    >
-                      Submit
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Financial Information</CardTitle>
-              <p className="text-sm text-gray-600 mt-1">
-                Manage your banking information for receiving payouts and making payments
-              </p>
-            </CardHeader>
-            <CardContent>
-              <BankInfoManager user={user} onUpdate={loadDashboardData} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        </>
+      )}
 
       <AlertDialog open={!!deletingProduct} onOpenChange={() => setDeletingProduct(null)}>
         <AlertDialogContent>

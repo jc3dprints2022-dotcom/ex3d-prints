@@ -28,7 +28,7 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProductCard from "@/components/marketplace/ProductCard";
 import MakerDashboardContent from "@/components/makers/MakerDashboardContent";
-import SubscriptionManagement from "@/components/consumer/SubscriptionManagement";
+import DesignerDashboardContent from "@/components/designers/DesignerDashboardContent";
 import ExpRedeemTab from "@/components/consumer/ExpRedeemTab";
 
 export default function ConsumerDashboard() {
@@ -646,20 +646,7 @@ export default function ConsumerDashboard() {
 
             {/* Designer Hub Section */}
             {activeSection === "designer" && user?.business_roles?.includes('designer') && (
-              <Card>
-                <CardContent className="p-6">
-                  <h2 className="text-2xl font-bold mb-4">Designer Hub</h2>
-                  <p className="text-gray-600 mb-4">
-                    Manage your designs, view sales, and track your earnings.
-                  </p>
-                  <Button asChild>
-                    <Link to={createPageUrl("DesignerDashboard")}>
-                      Go to Full Designer Dashboard
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
+              <DesignerDashboardContent user={user} onUpdate={loadDashboardData} />
             )}
 
             {/* EXP & Rewards Section */}
