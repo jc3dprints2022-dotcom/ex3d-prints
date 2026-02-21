@@ -70,7 +70,7 @@ export default function BusinessCheckout() {
     const totalUnits = cartItems.reduce((sum, item) => sum + item.quantity, 0);
     const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
 
-    if (totalUnits >= 100) return { percentage: 20, amount: subtotal * 0.2 };
+    if (totalUnits >= 100) return { percentage: 15, amount: subtotal * 0.15 };
     if (totalUnits >= 50) return { percentage: 10, amount: subtotal * 0.1 };
     return { percentage: 0, amount: 0 };
   };
@@ -94,7 +94,8 @@ export default function BusinessCheckout() {
 
       const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
       const bulkDiscount = calculateBulkDiscount();
-      const total = subtotal - bulkDiscount.amount;
+      const shippingFee = deliveryMethod === "shipping" ? 25 : 0;
+      const total = subtotal - bulkDiscount.amount + shippingFee;
 
       // Create checkout session
       const { data } = await base44.functions.invoke('createBusinessCheckout', {
@@ -318,6 +319,18 @@ export default function BusinessCheckout() {
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
+                  {deliveryMethod === "shipping" && (
+                    <div className="flex justify-between text-sm">
+                      <span>Shipping</span>
+                      <span>$25.00</span>
+                    </div>
+                  )}
+                  {deliveryMethod === "local" && (
+                    <div className="flex justify-between text-green-600 text-sm">
+                      <span>Local Delivery</span>
+                      <span>FREE</span>
+                    </div>
+                  )}
                   {bulkDiscount.percentage > 0 && (
                     <div className="flex justify-between text-green-600 font-medium">
                       <span>Bulk Discount ({bulkDiscount.percentage}%)</span>
@@ -326,7 +339,7 @@ export default function BusinessCheckout() {
                   )}
                   <div className="border-t pt-3 flex justify-between text-xl font-bold">
                     <span>Total</span>
-                    <span className="text-purple-600">${total.toFixed(2)}</span>
+                    <span className="text-purple-600">${(total + (deliveryMethod === "shipping" ? 25 : 0)).toFixed(2)}</span>
                   </div>
                 </div>
 

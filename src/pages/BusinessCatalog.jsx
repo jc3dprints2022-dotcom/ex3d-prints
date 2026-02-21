@@ -402,7 +402,7 @@ export default function BusinessCatalog() {
                           <div className="text-xs text-gray-600 space-y-1">
                             <div className="flex justify-between">
                               <span>50-99 units:</span>
-                              <span className="font-semibold">${(product.wholesale_price * 0.95).toFixed(2)}/ea</span>
+                              <span className="font-semibold">${(product.wholesale_price * 0.9).toFixed(2)}/ea</span>
                             </div>
                             <div className="flex justify-between text-green-600">
                               <span>100+ units:</span>
