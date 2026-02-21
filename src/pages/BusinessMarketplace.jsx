@@ -221,7 +221,7 @@ export default function BusinessMarketplace() {
                 </div>
                 <h3 className="font-bold text-lg mb-2">Cost Effective</h3>
                 <p className="text-sm text-gray-600">
-                  Competitive pricing with volume discounts up to 25% off. No minimum order surprises
+                  Competitive pricing with volume discounts up to 15% off. No minimum order surprises
                 </p>
               </CardContent>
             </Card>
