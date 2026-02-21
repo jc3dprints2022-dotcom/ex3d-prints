@@ -40,7 +40,7 @@ const BUSINESS_INDUSTRIES = [
   "Campus, Dorm & Student Living",
   "Health & Personal Care",
   "Office & Desk",
-  "Outdoor Lifestyle"
+  "Other"
 ];
 
 const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
