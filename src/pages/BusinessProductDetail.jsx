@@ -43,7 +43,7 @@ export default function BusinessProductDetail() {
     try {
       const productData = await base44.entities.Product.get(productId);
       setProduct(productData);
-      setQuantity(productData.moq || 20);
+      setQuantity(30);
       setSelectedColor(productData.colors?.[0] || "");
       setSelectedMaterial(productData.materials?.[0] || "PLA");
     } catch (error) {
@@ -58,8 +58,8 @@ export default function BusinessProductDetail() {
       return;
     }
 
-    if (quantity < (product.moq || 20)) {
-      toast({ title: "Minimum order not met", description: `Minimum order is ${product.moq || 20} units`, variant: "destructive" });
+    if (quantity < 30) {
+      toast({ title: "Minimum order not met", description: `Minimum order per item is 30 units`, variant: "destructive" });
       return;
     }
 
@@ -108,8 +108,8 @@ export default function BusinessProductDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link to={createPageUrl("BusinessMarketplace")} className="text-purple-600 hover:underline mb-4 inline-block">
-          ← Back to Business Marketplace
+        <Link to={createPageUrl("BusinessCatalog")} className="text-purple-600 hover:underline mb-4 inline-block">
+          ← Back to Manufacturing Catalog
         </Link>
 
         <div className="grid md:grid-cols-2 gap-8">
@@ -141,14 +141,12 @@ export default function BusinessProductDetail() {
             </div>
 
             <div className="space-y-4 mb-6">
-              <div className="flex items-center gap-2 text-gray-700">
-                <Package className="w-5 h-5" />
-                <span>MOQ: {product.moq || 20} units</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <Truck className="w-5 h-5" />
-                <span>Lead Time: {product.lead_time_days || 'N/A'} days</span>
-              </div>
+              {product.dimensions && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Package className="w-5 h-5" />
+                  <span>Size: {product.dimensions.length}x{product.dimensions.width}x{product.dimensions.height}mm</span>
+                </div>
+              )}
               {product.local_delivery_eligible && (
                 <div className="flex items-center gap-2 text-green-600">
                   <MapPin className="w-5 h-5" />
@@ -190,12 +188,12 @@ export default function BusinessProductDetail() {
               )}
 
               <div>
-                <label className="block text-sm font-medium mb-2">Quantity (MOQ: {product.moq || 20})</label>
+                <label className="block text-sm font-medium mb-2">Quantity (Min: 30)</label>
                 <input
                   type="number"
-                  min={product.moq || 20}
+                  min={30}
                   value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || product.moq || 20)}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 30)}
                   className="w-full border rounded-lg px-3 py-2"
                 />
               </div>

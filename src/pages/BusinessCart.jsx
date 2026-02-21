@@ -43,8 +43,8 @@ export default function BusinessCart() {
   };
 
   const updateQuantity = async (itemId, newQuantity, moq) => {
-    if (newQuantity < moq) {
-      toast({ title: `Minimum order is ${moq} units`, variant: "destructive" });
+    if (newQuantity < 30) {
+      toast({ title: `Minimum order per item is 30 units`, variant: "destructive" });
       return;
     }
 
@@ -70,7 +70,7 @@ export default function BusinessCart() {
     const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
 
     if (totalUnits >= 100) {
-      return { percentage: 20, amount: subtotal * 0.2, totalUnits };
+      return { percentage: 15, amount: subtotal * 0.15, totalUnits };
     } else if (totalUnits >= 50) {
       return { percentage: 10, amount: subtotal * 0.1, totalUnits };
     }
@@ -94,6 +94,8 @@ export default function BusinessCart() {
 
   const subtotal = cartItems.reduce((sum, item) => sum + item.total_price, 0);
   const bulkDiscount = calculateBulkDiscount();
+  const totalUnits = bulkDiscount.totalUnits;
+  const canCheckout = totalUnits >= 30;
   const total = subtotal - bulkDiscount.amount;
 
   return (
@@ -144,7 +146,7 @@ export default function BusinessCart() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.product?.moq || 20)}
+                            onClick={() => updateQuantity(item.id, item.quantity - 1, 30)}
                           >
                             <Minus className="w-4 h-4" />
                           </Button>
@@ -152,12 +154,12 @@ export default function BusinessCart() {
                           <Button
                             size="icon"
                             variant="outline"
-                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.product?.moq || 20)}
+                            onClick={() => updateQuantity(item.id, item.quantity + 1, 30)}
                           >
                             <Plus className="w-4 h-4" />
                           </Button>
                           <span className="text-sm text-gray-500 ml-2">
-                            (MOQ: {item.product?.moq || 20})
+                            (Min: 30 per item)
                           </span>
                         </div>
                       </div>
@@ -200,9 +202,9 @@ export default function BusinessCart() {
                         <div className="bg-green-50 border border-green-200 rounded p-2 text-sm text-green-700">
                           <AlertCircle className="w-4 h-4 inline mr-1" />
                           {bulkDiscount.totalUnits >= 100 ? (
-                            "Maximum 20% discount applied!"
+                            "Maximum 15% discount applied!"
                           ) : bulkDiscount.totalUnits >= 50 ? (
-                            `Order ${100 - bulkDiscount.totalUnits} more units for 20% off`
+                            `Order ${100 - bulkDiscount.totalUnits} more units for 15% off`
                           ) : (
                             `Order ${50 - bulkDiscount.totalUnits} more units for 10% off`
                           )}
@@ -223,10 +225,26 @@ export default function BusinessCart() {
                     </div>
                   </div>
 
-                  <Button asChild size="lg" className="w-full bg-purple-600 hover:bg-purple-700">
-                    <Link to={createPageUrl("BusinessCheckout")}>
-                      Proceed to Checkout
-                    </Link>
+                  {!canCheckout && (
+                    <div className="bg-yellow-50 border border-yellow-200 rounded p-3 text-sm text-yellow-800 mb-3">
+                      <AlertCircle className="w-4 h-4 inline mr-1" />
+                      Minimum order: 30 total items. Add {30 - totalUnits} more to checkout.
+                    </div>
+                  )}
+
+                  <Button 
+                    asChild={canCheckout} 
+                    size="lg" 
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={!canCheckout}
+                  >
+                    {canCheckout ? (
+                      <Link to={createPageUrl("BusinessCheckout")}>
+                        Proceed to Checkout
+                      </Link>
+                    ) : (
+                      <span>Minimum 30 Items Required</span>
+                    )}
                   </Button>
                 </CardContent>
               </Card>

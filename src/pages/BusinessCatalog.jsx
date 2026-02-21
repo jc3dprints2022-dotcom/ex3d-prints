@@ -249,52 +249,29 @@ export default function BusinessCatalog() {
         </div>
       </div>
 
-      {/* Industry & Category Navigation */}
+      {/* Industry Navigation */}
       <div className="bg-white border-b sticky top-[73px] z-20">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* Industry Filter */}
-          {!selectedIndustry && (
-            <div className="py-3 border-b">
-              <p className="text-xs font-semibold text-gray-500 mb-2">FILTER BY INDUSTRY</p>
-              <div className="flex items-center gap-2 overflow-x-auto">
-                {INDUSTRIES.map(ind => (
-                  <Button
-                    key={ind}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setSelectedIndustry(ind)}
-                    className="whitespace-nowrap"
-                  >
-                    {ind}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
-          
-          {/* Category Filter */}
-          <div className="py-3">
-            <p className="text-xs font-semibold text-gray-500 mb-2">BROWSE BY CATEGORY</p>
-            <div className="flex items-center gap-2 overflow-x-auto">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <p className="text-xs font-semibold text-gray-500 mb-2">FILTER BY INDUSTRY</p>
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <Button
+              variant={!selectedIndustry ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setSelectedIndustry(null)}
+            >
+              All
+            </Button>
+            {INDUSTRIES.map(ind => (
               <Button
-                variant={!selectedCategory ? "default" : "ghost"}
+                key={ind}
+                variant={selectedIndustry === ind ? "default" : "ghost"}
                 size="sm"
-                onClick={() => setSelectedCategory(null)}
+                onClick={() => setSelectedIndustry(ind)}
+                className="whitespace-nowrap"
               >
-                All
+                {ind}
               </Button>
-              {CATEGORIES.map(cat => (
-                <Button
-                  key={cat.value}
-                  variant={selectedCategory === cat.value ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setSelectedCategory(cat.value)}
-                  className="whitespace-nowrap"
-                >
-                  {cat.label}
-                </Button>
-              ))}
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -409,28 +386,8 @@ export default function BusinessCatalog() {
                         
                         {/* Specs Grid */}
                         <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
-                          <div className="bg-gray-50 p-2 rounded">
-                            <div className="text-gray-500">MOQ</div>
-                            <div className="font-semibold">{product.moq || 30} units</div>
-                          </div>
-                          <div className="bg-gray-50 p-2 rounded">
-                            <div className="text-gray-500">Lead Time</div>
-                            <div className="font-semibold">{product.lead_time_days || 'TBD'} days</div>
-                          </div>
-                          {product.materials && product.materials.length > 0 && (
-                            <div className="bg-gray-50 p-2 rounded">
-                              <div className="text-gray-500">Materials</div>
-                              <div className="font-semibold truncate">{product.materials.join(', ')}</div>
-                            </div>
-                          )}
-                          {product.dimensions && (
-                            <div className="bg-gray-50 p-2 rounded">
-                              <div className="text-gray-500">Size</div>
-                              <div className="font-semibold truncate">
-                                {product.dimensions.length}x{product.dimensions.width}x{product.dimensions.height}mm
-                              </div>
-                            </div>
-                          )}
+
+
                         </div>
 
                         {/* Pricing */}
