@@ -16,7 +16,7 @@ import {
   Loader2, Package, FileText, Gift, TrendingUp, Settings,
   Star, CheckCircle, Clock, XCircle, Truck, ThumbsUp,
   ShoppingCart, Mail, Phone, MapPin, Save, Menu, X,
-  Copy, Users, Award, Eye, ChevronRight
+  Copy, Users, Award, Eye, ChevronRight, ArrowRight
 } from "lucide-react";
 import {
   Dialog,
