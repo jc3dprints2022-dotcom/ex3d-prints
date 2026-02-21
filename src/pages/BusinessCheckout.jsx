@@ -244,27 +244,11 @@ export default function BusinessCheckout() {
                       checked={deliveryMethod === "local"}
                       onChange={(e) => setDeliveryMethod(e.target.value)}
                     />
-                    <Truck className="w-5 h-5" />
+                    <Package className="w-5 h-5" />
                     <div>
                       <div className="font-medium">Local Delivery</div>
-                      <div className="text-sm text-gray-500">Standard</div>
+                      <div className="text-sm text-gray-500">Faster delivery, lower cost</div>
                     </div>
-                  </label>
-                  {allLocalEligible && (
-                    <label className="flex items-center gap-3 p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                      <input
-                        type="radio"
-                        name="delivery"
-                        value="local"
-                        checked={deliveryMethod === "local"}
-                        onChange={(e) => setDeliveryMethod(e.target.value)}
-                      />
-                      <MapPin className="w-5 h-5 text-green-600" />
-                      <div>
-                        <div className="font-medium">Local Delivery</div>
-                        <div className="text-sm text-gray-500">Faster delivery, lower cost</div>
-                      </div>
-                    </label>
                   )}
                 </div>
               </CardContent>
