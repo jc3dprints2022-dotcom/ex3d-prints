@@ -102,8 +102,7 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
 
-        const { orderId, excludedMakerIds = [] } = await req.json();
-        const assignToMultiple = true; // Always assign to multiple makers
+        const { orderId, excludedMakerIds = [], assignToMultiple = false } = await req.json();
         
         if (!orderId) {
             return Response.json({ error: 'Order ID required' }, { status: 400 });
@@ -119,20 +118,30 @@ Deno.serve(async (req) => {
         const orderCampusLocation = order.campus_location || 'erau_prescott';
         console.log('Order campus location:', orderCampusLocation);
 
-        // Check if order should be split (more than 5 hours AND multiple items)
-        let shouldSplit = false;
+        // Calculate total print time
         let totalPrintTime = 0;
         
         if (order.items) {
             totalPrintTime = order.items.reduce((sum, item) => 
                 sum + ((item.print_time_hours || 2) * (item.quantity || 1)), 0
             );
-            shouldSplit = totalPrintTime > 5 && order.items.length > 1;
         }
 
-        // If we should split, do it now and return
-        if (shouldSplit) {
-            console.log(`📦 Splitting order ${orderId} (${totalPrintTime}h, ${order.items.length} items)`);
+        // Determine if we should split based on print time
+        let shouldSplit = false;
+        let numMakersNeeded = 1;
+        
+        if (totalPrintTime > 15) {
+            shouldSplit = true;
+            numMakersNeeded = 3;
+        } else if (totalPrintTime > 5) {
+            shouldSplit = true;
+            numMakersNeeded = 2;
+        }
+
+        // If we should split AND have multiple items, do it now
+        if (shouldSplit && order.items.length > 1) {
+            console.log(`📦 Splitting order ${orderId} (${totalPrintTime}h) into ${numMakersNeeded} makers`);
             return await splitOrder(base44, order, orderCampusLocation, excludedMakerIds);
         }
 

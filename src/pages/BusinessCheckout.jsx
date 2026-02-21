@@ -305,39 +305,39 @@ export default function BusinessCheckout() {
               <CardContent className="p-6">
                 <h2 className="text-xl font-bold mb-4">Order Summary</h2>
 
-                <div className="space-y-3 mb-6">
+                <div className="space-y-2 mb-6 max-h-48 overflow-y-auto">
                   {cartItems.map(item => (
                     <div key={item.id} className="flex justify-between text-sm gap-2">
-                      <span className="truncate">{item.product_name} x{item.quantity}</span>
-                      <span className="flex-shrink-0">${item.total_price.toFixed(2)}</span>
+                      <span className="truncate flex-1 min-w-0">{item.product_name} x{item.quantity}</span>
+                      <span className="flex-shrink-0 font-medium">${item.total_price.toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-3 border-t pt-3">
+                <div className="space-y-2 border-t pt-3 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
-                    <span>${subtotal.toFixed(2)}</span>
+                    <span className="font-medium">${subtotal.toFixed(2)}</span>
                   </div>
                   {deliveryMethod === "shipping" && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between">
                       <span>Shipping</span>
-                      <span>$25.00</span>
+                      <span className="font-medium">$25.00</span>
                     </div>
                   )}
                   {deliveryMethod === "local" && (
-                    <div className="flex justify-between text-green-600 text-sm">
+                    <div className="flex justify-between text-green-600">
                       <span>Local Delivery</span>
-                      <span>FREE</span>
+                      <span className="font-semibold">FREE</span>
                     </div>
                   )}
                   {bulkDiscount.percentage > 0 && (
-                    <div className="flex justify-between text-green-600 font-medium">
-                      <span>Bulk Discount ({bulkDiscount.percentage}%)</span>
-                      <span>-${bulkDiscount.amount.toFixed(2)}</span>
+                    <div className="flex justify-between text-green-600">
+                      <span>Discount ({bulkDiscount.percentage}%)</span>
+                      <span className="font-semibold">-${bulkDiscount.amount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="border-t pt-3 flex justify-between text-xl font-bold">
+                  <div className="border-t pt-3 flex justify-between text-lg md:text-xl font-bold">
                     <span>Total</span>
                     <span className="text-purple-600">${(total + (deliveryMethod === "shipping" ? 25 : 0)).toFixed(2)}</span>
                   </div>
