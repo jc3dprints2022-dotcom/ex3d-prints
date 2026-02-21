@@ -147,7 +147,7 @@ export default function Home() {
                   <Package className="w-8 h-8" />
                 </div>
                 <h4 className="text-xl font-semibold text-slate-900 mb-2">Wholesale Pricing</h4>
-                <p className="text-slate-600">Access bulk pricing on custom 3D printed products for retail stores. Order in volume with automatic discounts and flexible delivery options.</p>
+                <p className="text-slate-600">Order 3D printed products for retail stores in volume with automatic discounts and flexible delivery options.</p>
               </CardContent>
             </Card>
             
@@ -157,7 +157,7 @@ export default function Home() {
                   <Printer className="w-8 h-8" />
                 </div>
                 <h4 className="text-xl font-semibold text-slate-900 mb-2">Fast Production</h4>
-                <p className="text-slate-600">Locally produced by our network of makers. Quick turnaround times with consistent quality and reliable delivery schedules.</p>
+                <p className="text-slate-600">Locally produced by our network of makers. Quick turnaround times with consistent quality.</p>
               </CardContent>
             </Card>
             
@@ -167,7 +167,7 @@ export default function Home() {
                   <CheckCircle className="w-8 h-8" />
                 </div>
                 <h4 className="text-xl font-semibold text-slate-900 mb-2">Recurring Orders</h4>
-                <p className="text-slate-600">Set up automatic weekly, biweekly, or monthly reorders. Never run out of inventory with flexible subscription management.</p>
+                <p className="text-slate-600">Never run out of inventory by setting up automatic biweekly, or monthly reorders.</p>
               </CardContent>
             </Card>
           </div>
