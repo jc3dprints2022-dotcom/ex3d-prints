@@ -197,7 +197,7 @@ export default function BusinessMarketplace() {
                 </div>
                 <h3 className="font-bold text-lg mb-2">Lightning Fast</h3>
                 <p className="text-sm text-gray-600">
-                  24-48 hour production start. Most orders completed within 3-5 business days
+                  24 hour production start. Most orders completed within 3-5 business days
                 </p>
               </CardContent>
             </Card>
@@ -209,7 +209,7 @@ export default function BusinessMarketplace() {
                 </div>
                 <h3 className="font-bold text-lg mb-2">Made Locally</h3>
                 <p className="text-sm text-gray-600">
-                  Network of U.S.-based manufacturers ensures quality control and supports local economy
+                  Network of Prescott.-based manufacturers ensures quality control and supports local economy
                 </p>
               </CardContent>
             </Card>
@@ -221,7 +221,7 @@ export default function BusinessMarketplace() {
                 </div>
                 <h3 className="font-bold text-lg mb-2">Cost Effective</h3>
                 <p className="text-sm text-gray-600">
-                  Competitive pricing with volume discounts up to 15% off. No minimum order surprises
+                  Competitive pricing with volume discounts up to 15% off.
                 </p>
               </CardContent>
             </Card>
