@@ -69,7 +69,7 @@ export default function MakerHowItWorks() {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-3">3. Print & Deliver</h2>
                   <p className="text-gray-600 mb-4">
-                    Print the order, update the status, and drop it off at the designated campus pickup location. Track all your orders in one convenient dashboard.
+                    Print the order, update the status, and drop off or ship it. Track all your orders in one convenient dashboard.
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
                     <li>Print at your own pace within the deadline</li>
