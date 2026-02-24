@@ -63,7 +63,7 @@ export default function ForMakers() {
                 </div>
                 <h3 className="text-xl font-semibold mb-4">Consistent Orders</h3>
                 <p className="text-slate-600">
-                  Our growing customer base means steady work and reliable income for dedicated makers. Earn 70% per order minus $0.30 Stripe fee.
+                  Our growing customer base means steady work and reliable income for dedicated makers. Earn 50% per order plus priority order profit.
                 </p>
               </CardContent>
             </Card>
