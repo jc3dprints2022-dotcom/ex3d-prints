@@ -152,9 +152,9 @@ export default function PaymentsFinancialsSection() {
 
       // Maker profits (50% PLUS ALL of priority fees)
       const calculatedMakerProfits = completedOrders.reduce((sum, o) => {
-        const baseProfit = ((o.total_amount || 0) * 0.70) - 0.30;
-        // If priority, add 70% of $4 = $2.80
-        const priorityProfit = o.is_priority ? 2.80 : 0;
+        const baseProfit = ((o.total_amount || 0) * 0.50) - 0.30;
+        // If priority, add 100% of $4 = $4
+        const priorityProfit = o.is_priority ? 4 : 0;
         return sum + baseProfit + priorityProfit;
       }, 0);
       setMakerProfits(calculatedMakerProfits);
