@@ -131,7 +131,7 @@ export default function HowItWorks() {
                 </div>
                 <h3 className="font-semibold mb-2">Get Paid</h3>
                 <p className="text-sm text-slate-600">
-                  Earn 70% of the order value with monthly payouts
+                  Earn 50% of the order value with monthly payouts
                 </p>
               </CardContent>
             </Card>
