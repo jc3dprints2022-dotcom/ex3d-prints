@@ -199,7 +199,7 @@ export default function OrderRoutingSection() {
   };
 
   const calculateMakerPayout = (total) => {
-    return (total * 0.70).toFixed(2); // 70% maker payout
+    return (total * 0.50).toFixed(2); // 50% maker payout
   };
 
   return (
@@ -428,7 +428,7 @@ export default function OrderRoutingSection() {
                       <span className="text-cyan-400 font-bold">${calculatePlatformShare(selectedOrder.total_amount)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Maker Payout (70%):</span>
+                      <span className="text-slate-400">Maker Payout (50%):</span>
                       <span className="text-green-400 font-bold">${calculateMakerPayout(selectedOrder.total_amount)}</span>
                     </div>
                     <div className="flex justify-between pt-2 border-t border-slate-700">
