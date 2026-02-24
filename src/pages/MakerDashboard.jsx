@@ -117,8 +117,8 @@ export default function MakerDashboard() {
       const totalEarnings = myOrders
         .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
         .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.7) - 0.30);
-          const priorityEarning = o.is_priority ? 2.80 : 0; // 70% of $4
+          const baseEarning = ((o.total_amount * 0.5) - 0.30);
+          const priorityEarning = o.is_priority ? 4 : 0; // 
           return sum + baseEarning + priorityEarning;
         }, 0);
 
@@ -132,8 +132,8 @@ export default function MakerDashboard() {
           return orderDate >= firstDayOfMonth;
         })
         .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.7) - 0.30);
-          const priorityEarning = o.is_priority ? 2.80 : 0;
+          const baseEarning = ((o.total_amount * 0.5) - 0.30);
+          const priorityEarning = o.is_priority ? 4 : 0;
           return sum + baseEarning + priorityEarning;
         }, 0);
 
