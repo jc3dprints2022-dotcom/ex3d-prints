@@ -93,7 +93,7 @@ export default function MakerHowItWorks() {
                     Earn 50% of the order value (minus Stripe fees). Payments are processed weekly via Stripe Connect directly to your bank account.
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
-                    <li>70% commission on every completed order</li>
+                    <li>50% commission on every completed order</li>
                     <li>Weekly automated payouts</li>
                     <li>Detailed earnings tracking and reports</li>
                   </ul>
