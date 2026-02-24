@@ -238,12 +238,12 @@ export default function CampusOrderRoutingSection({ campusLocation }) {
                       <span className="text-white font-bold">${selectedOrder.total_amount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Platform (30%):</span>
-                      <span className="text-cyan-400">${(selectedOrder.total_amount * 0.30).toFixed(2)}</span>
+                      <span className="text-slate-400">Platform (50%):</span>
+                      <span className="text-cyan-400">${(selectedOrder.total_amount * 0.50).toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Maker (50%):</span>
-                      <span className="text-green-400">${(selectedOrder.total_amount * 0.70).toFixed(2)}</span>
+                      <span className="text-green-400">${(selectedOrder.total_amount * 0.50).toFixed(2)}</span>
                     </div>
                   </CardContent>
                 </Card>
