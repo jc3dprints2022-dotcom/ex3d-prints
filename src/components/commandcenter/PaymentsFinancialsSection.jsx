@@ -141,7 +141,7 @@ export default function PaymentsFinancialsSection() {
         : 0;
       setAvgPricePerHour(avgPricePerOrder);
 
-      // Platform revenue (30% + $0.30 per order PLUS 30% of priority fees)
+      // Platform revenue (50% + $0.30 per order)
       const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => {
         const baseRevenue = ((o.total_amount || 0) * 0.30) + 0.30;
         // If priority, add 30% of $4 = $1.20
