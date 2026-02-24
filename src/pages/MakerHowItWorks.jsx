@@ -90,7 +90,7 @@ export default function MakerHowItWorks() {
                 <div className="flex-1">
                   <h2 className="text-2xl font-bold mb-3">4. Get Paid</h2>
                   <p className="text-gray-600 mb-4">
-                    Earn 70% of the order value (minus Stripe fees). Payments are processed weekly via Stripe Connect directly to your bank account.
+                    Earn 50% of the order value (minus Stripe fees). Payments are processed weekly via Stripe Connect directly to your bank account.
                   </p>
                   <ul className="list-disc list-inside text-gray-600 space-y-2">
                     <li>70% commission on every completed order</li>
