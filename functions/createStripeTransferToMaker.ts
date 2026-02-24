@@ -59,11 +59,11 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Calculate transfer amount: 70% - $0.30 Stripe fee + priority bonus
-        const platformFee = order.total_amount * 0.30;
+        // Calculate transfer amount: 50% - $0.30 Stripe fee + priority bonus
+        const platformFee = order.total_amount * 0.50;
         const stripeFee = 0.30;
-        const priorityBonus = order.is_priority ? 2.80 : 0;
-        const transferAmount = (order.total_amount * 0.70) - stripeFee + priorityBonus;
+        const priorityBonus = order.is_priority ? 4 : 0;
+        const transferAmount = (order.total_amount * 0.50) - stripeFee + priorityBonus;
 
         // Stripe requires amounts in cents
         const transferAmountCents = Math.round(transferAmount * 100);
