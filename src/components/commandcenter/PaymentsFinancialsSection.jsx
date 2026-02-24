@@ -176,8 +176,8 @@ export default function PaymentsFinancialsSection() {
           if (!makerEarnings[order.maker_id]) {
             makerEarnings[order.maker_id] = 0;
           }
-          const baseEarning = ((order.total_amount || 0) * 0.70) - 0.30;
-          const priorityEarning = order.is_priority ? 2.80 : 0;
+          const baseEarning = ((order.total_amount || 0) * 0.50) - 0.30;
+          const priorityEarning = order.is_priority ? 4 : 0;
           makerEarnings[order.maker_id] += baseEarning + priorityEarning;
         }
       });
@@ -357,7 +357,7 @@ export default function PaymentsFinancialsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${makerProfits.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">70% - $0.30 per completed order (+ priority fees)</p>
+            <p className="text-xs text-muted-foreground mt-1">50% (+ priority fees)</p>
           </CardContent>
         </Card>
 
@@ -469,7 +469,7 @@ export default function PaymentsFinancialsSection() {
           <CardHeader>
             <CardTitle>Maker Payouts</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Total owed to makers for completed orders (70% - $0.30 per order + 70% of priority fees)
+              Total owed to makers for completed orders (50% + all of priority fees)
             </p>
           </CardHeader>
           <CardContent>
