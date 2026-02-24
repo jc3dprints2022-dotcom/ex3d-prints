@@ -346,7 +346,7 @@ export default function PaymentsFinancialsSection() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">${platformRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">30% + $0.30 per completed order (+ priority fees)</p>
+            <p className="text-xs text-muted-foreground mt-1">50% + $0.30 per completed order</p>
           </CardContent>
         </Card>
 
