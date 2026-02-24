@@ -143,9 +143,9 @@ export default function PaymentsFinancialsSection() {
 
       // Platform revenue (50% + $0.30 per order)
       const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => {
-        const baseRevenue = ((o.total_amount || 0) * 0.30) + 0.30;
-        // If priority, add 30% of $4 = $1.20
-        const priorityRevenue = o.is_priority ? 1.20 : 0;
+        const baseRevenue = ((o.total_amount || 0) * 0.50) + 0.30;
+        // If priority, add 0% of $4 = $0
+        const priorityRevenue = o.is_priority ? 0 : 0;
         return sum + baseRevenue + priorityRevenue;
       }, 0);
       setPlatformRevenue(calculatedPlatformRevenue);
