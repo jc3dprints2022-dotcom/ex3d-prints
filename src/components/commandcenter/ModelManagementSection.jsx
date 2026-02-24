@@ -401,10 +401,6 @@ export default function ModelManagementSection() {
         toast({ title: "Please enter a valid wholesale price", variant: "destructive" });
         return;
       }
-      if (!formData.lead_time_days || parseInt(formData.lead_time_days) <= 0) {
-        toast({ title: "Please enter lead time for business products", variant: "destructive" });
-        return;
-      }
       if (!formData.business_industry) {
         toast({ title: "Please select an industry for business products", variant: "destructive" });
         return;
@@ -751,19 +747,6 @@ export default function ModelManagementSection() {
                       onChange={(e) => setFormData({...formData, wholesale_price: e.target.value})}
                       className="bg-slate-800 border-purple-500/30 text-white"
                       placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="lead_time" className="text-white">Lead Time (days) *</Label>
-                    <Input
-                      id="lead_time"
-                      type="number"
-                      min="1"
-                      value={formData.lead_time_days}
-                      onChange={(e) => setFormData({...formData, lead_time_days: e.target.value})}
-                      className="bg-slate-800 border-purple-500/30 text-white"
-                      placeholder="e.g., 7"
                       required
                     />
                   </div>
