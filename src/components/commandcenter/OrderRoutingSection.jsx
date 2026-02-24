@@ -424,7 +424,7 @@ export default function OrderRoutingSection() {
                       <span className="text-white font-bold">${selectedOrder.total_amount.toFixed(2)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Platform Share (30%):</span>
+                      <span className="text-slate-400">Platform Share (50%):</span>
                       <span className="text-cyan-400 font-bold">${calculatePlatformShare(selectedOrder.total_amount)}</span>
                     </div>
                     <div className="flex justify-between">
