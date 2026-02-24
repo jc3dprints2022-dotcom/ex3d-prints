@@ -33,7 +33,7 @@ export default function MakersHeroSection({ paidToMakers, loading }) {
             <div className="grid grid-cols-2 gap-4 mb-8">
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
-                <p className="text-2xl font-bold text-slate-900">70%</p>
+                <p className="text-2xl font-bold text-slate-900">50%</p>
                 <p className="text-sm text-slate-600">Profit Each Order</p>
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
