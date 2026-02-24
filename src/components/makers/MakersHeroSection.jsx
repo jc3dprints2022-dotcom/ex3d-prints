@@ -38,7 +38,7 @@ export default function MakersHeroSection({ paidToMakers, loading }) {
               </div>
               <div className="bg-white p-4 rounded-lg shadow-md">
                 <Printer className="w-8 h-8 text-orange-600 mb-2" />
-                <p className="text-2xl font-bold text-slate-900">Matched</p>
+                <p className="text-2xl font-bold text-slate-900">Match</p>
                 <p className="text-sm text-slate-600">Orders Suited to You</p>
               </div>
             </div>
