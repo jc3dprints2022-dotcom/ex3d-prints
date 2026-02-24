@@ -195,7 +195,7 @@ export default function OrderRoutingSection() {
   });
 
   const calculatePlatformShare = (total) => {
-    return (total * 0.30).toFixed(2); // 30% platform fee
+    return (total * 0.50).toFixed(2); // 50% platform fee
   };
 
   const calculateMakerPayout = (total) => {
