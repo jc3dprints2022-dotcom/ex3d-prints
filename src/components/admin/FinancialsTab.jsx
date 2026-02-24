@@ -19,7 +19,7 @@ export default function FinancialsTab({ orders, users, subscriptions, products, 
   const platformProfit = totalOrderRevenue * 0.20;
   
   // Calculate payouts
-  const totalPaidToMakers = totalOrderRevenue * 0.70; // 70% to makers
+  const totalPaidToMakers = totalOrderRevenue * 0.50; // 50% to makers
   const totalPaidToDesigners = totalOrderRevenue * 0.10; // 10% to designers on physical prints
   
   // Calculate shipping kit revenue
@@ -111,7 +111,7 @@ export default function FinancialsTab({ orders, users, subscriptions, products, 
               <span className="text-lg font-bold text-green-700">${platformProfit.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-orange-50 rounded">
-              <span className="font-medium text-gray-900">Paid to Makers (70%)</span>
+              <span className="font-medium text-gray-900">Paid to Makers (50%)</span>
               <span className="text-lg font-bold text-orange-700">${totalPaidToMakers.toFixed(2)}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-pink-50 rounded">
