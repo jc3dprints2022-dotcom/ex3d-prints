@@ -102,7 +102,7 @@ Great news! Payment for order #${order.id.slice(-8)} has been transferred to you
 
 💰 PAYMENT DETAILS:
 Order Total: $${order.total_amount.toFixed(2)}
-Platform Fee (30%): -$${platformFee.toFixed(2)}
+Platform Fee (50%): -$${platformFee.toFixed(2)}
 Stripe Fee: -$${stripeFee.toFixed(2)}${order.is_priority ? `\nPriority Bonus: +$${priorityBonus.toFixed(2)}` : ''}
 ────────────────────────
 TRANSFERRED: $${transferAmount.toFixed(2)}
