@@ -41,7 +41,7 @@ Deno.serve(async (req) => {
                     };
                 }
 
-                // Maker gets 70% - $0.30 + priority bonus
+                // Maker gets 50% - $0.30 + priority bonus
                 const makerEarnings = ((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0);
                 makerPayouts[order.maker_id].gross += makerEarnings;
                 makerPayouts[order.maker_id].orders.push(order.id);
