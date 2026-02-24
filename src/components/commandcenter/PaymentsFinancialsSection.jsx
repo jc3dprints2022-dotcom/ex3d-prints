@@ -150,7 +150,7 @@ export default function PaymentsFinancialsSection() {
       }, 0);
       setPlatformRevenue(calculatedPlatformRevenue);
 
-      // Maker profits (70% - $0.30 per order PLUS 70% of priority fees)
+      // Maker profits (50% PLUS ALL of priority fees)
       const calculatedMakerProfits = completedOrders.reduce((sum, o) => {
         const baseProfit = ((o.total_amount || 0) * 0.70) - 0.30;
         // If priority, add 70% of $4 = $2.80
