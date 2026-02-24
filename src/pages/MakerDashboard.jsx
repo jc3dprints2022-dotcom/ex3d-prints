@@ -656,7 +656,7 @@ The EX3D Team`
                           </p>
                           <p className="text-sm text-green-600">
                             {/* "Your earnings:" removed as it's now in the header for primary visibility */}
-                            Earnings calculation: (70% - $0.30 Stripe fee{order.is_priority ? ' + $2.80 priority bonus' : ''})
+                            Earnings calculation: (50% - $0.30 Stripe fee{order.is_priority ? ' + $4 priority bonus' : ''})
                           </p>
                           <p className="text-sm text-gray-600 mt-1">
                             Pickup: {order.pickup_location}
