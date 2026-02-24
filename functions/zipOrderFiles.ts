@@ -66,7 +66,7 @@ Items:
 ${order.items.map(item => `- ${item.product_name} (${item.material} • ${item.color}) x${item.quantity}`).join('\n')}
 
 Total: $${order.total_amount.toFixed(2)}
-Your earnings: $${(order.total_amount * 0.7).toFixed(2)} (70%)
+Your earnings: $${(order.total_amount * 0.5).toFixed(2)} (50%)
 
 Pickup Location: ${order.pickup_location}
 
