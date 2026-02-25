@@ -482,17 +482,19 @@ export default function Layout({ children, currentPageName }) {
                 </Button>
               </Link>
 
-              {/* Wishlist Icon */}
-              <Link to={createPageUrl("Wishlist")} className="relative">
-                <Button variant="ghost" size="icon">
-                  <Heart className="w-5 h-5" />
-                  {wishlistCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                      {wishlistCount}
-                    </span>
-                  )}
-                </Button>
-              </Link>
+              {/* Wishlist Icon - Consumer Only */}
+              {(!user || user.account_type !== 'business') && (
+                <Link to={createPageUrl("Wishlist")} className="relative">
+                  <Button variant="ghost" size="icon">
+                    <Heart className="w-5 h-5" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )}
 
               {user ? (
                 <DropdownMenu>

@@ -271,7 +271,7 @@ export default function Marketplace() {
                 className="pl-10 h-10"
               />
             </div>
-            <Button asChild variant="default" size="sm" className="bg-red-600 hover:bg-red-700">
+            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xl">
               <Link to={createPageUrl("CustomPrintRequest")}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Custom Files
@@ -307,7 +307,7 @@ export default function Marketplace() {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="max-w-[1800px] mx-auto px-4 py-6">
         <div className="flex gap-6">
           {/* Filters Sidebar - Desktop */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
@@ -393,7 +393,7 @@ export default function Marketplace() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {displayedProducts.map(product => (
                     <ProductCard key={product.id} product={product} />
                   ))}
