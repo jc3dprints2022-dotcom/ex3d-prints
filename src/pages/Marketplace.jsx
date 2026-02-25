@@ -26,11 +26,6 @@ const CATEGORIES = [
 ];
 const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
 
-const COLORS = [
-  "White", "Black", "Gray", "Silver", "Gold", "Brown",
-  "Red", "Blue", "Yellow", "Green", "Orange", "Copper", "Purple", "Pink", "Silk Rainbow", "Marble",
-];
-
 const PRICE_RANGES = [
   { value: "0-10", label: "Under $10", min: 0, max: 10 },
   { value: "10-25", label: "$10 - $25", min: 10, max: 25 },
@@ -63,7 +58,6 @@ export default function Marketplace() {
   const [filters, setFilters] = useState({
     category: null,
     materials: [], 
-    colors: [], 
     priceRange: [0, 100],
     rating: 0,
     sortBy: "popular",
@@ -105,7 +99,6 @@ export default function Marketplace() {
         filters: {
           category: filters.category || undefined,
           materials: filters.materials.length > 0 ? filters.materials : undefined,
-          colors: filters.colors.length > 0 ? filters.colors : undefined,
           minPrice: filters.priceRange[0],
           maxPrice: filters.priceRange[1]
         },
@@ -166,12 +159,6 @@ export default function Marketplace() {
     if (filters.materials.length > 0) {
       tempProducts = tempProducts.filter(p => 
         p.materials && p.materials.some(mat => filters.materials.includes(mat))
-      );
-    }
-
-    if (filters.colors.length > 0) {
-      tempProducts = tempProducts.filter(p => 
-        p.colors && p.colors.some(color => filters.colors.includes(color))
       );
     }
 
@@ -261,7 +248,6 @@ export default function Marketplace() {
     setFilters({
       category: null,
       materials: [],
-      colors: [],
       priceRange: [0, 100],
       rating: 0,
       sortBy: "popular",
@@ -358,22 +344,6 @@ export default function Marketplace() {
                         onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
                       />
                       <span className="text-sm">{mat}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Colors */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Colors</label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {COLORS.map(color => (
-                    <label key={color} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={filters.colors.includes(color)}
-                        onCheckedChange={() => handleMultiFilterToggle('colors', color)}
-                      />
-                      <span className="text-sm">{color}</span>
                     </label>
                   ))}
                 </div>
@@ -485,22 +455,6 @@ export default function Marketplace() {
                         onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
                       />
                       <span className="text-sm">{mat}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Colors */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Colors</label>
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {COLORS.map(color => (
-                    <label key={color} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={filters.colors.includes(color)}
-                        onCheckedChange={() => handleMultiFilterToggle('colors', color)}
-                      />
-                      <span className="text-sm">{color}</span>
                     </label>
                   ))}
                 </div>
