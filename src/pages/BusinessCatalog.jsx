@@ -343,29 +343,6 @@ export default function BusinessCatalog() {
                 </div>
               </div>
               
-              {/* Price Per Unit */}
-              <div>
-                <label className="text-sm font-medium mb-2 block">Price Per Unit</label>
-                <div className="space-y-2">
-                  {PRICE_RANGES.map(range => (
-                    <label key={range.label} className="flex items-center gap-2 cursor-pointer">
-                      <Checkbox
-                        checked={filters.priceRange?.label === range.label}
-                        onCheckedChange={(checked) => {
-                          setFilters(prev => ({
-                            ...prev,
-                            priceRange: checked ? range : null
-                          }));
-                        }}
-                      />
-                      <span className="text-sm">{range.label}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </aside>
-
           {/* Products Grid */}
           <main className="flex-1">
             <div className="mb-4 flex justify-between items-center">
