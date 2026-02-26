@@ -590,32 +590,49 @@ export default function ProductDetail() {
                     </div>
                   )}
 
-                  {isBusinessOrder && (
-                    <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                      <div>
-                        <Label htmlFor="businessName-mobile">Business Name *</Label>
-                        <Input
-                          id="businessName-mobile"
-                          value={businessName}
-                          onChange={(e) => setBusinessName(e.target.value)}
-                          placeholder="Your Company Name"
-                          className="mt-1"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="businessCustomization-mobile">Customization Details *</Label>
-                        <Textarea
-                          id="businessCustomization-mobile"
-                          value={businessCustomization}
-                          onChange={(e) => setBusinessCustomization(e.target.value)}
-                          placeholder="Logo, text, colors..."
-                          rows={3}
-                          className="mt-1"
-                        />
-                      </div>
-                    </div>
-                  )}
-                  
+                  {/* Business Order Section */}
+                  <div className="border-t pt-4">
+                   <div className="flex items-center justify-between mb-3">
+                     <div className="flex items-center gap-2">
+                       <Building className="w-5 h-5 text-blue-600" />
+                       <Label className="text-base font-semibold">Business Order</Label>
+                     </div>
+                     <Button
+                       type="button"
+                       variant={isBusinessOrder ? "default" : "outline"}
+                       size="sm"
+                       onClick={() => setIsBusinessOrder(!isBusinessOrder)}
+                     >
+                       {isBusinessOrder ? "Enabled" : "Enable"}
+                     </Button>
+                   </div>
+                   {isBusinessOrder && (
+                     <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                       <div>
+                         <Label htmlFor="businessName-mobile">Business Name *</Label>
+                         <Input
+                           id="businessName-mobile"
+                           value={businessName}
+                           onChange={(e) => setBusinessName(e.target.value)}
+                           placeholder="Your Company Name"
+                           className="mt-1"
+                         />
+                       </div>
+                       <div>
+                         <Label htmlFor="businessCustomization-mobile">Customization Details *</Label>
+                         <Textarea
+                           id="businessCustomization-mobile"
+                           value={businessCustomization}
+                           onChange={(e) => setBusinessCustomization(e.target.value)}
+                           placeholder="Logo, text, colors..."
+                           rows={3}
+                           className="mt-1"
+                         />
+                       </div>
+                     </div>
+                   )}
+                  </div>
+
                   <div>
                     <Label>Quantity</Label>
                     <div className="flex items-center gap-4 mb-4">
@@ -640,7 +657,7 @@ export default function ProductDetail() {
                       <ShoppingCart className="w-5 h-5 mr-2" />
                       Add to Cart - ${(product.price * quantity).toFixed(2)}
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       size="lg"
