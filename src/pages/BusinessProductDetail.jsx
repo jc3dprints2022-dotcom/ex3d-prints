@@ -17,6 +17,7 @@ export default function BusinessProductDetail() {
   const { toast } = useToast();
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
     loadUser();
     loadProduct();
   }, []);
@@ -119,11 +120,20 @@ export default function BusinessProductDetail() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
-        <Link to={createPageUrl("BusinessCatalog")} className="text-purple-600 hover:underline mb-4 inline-block">
+        <Link 
+          to={createPageUrl("BusinessCatalog")} 
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="text-purple-600 hover:underline mb-4 inline-block"
+        >
           ← Back to Manufacturing Catalog
         </Link>
 
         <div className="grid md:grid-cols-2 gap-8">
+          {/* Mobile - Name Above Image */}
+          <div className="md:hidden mb-4">
+            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+          </div>
+
           {/* Images */}
           <div>
             <Badge className="mb-4 bg-purple-600">Business Exclusive</Badge>
@@ -138,8 +148,73 @@ export default function BusinessProductDetail() {
             </div>
           </div>
 
-          {/* Details */}
-          <div>
+          {/* Mobile - Price and Options First */}
+          <div className="md:hidden">
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+              <div className="text-3xl font-bold text-purple-600 mb-1">
+                ${product.wholesale_price?.toFixed(2)} <span className="text-lg font-normal text-gray-600">per unit</span>
+              </div>
+              {product.suggested_retail_price && (
+                <p className="text-sm text-gray-600">Suggested retail: ${product.suggested_retail_price.toFixed(2)}</p>
+              )}
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {product.dimensions && (
+                <div className="flex items-center gap-2 text-gray-700">
+                  <Package className="w-5 h-5" />
+                  <span>Size: {product.dimensions.length}x{product.dimensions.width}x{product.dimensions.height}mm</span>
+                </div>
+              )}
+              {product.local_delivery_eligible && (
+                <div className="flex items-center gap-2 text-green-600">
+                  <MapPin className="w-5 h-5" />
+                  <span>Local delivery available</span>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4 mb-6">
+              {product.colors && product.colors.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium mb-2">Color</label>
+                  <select
+                    value={selectedColor}
+                    onChange={(e) => setSelectedColor(e.target.value)}
+                    className="w-full border rounded-lg px-3 py-2"
+                  >
+                    {product.colors.map(color => (
+                      <option key={color} value={color}>{color}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Quantity</label>
+                <input
+                  type="number"
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(parseInt(e.target.value) || 1)}
+                  className="w-full border rounded-lg px-3 py-2"
+                />
+              </div>
+            </div>
+
+            <Button onClick={handleAddToCart} size="lg" className="w-full bg-purple-600 hover:bg-purple-700 mb-6">
+              <ShoppingCart className="w-5 h-5 mr-2" />
+              Add to Business Cart
+            </Button>
+
+            <div className="border-t pt-6">
+              <h3 className="font-semibold mb-2">Description</h3>
+              <p className="text-gray-700">{product.description}</p>
+            </div>
+          </div>
+
+          {/* Desktop - Details */}
+          <div className="hidden md:block">
             <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
             
             <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-6">

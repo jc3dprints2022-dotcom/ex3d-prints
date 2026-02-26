@@ -382,6 +382,36 @@ export default function ProductDetail() {
         </Link>
 
         <div className="grid md:grid-cols-2 gap-12 mb-12">
+          {/* Product Info - Mobile */}
+          <div className="md:hidden">
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
+            <p className="text-3xl font-bold text-teal-600 mb-4">${product.price.toFixed(2)}</p>
+            {product.review_count > 0 ? (
+              <div className="flex items-center gap-2 mb-6">
+                <div className="flex">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <Star
+                      key={star}
+                      className={`w-4 h-4 ${
+                        star <= product.rating
+                          ? 'fill-yellow-400 text-yellow-400'
+                          : 'text-gray-300'
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-sm text-gray-600">
+                  {product.rating.toFixed(1)} ({product.review_count})
+                </span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-6 text-gray-500 text-sm">
+                <Star className="w-4 h-4 text-gray-300" />
+                <span>No reviews yet</span>
+              </div>
+            )}
+          </div>
+
           {/* Image Gallery / 3D Viewer */}
           <div>
             {/* View Toggle */}
@@ -494,6 +524,137 @@ export default function ProductDetail() {
                 )}
               </div>
             )}
+            {/* Mobile - Price and Options */}
+            <div className="md:hidden">
+              <Card className="mb-6">
+                <CardContent className="p-4 space-y-4">
+                  {showMaterialSelector && (
+                    <div>
+                      <Label htmlFor="material-mobile">Material *</Label>
+                      <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
+                        <SelectTrigger id="material-mobile">
+                          <SelectValue placeholder="Select material" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {product.materials.map((material) => (
+                            <SelectItem key={material} value={material}>
+                              {material}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {!product.multi_color && (
+                    <div>
+                      <Label htmlFor="color-mobile">Color *</Label>
+                      <Select value={selectedColor} onValueChange={setSelectedColor}>
+                        <SelectTrigger id="color-mobile">
+                          <SelectValue placeholder="Select color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {product.colors && product.colors.map((color) => (
+                            <SelectItem key={color} value={color}>
+                              {color}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+
+                  {product.multi_color && (
+                    <div>
+                      <Label>Colors * ({multiColorSelections.length} colors)</Label>
+                      <div className="space-y-2 mt-2">
+                        {multiColorSelections.map((color, index) => (
+                          <div key={index} className="flex items-center gap-2">
+                            <span className="text-sm font-medium w-16">Color {index + 1}:</span>
+                            <Select 
+                              value={color} 
+                              onValueChange={(val) => handleColorChange(index, val)}
+                            >
+                              <SelectTrigger className="flex-1">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {product.colors && product.colors.map((c) => (
+                                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {isBusinessOrder && (
+                    <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div>
+                        <Label htmlFor="businessName-mobile">Business Name *</Label>
+                        <Input
+                          id="businessName-mobile"
+                          value={businessName}
+                          onChange={(e) => setBusinessName(e.target.value)}
+                          placeholder="Your Company Name"
+                          className="mt-1"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="businessCustomization-mobile">Customization Details *</Label>
+                        <Textarea
+                          id="businessCustomization-mobile"
+                          value={businessCustomization}
+                          onChange={(e) => setBusinessCustomization(e.target.value)}
+                          placeholder="Logo, text, colors..."
+                          rows={3}
+                          className="mt-1"
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div>
+                    <Label>Quantity</Label>
+                    <div className="flex items-center gap-4 mb-4">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      >
+                        -
+                      </Button>
+                      <span className="text-xl font-semibold w-12 text-center">{quantity}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setQuantity(quantity + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+
+                    <Button onClick={handleAddToCart} size="lg" className="w-full mb-2">
+                      <ShoppingCart className="w-5 h-5 mr-2" />
+                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      onClick={handleAddToWishlist}
+                      className={`w-full ${isInWishlist ? 'bg-red-50 hover:bg-red-100 border-red-500' : 'hover:bg-gray-100'}`}
+                    >
+                      <Heart className={`w-5 h-5 mr-2 ${isInWishlist ? 'fill-red-500 text-red-500' : 'text-gray-600'}`} />
+                      {isInWishlist ? 'In Wishlist' : 'Add to Wishlist'}
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
             {/* Designer Info */}
             {designer && (
               <Card className="mb-6">
@@ -582,8 +743,8 @@ export default function ProductDetail() {
             </div>
           </div>
 
-          {/* Product Info */}
-          <div>
+          {/* Product Info - Desktop */}
+          <div className="hidden md:block">
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>

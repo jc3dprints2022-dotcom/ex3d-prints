@@ -37,7 +37,7 @@ const CATEGORIES = [
 
 const BUSINESS_INDUSTRIES = [
   "Local Souvenir Shops",
-  "Campus, Dorm & Student Living",
+  "Toy Store",
   "Health & Personal Care",
   "Office & Desk",
   "Other"
@@ -184,13 +184,13 @@ export default function ModelManagementSection() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+    const MAX_IMAGE_SIZE = 20 * 1024 * 1024; // 20MB for images
     const oversizedFiles = files.filter(file => file.size > MAX_IMAGE_SIZE);
     
     if (oversizedFiles.length > 0) {
       toast({
         title: "Image file too large",
-        description: `Some images exceed 10MB limit and will not be uploaded: ${oversizedFiles.map(f => f.name).join(', ')}`,
+        description: `Some images exceed 20MB limit and will not be uploaded: ${oversizedFiles.map(f => f.name).join(', ')}`,
         variant: "destructive"
       });
     }
@@ -247,9 +247,26 @@ export default function ModelManagementSection() {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
+    const MAX_PRINT_FILE_SIZE = 100 * 1024 * 1024; // 100MB for 3D files
+    const oversizedFiles = files.filter(file => file.size > MAX_PRINT_FILE_SIZE);
+    
+    if (oversizedFiles.length > 0) {
+      toast({
+        title: "3D file too large",
+        description: `Some files exceed 100MB limit: ${oversizedFiles.map(f => f.name).join(', ')}`,
+        variant: "destructive"
+      });
+    }
+
+    const filesToUpload = files.filter(file => file.size <= MAX_PRINT_FILE_SIZE);
+    if (filesToUpload.length === 0) {
+      e.target.value = null;
+      return;
+    }
+
     setSaving(true);
     try {
-      const uploadPromises = files.map(file => base44.integrations.Core.UploadFile({ file }));
+      const uploadPromises = filesToUpload.map(file => base44.integrations.Core.UploadFile({ file }));
       const results = await Promise.all(uploadPromises);
       const urls = results.map(res => res.file_url);
 
@@ -258,7 +275,7 @@ export default function ModelManagementSection() {
         print_files: [...prev.print_files, ...urls]
       }));
 
-      toast({ title: `${files.length} 3D file(s) uploaded successfully` });
+      toast({ title: `${filesToUpload.length} 3D file(s) uploaded successfully` });
       e.target.value = null; // Clear input
     } catch (error) {
       console.error('Upload error:', error);
@@ -1026,7 +1043,7 @@ export default function ModelManagementSection() {
                   disabled={saving}
                   className="mb-2 text-white"
                 />
-                <p className="text-xs text-gray-500 mb-2">At least one 3D model file required</p>
+                <p className="text-xs text-gray-500 mb-2">At least one 3D model file required (max 100MB per file)</p>
                 {formData.print_files.length > 0 && (
                   <div className="space-y-2">
                     {formData.print_files.map((url, idx) => (

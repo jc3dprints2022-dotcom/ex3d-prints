@@ -11,10 +11,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const INDUSTRIES = [
   "Local Souvenir Shops",
-  "Campus, Dorm & Student Living",
+  "Toy Store",
   "Health & Personal Care",
   "Office & Desk",
-  "Outdoor Lifestyle"
+  "Other"
 ];
 
 const CATEGORIES = [
@@ -178,7 +178,7 @@ export default function BusinessCatalog() {
     }
 
     setFilteredProducts(tempProducts);
-  }, [filters, products, searchQuery, selectedCategory, selectedBudget, selectedQuantity]);
+  }, [filters, products, searchQuery, selectedCategory, selectedBudget, selectedQuantity, selectedIndustry]);
 
   const toggleFilter = (type, value) => {
     setFilters(prev => {
@@ -306,10 +306,12 @@ export default function BusinessCatalog() {
                       <Checkbox
                         checked={filters.quantityRange === range.value}
                         onCheckedChange={(checked) => {
+                          const newValue = checked ? range.value : null;
                           setFilters(prev => ({
                             ...prev,
-                            quantityRange: checked ? range.value : null
+                            quantityRange: newValue
                           }));
+                          setSelectedQuantity(newValue);
                         }}
                       />
                       <span className="text-sm">{range.label}</span>
@@ -327,10 +329,12 @@ export default function BusinessCatalog() {
                       <Checkbox
                         checked={filters.budgetRange === range.value}
                         onCheckedChange={(checked) => {
+                          const newValue = checked ? range.value : null;
                           setFilters(prev => ({
                             ...prev,
-                            budgetRange: checked ? range.value : null
+                            budgetRange: newValue
                           }));
+                          setSelectedBudget(newValue);
                         }}
                       />
                       <span className="text-sm">{range.label}</span>
@@ -391,7 +395,12 @@ export default function BusinessCatalog() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredProducts.map(product => (
-                  <Link key={product.id} to={`${createPageUrl("BusinessProductDetail")}?id=${product.id}`} className="block">
+                  <Link 
+                    key={product.id} 
+                    to={`${createPageUrl("BusinessProductDetail")}?id=${product.id}`} 
+                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+                    className="block"
+                  >
                     <Card className="overflow-hidden hover:shadow-xl transition-all h-full flex flex-col">
                       <div className="relative aspect-square">
                         {product.images?.[0] ? (

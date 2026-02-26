@@ -8,10 +8,10 @@ import { Building2, ArrowRight, CheckCircle } from "lucide-react";
 
 const INDUSTRIES = [
   "Local Souvenir Shops",
-  "Campus, Dorm & Student Living",
+  "Toy Store",
   "Health & Personal Care",
   "Office & Desk",
-  "Outdoor Lifestyle"
+  "Other"
 ];
 
 const QUANTITIES = [
