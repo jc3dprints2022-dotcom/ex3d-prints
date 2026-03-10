@@ -311,7 +311,7 @@ export default function ProductDetail() {
     );
   }
 
-  if (!id || !product) {
+  if (!loading && (!id || !product)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
@@ -319,6 +319,14 @@ export default function ProductDetail() {
         <Button asChild>
           <Link to={createPageUrl("Marketplace")}>Back to Marketplace</Link>
         </Button>
+      </div>
+    );
+  }
+  
+  if (!product) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="w-12 h-12 animate-spin text-teal-500" />
       </div>
     );
   }
