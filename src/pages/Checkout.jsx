@@ -60,6 +60,10 @@ export default function Checkout() {
         const defaultAddr = addresses.find(addr => addr.is_default) || addresses[0];
         setShippingAddress(defaultAddr);
         setSelectedAddressId(defaultAddr.id || "");
+        // Pre-calculate shipping for saved address
+        if (defaultAddr.street && defaultAddr.city && defaultAddr.state && defaultAddr.zip) {
+          setTimeout(() => calculateShippingCost(defaultAddr), 500);
+        }
       } else {
         setShippingAddress({
           name: currentUser.full_name || "",
