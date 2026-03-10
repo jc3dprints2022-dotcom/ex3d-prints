@@ -92,8 +92,9 @@ export default function ProductDetail() {
     }
   };
 
-  const loadProduct = async () => {
+  const loadProduct = async (retryCount = 0) => {
     setLoading(true);
+    setLoadError(false);
     try {
       if (!id) {
         setLoading(false);
