@@ -38,7 +38,6 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [loadError, setLoadError] = useState(false);
   const [user, setUser] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [reviews, setReviews] = useState([]);
@@ -92,9 +91,8 @@ export default function ProductDetail() {
     }
   };
 
-  const loadProduct = async (retryCount = 0) => {
+  const loadProduct = async () => {
     setLoading(true);
-    setLoadError(false);
     try {
       if (!id) {
         setLoading(false);
@@ -193,12 +191,7 @@ export default function ProductDetail() {
 
     } catch (error) {
       console.error("Failed to load product:", error);
-      if (retryCount < 3) {
-        // Retry up to 3 times with a short delay
-        setTimeout(() => loadProduct(retryCount + 1), 1000 * (retryCount + 1));
-        return;
-      }
-      setLoadError(true);
+      toast({ title: "Failed to load product", variant: "destructive" });
     }
     setLoading(false);
   };
@@ -356,22 +349,7 @@ export default function ProductDetail() {
     );
   }
 
-  if (loadError) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Failed to Load Product</h1>
-        <p className="text-gray-600">There was a problem loading this listing. Please try again.</p>
-        <div className="flex gap-3">
-          <Button onClick={() => loadProduct()}>Retry</Button>
-          <Button asChild variant="outline">
-            <Link to={createPageUrl("Marketplace")}>Back to Marketplace</Link>
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  if (!id || (!loading && !product)) {
+  if (!id || !product) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
