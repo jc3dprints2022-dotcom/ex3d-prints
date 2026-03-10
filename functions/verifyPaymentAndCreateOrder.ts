@@ -165,6 +165,13 @@ Deno.serve(async (req) => {
         console.log('Creating order...');
         const isPriority = session.metadata.is_priority === 'true';
         const campusLocation = session.metadata.campus_location || 'erau_prescott';
+        const isLocalDelivery = session.metadata.is_local_delivery === 'true';
+        let shippingAddress = null;
+        try {
+            shippingAddress = session.metadata.shipping_address ? JSON.parse(session.metadata.shipping_address) : null;
+        } catch (e) {
+            console.error('Failed to parse shipping_address from session metadata:', e);
+        }
         
         // Update user's campus location if not set
         if (!user.campus_location && campusLocation) {
@@ -184,7 +191,9 @@ Deno.serve(async (req) => {
             payment_intent_id: session.payment_intent,
             stripe_session_id: sessionId,
             is_priority: isPriority,
-            campus_location: campusLocation
+            campus_location: campusLocation,
+            is_local_delivery: isLocalDelivery,
+            shipping_address: shippingAddress
         });
 
         console.log('✅ Order created:', newOrder.id);

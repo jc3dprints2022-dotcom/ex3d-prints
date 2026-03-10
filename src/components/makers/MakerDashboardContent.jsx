@@ -158,16 +158,49 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
   };
 
   const handleMarkCompleted = async (orderId) => {
-    if (!confirm("Is this order ready for pickup? Please contact Jacob at labaghr@my.erau.edu or 610-858-3200 for drop-off arrangements.")) {
+    if (!confirm("Mark this order as completed? A USPS shipping label will be generated automatically if the customer provided a shipping address.")) {
       return;
     }
     setUpdatingOrder(orderId);
     try {
       await base44.entities.Order.update(orderId, { status: 'completed' });
-      toast({
-        title: "Order marked as completed!",
-        description: "Please contact Jacob at labaghr@my.erau.edu or 610-858-3200 for drop-off."
-      });
+
+      const order = orders.find(o => o.id === orderId);
+
+      // Auto-generate shipping label if order has a shipping address
+      if (order && !order.is_local_delivery && order.shipping_address?.street) {
+        try {
+          const res = await base44.functions.invoke('generateShippingLabel', { orderId });
+          const data = res.data;
+          if (data?.success && data?.tracking_number) {
+            toast({
+              title: "✅ Order completed! Shipping label generated.",
+              description: `Tracking: ${data.tracking_number}`
+            });
+          } else if (data?.is_local_delivery) {
+            toast({ title: "Order completed!", description: "Local delivery — no label needed." });
+          } else {
+            toast({
+              title: "Order completed",
+              description: data?.error || "Label generation failed. Please generate manually if needed."
+            });
+          }
+        } catch (labelErr) {
+          console.error('Auto label generation failed:', labelErr);
+          toast({
+            title: "Order marked as completed",
+            description: "Auto shipping label generation failed — USPS may not be configured yet."
+          });
+        }
+      } else {
+        toast({
+          title: "Order marked as completed!",
+          description: order?.is_local_delivery
+            ? "Local delivery — no shipping label needed."
+            : "Please contact Jacob at labaghr@my.erau.edu or 610-858-3200 for drop-off."
+        });
+      }
+
       await loadDashboard();
     } catch (error) {
       toast({ title: "Failed to complete order", description: error.message, variant: "destructive" });
@@ -507,9 +540,23 @@ The EX3D Team`
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
                           <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
+                          {order.tracking_number && (
+                            <p className="text-xs text-blue-600 mt-1 font-mono">📦 {order.tracking_number}</p>
+                          )}
                         </div>
 
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 flex-wrap">
+                          {order.shipping_label_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(order.shipping_label_url, '_blank')}
+                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              Label
+                            </Button>
+                          )}
                           {order.status === 'pending' && (
                             <>
                               <Button size="sm" onClick={() => handleAcceptOrder(order.id)} disabled={updatingOrder === order.id} className="bg-green-600 hover:bg-green-700">

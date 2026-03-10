@@ -13,7 +13,7 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json();
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation, shippingFee } = body;
+        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation, shippingFee, shippingAddress, isLocalDelivery } = body;
         
         console.log('📦 Full request body:', JSON.stringify(body, null, 2));
         console.log('📦 isPriority received:', isPriority);
@@ -199,7 +199,9 @@ Deno.serve(async (req) => {
                 referrer_id: referralValidation?.referrer_id || '',
                 has_referral: referralValidation?.valid ? 'true' : 'false',
                 is_priority: isPriority ? 'true' : 'false',
-                campus_location: campusLocation || ''
+                campus_location: campusLocation || '',
+                shipping_address: JSON.stringify(shippingAddress || {}),
+                is_local_delivery: isLocalDelivery ? 'true' : 'false'
             },
         };
 

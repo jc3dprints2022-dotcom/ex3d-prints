@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users, Building } from "lucide-react";
+import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users, Building, CheckCircle, AlertCircle } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CAMPUS_LOCATIONS = [
@@ -38,6 +38,9 @@ export default function Checkout() {
   const [selectedAddressId, setSelectedAddressId] = useState("");
   const [isLocalDelivery, setIsLocalDelivery] = useState(false);
   const { toast } = useToast();
+  const [validatingAddress, setValidatingAddress] = useState(false);
+  const [addressValidated, setAddressValidated] = useState(false);
+  const [addressError, setAddressError] = useState(null);
 
   // Persist priority state to localStorage
   useEffect(() => {
@@ -156,6 +159,45 @@ export default function Checkout() {
       console.error("Failed to load cart:", error);
       toast({ title: "Cart load failed", description: error.message, variant: "destructive" });
     }
+  };
+
+  const handleValidateAddress = async () => {
+    if (!shippingAddress.street || !shippingAddress.state) {
+      toast({ title: "Please fill in street address and state first", variant: "destructive" });
+      return;
+    }
+    setValidatingAddress(true);
+    setAddressError(null);
+    setAddressValidated(false);
+    try {
+      const res = await base44.functions.invoke('validateAddress', {
+        streetAddress: shippingAddress.street,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        ZIPCode: shippingAddress.zip
+      });
+      const data = res.data;
+      if (data?.valid) {
+        const addr = data.address;
+        setShippingAddress(prev => ({
+          ...prev,
+          street: addr.streetAddress || prev.street,
+          city: addr.city || prev.city,
+          state: addr.state || prev.state,
+          zip: addr.ZIPCode || prev.zip
+        }));
+        setAddressValidated(true);
+        toast({ title: "✅ Address validated and standardized by USPS" });
+      } else {
+        const errMsg = data?.error || 'Address could not be validated by USPS';
+        setAddressError(errMsg);
+        toast({ title: "Address not valid", description: errMsg, variant: "destructive" });
+      }
+    } catch (err) {
+      setAddressError('Address validation service unavailable');
+      toast({ title: "Validation failed", description: err.message, variant: "destructive" });
+    }
+    setValidatingAddress(false);
   };
 
   const calculateSubtotal = () =>
@@ -477,6 +519,36 @@ export default function Checkout() {
                         className="text-sm"
                       />
                     </div>
+                  </div>
+
+                  {/* USPS Address Validation */}
+                  <div className="space-y-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={handleValidateAddress}
+                      disabled={validatingAddress || !shippingAddress.street || !shippingAddress.state}
+                      className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      {validatingAddress ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Validating with USPS...</>
+                      ) : (
+                        <><MapPin className="w-4 h-4 mr-2" />Validate Address with USPS</>
+                      )}
+                    </Button>
+                    {addressValidated && (
+                      <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200 text-green-700 text-xs">
+                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                        Address verified and standardized by USPS
+                      </div>
+                    )}
+                    {addressError && (
+                      <div className="flex items-center gap-2 p-2 bg-red-50 rounded border border-red-200 text-red-700 text-xs">
+                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                        {addressError}
+                      </div>
+                    )}
                   </div>
 
                   {/* Priority Option */}
