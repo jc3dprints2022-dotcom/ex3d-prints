@@ -342,26 +342,7 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Local Delivery Option */}
-                <div className="border rounded-lg p-4 bg-teal-50 border-teal-200">
-                  <div className="flex items-center space-x-3">
-                    <input
-                      type="checkbox"
-                      id="localDelivery"
-                      checked={isLocalDelivery}
-                      onChange={(e) => setIsLocalDelivery(e.target.checked)}
-                      className="w-5 h-5 text-teal-600 rounded focus:ring-teal-500"
-                    />
-                    <Label htmlFor="localDelivery" className="cursor-pointer flex-1">
-                      <p className="font-medium text-teal-900">🚚 Local Drop-Off Delivery</p>
-                      <p className="text-sm text-teal-700">
-                        We'll drop it off directly to you (no shipping address needed)
-                      </p>
-                    </Label>
-                  </div>
-                </div>
-
-                {!isLocalDelivery && savedAddresses.length > 0 && (
+                {savedAddresses.length > 0 && (
                   <div>
                     <Label className="mb-2">Saved Addresses</Label>
                     <Select 
