@@ -179,7 +179,7 @@ export default function MakerToolsSection() {
         </TabsList>
 
         <TabsContent value="tools">
-      <Card>
+          <Card>
         <CardHeader>
           <CardTitle>Active Makers ({makers.length})</CardTitle>
         </CardHeader>
@@ -355,9 +355,8 @@ export default function MakerToolsSection() {
               })
             )}
           </div>
-        </CardContent>
-      </Card>
-
+          </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="performance">
