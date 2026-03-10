@@ -312,14 +312,15 @@ The EX3D Team`
       toast({ title: "Downloading file..." });
       const response = await fetch(fileUrl);
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      // Force STL MIME type so browser doesn't flag it as unknown/suspicious
+      const stlBlob = new Blob([blob], { type: 'model/stl' });
+      const url = window.URL.createObjectURL(stlBlob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = fileName || fileUrl.split('/').pop();
+      a.download = fileName || fileUrl.split('/').pop().replace(/[^a-z0-9._-]/gi, '_');
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
+      setTimeout(() => { window.URL.revokeObjectURL(url); a.remove(); }, 1000);
       toast({ title: "Download started!" });
     } catch (error) {
       console.error("Download error:", error);
