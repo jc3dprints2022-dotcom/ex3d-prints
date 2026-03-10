@@ -57,7 +57,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       const myOrders = allOrders.filter(order => {
         const isAssignedMaker = order.maker_id === currentUser.maker_id;
         const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && 
-                                   order.status === 'pending' && 
+                                   ['pending', 'unassigned'].includes(order.status) && 
                                    !order.maker_id;
         return isAssignedMaker || isInMultiAssignment;
       });
