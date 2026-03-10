@@ -200,25 +200,8 @@ export default function Checkout() {
       console.log('Referral code:', referralCode);
       console.log('Is priority:', isPriority);
       
-      // Calculate shipping fee
-      const subtotal = calculateSubtotal();
-      const shippingFee = subtotal < 35 ? 5.99 : 0;
-
-      // Add priority delivery as a cart item if selected
-      let finalCartItems = [...cartItems];
-      if (isPriority) {
-        finalCartItems.push({
-          product_id: 'PRIORITY_DELIVERY',
-          product_name: '⚡ Priority Overnight Delivery',
-          quantity: 1,
-          unit_price: 4,
-          total_price: 4,
-          selected_material: 'N/A',
-          selected_color: 'N/A',
-          is_priority_fee: true
-        });
-        console.log('✅ Added priority delivery item to cart');
-      }
+      const shippingFee = getShippingFee();
+      const finalCartItems = [...cartItems];
       
       // Validate cart items have required fields
       const invalidItems = finalCartItems.filter(item => 
