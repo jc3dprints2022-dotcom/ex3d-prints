@@ -356,7 +356,22 @@ export default function ProductDetail() {
     );
   }
 
-  if (!id || !product) {
+  if (loadError) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4">
+        <h1 className="text-2xl font-bold text-gray-900">Failed to Load Product</h1>
+        <p className="text-gray-600">There was a problem loading this listing. Please try again.</p>
+        <div className="flex gap-3">
+          <Button onClick={() => loadProduct()}>Retry</Button>
+          <Button asChild variant="outline">
+            <Link to={createPageUrl("Marketplace")}>Back to Marketplace</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!id || (!loading && !product)) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-4">Product Not Found</h1>
