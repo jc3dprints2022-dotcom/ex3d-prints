@@ -73,13 +73,16 @@ Deno.serve(async (req) => {
       severity: 'info'
     });
 
-    const filename = `order_${token.purpose.replace('order_', '')}_${product.name.replace(/[^a-z0-9]/gi, '_')}.stl`;
+    const safeName = product.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const filename = `ex3d_order_${token.purpose.replace('order_', '')}_${safeName}.stl`;
 
     return new Response(watermarkedContent.buffer, {
       status: 200,
       headers: {
-        'Content-Type': 'application/octet-stream',
-        'Content-Disposition': `attachment; filename="${filename}"`,
+        'Content-Type': 'model/stl',
+        'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
+        'X-Content-Type-Options': 'nosniff',
+        'Cache-Control': 'no-store',
       }
     });
 
