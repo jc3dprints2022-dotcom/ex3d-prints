@@ -552,24 +552,12 @@ export default function Checkout() {
                   <span>Subtotal</span>
                   <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
-                {isPriority && (
-                  <div className="flex justify-between text-orange-600">
-                    <span>⚡ Priority Overnight</span>
-                    <span>+$4.00</span>
-                  </div>
-                )}
-                {calculateSubtotal() < 35 && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping Fee (Orders under $35)</span>
-                    <span>+$5.99</span>
-                  </div>
-                )}
-                {calculateSubtotal() >= 35 && (
-                  <div className="flex justify-between text-gray-600">
-                    <span>Shipping</span>
-                    <span className="text-green-600 font-semibold">FREE</span>
-                  </div>
-                )}
+                <div className="flex justify-between text-gray-600">
+                  <span>Shipping{calculatingShipping ? ' (calculating...)' : ''}</span>
+                  <span className={calculatingShipping ? 'text-gray-400' : ''}>
+                    {calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
+                  </span>
+                </div>
                 {couponCode && (
                   <div className="flex justify-between text-green-600 text-sm">
                     <span>Coupon: {couponCode}</span>
