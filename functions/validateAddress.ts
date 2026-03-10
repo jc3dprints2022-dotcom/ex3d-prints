@@ -1,5 +1,20 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
+const TEST_EMAIL = 'jc3dprints2022@gmail.com';
+
+async function getShippoKey(userEmail, base44) {
+  if (userEmail === TEST_EMAIL) {
+    return Deno.env.get('SHIPPO_TEST_API_KEY');
+  }
+  try {
+    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
+    if (admins[0]?.shipping_api_mode === 'test') {
+      return Deno.env.get('SHIPPO_TEST_API_KEY');
+    }
+  } catch (_) {}
+  return Deno.env.get('SHIPPO_API_KEY');
+}
+
 Deno.serve(async (req) => {
   try {
     const base44 = createClientFromRequest(req);
@@ -12,10 +27,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'streetAddress and state are required' }, { status: 400 });
     }
 
-    const apiKey = Deno.env.get('SHIPPO_API_KEY');
-    if (!apiKey) {
-      return Response.json({ error: 'SHIPPO_API_KEY not configured' }, { status: 500 });
-    }
+    const apiKey = await getShippoKey(user.email, base44);
+    if (!apiKey) return Response.json({ error: 'Shippo API key not configured' }, { status: 500 });
 
     const res = await fetch('https://api.goshippo.com/addresses/', {
       method: 'POST',

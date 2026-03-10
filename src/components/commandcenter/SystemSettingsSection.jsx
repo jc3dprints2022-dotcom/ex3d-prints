@@ -14,7 +14,9 @@ import UserManagementSection from "./UserManagementSection";
 
 export default function SystemSettingsSection() {
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [shippingApiMode, setShippingApiMode] = useState('live');
   const [loading, setLoading] = useState(false);
+  const [shippingLoading, setShippingLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -25,6 +27,7 @@ export default function SystemSettingsSection() {
     try {
       const systemUser = await base44.auth.me();
       setMaintenanceMode(systemUser.maintenance_mode || false);
+      setShippingApiMode(systemUser.shipping_api_mode || 'live');
     } catch (error) {
       console.error("Failed to load settings:", error);
     }
@@ -34,10 +37,7 @@ export default function SystemSettingsSection() {
     setLoading(true);
     try {
       const adminUser = await base44.auth.me();
-      await base44.entities.User.update(adminUser.id, {
-        maintenance_mode: enabled
-      });
-      
+      await base44.entities.User.update(adminUser.id, { maintenance_mode: enabled });
       setMaintenanceMode(enabled);
       toast({ 
         title: enabled ? "Maintenance Mode Enabled" : "Maintenance Mode Disabled",
@@ -46,12 +46,27 @@ export default function SystemSettingsSection() {
           : "The platform is now accessible to all users."
       });
     } catch (error) {
-      toast({ 
-        title: "Failed to toggle maintenance mode", 
-        variant: "destructive" 
-      });
+      toast({ title: "Failed to toggle maintenance mode", variant: "destructive" });
     }
     setLoading(false);
+  };
+
+  const toggleShippingApiMode = async (mode) => {
+    setShippingLoading(true);
+    try {
+      const adminUser = await base44.auth.me();
+      await base44.entities.User.update(adminUser.id, { shipping_api_mode: mode });
+      setShippingApiMode(mode);
+      toast({
+        title: `Shipping API switched to ${mode === 'test' ? 'TEST' : 'LIVE'} mode`,
+        description: mode === 'test'
+          ? "All shipping calls will use the Shippo test key."
+          : "All shipping calls will use the live Shippo key (except jc3dprints2022@gmail.com which always uses test)."
+      });
+    } catch (error) {
+      toast({ title: "Failed to update shipping API mode", variant: "destructive" });
+    }
+    setShippingLoading(false);
   };
 
   return (
