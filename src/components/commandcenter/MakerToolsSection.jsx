@@ -358,6 +358,111 @@ export default function MakerToolsSection() {
         </CardContent>
       </Card>
 
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-white">Maker Performance & Merit System</h2>
+              <Button onClick={calculateWeeklyPerformance}>
+                <TrendingUp className="w-4 h-4 mr-2" />
+                Calculate Weekly Performance
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {['gold', 'silver', 'bronze'].map(tier => {
+                const tierMakers = perfList.filter(p => p.tier === tier);
+                return (
+                  <Card key={tier} className="bg-slate-800 border-slate-700">
+                    <CardContent className="pt-6">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm text-slate-400 capitalize">{tier} Tier</p>
+                          <p className="text-2xl font-bold text-white">{tierMakers.length} Makers</p>
+                        </div>
+                        {getTierIcon(tier)}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <Card className="bg-slate-800 border-slate-700">
+              <CardHeader>
+                <CardTitle className="text-white">Performance Leaderboard</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-slate-300">
+                    <thead>
+                      <tr className="border-b border-slate-600">
+                        <th className="text-left py-2">Rank</th>
+                        <th className="text-left">Maker ID</th>
+                        <th className="text-center">Tier</th>
+                        <th className="text-center">On-Time %</th>
+                        <th className="text-center">Defect %</th>
+                        <th className="text-center">Avg Turnaround</th>
+                        <th className="text-center">Volume</th>
+                        <th className="text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {perfList
+                        .sort((a, b) => {
+                          const tierOrder = { gold: 3, silver: 2, bronze: 1 };
+                          if (tierOrder[a.tier] !== tierOrder[b.tier]) return tierOrder[b.tier] - tierOrder[a.tier];
+                          return b.on_time_delivery_rate - a.on_time_delivery_rate;
+                        })
+                        .map((perf, index) => (
+                          <tr key={perf.id} className="border-b border-slate-700 hover:bg-slate-700/50">
+                            <td className="py-3">#{index + 1}</td>
+                            <td>{perf.maker_id}</td>
+                            <td className="text-center">
+                              <Badge className={getTierColor(perf.tier)}>{perf.tier?.toUpperCase()}</Badge>
+                            </td>
+                            <td className="text-center">
+                              <span className={perf.on_time_delivery_rate < 95 ? 'text-red-400' : 'text-green-400'}>
+                                {perf.on_time_delivery_rate?.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="text-center">
+                              <span className={perf.defect_rate > 5 ? 'text-red-400' : 'text-green-400'}>
+                                {perf.defect_rate?.toFixed(1)}%
+                              </span>
+                            </td>
+                            <td className="text-center">{perf.average_turnaround_hours?.toFixed(1) || 0}h</td>
+                            <td className="text-center">{perf.total_volume_fulfilled}</td>
+                            <td className="text-center">
+                              {perf.flagged_for_review && <Badge variant="destructive">Flagged</Badge>}
+                              {perf.routing_priority_reduced && <Badge variant="destructive">Low Priority</Badge>}
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+
+            {perfList.filter(p => p.flagged_for_review).length > 0 && (
+              <Card className="border-red-700 bg-red-950/50">
+                <CardContent className="pt-6 flex items-start gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-red-300">
+                      {perfList.filter(p => p.flagged_for_review).length} Makers Flagged for Review
+                    </p>
+                    <p className="text-sm text-red-400">These makers have been below standard for 2+ consecutive weeks</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
+
       {/* Maker Details Dialog */}
       <Dialog open={showMakerDialog} onOpenChange={setShowMakerDialog}>
         <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
