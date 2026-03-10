@@ -38,6 +38,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [user, setUser] = useState(null);
   const [isInWishlist, setIsInWishlist] = useState(false);
   const [reviews, setReviews] = useState([]);
