@@ -186,8 +186,8 @@ export default function Checkout() {
       return;
     }
 
-    if (!isLocalDelivery && (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip)) {
-      toast({ title: "Delivery address required", description: "Please fill in all address fields or select local delivery.", variant: "destructive" });
+    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
+      toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
       return;
     }
 
