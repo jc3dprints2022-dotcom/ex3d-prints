@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Settings, AlertTriangle, CheckCircle, Loader2 } from "lucide-react";
+import { Settings, AlertTriangle, CheckCircle, Loader2, Truck } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SecurityDRMSection from "./SecurityDRMSection";
@@ -128,6 +128,42 @@ export default function SystemSettingsSection() {
                     </AlertDescription>
                   </Alert>
                 )}
+              </div>
+
+              {/* Shipping API Mode */}
+              <div className="bg-slate-900 p-6 rounded-lg border border-slate-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <Truck className="w-5 h-5 text-cyan-400" />
+                  <Label className="text-white text-lg font-semibold">Shipping API Mode</Label>
+                </div>
+                <p className="text-slate-400 text-sm mb-4">
+                  Note: jc3dprints2022@gmail.com always uses the test key regardless of this setting.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    size="sm"
+                    onClick={() => toggleShippingApiMode('live')}
+                    disabled={shippingLoading}
+                    className={shippingApiMode === 'live' ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}
+                  >
+                    {shippingLoading && shippingApiMode !== 'live' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                    🟢 Live Mode
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => toggleShippingApiMode('test')}
+                    disabled={shippingLoading}
+                    className={shippingApiMode === 'test' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}
+                  >
+                    {shippingLoading && shippingApiMode !== 'test' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                    🟡 Test Mode
+                  </Button>
+                </div>
+                <p className="text-xs mt-3 text-slate-500">
+                  Current: <span className={shippingApiMode === 'test' ? 'text-yellow-400 font-semibold' : 'text-green-400 font-semibold'}>
+                    {shippingApiMode === 'test' ? 'TEST (Shippo Test Key)' : 'LIVE (Shippo Live Key)'}
+                  </span>
+                </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
