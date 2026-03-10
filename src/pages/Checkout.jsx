@@ -450,62 +450,22 @@ export default function Checkout() {
                     </div>
                   </div>
 
-                  {/* USPS Address Validation */}
-                  <div className="space-y-2">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={handleValidateAddress}
-                      disabled={validatingAddress || !shippingAddress.street || !shippingAddress.state}
-                      className="w-full border-blue-300 text-blue-700 hover:bg-blue-50"
-                    >
-                      {validatingAddress ? (
-                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Validating with USPS...</>
-                      ) : (
-                        <><MapPin className="w-4 h-4 mr-2" />Validate Address with USPS</>
-                      )}
-                    </Button>
-                    {addressValidated && (
-                      <div className="flex items-center gap-2 p-2 bg-green-50 rounded border border-green-200 text-green-700 text-xs">
-                        <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                        Address verified and standardized by USPS
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <span className="font-medium">Standard Delivery:</span> Est. 3-5 business days
+                    </p>
+                    {calculatingShipping && (
+                      <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                        Calculating real shipping cost...
                       </div>
                     )}
-                    {addressError && (
-                      <div className="flex items-center gap-2 p-2 bg-red-50 rounded border border-red-200 text-red-700 text-xs">
-                        <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                        {addressError}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Priority Option */}
-                  <div className="border rounded-lg p-4 bg-orange-50 border-orange-200">
-                    <div className="flex items-center space-x-3">
-                      <input
-                        type="checkbox"
-                        id="priority"
-                        checked={isPriority}
-                        onChange={(e) => setIsPriority(e.target.checked)}
-                        className="w-5 h-5 text-orange-600 rounded focus:ring-orange-500"
-                      />
-                      <Label htmlFor="priority" className="cursor-pointer flex-1">
-                        <p className="font-medium text-orange-900">⚡ Priority Overnight Delivery (+$4)</p>
-                        <p className="text-sm text-orange-700">
-                          Est. delivery: Next day
-                        </p>
-                      </Label>
-                    </div>
-                  </div>
-
-                  {!isPriority && (
-                    <div className="p-3 bg-gray-50 border rounded-lg">
-                      <p className="text-sm text-gray-700">
-                        <span className="font-medium">Standard Delivery:</span> Est. 2-3 business days
+                    {shippingCost !== null && !calculatingShipping && (
+                      <p className="text-xs text-green-700 font-semibold mt-1">
+                        ✓ Shipping rate calculated: ${shippingCost.toFixed(2)}
                       </p>
-                    </div>
-                  )}
+                    )}
+                  </div>
 
                   <div className="flex items-center space-x-2 pt-2">
                     <input
