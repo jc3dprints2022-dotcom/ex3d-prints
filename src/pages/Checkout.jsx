@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users, Building, CheckCircle, AlertCircle } from "lucide-react";
+import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CAMPUS_LOCATIONS = [
@@ -444,6 +444,12 @@ export default function Checkout() {
                         id="zip"
                         value={shippingAddress.zip}
                         onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
+                        onBlur={() => {
+                          const addr = {...shippingAddress, zip: shippingAddress.zip};
+                          if (addr.street && addr.city && addr.state && addr.zip) {
+                            calculateShippingCost(addr);
+                          }
+                        }}
                         required
                         className="text-sm"
                       />
