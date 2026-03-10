@@ -1,34 +1,23 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
-const USPS_TOKEN_URL = 'https://apis.usps.com/oauth2/v3/token';
-const USPS_LABELS_URL = 'https://apis.usps.com/labels/v3/label';
+const SHIPPO_BASE = 'https://api.goshippo.com';
 
-async function getUSPSToken(clientId, clientSecret) {
-  const body = new URLSearchParams({
-    grant_type: 'client_credentials',
-    client_id: clientId,
-    client_secret: clientSecret,
-    scope: 'labels'
-  });
-
-  const res = await fetch(USPS_TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: body.toString()
-  });
-
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(`USPS auth failed: ${err}`);
-  }
-
-  const data = await res.json();
-  return data.access_token;
+function gToLb(grams) {
+  return Math.max(0.1, Math.round((grams / 453.592) * 100) / 100);
 }
 
-function gramsToOz(grams) {
-  // 1 gram = 0.035274 oz, minimum 1 oz
-  return Math.max(1, Math.round(grams * 0.035274 * 10) / 10);
+async function shippoPost(path, body, apiKey) {
+  const res = await fetch(`${SHIPPO_BASE}${path}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `ShippoToken ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(`Shippo ${path} failed: ${JSON.stringify(data)}`);
+  return data;
 }
 
 Deno.serve(async (req) => {
@@ -38,156 +27,151 @@ Deno.serve(async (req) => {
     if (!user) return Response.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { orderId } = await req.json();
+    if (!orderId) return Response.json({ error: 'orderId is required' }, { status: 400 });
 
-    if (!orderId) {
-      return Response.json({ error: 'orderId is required' }, { status: 400 });
-    }
+    const apiKey = Deno.env.get('SHIPPO_API_KEY');
+    if (!apiKey) return Response.json({ error: 'SHIPPO_API_KEY not configured' }, { status: 500 });
 
     const order = await base44.asServiceRole.entities.Order.get(orderId);
+    if (!order) return Response.json({ error: 'Order not found' }, { status: 404 });
 
-    if (!order) {
-      return Response.json({ error: 'Order not found' }, { status: 404 });
-    }
-
-    // Local delivery orders don't need labels
+    // Local delivery — no label needed
     if (order.is_local_delivery) {
-      return Response.json({
-        success: true,
-        message: 'Local delivery — no shipping label needed',
-        is_local_delivery: true
-      });
+      return Response.json({ success: true, message: 'Local delivery — no label needed', is_local_delivery: true });
     }
 
     if (!order.shipping_address?.street) {
-      return Response.json({ error: 'Order has no shipping address — cannot generate label' }, { status: 400 });
+      return Response.json({ error: 'Order has no shipping address' }, { status: 400 });
     }
 
-    const clientId = Deno.env.get('USPS_CLIENT_ID');
-    const clientSecret = Deno.env.get('USPS_CLIENT_SECRET');
-    const paymentToken = Deno.env.get('USPS_PAYMENT_AUTH_TOKEN');
-
-    if (!clientId || !clientSecret || !paymentToken) {
-      return Response.json({ error: 'USPS credentials not fully configured (need USPS_CLIENT_ID, USPS_CLIENT_SECRET, USPS_PAYMENT_AUTH_TOKEN)' }, { status: 500 });
-    }
-
-    // Get maker's address as the "from" address
-    let fromAddr = { street: '1 N GURLEY ST', city: 'PRESCOTT', state: 'AZ', zip: '86301' };
+    // Get maker's address as "from"
+    let fromAddr = { name: 'EX3D Prints', street: '1 N Gurley St', city: 'Prescott', state: 'AZ', zip: '86301' };
     if (order.maker_id) {
       try {
         const makers = await base44.asServiceRole.entities.User.filter({ maker_id: order.maker_id });
         if (makers.length > 0 && makers[0].address?.street) {
-          fromAddr = makers[0].address;
+          const m = makers[0];
+          fromAddr = {
+            name: m.full_name || 'EX3D Maker',
+            street: m.address.street,
+            city: m.address.city,
+            state: m.address.state,
+            zip: m.address.zip,
+            phone: m.phone || ''
+          };
         }
       } catch (e) {
-        console.error('Could not get maker address, using default:', e.message);
+        console.error('Could not fetch maker address, using default:', e.message);
       }
     }
 
-    // Calculate total package weight from items (default 50g per item if unknown)
-    const totalGrams = order.items.reduce((sum, item) => {
-      return sum + ((item.weight_grams || 50) * (item.quantity || 1));
-    }, 0);
-    const weightOz = gramsToOz(totalGrams);
+    const toAddr = order.shipping_address;
+    const totalGrams = order.items.reduce((sum, item) => sum + ((item.weight_grams || 50) * (item.quantity || 1)), 0);
+    const weightLb = gToLb(totalGrams);
 
-    // Priority orders use Priority Mail, standard use Ground Advantage
-    const mailClass = order.is_priority ? 'PRIORITY_MAIL' : 'USPS_GROUND_ADVANTAGE';
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const labelRequest = {
-      toAddress: {
-        streetAddress: order.shipping_address.street,
-        city: order.shipping_address.city,
-        state: order.shipping_address.state,
-        ZIPCode: (order.shipping_address.zip || '').replace(/-.*/,'').slice(0, 5),
-      },
-      fromAddress: {
-        streetAddress: fromAddr.street,
+    // 1. Create address objects in Shippo
+    const [addrFrom, addrTo] = await Promise.all([
+      shippoPost('/addresses/', {
+        name: fromAddr.name,
+        street1: fromAddr.street,
         city: fromAddr.city,
         state: fromAddr.state,
-        ZIPCode: (fromAddr.zip || '').replace(/-.*/,'').slice(0, 5),
-      },
-      packageDescription: {
-        weightUOM: 'oz',
-        weight: weightOz,
-        mailingDate: today,
-        mailClass,
-        rateIndicator: 'DR',
-        processingCategory: 'MACHINABLE',
-        destinationEntryFacilityType: 'NONE'
-      },
-      imageInfo: {
-        imageType: 'PDF',
-        labelType: 'SHIPPING_LABEL'
-      }
-    };
+        zip: fromAddr.zip,
+        country: 'US',
+        phone: fromAddr.phone || '',
+        validate: false
+      }, apiKey),
+      shippoPost('/addresses/', {
+        name: toAddr.name || 'Customer',
+        street1: toAddr.street,
+        city: toAddr.city,
+        state: toAddr.state,
+        zip: toAddr.zip,
+        country: 'US',
+        phone: toAddr.phone || '',
+        validate: true
+      }, apiKey)
+    ]);
 
-    console.log('Generating USPS label for order:', orderId, JSON.stringify(labelRequest));
+    console.log('Addresses created. From:', addrFrom.object_id, 'To:', addrTo.object_id);
 
-    const token = await getUSPSToken(clientId, clientSecret);
+    // 2. Create shipment to get rates
+    const shipment = await shippoPost('/shipments/', {
+      address_from: addrFrom.object_id,
+      address_to: addrTo.object_id,
+      parcels: [{
+        length: '6',
+        width: '6',
+        height: '4',
+        distance_unit: 'in',
+        weight: weightLb.toString(),
+        mass_unit: 'lb'
+      }],
+      async: false
+    }, apiKey);
 
-    const labelResponse = await fetch(USPS_LABELS_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-Payment-Authorization-Token': paymentToken,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.usps.labels+json'
-      },
-      body: JSON.stringify(labelRequest)
-    });
+    console.log('Shipment created:', shipment.object_id, '| Rates count:', shipment.rates?.length);
 
-    if (!labelResponse.ok) {
-      const errText = await labelResponse.text();
-      console.error('USPS label generation failed:', errText);
+    if (!shipment.rates || shipment.rates.length === 0) {
+      return Response.json({ error: 'No shipping rates available for this address' }, { status: 400 });
+    }
+
+    // 3. Pick best rate: Priority for priority orders, otherwise cheapest USPS rate
+    let selectedRate = null;
+    const uspsRates = shipment.rates.filter(r => r.provider === 'USPS');
+
+    if (order.is_priority) {
+      selectedRate = uspsRates.find(r => r.servicelevel?.token?.includes('priority'))
+        || uspsRates[0]
+        || shipment.rates[0];
+    } else {
+      // Pick cheapest USPS rate, fallback to cheapest overall
+      const sorted = (uspsRates.length > 0 ? uspsRates : shipment.rates)
+        .sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+      selectedRate = sorted[0];
+    }
+
+    console.log('Selected rate:', selectedRate.provider, selectedRate.servicelevel?.name, '$' + selectedRate.amount);
+
+    // 4. Purchase label (transaction)
+    const transaction = await shippoPost('/transactions/', {
+      rate: selectedRate.object_id,
+      label_file_type: 'PDF',
+      async: false
+    }, apiKey);
+
+    if (transaction.status !== 'SUCCESS') {
       return Response.json({
-        error: 'USPS label generation failed',
-        details: errText
+        error: 'Label purchase failed',
+        details: transaction.messages || transaction.status
       }, { status: 500 });
     }
 
-    const labelData = await labelResponse.json();
-    console.log('USPS label response received. Keys:', Object.keys(labelData));
+    const trackingNumber = transaction.tracking_number;
+    const labelUrl = transaction.label_url;
 
-    const trackingNumber = labelData?.labelMetadata?.trackingNumber
-      || labelData?.trackingNumber
-      || null;
+    console.log('Label purchased. Tracking:', trackingNumber, 'URL:', labelUrl);
 
-    const postage = labelData?.labelMetadata?.postage || null;
-
-    // Upload label PDF to storage if base64 image is returned
-    let labelUrl = null;
-    const labelImageBase64 = labelData?.labelImage || labelData?.labelMetadata?.labelImage;
-
-    if (labelImageBase64) {
-      try {
-        const binaryString = atob(labelImageBase64);
-        const bytes = new Uint8Array(binaryString.length);
-        for (let i = 0; i < binaryString.length; i++) {
-          bytes[i] = binaryString.charCodeAt(i);
-        }
-        const pdfFile = new File([bytes], `label_${orderId}.pdf`, { type: 'application/pdf' });
-        const { file_url } = await base44.integrations.Core.UploadFile({ file: pdfFile });
-        labelUrl = file_url;
-        console.log('Label PDF uploaded:', labelUrl);
-      } catch (uploadErr) {
-        console.error('Failed to upload label PDF:', uploadErr.message);
-      }
-    }
-
-    // Update order with tracking number, label URL, and postage cost
+    // 5. Update order
     await base44.asServiceRole.entities.Order.update(orderId, {
       tracking_number: trackingNumber,
       shipping_label_url: labelUrl,
-      shipping_cost: postage
+      shipping_cost: parseFloat(selectedRate.amount)
     });
 
-    // Audit log
+    // 6. Audit log
     await base44.asServiceRole.entities.AuditLog.create({
       event_type: 'shipping_label_purchase',
       user_id: user.id,
       file_id: orderId,
-      details: { orderId, trackingNumber, mailClass, weightOz, postage },
+      details: {
+        orderId,
+        trackingNumber,
+        carrier: selectedRate.provider,
+        service: selectedRate.servicelevel?.name,
+        cost: selectedRate.amount,
+        weightLb
+      },
       severity: 'info'
     });
 
@@ -195,9 +179,9 @@ Deno.serve(async (req) => {
       success: true,
       tracking_number: trackingNumber,
       label_url: labelUrl,
-      mail_class: mailClass,
-      weight_oz: weightOz,
-      postage
+      carrier: selectedRate.provider,
+      service: selectedRate.servicelevel?.name,
+      cost: selectedRate.amount
     });
 
   } catch (error) {
