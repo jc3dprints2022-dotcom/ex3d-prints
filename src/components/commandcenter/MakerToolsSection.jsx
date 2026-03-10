@@ -144,8 +144,41 @@ export default function MakerToolsSection() {
     setDeletingMaker(null);
   };
 
+  const calculateWeeklyPerformance = async () => {
+    try {
+      await base44.functions.invoke('calculateMakerPerformance');
+      toast({ title: "Performance calculated successfully!" });
+      await loadMakers();
+    } catch (error) {
+      toast({ title: "Failed to calculate performance", variant: "destructive" });
+    }
+  };
+
+  const getTierColor = (tier) => {
+    if (tier === 'gold') return 'bg-yellow-500 text-white';
+    if (tier === 'silver') return 'bg-gray-400 text-white';
+    return 'bg-orange-700 text-white';
+  };
+
+  const getTierIcon = (tier) => {
+    if (tier === 'gold') return <Trophy className="w-4 h-4" />;
+    if (tier === 'silver') return <Award className="w-4 h-4" />;
+    return null;
+  };
+
   return (
     <div className="space-y-6">
+      <Tabs defaultValue="tools">
+        <TabsList className="grid w-full grid-cols-2 bg-slate-900 border-slate-700">
+          <TabsTrigger value="tools" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            🔧 Maker Tools
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            🏅 Maker Performance
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="tools">
       <Card>
         <CardHeader>
           <CardTitle>Active Makers ({makers.length})</CardTitle>
