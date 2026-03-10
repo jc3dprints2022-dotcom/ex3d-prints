@@ -260,8 +260,8 @@ export default function Layout({ children, currentPageName }) {
       const cacheTime = sessionStorage.getItem('user_cache_time');
       const now = Date.now();
       
-      // Use cache if less than 30 seconds old
-      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 30000) {
+      // Use cache if less than 5 minutes old
+      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 300000) {
         const userData = JSON.parse(cachedUser);
         setUser(userData);
         
