@@ -91,8 +91,8 @@ export default function ProductDetail() {
     }
   };
 
-  const loadProduct = async () => {
-    setLoading(true);
+  const loadProduct = async (retryCount = 0) => {
+    if (retryCount === 0) setLoading(true);
     try {
       if (!id) {
         setLoading(false);
@@ -100,100 +100,62 @@ export default function ProductDetail() {
       }
       const productData = await base44.entities.Product.get(id);
       setProduct(productData);
+      setLoading(false);
       
-      if (productData.materials && productData.materials.length > 0) {
-        setSelectedMaterial(productData.materials[0]);
-      }
-      if (productData.colors && productData.colors.length > 0) {
-        setSelectedColor(productData.colors[0]);
-      }
+      if (productData.materials?.length > 0) setSelectedMaterial(productData.materials[0]);
+      if (productData.colors?.length > 0) setSelectedColor(productData.colors[0]);
 
       if (productData.multi_color) {
         const numColors = productData.number_of_colors || 2;
-        const initialSelections = [];
-        for (let i = 0; i < numColors; i++) {
-          initialSelections.push(productData.colors?.[i] || productData.colors?.[0] || 'Black');
-        }
-        setMultiColorSelections(initialSelections);
+        setMultiColorSelections(
+          Array.from({ length: numColors }, (_, i) => productData.colors?.[i] || productData.colors?.[0] || 'Black')
+        );
       }
 
-      await base44.entities.Product.update(id, {
-        view_count: (productData.view_count || 0) + 1
-      });
+      // Background: update view count, load reviews, related products, designer
+      base44.entities.Product.update(id, { view_count: (productData.view_count || 0) + 1 }).catch(() => {});
 
-      const allReviews = await base44.entities.Review.list();
-      
-      const productReviews = allReviews.filter(review => 
-        review.product_id === id && review.review_type === 'product'
-      );
-
-      let reviewsWithNames = productReviews;
-      try {
-        const allUsers = await base44.entities.User.list();
-        
-        reviewsWithNames = productReviews.map(review => {
-          const customer = allUsers.find(u => u.id === review.customer_id);
-          return {
-            ...review,
-            customer_name: customer?.full_name || 'Anonymous'
-          };
-        });
-      } catch (userError) {
-        console.log('Could not fetch user names (guest browsing):', userError.message);
-        reviewsWithNames = productReviews.map(review => ({
-          ...review,
-          customer_name: 'Anonymous'
-        }));
-      }
-
-      setReviews(reviewsWithNames);
-
-      let avgRating = 0;
-      let reviewCount = reviewsWithNames.length;
-      
-      if (reviewCount > 0) {
-        avgRating = reviewsWithNames.reduce((sum, r) => sum + r.rating, 0) / reviewCount;
-      }
-
-      setProduct(prev => ({
-        ...prev,
-        rating: avgRating,
-        review_count: reviewCount
-      }));
-
-      if (productData.rating !== avgRating || productData.review_count !== reviewCount) {
-        await base44.entities.Product.update(id, {
-          rating: avgRating,
-          review_count: reviewCount
-        });
-      }
-
-      // Load designer info
-      if (productData.designer_id) {
+      // Load reviews in background (non-blocking)
+      base44.entities.Review.filter({ product_id: id }).then(async (productReviews) => {
+        const filtered = productReviews.filter(r => r.review_type === 'product');
+        let reviewsWithNames = filtered.map(r => ({ ...r, customer_name: 'Anonymous' }));
         try {
-          const designerData = await base44.entities.User.get(productData.designer_id);
-          setDesigner(designerData);
-        } catch (error) {
-          console.error("Failed to load designer:", error);
+          const allUsers = await base44.entities.User.list();
+          reviewsWithNames = filtered.map(review => {
+            const customer = allUsers.find(u => u.id === review.customer_id);
+            return { ...review, customer_name: customer?.full_name || 'Anonymous' };
+          });
+        } catch (_) {}
+        setReviews(reviewsWithNames);
+        const reviewCount = reviewsWithNames.length;
+        const avgRating = reviewCount > 0 ? reviewsWithNames.reduce((sum, r) => sum + r.rating, 0) / reviewCount : 0;
+        setProduct(prev => ({ ...prev, rating: avgRating, review_count: reviewCount }));
+        if (productData.rating !== avgRating || productData.review_count !== reviewCount) {
+          base44.entities.Product.update(id, { rating: avgRating, review_count: reviewCount }).catch(() => {});
         }
+      }).catch(() => {});
+
+      if (productData.designer_id) {
+        base44.entities.User.get(productData.designer_id).then(d => setDesigner(d)).catch(() => {});
       }
 
-      // Load all active products for carousels
-      const allActiveProducts = await base44.entities.Product.list();
-      const activeProds = allActiveProducts.filter(p => p.status === 'active');
-      setAllProducts(activeProds);
-      
-      // Load related products (same category)
-      const related = activeProds
-        .filter(p => p.category === productData.category && p.id !== productData.id)
-        .slice(0, 10);
-      setRelatedProducts(related);
+      // Load all active products for carousels in background
+      base44.entities.Product.filter({ status: 'active' }).then(activeProds => {
+        setAllProducts(activeProds);
+        const related = activeProds
+          .filter(p => p.category === productData.category && p.id !== productData.id)
+          .slice(0, 10);
+        setRelatedProducts(related);
+      }).catch(() => {});
 
     } catch (error) {
+      if (retryCount < 2) {
+        setTimeout(() => loadProduct(retryCount + 1), 1200 * (retryCount + 1));
+        return;
+      }
       console.error("Failed to load product:", error);
-      toast({ title: "Failed to load product", variant: "destructive" });
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const loadUser = async () => {
