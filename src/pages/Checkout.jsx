@@ -495,7 +495,6 @@ export default function Checkout() {
                     </Label>
                   </div>
                 </>
-              )}
               </CardContent>
             </Card>
           </div>
