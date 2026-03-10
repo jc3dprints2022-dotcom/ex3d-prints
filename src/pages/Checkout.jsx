@@ -228,11 +228,11 @@ export default function Checkout() {
         cancelUrl: `${window.location.origin}/Checkout?payment=cancelled`,
         couponCode: couponCode.trim().toUpperCase() === 'JC3DTESTFREEDOM' ? 'JC3DTESTFREEDOM' : (couponCode.trim() || undefined),
         referralCode: referralCode.trim().toUpperCase() || undefined,
-        isPriority: isPriority,
+        isPriority: false,
         campusLocation: "erau_prescott",
-        shippingAddress: isLocalDelivery ? { name: user?.full_name || '', phone: user?.phone || '' } : shippingAddress,
+        shippingAddress: shippingAddress,
         shippingFee: shippingFee,
-        isLocalDelivery: isLocalDelivery
+        isLocalDelivery: false
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
