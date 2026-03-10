@@ -20,11 +20,6 @@ export default function Checkout() {
   const [processing, setProcessing] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [referralCode, setReferralCode] = useState("");
-  const [isPriority, setIsPriority] = useState(() => {
-    // Load priority state from localStorage
-    const saved = localStorage.getItem('checkout_priority');
-    return saved === 'true';
-  });
   const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [shippingAddress, setShippingAddress] = useState({
     name: "",
@@ -36,16 +31,9 @@ export default function Checkout() {
   });
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
-  const [isLocalDelivery, setIsLocalDelivery] = useState(false);
+  const [calculatingShipping, setCalculatingShipping] = useState(false);
+  const [shippingCost, setShippingCost] = useState(null);
   const { toast } = useToast();
-  const [validatingAddress, setValidatingAddress] = useState(false);
-  const [addressValidated, setAddressValidated] = useState(false);
-  const [addressError, setAddressError] = useState(null);
-
-  // Persist priority state to localStorage
-  useEffect(() => {
-    localStorage.setItem('checkout_priority', isPriority.toString());
-  }, [isPriority]);
 
   useEffect(() => {
     (async () => {
@@ -161,54 +149,32 @@ export default function Checkout() {
     }
   };
 
-  const handleValidateAddress = async () => {
-    if (!shippingAddress.street || !shippingAddress.state) {
-      toast({ title: "Please fill in street address and state first", variant: "destructive" });
-      return;
-    }
-    setValidatingAddress(true);
-    setAddressError(null);
-    setAddressValidated(false);
+  const calculateShippingCost = async (addr) => {
+    if (!addr.street || !addr.city || !addr.state || !addr.zip) return;
+    setCalculatingShipping(true);
     try {
-      const res = await base44.functions.invoke('validateAddress', {
-        streetAddress: shippingAddress.street,
-        city: shippingAddress.city,
-        state: shippingAddress.state,
-        ZIPCode: shippingAddress.zip
+      const res = await base44.functions.invoke('getEstimatedShipping', {
+        shippingAddress: addr,
+        items: cartItems.map(i => ({ weight_grams: i.weight_grams, dimensions: i.dimensions, quantity: i.quantity }))
       });
-      const data = res.data;
-      if (data?.valid) {
-        const addr = data.address;
-        setShippingAddress(prev => ({
-          ...prev,
-          street: addr.streetAddress || prev.street,
-          city: addr.city || prev.city,
-          state: addr.state || prev.state,
-          zip: addr.ZIPCode || prev.zip
-        }));
-        setAddressValidated(true);
-        toast({ title: "✅ Address validated and standardized by USPS" });
-      } else {
-        const errMsg = data?.error || 'Address could not be validated by USPS';
-        setAddressError(errMsg);
-        toast({ title: "Address not valid", description: errMsg, variant: "destructive" });
+      if (res.data?.shipping_cost !== undefined) {
+        setShippingCost(res.data.shipping_cost);
       }
-    } catch (err) {
-      setAddressError('Address validation service unavailable');
-      toast({ title: "Validation failed", description: err.message, variant: "destructive" });
+    } catch (_) {
+      setShippingCost(5.99);
     }
-    setValidatingAddress(false);
+    setCalculatingShipping(false);
   };
 
   const calculateSubtotal = () =>
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
-  const calculateTotal = () => {
-    const subtotal = calculateSubtotal();
-    const priorityFee = isPriority ? 4 : 0;
-    const shippingFee = subtotal < 35 ? 5.99 : 0;
-    return subtotal + priorityFee + shippingFee;
+  const getShippingFee = () => {
+    if (shippingCost !== null) return shippingCost;
+    return calculateSubtotal() < 35 ? 5.99 : 0;
   };
+
+  const calculateTotal = () => calculateSubtotal() + getShippingFee();
 
   const formatPrice = (price) => `$${price.toFixed(2)}`;
 
