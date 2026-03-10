@@ -193,7 +193,12 @@ export default function ProductDetail() {
 
     } catch (error) {
       console.error("Failed to load product:", error);
-      toast({ title: "Failed to load product", variant: "destructive" });
+      if (retryCount < 3) {
+        // Retry up to 3 times with a short delay
+        setTimeout(() => loadProduct(retryCount + 1), 1000 * (retryCount + 1));
+        return;
+      }
+      setLoadError(true);
     }
     setLoading(false);
   };
