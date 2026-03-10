@@ -27,6 +27,7 @@ export default function MakerToolsSection() {
   const [printers, setPrinters] = useState([]);
   const [filaments, setFilaments] = useState([]);
   const [performance, setPerformance] = useState([]);
+  const [perfList, setPerfList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaker, setSelectedMaker] = useState(null);
   const [showMakerDialog, setShowMakerDialog] = useState(false);
@@ -52,7 +53,6 @@ export default function MakerToolsSection() {
         u.business_roles?.includes('maker') && u.maker_id
       );
       
-      // Get latest performance for each maker
       const perfMap = {};
       allPerformance.forEach(p => {
         if (!perfMap[p.maker_id] || new Date(p.week_start) > new Date(perfMap[p.maker_id].week_start)) {
@@ -64,6 +64,7 @@ export default function MakerToolsSection() {
       setPrinters(allPrinters);
       setFilaments(allFilaments);
       setPerformance(perfMap);
+      setPerfList(Object.values(perfMap));
     } catch (error) {
       console.error("Failed to load makers:", error);
     }
