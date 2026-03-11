@@ -1,4 +1,4 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 Deno.serve(async (req) => {
     try {
@@ -41,8 +41,9 @@ Deno.serve(async (req) => {
                     };
                 }
 
-                // Maker gets 50% - $0.30 + priority bonus
-                const makerEarnings = ((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0);
+                // Maker gets 50% of items total (shipping excluded)
+                const itemsTotal = (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+                const makerEarnings = itemsTotal * 0.5;
                 makerPayouts[order.maker_id].gross += makerEarnings;
                 makerPayouts[order.maker_id].orders.push(order.id);
             }
