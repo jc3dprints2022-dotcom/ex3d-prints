@@ -490,11 +490,21 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                           <div className="flex justify-between items-start mb-2">
                             <div className="flex-1">
                               <h4 className="font-semibold text-lg">{item.product_name}</h4>
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm text-gray-600 mt-2">
-                                <div><span className="font-medium">Material:</span> {item.selected_material}</div>
-                                <div><span className="font-medium">Quantity:</span> {item.quantity}</div>
-                                <div><span className="font-medium">Color:</span> {item.selected_color}</div>
-                              </div>
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600 mt-2">
+                                 <div><span className="font-medium">Material:</span> {item.selected_material || 'PLA'}</div>
+                                 <div><span className="font-medium">Qty:</span> {item.quantity}</div>
+                                 <div><span className="font-medium">Color:</span> {item.selected_color || 'Black'}</div>
+                                 <div><span className="font-medium">Resolution:</span> {item.selected_resolution || 0.2}mm</div>
+                                 {item.dimensions && (
+                                   <div className="col-span-2"><span className="font-medium">Dimensions (LWH):</span> {item.dimensions.length}×{item.dimensions.width}×{item.dimensions.height} mm</div>
+                                 )}
+                                 {item.weight_grams && (
+                                   <div className="col-span-2"><span className="font-medium">Filament needed:</span> ~{Math.round((item.weight_grams || 0) * (item.quantity || 1))} g</div>
+                                 )}
+                                 {item.print_time_hours && (
+                                   <div className="col-span-2"><span className="font-medium">Est. print time:</span> ~{((item.print_time_hours || 0) * (item.quantity || 1)).toFixed(1)} hrs</div>
+                                 )}
+                               </div>
 
                               {item.print_files && item.print_files.length > 0 && (
                                 <div className="mt-3">
