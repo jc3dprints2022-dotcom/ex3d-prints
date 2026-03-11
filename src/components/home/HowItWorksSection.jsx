@@ -78,7 +78,7 @@ export default function HowItWorksSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="space-y-0">
           {/* For Makers */}
-          <div className="text-center py-16">
+          <div className="text-center pb-16">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-orange-600 rounded-2xl mb-6">
               <Printer className="w-8 h-8 text-white" />
             </div>
