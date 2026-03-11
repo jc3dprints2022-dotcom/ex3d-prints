@@ -249,19 +249,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
       return;
     }
 
-    if (formData.multi_color) {
-      if (!formData.number_of_colors || parseInt(formData.number_of_colors) < 2 || parseInt(formData.number_of_colors) > 6) {
-        toast({ 
-          title: "Invalid number of colors", 
-          description: "Multi-color prints must have between 2-6 colors",
-          variant: "destructive" 
-        });
-        return;
-      }
-    }
-
-
-
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
     const rawPrice = (((grams / 1000) * 20) + (printTime / 5)) * 4.5;
@@ -287,27 +274,23 @@ export default function DesignerProductForm({ designerId, designerName, existing
         price: calculatedPrice,
         print_time_hours: parseFloat(formData.print_time_hours),
         weight_grams: parseFloat(formData.weight_grams),
-        dimensions: {
-          length: parseFloat(formData.dimensions.length),
-          width: parseFloat(formData.dimensions.width),
-          height: parseFloat(formData.dimensions.height)
-        },
+        dimensions: null, // Set by admin during approval
         category: formData.category,
-        materials: formData.materials,
-        colors: formData.colors,
-        tags: formData.tags.map(tag => tag.trim()).filter(tag => tag.length > 0),
+        materials: ['PLA'],
+        colors: COLORS,
+        tags: [],
         images: formData.images,
         print_files: formData.print_files,
         assembly_instructions: formData.assembly_instructions,
         designer_id: designerId,
         designer_name: designerName,
         status: 'pending',
-        multi_color: formData.multi_color,
-        number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
-        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
-        infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
-        use_shown_colors: formData.use_shown_colors,
-        shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
+        multi_color: false,
+        number_of_colors: null,
+        custom_scale: null,
+        infill_percentage: 15,
+        use_shown_colors: false,
+        shown_color_specs: [],
         rating: 0,
         review_count: 0,
         view_count: 0,
