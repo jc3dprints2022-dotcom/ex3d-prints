@@ -352,17 +352,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         />
       </div>
 
-      <div>
-        <Label htmlFor="tags">Tags (comma-separated)</Label>
-        <Input
-          id="tags"
-          value={formData.tags.join(', ')}
-          onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
-          placeholder="e.g., cosplay, helmet, character, fanart"
-        />
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div>
           <Label htmlFor="print_time">Print Time (hrs) *</Label>
           <Input
@@ -391,34 +381,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </div>
 
         <div>
-          <Label htmlFor="scale">Scale (%)</Label>
-          <Input
-            id="scale"
-            type="number"
-            step="1"
-            min="1"
-            max="5000"
-            value={formData.custom_scale || ''}
-            onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
-            placeholder="Optional (default 100)"
-          />
-        </div>
-
-        <div>
-          <Label htmlFor="infill">Infill (%)</Label>
-          <Input
-            id="infill"
-            type="number"
-            step="1"
-            min="0"
-            max="100"
-            value={formData.infill_percentage}
-            onChange={(e) => setFormData({...formData, infill_percentage: e.target.value ? parseFloat(e.target.value) : 15})}
-            placeholder="Default 15%"
-          />
-        </div>
-
-        <div>
           <Label htmlFor="price">Price ($) *</Label>
           <Input
             id="price"
@@ -440,177 +402,9 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </div>
       </div>
 
-      <div>
-        <Label>Dimensions (mm) *</Label>
-        <div className="grid grid-cols-3 gap-2 mt-1">
-          <Input
-            type="number"
-            placeholder="Length"
-            step="1"
-            min="1"
-            value={formData.dimensions.length}
-            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, length: e.target.value}})}
-            required
-          />
-          <Input
-            type="number"
-            placeholder="Width"
-            step="1"
-            min="1"
-            value={formData.dimensions.width}
-            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, width: e.target.value}})}
-            required
-          />
-          <Input
-            type="number"
-            placeholder="Height"
-            step="1"
-            min="1"
-            value={formData.dimensions.height}
-            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, height: e.target.value}})}
-            required
-          />
-        </div>
+      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200 text-sm text-blue-800">
+        ℹ️ Materials will be set to PLA, all colors will be available, and scale/infill/dimensions will be configured by the admin during approval.
       </div>
-
-      <div className="grid md:grid-cols-2 gap-4">
-        <div>
-          <Label className="mb-2 block">Materials *</Label>
-          <div className="grid grid-cols-2 gap-2">
-            {MATERIALS.map(material => (
-              <div key={material} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`material-${material}`}
-                  checked={formData.materials.includes(material)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setFormData(prev => ({...prev, materials: [...prev.materials, material]}));
-                    } else {
-                      setFormData(prev => ({...prev, materials: prev.materials.filter(m => m !== material)}));
-                    }
-                  }}
-                />
-                <Label htmlFor={`material-${material}`} className="text-sm font-normal cursor-pointer">{material}</Label>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <Label className="mb-2 block">Colors *</Label>
-          <div className="flex items-center space-x-2 mb-3">
-            <Checkbox
-              id="select-all-colors"
-              checked={formData.colors.length === COLORS.length + 1 && formData.colors.includes("Shown Colors") && COLORS.every(c => formData.colors.includes(c))}
-              onCheckedChange={handleSelectAllColors}
-            />
-            <Label htmlFor="select-all-colors" className="font-bold cursor-pointer">Select All Colors</Label>
-          </div>
-          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="color-shown-colors"
-                checked={formData.colors.includes("Shown Colors")}
-                onCheckedChange={(checked) => {
-                  if (checked) {
-                    setFormData(prev => ({...prev, colors: ["Shown Colors", ...prev.colors], use_shown_colors: true}));
-                  } else {
-                    setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== "Shown Colors"), use_shown_colors: false, shown_color_specs: []}));
-                  }
-                }}
-              />
-              <Label htmlFor="color-shown-colors" className="text-sm font-bold cursor-pointer text-blue-600">Shown Colors</Label>
-            </div>
-            {COLORS.map(color => (
-              <div key={color} className="flex items-center space-x-2">
-                <Checkbox
-                  id={`color-${color}`}
-                  checked={formData.colors.includes(color)}
-                  onCheckedChange={(checked) => {
-                    if (checked) {
-                      setFormData(prev => ({...prev, colors: [...prev.colors, color]}));
-                    } else {
-                      setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== color)}));
-                    }
-                  }}
-                />
-                <Label htmlFor={`color-${color}`} className="text-sm font-normal cursor-pointer">{color}</Label>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {formData.multi_color && (
-        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-          <Label htmlFor="number_of_colors">
-            Number of Colors Required (2-6) *
-          </Label>
-          <Input
-            id="number_of_colors"
-            type="number"
-            min="2"
-            max="6"
-            value={formData.number_of_colors}
-            onChange={(e) => setFormData(prev => ({...prev, number_of_colors: e.target.value}))}
-            className="mt-2"
-            required={formData.multi_color}
-          />
-          <p className="text-xs text-gray-600 mt-2">
-            Customers will need to select exactly this many colors when ordering
-          </p>
-        </div>
-      )}
-
-      {formData.use_shown_colors && (
-        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <Label className="mb-3 block">Specify Colors for Each File</Label>
-          <p className="text-xs text-gray-600 mb-3">
-            Map each print file to a specific color and quantity. File names will help makers identify which color to use.
-          </p>
-          {formData.print_files.map((file, idx) => (
-            <div key={idx} className="mb-3 p-3 bg-white rounded border">
-              <p className="text-sm font-medium mb-2">File {idx + 1}: {file.split('/').pop()}</p>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor={`color-spec-${idx}`} className="text-xs">Color</Label>
-                  <Select
-                    value={formData.shown_color_specs[idx]?.color || ''}
-                    onValueChange={(value) => {
-                      const newSpecs = [...formData.shown_color_specs];
-                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, color: value, quantity: newSpecs[idx]?.quantity || 1 };
-                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
-                    }}
-                  >
-                    <SelectTrigger id={`color-spec-${idx}`}>
-                      <SelectValue placeholder="Select color" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {COLORS.map(color => (
-                        <SelectItem key={color} value={color}>{color}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label htmlFor={`qty-spec-${idx}`} className="text-xs">Quantity</Label>
-                  <Input
-                    id={`qty-spec-${idx}`}
-                    type="number"
-                    min="1"
-                    value={formData.shown_color_specs[idx]?.quantity || 1}
-                    onChange={(e) => {
-                      const newSpecs = [...formData.shown_color_specs];
-                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, quantity: parseInt(e.target.value) || 1 };
-                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
 
       <div>
         <Label htmlFor="images">Product Images * (Multiple allowed)</Label>
