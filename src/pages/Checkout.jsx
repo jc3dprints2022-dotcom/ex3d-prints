@@ -75,7 +75,7 @@ export default function Checkout() {
         });
       }
       
-      await loadCart(currentUser.id);
+      await loadCart(currentUser.id, addresses.length > 0 ? (addresses.find(a => a.is_default) || addresses[0]) : null);
     } catch (error) {
       console.error("Auth error:", error);
       toast({ title: "Sign-in required", description: "Please log in again." });
