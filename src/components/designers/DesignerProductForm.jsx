@@ -212,21 +212,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
       return;
     }
 
-    if (!formData.dimensions.length || !formData.dimensions.width || !formData.dimensions.height) {
-      toast({ title: "Please enter all dimensions (L x W x H)", variant: "destructive" });
-      return;
-    }
-
-    if (formData.materials.length === 0) {
-      toast({ title: "Please select at least one material", variant: "destructive" });
-      return;
-    }
-
-    if (formData.colors.length === 0) {
-      toast({ title: "Please select at least one color", variant: "destructive" });
-      return;
-    }
-
     if (formData.images.length === 0) {
       toast({ title: "Please upload at least one product image", variant: "destructive" });
       return;
@@ -244,17 +229,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
         variant: "destructive"
       });
       return;
-    }
-
-    if (formData.multi_color) {
-      if (!formData.number_of_colors || parseInt(formData.number_of_colors) < 2 || parseInt(formData.number_of_colors) > 6) {
-        toast({ 
-          title: "Invalid number of colors", 
-          description: "Multi-color prints must have between 2-6 colors",
-          variant: "destructive" 
-        });
-        return;
-      }
     }
 
 
