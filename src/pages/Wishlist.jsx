@@ -19,45 +19,43 @@ export default function Wishlist() {
 
   const checkAuthAndLoadWishlist = async () => {
     try {
+      // Use sessionStorage cache for instant load (same pattern as Layout)
+      const cachedUser = sessionStorage.getItem('cached_user');
+      const cacheTime = sessionStorage.getItem('user_cache_time');
+      const now = Date.now();
+
+      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 300000) {
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
+        await loadWishlist(userData);
+        return;
+      }
+
       const currentUser = await base44.auth.me();
       if (!currentUser) {
-        toast({
-          title: "Please sign in to view your wishlist",
-          variant: "destructive"
-        });
-        await base44.auth.redirectToLogin(window.location.href);
+        base44.auth.redirectToLogin(window.location.href);
         return;
       }
       setUser(currentUser);
-      await loadWishlist(currentUser); // Pass currentUser to loadWishlist
+      await loadWishlist(currentUser);
     } catch (error) {
-      toast({
-        title: "Please sign in to view your wishlist",
-        variant: "destructive"
-      });
-      await base44.auth.redirectToLogin(window.location.href);
+      base44.auth.redirectToLogin(window.location.href);
     }
   };
 
-  const loadWishlist = async (currentUser) => { // Now accepts currentUser
+  const loadWishlist = async (currentUser) => {
     setLoading(true);
     try {
-      // User is guaranteed to be logged in at this point by checkAuthAndLoadWishlist
-      if (currentUser && currentUser.wishlist && currentUser.wishlist.length > 0) {
+      if (currentUser?.wishlist?.length > 0) {
         const products = await Promise.all(
-          currentUser.wishlist.map(id =>
-            base44.entities.Product.get(id).catch(() => null)
-          )
+          currentUser.wishlist.map(id => base44.entities.Product.get(id).catch(() => null))
         );
         setWishlistProducts(products.filter(p => p !== null));
       } else {
-        // If user has no wishlist or it's empty
         setWishlistProducts([]);
       }
     } catch (error) {
-      console.error("Error loading wishlist:", error);
-      setWishlistProducts([]); // Ensure wishlist is empty on error
-      // Don't redirect - just show empty wishlist
+      setWishlistProducts([]);
     }
     setLoading(false);
   };

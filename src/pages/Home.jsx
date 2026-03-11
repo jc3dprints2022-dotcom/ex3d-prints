@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Building2, Package, Printer, CheckCircle, ArrowRight } from "lucide-react";
+import { Package, Printer, CheckCircle, ArrowRight } from "lucide-react";
 import HeroSection from "../components/home/HeroSection";
 import HowItWorksSection from "../components/home/HowItWorksSection";
 import TestimonialsSection from "../components/home/TestimonialsSection";

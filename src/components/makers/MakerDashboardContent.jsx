@@ -84,8 +84,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       const calcEarnings = (orderList) => orderList
         .filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status))
         .reduce((sum, o) => {
-          const shippingCost = o.shipping_cost || 0;
-          const itemsTotal = Math.max(0, (o.total_amount || 0) - shippingCost);
+          const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
           return sum + itemsTotal * 0.5;
         }, 0);
 
