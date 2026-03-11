@@ -48,7 +48,7 @@ export default function Home() {
           base44.entities.Product.get(f.product_id).catch(() => null)
         );
         const productsData = await Promise.all(productPromises);
-        const validProducts = productsData.filter(p => p && p.status === 'active');
+        const validProducts = productsData.filter(p => p !== null);
         
         if (validProducts.length > 0) {
           setProducts(validProducts);
