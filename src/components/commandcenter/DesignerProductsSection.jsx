@@ -428,14 +428,61 @@ The EX3D Team`
                 <div>
                   <strong>Category:</strong> {reviewingProduct.category}
                 </div>
-                <div>
-                  <strong>Multi-Color:</strong> {reviewingProduct.multi_color ? 'Yes' : 'No'}
-                </div>
               </div>
 
               <div>
                 <strong>Description:</strong>
                 <p className="text-sm text-gray-600 mt-1">{reviewingProduct.description}</p>
+              </div>
+
+              {/* Admin-set fields during approval */}
+              <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200 space-y-4">
+                <h4 className="font-semibold text-yellow-900">Admin Configuration (set during approval)</h4>
+                
+                <div>
+                  <Label>Dimensions (mm)</Label>
+                  <div className="grid grid-cols-3 gap-2 mt-1">
+                    <Input
+                      type="number" placeholder="Length"
+                      value={reviewingProduct.dimensions?.length || ''}
+                      onChange={(e) => setReviewingProduct(prev => ({ ...prev, dimensions: { ...(prev.dimensions || {}), length: parseFloat(e.target.value) || '' } }))}
+                    />
+                    <Input
+                      type="number" placeholder="Width"
+                      value={reviewingProduct.dimensions?.width || ''}
+                      onChange={(e) => setReviewingProduct(prev => ({ ...prev, dimensions: { ...(prev.dimensions || {}), width: parseFloat(e.target.value) || '' } }))}
+                    />
+                    <Input
+                      type="number" placeholder="Height"
+                      value={reviewingProduct.dimensions?.height || ''}
+                      onChange={(e) => setReviewingProduct(prev => ({ ...prev, dimensions: { ...(prev.dimensions || {}), height: parseFloat(e.target.value) || '' } }))}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="admin_multi_color"
+                      checked={reviewingProduct.multi_color || false}
+                      onChange={(e) => setReviewingProduct(prev => ({ ...prev, multi_color: e.target.checked }))}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="admin_multi_color">Requires multi-color printing</Label>
+                  </div>
+                  
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="admin_shown_colors"
+                      checked={reviewingProduct.use_shown_colors || false}
+                      onChange={(e) => setReviewingProduct(prev => ({ ...prev, use_shown_colors: e.target.checked }))}
+                      className="w-4 h-4"
+                    />
+                    <Label htmlFor="admin_shown_colors">Use shown colors</Label>
+                  </div>
+                </div>
               </div>
 
               <div>
