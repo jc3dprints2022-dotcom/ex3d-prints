@@ -528,17 +528,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
         )}
       </div>
 
-      <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
-        <Checkbox
-          id="multi_color"
-          checked={formData.multi_color}
-          onCheckedChange={(checked) => setFormData(prev => ({...prev, multi_color: checked}))}
-        />
-        <Label htmlFor="multi_color" className="font-medium cursor-pointer">
-          This design requires multi-color printing
-        </Label>
-      </div>
-
       <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg border-2 border-blue-600">
         <Checkbox
           id="license_verified"
