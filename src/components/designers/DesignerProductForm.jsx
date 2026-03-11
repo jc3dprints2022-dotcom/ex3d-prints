@@ -230,21 +230,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
       return;
     }
 
-    if (!formData.dimensions.length || !formData.dimensions.width || !formData.dimensions.height) {
-      toast({ title: "Please enter all dimensions (L x W x H)", variant: "destructive" });
-      return;
-    }
-
-    if (formData.materials.length === 0) {
-      toast({ title: "Please select at least one material", variant: "destructive" });
-      return;
-    }
-
-    if (formData.colors.length === 0) {
-      toast({ title: "Please select at least one color", variant: "destructive" });
-      return;
-    }
-
     if (formData.images.length === 0) {
       toast({ title: "Please upload at least one product image", variant: "destructive" });
       return;
