@@ -117,9 +117,8 @@ export default function MakerDashboard() {
       const totalEarnings = myOrders
         .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
         .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.5) - 0.30);
-          const priorityEarning = o.is_priority ? 4 : 0; // 
-          return sum + baseEarning + priorityEarning;
+          const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+          return sum + itemsTotal * 0.5;
         }, 0);
 
       // Calculate monthly earnings (orders completed this month)
@@ -132,9 +131,8 @@ export default function MakerDashboard() {
           return orderDate >= firstDayOfMonth;
         })
         .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.5) - 0.30);
-          const priorityEarning = o.is_priority ? 4 : 0;
-          return sum + baseEarning + priorityEarning;
+          const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+          return sum + itemsTotal * 0.5;
         }, 0);
 
       setStats({
@@ -511,20 +509,13 @@ The EX3D Team`
                           <Badge className="bg-orange-500">⚡ Priority</Badge>
                         )}
                         {order.status !== 'cancelled' && (
-                          <div className="text-right">
-                            <p className="text-sm text-gray-500">Your Earnings:</p>
-                            <p className="text-xl font-bold text-green-600">
-                              ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
-                            </p>
-                          </div>
-                        )}
-                        {order.status === 'cancelled' && (
-                          <div className="text-right">
-                            <p className="text-sm text-red-600">Lost Earnings:</p>
-                            <p className="text-xl font-bold text-red-600 line-through">
-                              ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
-                            </p>
-                          </div>
+                        <div className="text-right">
+                          <p className="text-sm text-gray-500">Your Earnings:</p>
+                          <p className="text-xl font-bold text-green-600">
+                            ${((order.items || []).reduce((s, item) => s + (item.total_price || 0), 0) * 0.5).toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-400">50% of item cost</p>
+                        </div>
                         )}
                       </div>
                     </div>
@@ -655,11 +646,7 @@ The EX3D Team`
                             {order.is_priority && <Badge className="ml-2 bg-orange-500">⚡ Priority +$4</Badge>}
                           </p>
                           <p className="text-sm text-green-600">
-                            {/* "Your earnings:" removed as it's now in the header for primary visibility */}
-                            Earnings calculation: (50% - $0.30 Stripe fee{order.is_priority ? ' + $4 priority bonus' : ''})
-                          </p>
-                          <p className="text-sm text-gray-600 mt-1">
-                            Pickup: {order.pickup_location}
+                           50% of item cost
                           </p>
                           {order.is_priority && (
                             <p className="text-sm text-orange-600 font-semibold mt-1">
@@ -721,24 +708,18 @@ The EX3D Team`
                           )}
 
                           {order.status === 'completed' && (
-                            <>
-                              <Button
-                                size="sm"
-                                onClick={() => handleMarkDroppedOff(order.id)}
-                                disabled={updatingOrder === order.id}
-                                className="bg-teal-600 hover:bg-teal-700"
-                              >
-                                {updatingOrder === order.id ? (
-                                  <Loader2 className="w-4 h-4 animate-spin" />
-                                ) : (
-                                  'Confirm Drop-off'
-                                )}
-                              </Button>
-                              <div className="text-sm text-orange-600 flex items-center gap-1">
-                                <AlertCircle className="w-4 h-4" />
-                                Contact Jacob for drop-off
-                              </div>
-                            </>
+                            <Button
+                              size="sm"
+                              onClick={() => handleMarkDroppedOff(order.id)}
+                              disabled={updatingOrder === order.id}
+                              className="bg-teal-600 hover:bg-teal-700"
+                            >
+                              {updatingOrder === order.id ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                              ) : (
+                                'Mark as Shipped'
+                              )}
+                            </Button>
                           )}
 
                           {order.status === 'dropped_off' && (
