@@ -40,6 +40,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
     phone: '',
     address: { street: '', city: '', state: '', zip: '' }
   });
+  const [savingAddress, setSavingAddress] = useState(false);
   const [updatingOrder, setUpdatingOrder] = useState(null);
   const { toast } = useToast();
 
