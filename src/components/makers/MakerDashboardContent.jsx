@@ -569,15 +569,22 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                           )}
 
                           {order.status === 'printing' && (
-                            <Button size="sm" onClick={() => handleMarkCompleted(order.id)} disabled={updatingOrder === order.id} className="bg-green-600 hover:bg-green-700">
-                              {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Mark Completed'}
+                            <Button size="sm" onClick={() => handleMarkDonePrinting(order.id)} disabled={updatingOrder === order.id} className="bg-orange-600 hover:bg-orange-700">
+                              {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Done Printing'}
                             </Button>
                           )}
 
-                          {order.status === 'completed' && (
-                            <Button size="sm" onClick={() => handleMarkDroppedOff(order.id)} disabled={updatingOrder === order.id} className="bg-teal-600 hover:bg-teal-700">
-                              {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Drop-off'}
-                            </Button>
+                          {order.status === 'done_printing' && (
+                            <div className="flex flex-col items-end gap-1">
+                              {order.shipping_label_url && (
+                                <Button size="sm" variant="outline" onClick={() => window.open(order.shipping_label_url, '_blank')} className="text-blue-600 border-blue-300">
+                                  <Download className="w-3 h-3 mr-1" /> Print Shipping Label
+                                </Button>
+                              )}
+                              <Button size="sm" onClick={() => handleMarkShipped(order.id)} disabled={updatingOrder === order.id} className="bg-teal-600 hover:bg-teal-700">
+                                {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Mark Shipped / Dropped Off'}
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>
