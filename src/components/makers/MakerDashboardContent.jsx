@@ -409,7 +409,8 @@ The EX3D Team`
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Earnings</p>
-                <p className="text-3xl font-bold text-gray-900">${stats.totalEarnings.toFixed(2)}</p>
+                 <p className="text-3xl font-bold text-gray-900">${stats.totalEarnings.toFixed(2)}</p>
+                 <p className="text-xs text-gray-400 mt-1">50% of item cost</p>
               </div>
               <DollarSign className="w-10 h-10 text-teal-600" />
             </div>
