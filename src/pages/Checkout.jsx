@@ -85,7 +85,7 @@ export default function Checkout() {
     }
   };
 
-  const loadCart = async (userId) => {
+  const loadCart = async (userId, prefilledAddr = null) => {
     try {
       const cart = await base44.entities.Cart.filter({ user_id: userId });
       console.log('=== Checkout: Cart Items Loaded ===', cart);
