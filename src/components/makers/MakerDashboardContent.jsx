@@ -77,28 +77,25 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       setPrinters(allPrinters);
 
       const activeOrders = myOrders.filter(o => ['pending', 'accepted', 'printing'].includes(o.status)).length;
-      const completedOrders = myOrders.filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status)).length;
-      const totalEarnings = myOrders
-        .filter(o => ['completed', 'dropped_off', 'delivered'].includes(o.status))
+      // Completed = done printing (shipped/dropped_off/delivered)
+      const completedOrders = myOrders.filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status)).length;
+
+      // Earnings = 50% of items total (shipping excluded)
+      const calcEarnings = (orderList) => orderList
+        .filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status))
         .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.7) - 0.30);
-          const priorityEarning = o.is_priority ? 2.80 : 0;
-          return sum + baseEarning + priorityEarning;
+          const shippingCost = o.shipping_cost || 0;
+          const itemsTotal = Math.max(0, (o.total_amount || 0) - shippingCost);
+          return sum + itemsTotal * 0.5;
         }, 0);
+
+      const totalEarnings = calcEarnings(myOrders);
 
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-      const monthlyEarnings = myOrders
-        .filter(o => {
-          if (!['completed', 'dropped_off', 'delivered'].includes(o.status)) return false;
-          const orderDate = new Date(o.updated_date || o.created_date);
-          return orderDate >= firstDayOfMonth;
-        })
-        .reduce((sum, o) => {
-          const baseEarning = ((o.total_amount * 0.7) - 0.30);
-          const priorityEarning = o.is_priority ? 2.80 : 0;
-          return sum + baseEarning + priorityEarning;
-        }, 0);
+      const monthlyEarnings = calcEarnings(
+        myOrders.filter(o => new Date(o.updated_date || o.created_date) >= firstDayOfMonth)
+      );
 
       setStats({
         activeOrders,
