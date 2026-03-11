@@ -155,110 +155,77 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
     setUpdatingOrder(null);
   };
 
-  const handleMarkCompleted = async (orderId) => {
-    if (!confirm("Mark this order as completed? A USPS shipping label will be generated automatically if the customer provided a shipping address.")) {
-      return;
-    }
+  const handleMarkDonePrinting = async (orderId) => {
     setUpdatingOrder(orderId);
     try {
-      await base44.entities.Order.update(orderId, { status: 'completed' });
-
       const order = orders.find(o => o.id === orderId);
+      await base44.entities.Order.update(orderId, { status: 'done_printing' });
 
-      // Auto-generate shipping label if order has a shipping address
+      // Auto-generate shipping label if order needs shipping
       if (order && !order.is_local_delivery && order.shipping_address?.street) {
         try {
           const res = await base44.functions.invoke('generateShippingLabel', { orderId });
           const data = res.data;
           if (data?.success && data?.tracking_number) {
             toast({
-              title: "✅ Order completed! Shipping label generated.",
-              description: `Tracking: ${data.tracking_number}`
+              title: "✅ Done printing! Shipping label generated.",
+              description: `Tracking: ${data.tracking_number} — check the order card for the label.`
             });
-          } else if (data?.is_local_delivery) {
-            toast({ title: "Order completed!", description: "Local delivery — no label needed." });
           } else {
             toast({
-              title: "Order completed",
-              description: data?.error || "Label generation failed. Please generate manually if needed."
+              title: "Done printing",
+              description: data?.error || "Label generation failed. Please generate manually."
             });
           }
         } catch (labelErr) {
-          console.error('Auto label generation failed:', labelErr);
-          toast({
-            title: "Order marked as completed",
-            description: "Auto shipping label generation failed — USPS may not be configured yet."
-          });
+          console.error('Label generation failed:', labelErr);
+          toast({ title: "Marked done printing", description: "Shipping label generation failed — please generate manually." });
         }
       } else {
-        toast({
-          title: "Order marked as completed!",
-          description: order?.is_local_delivery
-            ? "Local delivery — no shipping label needed."
-            : "Please contact Jacob at labaghr@my.erau.edu or 610-858-3200 for drop-off."
-        });
+        toast({ title: "Marked done printing!", description: "Arrange drop-off with the customer." });
       }
 
       await loadDashboard();
     } catch (error) {
-      toast({ title: "Failed to complete order", description: error.message, variant: "destructive" });
+      toast({ title: "Failed to update order", description: error.message, variant: "destructive" });
     }
     setUpdatingOrder(null);
   };
 
-  const handleMarkDroppedOff = async (orderId) => {
+  const handleMarkShipped = async (orderId) => {
     setUpdatingOrder(orderId);
     try {
+      const order = orders.find(o => o.id === orderId);
       await base44.entities.Order.update(orderId, {
-        status: 'dropped_off',
+        status: 'shipped',
         dropped_off_at: new Date().toISOString()
       });
 
-      const order = orders.find(o => o.id === orderId);
-      if (order) {
-        // Send pickup notification to customer
+      // Notify customer
+      try {
+        const customer = await base44.entities.User.get(order.customer_id);
+        const trackingInfo = order.tracking_number
+          ? `\nTracking number: ${order.tracking_number}`
+          : '';
+        await base44.functions.invoke('sendEmail', {
+          to: customer.email,
+          subject: '📦 Your Order Has Shipped! — EX3D Prints',
+          body: `Hi ${customer.full_name},\n\nGreat news! Your order #${orderId.slice(-8)} has been shipped.${trackingInfo}\n\nItems:\n${order.items.map(item => `- ${item.product_name} (×${item.quantity})`).join('\n')}\n\nThank you for choosing EX3D Prints!\n\nBest regards,\nThe EX3D Team`
+        });
+      } catch (emailError) {
+        console.error('Failed to send shipped email:', emailError);
+      }
+
+      // Transfer payment if Stripe Connect set up
+      if (user?.stripe_connect_account_id && user?.stripe_connect_onboarding_complete) {
         try {
-          const customer = await base44.entities.User.get(order.customer_id);
-          await base44.functions.invoke('sendEmail', {
-            to: customer.email,
-            subject: 'Your Order is Ready for Pickup! 📦 - EX3D Prints',
-            body: `Hi ${customer.full_name},
-
-Great news! Your order #${orderId.slice(-8)} is ready for pickup!
-
-📦 Pickup Location: ${order.pickup_location}
-
-Order Details:
-${order.items.map(item => `- ${item.product_name} (x${item.quantity})`).join('\n')}
-
-Total: $${order.total_amount.toFixed(2)}
-
-Please contact us to arrange pickup.
-
-Need help? Reply to this email or contact us at labaghr@my.erau.edu or 610-858-3200
-
-Thank you for choosing EX3D Prints!
-
-Best regards,
-The EX3D Team`
-          });
-        } catch (emailError) {
-          console.error('Failed to send pickup email:', emailError);
-        }
-
-        // Automatically transfer payment to maker if Stripe Connect is set up
-        if (user?.stripe_connect_account_id && user?.stripe_connect_onboarding_complete) {
-          try {
-            await base44.functions.invoke('createStripeTransferToMaker', { orderId });
-            console.log('✅ Automatic payment transfer initiated');
-          } catch (transferError) {
-            console.error('⚠️ Failed to auto-transfer payment:', transferError);
-            // Don't show error to user - admin will handle manually
-          }
+          await base44.functions.invoke('createStripeTransferToMaker', { orderId });
+        } catch (transferError) {
+          console.error('Auto payment transfer failed:', transferError);
         }
       }
 
-      toast({ title: "Order marked as dropped off and customer notified!" });
+      toast({ title: "Marked as shipped! Customer has been notified." });
       await loadDashboard();
     } catch (error) {
       toast({ title: "Failed to update order", variant: "destructive" });
