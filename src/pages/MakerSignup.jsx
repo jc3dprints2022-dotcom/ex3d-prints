@@ -194,17 +194,17 @@ export default function MakerSignup() {
         status: 'pending'
       };
 
+      const addressObj = { street: formData.street, city: formData.city, state: formData.state, zip: formData.zip };
+
       let currentApplication;
-      // If user had a rejected application, update it. Otherwise, create new.
-      // We check user.maker_application_id and also current formState for rejected_maker
-      // to ensure we update only if it was a re-submission of a rejected app,
-      // and not if somehow user has ID but no app (which is now handled in useEffect to clear ID).
       if (user.maker_application_id && formState === 'rejected_maker') {
         currentApplication = await base44.entities.MakerApplication.update(user.maker_application_id, applicationData);
         await base44.auth.updateMe({ 
           business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
           maker_id: currentApplication.id,
-          account_status: 'active'
+          account_status: 'active',
+          address: addressObj,
+          phone: formData.phone
         });
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       } else {
@@ -213,7 +213,9 @@ export default function MakerSignup() {
           maker_application_id: currentApplication.id,
           business_roles: [...(user.business_roles || []).filter(r => r !== 'maker'), 'maker'],
           maker_id: currentApplication.id,
-          account_status: 'active'
+          account_status: 'active',
+          address: addressObj,
+          phone: formData.phone
         });
         toast({ title: "Success!", description: "Welcome to the maker network!", variant: "success" });
       }
