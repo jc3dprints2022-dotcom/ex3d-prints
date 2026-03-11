@@ -114,6 +114,15 @@ Deno.serve(async (req) => {
                     payout_date: currentMonthLastDay.toISOString().split('T')[0]
                 });
 
+                // Trigger Stripe transfers for each order
+                for (const orderId of data.orders) {
+                    try {
+                        await base44.functions.invoke('createStripeTransferToMaker', { orderId });
+                    } catch (transferErr) {
+                        console.error(`Stripe transfer failed for order ${orderId}:`, transferErr.message);
+                    }
+                }
+
                 payoutRecords.push(payout);
             } catch (error) {
                 console.error(`Failed to create payout for maker ${makerId}:`, error);
