@@ -466,7 +466,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                       </div>
                       <div className="flex flex-col items-end gap-2">
                         <Badge className={getStatusBadgeColor(order.status)}>
-                          {order.status}
+                          {getStatusLabel(order.status)}
                         </Badge>
                         {order.is_priority && (
                           <Badge className="bg-orange-500">⚡ Priority</Badge>
