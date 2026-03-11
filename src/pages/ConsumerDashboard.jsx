@@ -498,16 +498,7 @@ export default function ConsumerDashboard() {
                                          Cancel
                                        </Button>
                                      )}
-                                     {order.status === 'dropped_off' && (
-                                       <Button
-                                         size="sm"
-                                         className="bg-green-600 hover:bg-green-700"
-                                         onClick={() => handleConfirmPickup(order.id)}
-                                       >
-                                         <CheckCircle className="w-4 h-4 mr-2" />
-                                         Confirm Pickup
-                                       </Button>
-                                     )}
+
                                      {order.status === 'delivered' && (
                                        <Button
                                          size="sm"
