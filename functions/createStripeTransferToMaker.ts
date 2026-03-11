@@ -1,14 +1,14 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.4';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@14.11.0';
 
 Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         
-        // Admin-only function
+        // Allow admin or the assigned maker to trigger transfer
         const user = await base44.auth.me();
-        if (user?.role !== 'admin') {
-            return Response.json({ error: 'Forbidden: Admin access required' }, { status: 403 });
+        if (!user) {
+            return Response.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
         const { orderId } = await req.json();
@@ -32,10 +32,10 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Order not found' }, { status: 404 });
         }
 
-        // Only transfer for completed/delivered orders
-        if (!['completed', 'dropped_off', 'delivered'].includes(order.status)) {
+        // Only transfer for shipped/completed/delivered orders
+        if (!['shipped', 'completed', 'dropped_off', 'delivered'].includes(order.status)) {
             return Response.json({ 
-                error: 'Order must be completed/delivered before transfer',
+                error: 'Order must be shipped/completed/delivered before transfer',
                 status: order.status 
             }, { status: 400 });
         }
@@ -59,11 +59,9 @@ Deno.serve(async (req) => {
             }, { status: 400 });
         }
 
-        // Calculate transfer amount: 50% - $0.30 Stripe fee + priority bonus
-        const platformFee = order.total_amount * 0.50;
-        const stripeFee = 0.30;
-        const priorityBonus = order.is_priority ? 4 : 0;
-        const transferAmount = (order.total_amount * 0.50) - stripeFee + priorityBonus;
+        // Calculate transfer amount: 50% of items total (shipping excluded)
+        const itemsTotal = (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+        const transferAmount = itemsTotal * 0.5;
 
         // Stripe requires amounts in cents
         const transferAmountCents = Math.round(transferAmount * 100);
