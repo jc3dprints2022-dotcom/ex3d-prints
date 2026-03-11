@@ -298,13 +298,29 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       pending: 'bg-yellow-100 text-yellow-900',
       accepted: 'bg-blue-100 text-blue-900',
       printing: 'bg-purple-100 text-purple-900',
-      completed: 'bg-green-100 text-green-900',
+      done_printing: 'bg-orange-100 text-orange-900',
+      shipped: 'bg-teal-100 text-teal-900',
       dropped_off: 'bg-teal-100 text-teal-900',
       delivered: 'bg-emerald-100 text-emerald-900',
       cancelled: 'bg-red-100 text-red-900',
       unassigned: 'bg-gray-100 text-gray-900'
     };
     return colors[status] || 'bg-gray-100 text-gray-900';
+  };
+
+  const getStatusLabel = (status) => {
+    const labels = {
+      pending: 'Pending',
+      accepted: 'Accepted',
+      printing: 'Printing',
+      done_printing: 'Done Printing',
+      shipped: 'Shipped',
+      dropped_off: 'Shipped/Dropped Off',
+      delivered: 'Delivered ✓',
+      cancelled: 'Cancelled',
+      unassigned: 'Unassigned'
+    };
+    return labels[status] || status;
   };
 
   const getOrderCardHeaderClass = (status, isPriority) => {
