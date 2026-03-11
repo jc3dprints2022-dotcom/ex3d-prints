@@ -85,54 +85,19 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
     setRedeeming(null);
   };
 
-  const SHIPPING_KITS = [
-    {
-      id: 'starter',
-      name: 'First Shipping Kit',
-      description: 'Everything you need to get started shipping orders. Includes boxes, tape, and packing materials for your first 10 orders.',
-      price: 20,
-      exp_cost: 20000,
-    },
-    {
-      id: 'continual',
-      name: 'Continual Shipping Kit',
-      description: 'Replenishment kit for ongoing orders. Same great supplies at a slightly lower price for returning makers.',
-      price: 18,
-      exp_cost: 18000,
-    }
-  ];
-
   return (
     <div className="space-y-6">
-      {/* Shipping Kits */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="w-5 h-5 text-teal-600" />
-            Shipping Kits
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid md:grid-cols-2 gap-4">
-            {SHIPPING_KITS.map(kit => (
-              <Card key={kit.id} className="border-teal-200">
-                <CardContent className="p-4">
-                  <h3 className="font-bold text-lg mb-1">{kit.name}</h3>
-                  <p className="text-sm text-gray-600 mb-3">{kit.description}</p>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge className="bg-teal-600">${kit.price}</Badge>
-                    <span className="text-sm text-gray-500">or</span>
-                    <Badge className="bg-orange-500">{kit.exp_cost.toLocaleString()} EXP</Badge>
-                  </div>
-                  <Button
-                    className="w-full bg-teal-600 hover:bg-teal-700"
-                    onClick={() => toast({ title: "Coming soon!", description: "Shipping kit ordering via Stripe will be available soon." })}
-                  >
-                    Order Kit
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
+      {/* EXP Balance */}
+      <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
+        <CardContent className="p-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-orange-100 mb-2">Your EXP Balance</p>
+              <h2 className="text-5xl font-bold flex items-center gap-3">
+                <Trophy className="w-12 h-12" />
+                {user.exp_points || 0} EXP
+              </h2>
+            </div>
           </div>
         </CardContent>
       </Card>

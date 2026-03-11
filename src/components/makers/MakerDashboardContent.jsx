@@ -539,7 +539,18 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                         </div>
 
                         <div className="flex gap-2 flex-wrap">
-                        {order.status === 'pending' && (
+                          {order.shipping_label_url && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(order.shipping_label_url, '_blank')}
+                              className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                            >
+                              <Download className="w-3 h-3 mr-1" />
+                              Label
+                            </Button>
+                          )}
+                          {order.status === 'pending' && (
                             <>
                               <Button size="sm" onClick={() => handleAcceptOrder(order.id)} disabled={updatingOrder === order.id} className="bg-green-600 hover:bg-green-700">
                                 {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Accept'}
@@ -572,11 +583,6 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                               <Button size="sm" onClick={() => handleMarkShipped(order.id)} disabled={updatingOrder === order.id} className="bg-teal-600 hover:bg-teal-700">
                                 {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Mark as Shipped'}
                               </Button>
-                            </div>
-                          )}
-                          {(order.status === 'shipped' || order.status === 'dropped_off') && order.tracking_number && (
-                            <div className="text-xs text-blue-600 font-mono">
-                              📦 {order.tracking_number}
                             </div>
                           )}
                         </div>

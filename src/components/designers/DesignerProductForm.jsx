@@ -42,8 +42,6 @@ export default function DesignerProductForm({ designerId, designerName, existing
   const [customPrice, setCustomPrice] = useState(null);
   const { toast } = useToast();
 
-  const ALL_COLORS_EXCEPT_SHOWN = COLORS; // all colors auto-selected, no "Shown Colors"
-
   const [formData, setFormData] = useState(
     existingProduct
       ? {
@@ -52,21 +50,20 @@ export default function DesignerProductForm({ designerId, designerName, existing
           print_time_hours: existingProduct.print_time_hours.toString(),
           weight_grams: existingProduct.weight_grams.toString(),
           custom_price: existingProduct.price || null,
+          dimensions: existingProduct.dimensions || { length: '', width: '', height: '' },
           category: existingProduct.category,
+          materials: existingProduct.materials || [],
+          colors: existingProduct.colors || [],
+          tags: existingProduct.tags || [],
           images: existingProduct.images || [],
           print_files: existingProduct.print_files || [],
           assembly_instructions: existingProduct.assembly_instructions || [],
-          // Auto-set values
-          materials: ['PLA'],
-          colors: COLORS,
-          tags: [],
-          dimensions: { length: '', width: '', height: '' },
-          multi_color: false,
-          number_of_colors: 2,
-          custom_scale: null,
-          infill_percentage: 15,
-          use_shown_colors: false,
-          shown_color_specs: [],
+          multi_color: existingProduct.multi_color || false,
+          number_of_colors: existingProduct.number_of_colors || 2,
+          custom_scale: existingProduct.custom_scale || null,
+          infill_percentage: existingProduct.infill_percentage || 15,
+          use_shown_colors: existingProduct.use_shown_colors || false,
+          shown_color_specs: existingProduct.shown_color_specs || [],
         }
       : {
           name: '',
@@ -74,15 +71,14 @@ export default function DesignerProductForm({ designerId, designerName, existing
           print_time_hours: '',
           weight_grams: '',
           custom_price: null,
+          dimensions: { length: '', width: '', height: '' },
           category: '',
+          materials: [],
+          colors: [],
+          tags: [],
           images: [],
           print_files: [],
           assembly_instructions: [],
-          // Auto-set values
-          materials: ['PLA'],
-          colors: COLORS,
-          tags: [],
-          dimensions: { length: '', width: '', height: '' },
           multi_color: false,
           number_of_colors: 2,
           custom_scale: null,
@@ -230,6 +226,21 @@ export default function DesignerProductForm({ designerId, designerName, existing
       return;
     }
 
+    if (!formData.dimensions.length || !formData.dimensions.width || !formData.dimensions.height) {
+      toast({ title: "Please enter all dimensions (L x W x H)", variant: "destructive" });
+      return;
+    }
+
+    if (formData.materials.length === 0) {
+      toast({ title: "Please select at least one material", variant: "destructive" });
+      return;
+    }
+
+    if (formData.colors.length === 0) {
+      toast({ title: "Please select at least one color", variant: "destructive" });
+      return;
+    }
+
     if (formData.images.length === 0) {
       toast({ title: "Please upload at least one product image", variant: "destructive" });
       return;
@@ -248,6 +259,19 @@ export default function DesignerProductForm({ designerId, designerName, existing
       });
       return;
     }
+
+    if (formData.multi_color) {
+      if (!formData.number_of_colors || parseInt(formData.number_of_colors) < 2 || parseInt(formData.number_of_colors) > 6) {
+        toast({ 
+          title: "Invalid number of colors", 
+          description: "Multi-color prints must have between 2-6 colors",
+          variant: "destructive" 
+        });
+        return;
+      }
+    }
+
+
 
     const grams = parseFloat(formData.weight_grams);
     const printTime = parseFloat(formData.print_time_hours);
@@ -274,23 +298,27 @@ export default function DesignerProductForm({ designerId, designerName, existing
         price: calculatedPrice,
         print_time_hours: parseFloat(formData.print_time_hours),
         weight_grams: parseFloat(formData.weight_grams),
-        dimensions: null, // Set by admin during approval
+        dimensions: {
+          length: parseFloat(formData.dimensions.length),
+          width: parseFloat(formData.dimensions.width),
+          height: parseFloat(formData.dimensions.height)
+        },
         category: formData.category,
-        materials: ['PLA'],
-        colors: COLORS,
-        tags: [],
+        materials: formData.materials,
+        colors: formData.colors,
+        tags: formData.tags.map(tag => tag.trim()).filter(tag => tag.length > 0),
         images: formData.images,
         print_files: formData.print_files,
         assembly_instructions: formData.assembly_instructions,
         designer_id: designerId,
         designer_name: designerName,
         status: 'pending',
-        multi_color: false,
-        number_of_colors: null,
-        custom_scale: null,
-        infill_percentage: 15,
-        use_shown_colors: false,
-        shown_color_specs: [],
+        multi_color: formData.multi_color,
+        number_of_colors: formData.multi_color ? parseInt(formData.number_of_colors) : null,
+        custom_scale: formData.custom_scale ? parseFloat(formData.custom_scale) : null,
+        infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
+        use_shown_colors: formData.use_shown_colors,
+        shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
         rating: 0,
         review_count: 0,
         view_count: 0,
@@ -370,7 +398,17 @@ export default function DesignerProductForm({ designerId, designerName, existing
         />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div>
+        <Label htmlFor="tags">Tags (comma-separated)</Label>
+        <Input
+          id="tags"
+          value={formData.tags.join(', ')}
+          onChange={(e) => setFormData({...formData, tags: e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0)})}
+          placeholder="e.g., cosplay, helmet, character, fanart"
+        />
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         <div>
           <Label htmlFor="print_time">Print Time (hrs) *</Label>
           <Input
@@ -399,6 +437,34 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </div>
 
         <div>
+          <Label htmlFor="scale">Scale (%)</Label>
+          <Input
+            id="scale"
+            type="number"
+            step="1"
+            min="1"
+            max="5000"
+            value={formData.custom_scale || ''}
+            onChange={(e) => setFormData({...formData, custom_scale: e.target.value ? parseFloat(e.target.value) : null})}
+            placeholder="Optional (default 100)"
+          />
+        </div>
+
+        <div>
+          <Label htmlFor="infill">Infill (%)</Label>
+          <Input
+            id="infill"
+            type="number"
+            step="1"
+            min="0"
+            max="100"
+            value={formData.infill_percentage}
+            onChange={(e) => setFormData({...formData, infill_percentage: e.target.value ? parseFloat(e.target.value) : 15})}
+            placeholder="Default 15%"
+          />
+        </div>
+
+        <div>
           <Label htmlFor="price">Price ($) *</Label>
           <Input
             id="price"
@@ -420,9 +486,177 @@ export default function DesignerProductForm({ designerId, designerName, existing
         </div>
       </div>
 
-      <div className="p-3 bg-gray-50 rounded border text-sm text-gray-600">
-        <p>ℹ️ <strong>Materials</strong> will be PLA. <strong>Colors</strong> will include all standard colors. <strong>Dimensions</strong> and multi-color settings will be configured by admin during approval.</p>
+      <div>
+        <Label>Dimensions (mm) *</Label>
+        <div className="grid grid-cols-3 gap-2 mt-1">
+          <Input
+            type="number"
+            placeholder="Length"
+            step="1"
+            min="1"
+            value={formData.dimensions.length}
+            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, length: e.target.value}})}
+            required
+          />
+          <Input
+            type="number"
+            placeholder="Width"
+            step="1"
+            min="1"
+            value={formData.dimensions.width}
+            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, width: e.target.value}})}
+            required
+          />
+          <Input
+            type="number"
+            placeholder="Height"
+            step="1"
+            min="1"
+            value={formData.dimensions.height}
+            onChange={(e) => setFormData({...formData, dimensions: {...formData.dimensions, height: e.target.value}})}
+            required
+          />
+        </div>
       </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
+        <div>
+          <Label className="mb-2 block">Materials *</Label>
+          <div className="grid grid-cols-2 gap-2">
+            {MATERIALS.map(material => (
+              <div key={material} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`material-${material}`}
+                  checked={formData.materials.includes(material)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData(prev => ({...prev, materials: [...prev.materials, material]}));
+                    } else {
+                      setFormData(prev => ({...prev, materials: prev.materials.filter(m => m !== material)}));
+                    }
+                  }}
+                />
+                <Label htmlFor={`material-${material}`} className="text-sm font-normal cursor-pointer">{material}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <Label className="mb-2 block">Colors *</Label>
+          <div className="flex items-center space-x-2 mb-3">
+            <Checkbox
+              id="select-all-colors"
+              checked={formData.colors.length === COLORS.length + 1 && formData.colors.includes("Shown Colors") && COLORS.every(c => formData.colors.includes(c))}
+              onCheckedChange={handleSelectAllColors}
+            />
+            <Label htmlFor="select-all-colors" className="font-bold cursor-pointer">Select All Colors</Label>
+          </div>
+          <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="color-shown-colors"
+                checked={formData.colors.includes("Shown Colors")}
+                onCheckedChange={(checked) => {
+                  if (checked) {
+                    setFormData(prev => ({...prev, colors: ["Shown Colors", ...prev.colors], use_shown_colors: true}));
+                  } else {
+                    setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== "Shown Colors"), use_shown_colors: false, shown_color_specs: []}));
+                  }
+                }}
+              />
+              <Label htmlFor="color-shown-colors" className="text-sm font-bold cursor-pointer text-blue-600">Shown Colors</Label>
+            </div>
+            {COLORS.map(color => (
+              <div key={color} className="flex items-center space-x-2">
+                <Checkbox
+                  id={`color-${color}`}
+                  checked={formData.colors.includes(color)}
+                  onCheckedChange={(checked) => {
+                    if (checked) {
+                      setFormData(prev => ({...prev, colors: [...prev.colors, color]}));
+                    } else {
+                      setFormData(prev => ({...prev, colors: prev.colors.filter(c => c !== color)}));
+                    }
+                  }}
+                />
+                <Label htmlFor={`color-${color}`} className="text-sm font-normal cursor-pointer">{color}</Label>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {formData.multi_color && (
+        <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+          <Label htmlFor="number_of_colors">
+            Number of Colors Required (2-6) *
+          </Label>
+          <Input
+            id="number_of_colors"
+            type="number"
+            min="2"
+            max="6"
+            value={formData.number_of_colors}
+            onChange={(e) => setFormData(prev => ({...prev, number_of_colors: e.target.value}))}
+            className="mt-2"
+            required={formData.multi_color}
+          />
+          <p className="text-xs text-gray-600 mt-2">
+            Customers will need to select exactly this many colors when ordering
+          </p>
+        </div>
+      )}
+
+      {formData.use_shown_colors && (
+        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+          <Label className="mb-3 block">Specify Colors for Each File</Label>
+          <p className="text-xs text-gray-600 mb-3">
+            Map each print file to a specific color and quantity. File names will help makers identify which color to use.
+          </p>
+          {formData.print_files.map((file, idx) => (
+            <div key={idx} className="mb-3 p-3 bg-white rounded border">
+              <p className="text-sm font-medium mb-2">File {idx + 1}: {file.split('/').pop()}</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label htmlFor={`color-spec-${idx}`} className="text-xs">Color</Label>
+                  <Select
+                    value={formData.shown_color_specs[idx]?.color || ''}
+                    onValueChange={(value) => {
+                      const newSpecs = [...formData.shown_color_specs];
+                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, color: value, quantity: newSpecs[idx]?.quantity || 1 };
+                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                    }}
+                  >
+                    <SelectTrigger id={`color-spec-${idx}`}>
+                      <SelectValue placeholder="Select color" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COLORS.map(color => (
+                        <SelectItem key={color} value={color}>{color}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor={`qty-spec-${idx}`} className="text-xs">Quantity</Label>
+                  <Input
+                    id={`qty-spec-${idx}`}
+                    type="number"
+                    min="1"
+                    value={formData.shown_color_specs[idx]?.quantity || 1}
+                    onChange={(e) => {
+                      const newSpecs = [...formData.shown_color_specs];
+                      newSpecs[idx] = { ...newSpecs[idx], file_index: idx, quantity: parseInt(e.target.value) || 1 };
+                      setFormData(prev => ({...prev, shown_color_specs: newSpecs}));
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div>
         <Label htmlFor="images">Product Images * (Multiple allowed)</Label>
@@ -526,6 +760,17 @@ export default function DesignerProductForm({ designerId, designerName, existing
             ))}
           </div>
         )}
+      </div>
+
+      <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+        <Checkbox
+          id="multi_color"
+          checked={formData.multi_color}
+          onCheckedChange={(checked) => setFormData(prev => ({...prev, multi_color: checked}))}
+        />
+        <Label htmlFor="multi_color" className="font-medium cursor-pointer">
+          This design requires multi-color printing
+        </Label>
       </div>
 
       <div className="flex items-center space-x-2 p-4 bg-blue-50 rounded-lg border-2 border-blue-600">

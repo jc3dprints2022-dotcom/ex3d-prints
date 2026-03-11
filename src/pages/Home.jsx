@@ -9,7 +9,6 @@ import HeroSection from "../components/home/HeroSection";
 import HowItWorksSection from "../components/home/HowItWorksSection";
 import TestimonialsSection from "../components/home/TestimonialsSection";
 import EmailSignupReward from "../components/shared/EmailSignupReward";
-import FeaturedProducts from "../components/home/FeaturedProducts";
 
 export default function Home() {
   const [user, setUser] = useState(null);
@@ -73,8 +72,6 @@ export default function Home() {
   return (
     <div className="min-h-screen">
       <HeroSection />
-
-      {products.length > 0 && <FeaturedProducts products={products} />}
       
       {/* How It Works Header */}
       <div className="bg-gradient-to-r from-slate-700 via-slate-800 to-slate-900 py-12">
