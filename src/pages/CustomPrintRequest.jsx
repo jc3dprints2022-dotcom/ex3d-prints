@@ -198,6 +198,16 @@ export default function CustomPrintRequest() {
     return (
       <div className="flex justify-center items-center h-96">
         <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+        <p className="ml-3 text-gray-600">Loading...</p>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="flex justify-center items-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-teal-600" />
+        <p className="ml-3 text-gray-600">Redirecting to sign in...</p>
       </div>
     );
   }
