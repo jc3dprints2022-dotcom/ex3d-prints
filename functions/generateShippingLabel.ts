@@ -74,6 +74,16 @@ Deno.serve(async (req) => {
     const totalGrams = order.items.reduce((sum, item) => sum + ((item.weight_grams || 50) * (item.quantity || 1)), 0);
     const weightLb = gToLb(totalGrams);
 
+    // Calculate parcel dimensions from order items
+    const mmToIn = (mm) => Math.max(1, parseFloat((mm / 25.4).toFixed(1)));
+    const dims = order.items.map(i => i.dimensions).filter(Boolean);
+    let parcelL = 6, parcelW = 6, parcelH = 4;
+    if (dims.length > 0) {
+      parcelL = Math.max(4, Math.max(...dims.map(d => mmToIn(d.length || 150))));
+      parcelW = Math.max(4, Math.max(...dims.map(d => mmToIn(d.width || 150))));
+      parcelH = Math.max(3, Math.max(...dims.map(d => mmToIn(d.height || 60))));
+    }
+
     const [addrFrom, addrTo] = await Promise.all([
       shippoPost('/addresses/', { name: fromAddr.name, street1: fromAddr.street, city: fromAddr.city, state: fromAddr.state, zip: fromAddr.zip, country: 'US', phone: fromAddr.phone || '', validate: false }, apiKey),
       shippoPost('/addresses/', { name: toAddr.name || 'Customer', street1: toAddr.street, city: toAddr.city, state: toAddr.state, zip: toAddr.zip, country: 'US', phone: toAddr.phone || '', validate: true }, apiKey)
@@ -82,7 +92,7 @@ Deno.serve(async (req) => {
     const shipment = await shippoPost('/shipments/', {
       address_from: addrFrom.object_id,
       address_to: addrTo.object_id,
-      parcels: [{ length: '6', width: '6', height: '4', distance_unit: 'in', weight: weightLb.toString(), mass_unit: 'lb' }],
+      parcels: [{ length: parcelL.toString(), width: parcelW.toString(), height: parcelH.toString(), distance_unit: 'in', weight: weightLb.toString(), mass_unit: 'lb' }],
       async: false
     }, apiKey);
 
