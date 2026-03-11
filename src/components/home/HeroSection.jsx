@@ -62,7 +62,7 @@ export default function HeroSection() {
           base44.entities.Product.get(f.product_id).catch(() => null)
         );
         const productsData = await Promise.all(productPromises);
-        const validProducts = productsData.filter(p => p && p.status === 'active' && p.images && p.images.length > 0);
+        const validProducts = productsData.filter(p => p && p.images && p.images.length > 0);
         
         if (validProducts.length > 0) {
           setProducts(validProducts);
@@ -75,7 +75,7 @@ export default function HeroSection() {
       const activeWithImages = allProducts.filter(p => p.status === 'active' && p.images && p.images.length > 0);
       const topProducts = activeWithImages
         .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
-        .slice(0, 5);
+        .slice(0, 12);
       setProducts(topProducts);
     } catch (error) {
       console.error("Failed to load products for slideshow:", error);
@@ -189,25 +189,15 @@ export default function HeroSection() {
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
+          <div className="flex justify-center mb-8">
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-16 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+              className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
             >
               <Link to={createPageUrl("Marketplace")}>
                 Marketplace
-              </Link>
-            </Button>
-            <Button
-              asChild
-              size="lg"
-              onClick={scrollToTop}
-              className="h-20 px-16 bg-purple-600 hover:bg-purple-700 text-white text-2xl font-bold shadow-2xl"
-            >
-              <Link to={createPageUrl("BusinessMarketplace")}>
-                For Businesses
               </Link>
             </Button>
           </div>
