@@ -42,6 +42,8 @@ export default function DesignerProductForm({ designerId, designerName, existing
   const [customPrice, setCustomPrice] = useState(null);
   const { toast } = useToast();
 
+  const ALL_COLORS_EXCEPT_SHOWN = COLORS; // all colors auto-selected, no "Shown Colors"
+
   const [formData, setFormData] = useState(
     existingProduct
       ? {
@@ -50,20 +52,21 @@ export default function DesignerProductForm({ designerId, designerName, existing
           print_time_hours: existingProduct.print_time_hours.toString(),
           weight_grams: existingProduct.weight_grams.toString(),
           custom_price: existingProduct.price || null,
-          dimensions: existingProduct.dimensions || { length: '', width: '', height: '' },
           category: existingProduct.category,
-          materials: existingProduct.materials || [],
-          colors: existingProduct.colors || [],
-          tags: existingProduct.tags || [],
           images: existingProduct.images || [],
           print_files: existingProduct.print_files || [],
           assembly_instructions: existingProduct.assembly_instructions || [],
-          multi_color: existingProduct.multi_color || false,
-          number_of_colors: existingProduct.number_of_colors || 2,
-          custom_scale: existingProduct.custom_scale || null,
-          infill_percentage: existingProduct.infill_percentage || 15,
-          use_shown_colors: existingProduct.use_shown_colors || false,
-          shown_color_specs: existingProduct.shown_color_specs || [],
+          // Auto-set values
+          materials: ['PLA'],
+          colors: COLORS,
+          tags: [],
+          dimensions: { length: '', width: '', height: '' },
+          multi_color: false,
+          number_of_colors: 2,
+          custom_scale: null,
+          infill_percentage: 15,
+          use_shown_colors: false,
+          shown_color_specs: [],
         }
       : {
           name: '',
@@ -71,14 +74,15 @@ export default function DesignerProductForm({ designerId, designerName, existing
           print_time_hours: '',
           weight_grams: '',
           custom_price: null,
-          dimensions: { length: '', width: '', height: '' },
           category: '',
-          materials: [],
-          colors: [],
-          tags: [],
           images: [],
           print_files: [],
           assembly_instructions: [],
+          // Auto-set values
+          materials: ['PLA'],
+          colors: COLORS,
+          tags: [],
+          dimensions: { length: '', width: '', height: '' },
           multi_color: false,
           number_of_colors: 2,
           custom_scale: null,
