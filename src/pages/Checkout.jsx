@@ -147,6 +147,24 @@ export default function Checkout() {
       
       console.log('=== Enriched Items ===', enrichedItems);
       setCartItems(enrichedItems);
+
+      // Auto-calculate shipping immediately once we have items + address
+      if (prefilledAddr?.street && prefilledAddr?.city && prefilledAddr?.state && prefilledAddr?.zip) {
+        const addrForCalc = prefilledAddr;
+        setCalculatingShipping(true);
+        try {
+          const res = await base44.functions.invoke('getEstimatedShipping', {
+            shippingAddress: addrForCalc,
+            items: enrichedItems.map(i => ({ weight_grams: i.weight_grams, dimensions: i.dimensions, quantity: i.quantity }))
+          });
+          if (res.data?.shipping_cost !== undefined) {
+            setShippingCost(res.data.shipping_cost);
+          }
+        } catch (_) {
+          setShippingCost(5.99);
+        }
+        setCalculatingShipping(false);
+      }
     } catch (error) {
       console.error("Failed to load cart:", error);
       toast({ title: "Cart load failed", description: error.message, variant: "destructive" });
