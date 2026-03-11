@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Trophy, Package, Loader2, CheckCircle } from "lucide-react";
+import { Package, Loader2, CheckCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -87,21 +87,6 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
 
   return (
     <div className="space-y-6">
-      {/* EXP Balance */}
-      <Card className="bg-gradient-to-br from-orange-500 to-red-600 text-white">
-        <CardContent className="p-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-orange-100 mb-2">Your EXP Balance</p>
-              <h2 className="text-5xl font-bold flex items-center gap-3">
-                <Trophy className="w-12 h-12" />
-                {user.exp_points || 0} EXP
-              </h2>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Available Rewards */}
       <Card>
         <CardHeader>
