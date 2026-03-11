@@ -580,6 +580,11 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                                   <Download className="w-3 h-3 mr-1" /> Print Shipping Label
                                 </Button>
                               )}
+                              {!order.shipping_label_url && !order.is_local_delivery && (
+                                <Button size="sm" variant="outline" disabled className="text-gray-400 border-gray-300">
+                                  <Loader2 className="w-3 h-3 mr-1 animate-spin" /> Generating label...
+                                </Button>
+                              )}
                               <Button size="sm" onClick={() => handleMarkShipped(order.id)} disabled={updatingOrder === order.id} className="bg-teal-600 hover:bg-teal-700">
                                 {updatingOrder === order.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Mark as Shipped'}
                               </Button>
