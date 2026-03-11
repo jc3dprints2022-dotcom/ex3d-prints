@@ -92,7 +92,10 @@ export default function DesignerProductsSection() {
     try {
       await base44.entities.Product.update(product.id, {
         status: 'active',
-        admin_feedback: adminNotes || null
+        admin_feedback: adminNotes || null,
+        dimensions: product.dimensions || null,
+        multi_color: product.multi_color || false,
+        use_shown_colors: product.use_shown_colors || false,
       });
 
       // Send email to designer
