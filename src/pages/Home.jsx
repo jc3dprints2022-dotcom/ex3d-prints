@@ -130,59 +130,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* For Businesses Section */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-purple-600 rounded-2xl mb-6">
-              <Building2 className="w-8 h-8 text-white"/>
-            </div>
-            <h3 className="text-2xl font-bold text-slate-900 mb-4">For Businesses</h3>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
-            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-4">
-                  <Package className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Wholesale Pricing</h4>
-                <p className="text-slate-600">Order 3D printed products for retail stores in volume with automatic discounts and flexible delivery options.</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 text-purple-600 mb-4">
-                  <Printer className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Fast Production</h4>
-                <p className="text-slate-600">Locally produced by our network of makers. Quick turnaround times with consistent quality.</p>
-              </CardContent>
-            </Card>
-            
-            <Card className="text-center border-none shadow-lg hover:shadow-xl transition-shadow">
-              <CardContent className="p-8">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
-                  <CheckCircle className="w-8 h-8" />
-                </div>
-                <h4 className="text-xl font-semibold text-slate-900 mb-2">Recurring Orders</h4>
-                <p className="text-slate-600">Never run out of inventory by setting up automatic biweekly, or monthly reorders.</p>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="text-center">
-            <Button asChild size="lg" className="bg-purple-600 hover:bg-purple-700">
-              <Link to={createPageUrl("BusinessMarketplace")}>
-                Browse Business Marketplace
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-
       <HowItWorksSection />
 
       {/* For Designers Section */}
