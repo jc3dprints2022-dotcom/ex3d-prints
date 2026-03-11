@@ -48,26 +48,16 @@ export default function CustomPrintRequest() {
     try {
       const currentUser = await base44.auth.me();
       if (!currentUser) {
-        toast({
-          title: "Please sign in",
-          description: "You need to be logged in to submit a custom print request.",
-          variant: "destructive"
-        });
         base44.auth.redirectToLogin(window.location.href);
         return;
       }
       setUser(currentUser);
     } catch (error) {
-      console.error("Authentication check failed:", error);
-      toast({
-        title: "Authentication required",
-        description: "Please sign in to continue.",
-        variant: "destructive"
-      });
+      // Not logged in — redirect to login
       base44.auth.redirectToLogin(window.location.href);
-    } finally {
-      setLoading(false);
+      return;
     }
+    setLoading(false);
   };
 
   const handleInputChange = (field, value) => {
