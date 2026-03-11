@@ -539,7 +539,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                         </div>
 
                         <div className="flex gap-2 flex-wrap">
-                          {order.shipping_label_url && (
+                          {order.shipping_label_url && !['shipped', 'delivered', 'dropped_off', 'completed'].includes(order.status) && (
                             <Button
                               size="sm"
                               variant="outline"
