@@ -400,19 +400,7 @@ export default function Layout({ children, currentPageName }) {
                 </Link>
               )}
 
-              {(!user || user.account_type === 'business') && (
-                <Link
-                  to={createPageUrl("BusinessMarketplace")}
-                  onClick={scrollToTop}
-                  className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                    location.pathname === createPageUrl("BusinessMarketplace")
-                      ? "bg-purple-500 text-white"
-                      : "bg-purple-50 text-purple-700 hover:bg-purple-100"
-                  }`}
-                >
-                  For Businesses
-                </Link>
-              )}
+
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -600,18 +588,7 @@ export default function Layout({ children, currentPageName }) {
                 </div>
               )}
 
-              {/* Businesses Section */}
-              {(!user || user.account_type === 'business') && (
-                <div className="border-t border-gray-100 mt-2 pt-2">
-                  <Link
-                    to={createPageUrl("BusinessMarketplace")}
-                    className="block px-4 py-2 text-sm font-medium text-purple-600 hover:text-purple-700 hover:bg-purple-50"
-                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                  >
-                    For Businesses
-                  </Link>
-                </div>
-              )}
+
 
               {/* For Makers Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
@@ -724,7 +701,6 @@ export default function Layout({ children, currentPageName }) {
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><Link to={createPageUrl("BusinessMarketplace")} onClick={scrollToTop} className="hover:text-white">For Businesses</Link></li>
                 <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
                 <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
               </ul>
