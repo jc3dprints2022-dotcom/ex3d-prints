@@ -475,8 +475,9 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                           <div className="text-right">
                             <p className="text-sm text-gray-500">Your Earnings:</p>
                             <p className="text-xl font-bold text-green-600">
-                              ${(((order.total_amount * 0.7) - 0.30) + (order.is_priority ? 2.80 : 0)).toFixed(2)}
+                              ${(Math.max(0, (order.total_amount || 0) - (order.shipping_cost || 0)) * 0.5).toFixed(2)}
                             </p>
+                            <p className="text-xs text-gray-400">50% of item cost</p>
                           </div>
                         )}
                       </div>
