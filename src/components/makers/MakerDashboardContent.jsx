@@ -770,6 +770,79 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
             <Card>
               <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-teal-600" />
+                  My Shipping Address
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  This address is used when generating USPS shipping labels for orders you ship.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {!editingInfo ? (
+                  <div>
+                    {user?.address?.street ? (
+                      <div className="p-4 bg-gray-50 rounded-lg text-sm text-gray-700 space-y-1">
+                        <p className="font-medium">{user.address.street}</p>
+                        <p>{user.address.city}, {user.address.state} {user.address.zip}</p>
+                      </div>
+                    ) : (
+                      <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-sm text-yellow-800">
+                        ⚠️ No address on file. Add your address so shipping labels can be generated automatically.
+                      </div>
+                    )}
+                    <Button variant="outline" className="mt-3" onClick={() => setEditingInfo(true)}>
+                      {user?.address?.street ? 'Update Address' : 'Add Address'}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="text-sm">Street Address</Label>
+                      <Input value={infoFormData.address.street} onChange={e => setInfoFormData(prev => ({ ...prev, address: { ...prev.address, street: e.target.value } }))} placeholder="123 Main St" />
+                    </div>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div className="col-span-1">
+                        <Label className="text-sm">City</Label>
+                        <Input value={infoFormData.address.city} onChange={e => setInfoFormData(prev => ({ ...prev, address: { ...prev.address, city: e.target.value } }))} placeholder="City" />
+                      </div>
+                      <div>
+                        <Label className="text-sm">State</Label>
+                        <Input value={infoFormData.address.state} onChange={e => setInfoFormData(prev => ({ ...prev, address: { ...prev.address, state: e.target.value } }))} placeholder="AZ" maxLength={2} />
+                      </div>
+                      <div>
+                        <Label className="text-sm">ZIP</Label>
+                        <Input value={infoFormData.address.zip} onChange={e => setInfoFormData(prev => ({ ...prev, address: { ...prev.address, zip: e.target.value } }))} placeholder="12345" />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        disabled={savingAddress}
+                        onClick={async () => {
+                          setSavingAddress(true);
+                          try {
+                            await base44.auth.updateMe({ address: infoFormData.address, phone: infoFormData.phone });
+                            toast({ title: "Address updated!" });
+                            setEditingInfo(false);
+                            await loadDashboard();
+                          } catch (error) {
+                            toast({ title: "Failed to save", variant: "destructive" });
+                          }
+                          setSavingAddress(false);
+                        }}
+                        className="bg-teal-600 hover:bg-teal-700"
+                      >
+                        {savingAddress ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Address'}
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingInfo(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
                 <CardTitle>Vacation Mode</CardTitle>
                 <p className="text-sm text-gray-600 mt-1">
                   When enabled, you won't receive new order assignments. Existing orders remain active.
