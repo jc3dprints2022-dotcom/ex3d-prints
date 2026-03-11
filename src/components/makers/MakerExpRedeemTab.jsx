@@ -107,7 +107,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Package className="w-5 h-5 text-orange-600" />
-            Available Rewards
+            Order Supplies
           </CardTitle>
         </CardHeader>
         <CardContent>
