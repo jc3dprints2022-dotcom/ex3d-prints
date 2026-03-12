@@ -574,17 +574,15 @@ export default function Layout({ children, currentPageName }) {
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
               {/* Marketplace Section */}
-              {(!user || user.account_type === 'consumer') && (
-                <div className="pt-2">
-                  <Link
-                    to={createPageUrl("Marketplace")}
-                    className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
-                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
-                  >
-                    Marketplace
-                  </Link>
-                </div>
-              )}
+              <div className="pt-2">
+                <Link
+                  to={createPageUrl("Marketplace")}
+                  className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Marketplace
+                </Link>
+              </div>
 
 
 
