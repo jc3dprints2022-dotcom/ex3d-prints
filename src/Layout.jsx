@@ -77,9 +77,9 @@ export default function Layout({ children, currentPageName }) {
       const currentUser = await base44.auth.me();
       if (!currentUser) return;
 
-      // Check if user needs to select account type
+      // Auto-set account type to consumer if not set
       if (!currentUser.account_type) {
-        window.location.href = createPageUrl("AccountTypeSelect");
+        await base44.auth.updateMe({ account_type: 'consumer' });
         return;
       }
 
