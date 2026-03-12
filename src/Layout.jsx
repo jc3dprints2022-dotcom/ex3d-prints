@@ -386,19 +386,17 @@ export default function Layout({ children, currentPageName }) {
             </Link>
 
             <nav className="hidden md:flex items-center space-x-8">
-              {(!user || user.account_type === 'consumer') && (
-                <Link
-                  to={createPageUrl("Marketplace")}
-                  onClick={scrollToTop}
-                  className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                    location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
-                      ? "bg-teal-500 text-white"
-                      : "bg-teal-50 text-teal-700 hover:bg-teal-100"
-                  }`}
-                >
-                  Marketplace
-                </Link>
-              )}
+              <Link
+                to={createPageUrl("Marketplace")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
+                    ? "bg-teal-500 text-white"
+                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                }`}
+              >
+                Marketplace
+              </Link>
 
 
 
