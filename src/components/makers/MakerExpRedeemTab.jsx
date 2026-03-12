@@ -102,7 +102,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
                 <h3 className="font-bold text-lg mb-1">Starter Shipping Kit</h3>
                 <p className="text-sm text-gray-600 mb-3">Your first kit — includes boxes, packing tape, and packing paper to get you started shipping orders.</p>
                 <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-teal-600">20,000 EXP</Badge>
+                  <Badge className="bg-teal-600">2,000 EXP</Badge>
                   <span className="text-sm text-gray-500">or $20.00</span>
                 </div>
                 <Button className="w-full bg-teal-600 hover:bg-teal-700" onClick={() => toast({ title: "Coming soon!", description: "Contact support to order your starter kit." })}>
@@ -115,7 +115,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
                 <h3 className="font-bold text-lg mb-1">Continual Shipping Kit</h3>
                 <p className="text-sm text-gray-600 mb-3">Restock kit for active makers — same supplies as the starter at a discounted rate.</p>
                 <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-blue-600">18,000 EXP</Badge>
+                  <Badge className="bg-blue-600">1,800 EXP</Badge>
                   <span className="text-sm text-gray-500">or $18.00</span>
                 </div>
                 <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => toast({ title: "Coming soon!", description: "Contact support to order your continual kit." })}>
@@ -167,7 +167,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
                       <p className="text-sm text-gray-600 mb-3">{reward.description}</p>
                       <div className="flex items-center gap-2 mb-3">
                         <Badge className="bg-orange-500">{reward.exp_cost} EXP</Badge>
-                        <span className="text-sm text-gray-500">or ${(reward.exp_cost / 100).toFixed(2)}</span>
+                        <span className="text-sm text-gray-500">or $15.00</span>
                       </div>
                       <Button
                         onClick={() => setSelectedReward(reward)}
