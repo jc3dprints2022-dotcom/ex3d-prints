@@ -150,6 +150,41 @@ Deno.serve(async (req) => {
             }
         }
 
+        // For maker rewards (non-print) - send email to admin with shipping info
+        const userInfo = await base44.asServiceRole.entities.User.get(user.id);
+        
+        const emailBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #14b8a6;">New Filament Reward Order</h1>
+    <p><strong>Order ID:</strong> ${redemption.id}</p>
+    <p><strong>Reward:</strong> ${reward.name}</p>
+    <p><strong>Payment Method:</strong> EXP (${reward.exp_cost} EXP)</p>
+    
+    <h2 style="color: #111827; margin-top: 30px;">Customer Information</h2>
+    <p><strong>Name:</strong> ${user.full_name}</p>
+    <p><strong>Email:</strong> ${user.email}</p>
+    <p><strong>User ID:</strong> ${user.id}</p>
+    
+    <h2 style="color: #111827; margin-top: 30px;">Shipping Address</h2>
+    ${userInfo.address ? `
+    <p>${userInfo.address.name || user.full_name}<br>
+    ${userInfo.address.street}<br>
+    ${userInfo.address.city}, ${userInfo.address.state} ${userInfo.address.zip}</p>
+    ` : '<p style="color: red;">No shipping address on file - contact user</p>'}
+</div>
+        `;
+
+        try {
+            await base44.asServiceRole.integrations.Core.SendEmail({
+                from_name: 'EX3D Prints',
+                to: 'jc3dprints2022@gmail.com',
+                subject: `New Filament Order - ${reward.name} (EXP Payment)`,
+                body: emailBody
+            });
+        } catch (emailError) {
+            console.error('Failed to send admin email:', emailError);
+        }
+
         // For maker rewards (non-print) - just create redemption for admin fulfillment
         return Response.json({ 
             success: true,
