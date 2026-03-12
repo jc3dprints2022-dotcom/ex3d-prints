@@ -3,8 +3,10 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Package, Loader2, CheckCircle } from "lucide-react";
+import { Package, Loader2, CheckCircle, CreditCard, Coins } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +21,15 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
   const [loading, setLoading] = useState(true);
   const [redeeming, setRedeeming] = useState(null);
   const [selectedReward, setSelectedReward] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState(null); // 'exp' or 'money'
   const [myRedemptions, setMyRedemptions] = useState([]);
+  const [shippingAddress, setShippingAddress] = useState({
+    name: '',
+    street: '',
+    city: '',
+    state: '',
+    zip: ''
+  });
   const { toast } = useToast();
 
   useEffect(() => {

@@ -134,6 +134,77 @@ Deno.serve(async (req) => {
                 }
             }
 
+            // Handle filament reward payment
+            if (session.metadata?.payment_type === 'filament_reward') {
+                console.log('Processing filament reward payment');
+                
+                const rewardId = session.metadata?.reward_id;
+                const rewardName = session.metadata?.reward_name;
+                const userId = session.metadata?.user_id;
+                const shippingAddress = JSON.parse(session.metadata?.shipping_address || '{}');
+                
+                if (!rewardId || !userId) {
+                    console.error('Missing filament reward metadata');
+                    return Response.json({ error: 'Missing filament reward metadata' }, { status: 400 });
+                }
+
+                try {
+                    // Create redemption record
+                    const redemption = await base44.asServiceRole.entities.ExpRedemption.create({
+                        user_id: userId,
+                        reward_id: rewardId,
+                        reward_name: rewardName,
+                        exp_cost: 0,
+                        payment_type: 'money',
+                        status: 'pending'
+                    });
+
+                    // Update stock if applicable
+                    const reward = await base44.asServiceRole.entities.ExpReward.get(rewardId);
+                    if (reward && reward.stock_quantity !== undefined) {
+                        await base44.asServiceRole.entities.ExpReward.update(rewardId, {
+                            stock_quantity: reward.stock_quantity - 1
+                        });
+                    }
+
+                    const user = await base44.asServiceRole.entities.User.get(userId);
+
+                    // Send email to admin
+                    const emailBody = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <h1 style="color: #14b8a6;">New Filament Reward Order</h1>
+    <p><strong>Order ID:</strong> ${redemption.id}</p>
+    <p><strong>Reward:</strong> ${rewardName}</p>
+    <p><strong>Payment Method:</strong> Card Payment (Stripe)</p>
+    <p><strong>Amount Paid:</strong> $${(session.amount_total / 100).toFixed(2)}</p>
+    
+    <h2 style="color: #111827; margin-top: 30px;">Customer Information</h2>
+    <p><strong>Name:</strong> ${user?.full_name || 'Unknown'}</p>
+    <p><strong>Email:</strong> ${user?.email || 'Unknown'}</p>
+    <p><strong>User ID:</strong> ${userId}</p>
+    
+    <h2 style="color: #111827; margin-top: 30px;">Shipping Address</h2>
+    <p>${shippingAddress.name || user?.full_name || 'Unknown'}<br>
+    ${shippingAddress.street || 'N/A'}<br>
+    ${shippingAddress.city || 'N/A'}, ${shippingAddress.state || 'N/A'} ${shippingAddress.zip || 'N/A'}</p>
+</div>
+                    `;
+
+                    await base44.asServiceRole.integrations.Core.SendEmail({
+                        from_name: 'EX3D Prints',
+                        to: 'jc3dprints2022@gmail.com',
+                        subject: `New Filament Order - ${rewardName} (Card Payment)`,
+                        body: emailBody
+                    });
+
+                    console.log('✅ Filament reward order processed and email sent');
+                    return Response.json({ success: true });
+                } catch (error) {
+                    console.error('❌ Failed to process filament reward:', error);
+                    return Response.json({ error: 'Failed to process filament reward' }, { status: 500 });
+                }
+            }
+
             // Handle listing boost payment
             if (session.metadata?.boost_type === 'listing_boost') {
                 console.log('Processing listing boost payment');
