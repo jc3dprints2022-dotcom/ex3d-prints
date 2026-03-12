@@ -35,7 +35,28 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
   useEffect(() => {
     loadRewards();
     loadMyRedemptions();
+    loadUserAddress();
   }, [user]);
+
+  const loadUserAddress = () => {
+    if (user?.address) {
+      setShippingAddress({
+        name: user.address.name || user.full_name || '',
+        street: user.address.street || '',
+        city: user.address.city || '',
+        state: user.address.state || '',
+        zip: user.address.zip || ''
+      });
+    } else {
+      setShippingAddress({
+        name: user?.full_name || '',
+        street: '',
+        city: '',
+        state: '',
+        zip: ''
+      });
+    }
+  };
 
   const loadRewards = async () => {
     setLoading(true);
@@ -64,7 +85,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
     }
   };
 
-  const handleRedeem = async () => {
+  const handleRedeemWithExp = async () => {
     if (!selectedReward) return;
 
     setRedeeming(selectedReward.id);
@@ -79,6 +100,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
           description: data.message 
         });
         setSelectedReward(null);
+        setPaymentMethod(null);
         await onUpdate();
         await loadRewards();
         await loadMyRedemptions();
@@ -93,6 +115,41 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
       });
     }
     setRedeeming(null);
+  };
+
+  const handleCheckout = async () => {
+    if (!selectedReward) return;
+
+    // Validate shipping address
+    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
+      toast({
+        title: "Missing shipping address",
+        description: "Please fill in all address fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setRedeeming(selectedReward.id);
+    try {
+      const { data } = await base44.functions.invoke('createFilamentCheckout', {
+        rewardId: selectedReward.id,
+        shippingAddress
+      });
+
+      if (data?.checkout_url) {
+        window.location.href = data.checkout_url;
+      } else {
+        throw new Error('Failed to create checkout session');
+      }
+    } catch (error) {
+      toast({ 
+        title: "Checkout failed", 
+        description: error.message,
+        variant: "destructive" 
+      });
+      setRedeeming(null);
+    }
   };
 
   return (
