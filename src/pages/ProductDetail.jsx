@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
-import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User, ArrowRight, Building } from "lucide-react";
+import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User, ArrowRight } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import ReviewList from "../components/shared/ReviewList";
@@ -47,9 +47,6 @@ export default function ProductDetail() {
   const [designer, setDesigner] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
-  const [isBusinessOrder, setIsBusinessOrder] = useState(false);
-  const [businessName, setBusinessName] = useState('');
-  const [businessCustomization, setBusinessCustomization] = useState('');
 
   const { toast } = useToast();
 
@@ -216,11 +213,6 @@ export default function ProductDetail() {
       return;
     }
 
-    if (isBusinessOrder && (!businessName.trim() || !businessCustomization.trim())) {
-      toast({ title: "Please fill in business details", variant: "destructive" });
-      return;
-    }
-
     try {
       const existingCartItems = await base44.entities.Cart.filter({
         user_id: user.id,
@@ -237,9 +229,7 @@ export default function ProductDetail() {
         selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
         unit_price: product.price,
         total_price: product.price * quantity,
-        multi_color_selections: product.multi_color ? multiColorSelections : null,
-        business_name: isBusinessOrder ? businessName : null,
-        business_customization: isBusinessOrder ? businessCustomization : null
+        multi_color_selections: product.multi_color ? multiColorSelections : null
       };
 
       if (existingCartItems.length > 0) {
@@ -570,49 +560,6 @@ export default function ProductDetail() {
                       </div>
                     </div>
                   )}
-
-                  {/* Business Order Section */}
-                  <div className="border-t pt-4">
-                   <div className="flex items-center justify-between mb-3">
-                     <div className="flex items-center gap-2">
-                       <Building className="w-5 h-5 text-blue-600" />
-                       <Label className="text-base font-semibold">Business Order</Label>
-                     </div>
-                     <Button
-                       type="button"
-                       variant={isBusinessOrder ? "default" : "outline"}
-                       size="sm"
-                       onClick={() => setIsBusinessOrder(!isBusinessOrder)}
-                     >
-                       {isBusinessOrder ? "Enabled" : "Enable"}
-                     </Button>
-                   </div>
-                   {isBusinessOrder && (
-                     <div className="space-y-3 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                       <div>
-                         <Label htmlFor="businessName-mobile">Business Name *</Label>
-                         <Input
-                           id="businessName-mobile"
-                           value={businessName}
-                           onChange={(e) => setBusinessName(e.target.value)}
-                           placeholder="Your Company Name"
-                           className="mt-1"
-                         />
-                       </div>
-                       <div>
-                         <Label htmlFor="businessCustomization-mobile">Customization Details *</Label>
-                         <Textarea
-                           id="businessCustomization-mobile"
-                           value={businessCustomization}
-                           onChange={(e) => setBusinessCustomization(e.target.value)}
-                           placeholder="Logo, text, colors..."
-                           rows={3}
-                           className="mt-1"
-                         />
-                       </div>
-                     </div>
-                   )}
-                  </div>
 
                   <div>
                     <Label>Quantity</Label>
