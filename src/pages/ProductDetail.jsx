@@ -98,7 +98,18 @@ export default function ProductDetail() {
         setLoading(false);
         return;
       }
-      const productData = await base44.entities.Product.get(id);
+      
+      // Fetch product with proper error handling
+      let productData;
+      try {
+        productData = await base44.entities.Product.get(id);
+      } catch (getError) {
+        // If direct get fails, try filtering by ID as fallback
+        const products = await base44.entities.Product.filter({ id });
+        productData = products[0];
+        if (!productData) throw new Error('Product not found');
+      }
+      
       setProduct(productData);
       setLoading(false);
       
