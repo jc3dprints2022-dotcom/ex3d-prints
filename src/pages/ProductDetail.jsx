@@ -634,6 +634,7 @@ export default function ProductDetail() {
             <div className="mb-8 pb-8 border-b">
               <h3 className="text-lg font-semibold mb-3 text-gray-900">Description</h3>
               <p className="text-gray-700 leading-relaxed">{product.description}</p>
+              <p className="text-sm text-gray-500 mt-3 italic">Exact color and quality of print may vary.</p>
             </div>
 
             {/* Reviews - Compact Carousel */}
