@@ -242,6 +242,21 @@ export default function FAQ() {
            id: "maximize-sales",
            question: "How do I maximize sales?",
            answer: "Test print your designs to ensure quality, use high-quality photos from multiple angles, provide detailed descriptions and assembly instructions if needed, and boost your top designs for extra visibility."
+         },
+         {
+           id: "designer-incentives",
+           question: "Are there incentives for popular models?",
+           answer: "Currently there are no formal incentive programs, but EX3D Prints plans to explore options in the future. Potential possibilities could include: higher royalty tiers, featured placement on the platform, and bonus payouts for top-performing models. Designer feedback will help shape these programs."
+         }
+       ]
+     },
+     {
+       title: "Being a Designer & Maker",
+       questions: [
+         {
+           id: "designer-and-maker",
+           question: "Can someone be both a designer and a maker?",
+           answer: "Yes. If you design a product and also receive the order to print it, you receive both the designer and maker percentages for that order."
          }
        ]
      },
