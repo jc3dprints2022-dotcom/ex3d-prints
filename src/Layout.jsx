@@ -438,6 +438,45 @@ export default function Layout({ children, currentPageName }) {
                   )}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForDesigners")
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Designers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.designer_id && (user.business_roles?.includes('designer')) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Designer Hub
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                        <span className="text-blue-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             <div className="flex items-center space-x-4">
