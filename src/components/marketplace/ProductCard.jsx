@@ -156,8 +156,15 @@ export default function ProductCard({ product }) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    scrollToTop();
+    // Navigate to product detail
+    window.location.href = createPageUrl(`ProductDetail?id=${product.id}`);
+  };
+
   return (
-    <Link to={createPageUrl(`ProductDetail?id=${product.id}`)} onClick={scrollToTop}>
+    <div onClick={handleCardClick} className="cursor-pointer">
       <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
         {/* Wishlist Button */}
         <button
@@ -249,6 +256,6 @@ export default function ProductCard({ product }) {
           </div>
         </CardContent>
       </Card>
-    </Link>
+    </div>
   );
 }
