@@ -33,6 +33,61 @@ export default function FAQ() {
       ]
     },
     {
+      title: "Product Listings & Images",
+      questions: [
+        {
+          id: "listing-images",
+          question: "Who provides the images for product listings?",
+          answer: "Currently, designers upload the images used for product listings. These may include photos of printed models or digital renderings. In the future, EX3D Prints may introduce a system where makers can print models and submit photos for listings, and receive additional compensation for doing so."
+        },
+        {
+          id: "exact-match",
+          question: "Will the printed product look exactly like the listing images?",
+          answer: "Because prints are produced by independent makers, minor differences in surface finish, color tone, and texture may occur. Some listing images may also be digital renders, which can appear smoother than real printed objects. Listings include notes informing customers that slight variations are normal with 3D printed products."
+        }
+      ]
+    },
+    {
+      title: "Print Quality & Maker Standards",
+      questions: [
+        {
+          id: "quality-consistency",
+          question: "How does EX3D Prints ensure consistent print quality?",
+          answer: "Quality consistency is maintained through several safeguards: printing specifications provided with each order, a maker performance scoring system based on print quality, and a distribution system that prioritizes higher-rated makers for orders. This system helps ensure customers receive reliable quality across the network."
+        },
+        {
+          id: "print-settings",
+          question: "Are makers required to follow specific print settings?",
+          answer: "Orders may include specific print instructions or profiles to guide makers in producing consistent results. These instructions help ensure prints match the designer's intended quality and specifications."
+        }
+      ]
+    },
+    {
+      title: "Colors & Multicolor Prints",
+      questions: [
+        {
+          id: "color-selections",
+          question: "How do color selections work?",
+          answer: "Listings may support several color options: single color selection, multicolor selections (primary and secondary colors), or \"shown colors\" option, where makers print the model exactly as shown in the images."
+        },
+        {
+          id: "color-detail-loss",
+          question: "What happens if a customer chooses a color that removes visible details?",
+          answer: "If a customer selects a color that reduces visible details (for example, black eyes on a black model), the item will simply print as a single-color version. Customers can preview colors in the 3D viewer on the listing, though it currently shows solid colors only."
+        },
+        {
+          id: "color-examples",
+          question: "Will color examples be shown for all options?",
+          answer: "Future updates may include visual examples of multiple color variations, including multicolor previews."
+        },
+        {
+          id: "filament-brand",
+          question: "Are makers required to use the same filament brand?",
+          answer: "No. Makers are not currently required to use specific brands. However, each listing notes that exact colors may vary slightly. EX3D Prints offers discount filament ($15 per spool) to makers. This filament has consistent color standards, which helps improve product consistency across the network."
+        }
+      ]
+    },
+    {
       title: "Orders & Delivery",
       questions: [
         {
@@ -58,6 +113,41 @@ export default function FAQ() {
               Reach out to <a href="mailto:ex3dprint@gmail.com" className="text-teal-600 hover:underline">ex3dprint@gmail.com</a>. Send photos of the print issue from several angles, and we will review it to determine the issue and whether or not you qualify for a refund.
             </>
           )
+        }
+      ]
+    },
+    {
+      title: "Refunds & Order Issues",
+      questions: [
+        {
+          id: "refund-handling",
+          question: "How are refunds handled?",
+          answer: "Refunds are currently handled case by case while the system is being refined. Possible outcomes include: the original maker reprinting the item, a different maker reprinting the item at no additional cost to the customer, or a full refund issued to the customer."
+        },
+        {
+          id: "refund-responsibility",
+          question: "Who pays for refunds caused by poor print quality?",
+          answer: "If the issue is due to maker quality, the refund or reprint cost will typically be deducted from the maker's revenue, while the designer keeps their royalty."
+        }
+      ]
+    },
+    {
+      title: "Pricing & Revenue",
+      questions: [
+        {
+          id: "pricing-control",
+          question: "Do designers set the price of their products?",
+          answer: "Currently, prices are set automatically using an algorithm based on print time and filament usage. This keeps pricing consistent and fair across the marketplace. The pricing model may be revisited in the future depending on community feedback."
+        },
+        {
+          id: "revenue-split",
+          question: "How is revenue from each order split?",
+          answer: "Current revenue distribution: Makers receive 50%, Designers receive 10% standard (25% for early adopters and established designers), and EX3D Prints receives 40%. The platform percentage is currently higher because the company is actively working to bring customers to the marketplace and build brand awareness. As the platform grows, the goal is to increase payouts to: Makers up to ~70%, and Designers ~15-20%."
+        },
+        {
+          id: "maker-profitability",
+          question: "Are makers profitable at the current split?",
+          answer: "Yes. Even with the current payout structure, most makers maintain roughly 50% margins after material costs."
         }
       ]
     },
