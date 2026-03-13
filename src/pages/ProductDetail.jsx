@@ -8,8 +8,6 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { ShoppingCart, Heart, Star, Loader2, ChevronLeft, ChevronRight, Package, Box, User, ArrowRight } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import ReviewList from "../components/shared/ReviewList";
 import RatingDisplay from "../components/shared/RatingDisplay";
 import { Label } from "@/components/ui/label";
