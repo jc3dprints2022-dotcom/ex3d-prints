@@ -125,7 +125,21 @@ export default function Marketplace() {
 
     setLoading(true);
     try {
-      const allProducts = await base44.entities.Product.list();
+      // Force fresh fetch with retry logic
+      let allProducts = [];
+      let retryCount = 0;
+      
+      while (retryCount < 3) {
+        try {
+          allProducts = await base44.entities.Product.list();
+          if (allProducts && allProducts.length > 0) break;
+        } catch (err) {
+          console.warn(`Product fetch attempt ${retryCount + 1} failed:`, err);
+        }
+        retryCount++;
+        if (retryCount < 3) await new Promise(r => setTimeout(r, 800));
+      }
+      
       // Only show active products in marketplace
       const activeProducts = allProducts.filter(p => p.status === 'active');
       setProducts(activeProducts);
@@ -136,6 +150,7 @@ export default function Marketplace() {
       setAvailableCategories(filtered);
     } catch (error) {
       console.error("Failed to load products:", error);
+      setProducts([]);
     }
     setLoading(false);
   };
