@@ -304,112 +304,36 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
       }}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>
-              {paymentMethod === 'exp' ? 'Confirm EXP Redemption' : 'Checkout'}
-            </DialogTitle>
-            <DialogDescription>
-              {paymentMethod === 'exp' 
-                ? 'Redeem this reward using your EXP points'
-                : 'Purchase this filament with card payment'}
-            </DialogDescription>
+            <DialogTitle>Confirm EXP Redemption</DialogTitle>
+            <DialogDescription>Redeem this reward using your EXP points</DialogDescription>
           </DialogHeader>
           {selectedReward && (
             <div className="py-4 space-y-4">
               <div className="bg-gray-100 p-4 rounded-lg">
                 <h3 className="font-bold text-lg mb-2">{selectedReward.name}</h3>
                 <p className="text-sm text-gray-600 mb-3">{selectedReward.description}</p>
-                
-                {paymentMethod === 'exp' ? (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Cost:</span>
-                      <Badge className="bg-orange-500">{selectedReward.exp_cost} EXP</Badge>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="font-semibold">Your balance after:</span>
-                      <span className="text-lg">{(user.exp_points || 0) - selectedReward.exp_cost} EXP</span>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold">Item Price:</span>
-                      <span>$15.00</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <span className="font-semibold">Shipping:</span>
-                      <span className="text-sm text-gray-600">$5.00 (free over $35)</span>
-                    </div>
-                    <div className="flex items-center justify-between mt-2 pt-2 border-t">
-                      <span className="font-bold">Total:</span>
-                      <span className="font-bold">$20.00</span>
-                    </div>
-                  </>
-                )}
-              </div>
-
-              {paymentMethod === 'money' && (
-                <div className="space-y-3">
-                  <Label>Shipping Address</Label>
-                  <Input
-                    placeholder="Full Name"
-                    value={shippingAddress.name}
-                    onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
-                  />
-                  <Input
-                    placeholder="Street Address"
-                    value={shippingAddress.street}
-                    onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      placeholder="City"
-                      value={shippingAddress.city}
-                      onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                    />
-                    <Input
-                      placeholder="State"
-                      value={shippingAddress.state}
-                      onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                    />
-                  </div>
-                  <Input
-                    placeholder="ZIP Code"
-                    value={shippingAddress.zip}
-                    onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
-                  />
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold">Cost:</span>
+                  <Badge className="bg-orange-500">{selectedReward.exp_cost} EXP</Badge>
                 </div>
-              )}
-              
-              {paymentMethod === 'exp' && (
-                <p className="text-sm text-gray-600">
-                  An admin will ship your filament within 2-3 business days.
-                </p>
-              )}
+                <div className="flex items-center justify-between mt-2">
+                  <span className="font-semibold">Your balance after:</span>
+                  <span className="text-lg">{(user.exp_points || 0) - selectedReward.exp_cost} EXP</span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">An admin will ship your filament within 2-3 business days.</p>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setSelectedReward(null);
-              setPaymentMethod(null);
-            }}>
+            <Button variant="outline" onClick={() => { setSelectedReward(null); setPaymentMethod(null); }}>
               Cancel
             </Button>
             <Button 
-              onClick={paymentMethod === 'exp' ? handleRedeemWithExp : handleCheckout}
-              disabled={redeeming}
-              className={paymentMethod === 'exp' ? 'bg-orange-600 hover:bg-orange-700' : 'bg-teal-600 hover:bg-teal-700'}
+              onClick={handleRedeemWithExp}
+              disabled={!!redeeming}
+              className="bg-orange-600 hover:bg-orange-700"
             >
-              {redeeming ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Processing...
-                </>
-              ) : paymentMethod === 'exp' ? (
-                'Confirm Redemption'
-              ) : (
-                'Proceed to Checkout'
-              )}
+              {redeeming ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Processing...</> : 'Confirm Redemption'}
             </Button>
           </DialogFooter>
         </DialogContent>
