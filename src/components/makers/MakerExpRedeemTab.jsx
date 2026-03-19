@@ -117,39 +117,33 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
     setRedeeming(null);
   };
 
-  const handleCheckout = async () => {
-    if (!selectedReward) return;
-
-    // Validate shipping address
-    if (!shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
-      toast({
-        title: "Missing shipping address",
-        description: "Please fill in all address fields",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    setRedeeming(selectedReward.id);
+  const handleAddToCart = async (reward, quantity = 1) => {
+    setRedeeming(reward.id);
     try {
-      const { data } = await base44.functions.invoke('createFilamentCheckout', {
-        rewardId: selectedReward.id,
-        shippingAddress
-      });
-
-      if (data?.checkout_url) {
-        window.location.href = data.checkout_url;
+      const currentUser = await base44.auth.me();
+      // Check if already in cart
+      const existing = await base44.entities.Cart.filter({ user_id: currentUser.id, product_id: reward.id });
+      if (existing.length > 0) {
+        await base44.entities.Cart.update(existing[0].id, { quantity: existing[0].quantity + quantity });
       } else {
-        throw new Error('Failed to create checkout session');
+        await base44.entities.Cart.create({
+          user_id: currentUser.id,
+          product_id: reward.id,
+          product_name: reward.name,
+          quantity,
+          unit_price: 15,
+          total_price: 15 * quantity,
+          selected_material: 'filament'
+        });
       }
+      window.dispatchEvent(new Event('cartUpdated'));
+      toast({ title: "Added to cart!", description: `${reward.name} added to your cart. You can change the quantity in the cart.` });
+      setSelectedReward(null);
+      setPaymentMethod(null);
     } catch (error) {
-      toast({ 
-        title: "Checkout failed", 
-        description: error.message,
-        variant: "destructive" 
-      });
-      setRedeeming(null);
+      toast({ title: "Failed to add to cart", description: error.message, variant: "destructive" });
     }
+    setRedeeming(null);
   };
 
   return (
