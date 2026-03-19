@@ -22,11 +22,14 @@ export default function MakerToolsSection() {
   const [filaments, setFilaments] = useState([]);
   const [performance, setPerformance] = useState([]);
   const [perfList, setPerfList] = useState([]);
+  const [applications, setApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMaker, setSelectedMaker] = useState(null);
   const [showMakerDialog, setShowMakerDialog] = useState(false);
-  const [updatingCampus, setUpdatingCampus] = useState(null);
   const [deletingMaker, setDeletingMaker] = useState(null);
+  const [processingApp, setProcessingApp] = useState(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [rejectingApp, setRejectingApp] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
