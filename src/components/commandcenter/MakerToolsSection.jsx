@@ -63,6 +63,7 @@ export default function MakerToolsSection() {
       setFilaments(allFilaments);
       setPerformance(perfMap);
       setPerfList(Object.values(perfMap));
+      setApplications(allApplications);
     } catch (error) {
       console.error("Failed to load makers:", error);
     }
