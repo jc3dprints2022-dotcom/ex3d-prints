@@ -226,6 +226,81 @@ export default function MakerToolsSection() {
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="applications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending Maker Applications ({applications.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <p>Loading...</p>
+              ) : applications.length === 0 ? (
+                <div className="text-center py-12 text-gray-500">
+                  <ClipboardList className="w-12 h-12 mx-auto text-gray-400 mb-3" />
+                  <p>No pending applications</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {applications.map(app => (
+                    <div key={app.id} className="p-4 border rounded-lg bg-white">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg">{app.full_name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                            <Mail className="w-4 h-4" />{app.email}
+                          </div>
+                          {app.phone && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                              <Phone className="w-4 h-4" />{app.phone}
+                            </div>
+                          )}
+                          {app.campus_location && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                              <MapPin className="w-4 h-4" />
+                              {app.campus_location.replace(/\|/g, ', ')}
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-400">{new Date(app.created_date).toLocaleDateString()}</p>
+                      </div>
+                      <div className="grid grid-cols-3 gap-3 text-sm mb-4 p-3 bg-gray-50 rounded">
+                        <div><span className="text-gray-500">Experience:</span><br/><span className="font-medium capitalize">{app.experience_level || '—'}</span></div>
+                        <div><span className="text-gray-500">Weekly Hours:</span><br/><span className="font-medium">{app.weekly_capacity || '—'}h</span></div>
+                        <div><span className="text-gray-500">Materials:</span><br/><span className="font-medium">{(app.materials || []).map(m => m.toUpperCase()).join(', ') || '—'}</span></div>
+                      </div>
+                      {rejectingApp === app.id ? (
+                        <div className="space-y-2">
+                          <Textarea
+                            placeholder="Reason for rejection (optional, will be sent to applicant)"
+                            value={rejectReason}
+                            onChange={e => setRejectReason(e.target.value)}
+                            rows={2}
+                          />
+                          <div className="flex gap-2">
+                            <Button size="sm" variant="destructive" onClick={() => handleRejectApplication(app)} disabled={processingApp === app.id}>
+                              {processingApp === app.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Reject'}
+                            </Button>
+                            <Button size="sm" variant="outline" onClick={() => { setRejectingApp(null); setRejectReason(''); }}>Cancel</Button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => handleApproveApplication(app)} disabled={processingApp === app.id}>
+                            {processingApp === app.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><CheckCircle className="w-4 h-4 mr-1" />Approve</>}
+                          </Button>
+                          <Button size="sm" variant="destructive" onClick={() => setRejectingApp(app.id)}>
+                            <XCircle className="w-4 h-4 mr-1" />Reject
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         <TabsContent value="tools">
           <Card>
         <CardHeader>
