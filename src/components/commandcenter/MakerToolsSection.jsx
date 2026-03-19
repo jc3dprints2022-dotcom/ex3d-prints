@@ -39,11 +39,12 @@ export default function MakerToolsSection() {
   const loadMakers = async () => {
     setLoading(true);
     try {
-      const [users, allPrinters, allFilaments, allPerformance] = await Promise.all([
+      const [users, allPrinters, allFilaments, allPerformance, allApplications] = await Promise.all([
         base44.entities.User.list(),
         base44.entities.Printer.list(),
         base44.entities.Filament.list(),
-        base44.entities.MakerPerformance.list()
+        base44.entities.MakerPerformance.list(),
+        base44.entities.MakerApplication.filter({ status: 'pending' })
       ]);
       
       const makerUsers = users.filter(u => 
