@@ -332,29 +332,12 @@ export default function MakerToolsSection() {
                             {maker.phone}
                           </div>
                         )}
-                        <div className="flex items-center gap-2 text-sm mt-1">
-                          <MapPin className="w-4 h-4 text-blue-600" />
-                          <Select
-                            value={maker.campus_location || ''}
-                            onValueChange={(value) => handleUpdateCampus(maker.id, value)}
-                            disabled={updatingCampus === maker.id}
-                          >
-                            <SelectTrigger className="h-7 w-48 text-xs">
-                              {updatingCampus === maker.id ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <SelectValue placeholder="Set campus" />
-                              )}
-                            </SelectTrigger>
-                            <SelectContent>
-                              {CAMPUS_LOCATIONS.map(campus => (
-                                <SelectItem key={campus.value} value={campus.value}>
-                                  {campus.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {maker.address?.street && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
+                            <MapPin className="w-4 h-4 text-blue-600" />
+                            {maker.address.street}, {maker.address.city}, {maker.address.state} {maker.address.zip}
+                          </div>
+                        )}
                       </div>
                       <div className="flex gap-2">
                         <Button
