@@ -224,11 +224,12 @@ export default function MakerSignup() {
       try {
         await base44.functions.invoke('sendEmail', {
           to: 'jc3dprints2022@gmail.com',
-          subject: 'New Maker Signup - EX3D Prints',
+          subject: 'New Maker Application - EX3D Prints',
           body: `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-    <h1 style="color: #f97316;">New Maker Signup</h1>
-    <h2>Signup Details:</h2>
+    <h1 style="color: #f97316;">New Maker Application</h1>
+    <p>A new maker has applied to join the network. Please review and approve or reject in the Admin Command Center → Maker Tools → Pending Applications.</p>
+    <h2>Application Details:</h2>
     <p><strong>Name:</strong> ${formData.full_name}</p>
     <p><strong>Email:</strong> ${formData.email}</p>
     <p><strong>Phone:</strong> ${formData.phone}</p>
@@ -242,9 +243,8 @@ export default function MakerSignup() {
       } catch (emailError) {
         console.error("Failed to send admin notification:", emailError);
       }
-      
-      // Redirect to subscription selection
-      window.location.href = createPageUrl("MakerSubscriptionSelect");
+
+      setFormState('submitted');
 
     } catch (error) {
       console.error("Signup error:", error);
