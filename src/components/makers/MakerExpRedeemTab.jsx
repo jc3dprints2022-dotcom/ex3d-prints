@@ -28,28 +28,7 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
   useEffect(() => {
     loadRewards();
     loadMyRedemptions();
-    loadUserAddress();
   }, [user]);
-
-  const loadUserAddress = () => {
-    if (user?.address) {
-      setShippingAddress({
-        name: user.address.name || user.full_name || '',
-        street: user.address.street || '',
-        city: user.address.city || '',
-        state: user.address.state || '',
-        zip: user.address.zip || ''
-      });
-    } else {
-      setShippingAddress({
-        name: user?.full_name || '',
-        street: '',
-        city: '',
-        state: '',
-        zip: ''
-      });
-    }
-  };
 
   const loadRewards = async () => {
     setLoading(true);
