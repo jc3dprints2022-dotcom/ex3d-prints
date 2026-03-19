@@ -254,6 +254,25 @@ export default function MakerSignup() {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin" /></div>;
   }
   
+  if (formState === 'submitted') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
+        <Card className="max-w-xl text-center shadow-2xl">
+          <CardContent className="p-10">
+            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">Application Submitted!</h1>
+            <p className="text-slate-600 mb-6">
+              Thank you for applying to become a Maker. Our team will review your application and reach out via email once a decision has been made. This typically takes 1–3 business days.
+            </p>
+            <Link to={createPageUrl("Home")}>
+              <Button variant="outline">Return Home</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   if (formState === 'rejected_maker') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
