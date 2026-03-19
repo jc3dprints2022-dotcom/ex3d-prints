@@ -586,7 +586,9 @@ export default function MakerToolsSection() {
                   <p><strong>Email:</strong> {selectedMaker.email}</p>
                   {selectedMaker.phone && <p><strong>Phone:</strong> {selectedMaker.phone}</p>}
                   <p><strong>Maker ID:</strong> {selectedMaker.maker_id}</p>
-                  <p><strong>Campus:</strong> {getCampusLabel(selectedMaker.campus_location)}</p>
+                  {selectedMaker.address?.street && (
+                    <p><strong>Address:</strong> {selectedMaker.address.street}, {selectedMaker.address.city}, {selectedMaker.address.state} {selectedMaker.address.zip}</p>
+                  )}
                 </div>
               </div>
 
