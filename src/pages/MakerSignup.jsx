@@ -420,7 +420,7 @@ export default function MakerSignup() {
               </div>
 
               <Button type="submit" size="lg" className="w-full bg-gradient-to-r from-orange-500 to-red-600" disabled={formState === 'submitting'}>
-                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Signing Up...</> : 'Sign Up'}
+                {formState === 'submitting' ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/>Submitting Application...</> : 'Submit Application'}
               </Button>
             </form>
           </CardContent>
