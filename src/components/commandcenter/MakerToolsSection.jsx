@@ -212,13 +212,17 @@ export default function MakerToolsSection() {
 
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="tools">
-        <TabsList className="grid w-full grid-cols-2 bg-slate-900 border-slate-700">
+      <Tabs defaultValue="applications">
+        <TabsList className="grid w-full grid-cols-3 bg-slate-900 border-slate-700">
+          <TabsTrigger value="applications" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            <ClipboardList className="w-4 h-4 mr-1" />
+            Applications {applications.length > 0 && <Badge className="ml-1 bg-red-500 text-white text-xs px-1">{applications.length}</Badge>}
+          </TabsTrigger>
           <TabsTrigger value="tools" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
-            🔧 Maker Tools
+            🔧 Active Makers
           </TabsTrigger>
           <TabsTrigger value="performance" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
-            🏅 Maker Performance
+            🏅 Performance
           </TabsTrigger>
         </TabsList>
 
