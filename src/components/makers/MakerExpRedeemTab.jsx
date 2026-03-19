@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Package, Loader2, CheckCircle, CreditCard, Coins } from "lucide-react";
+import { Package, Loader2, CheckCircle, ShoppingCart, Coins } from "lucide-react";
 import {
   Dialog,
   DialogContent,
