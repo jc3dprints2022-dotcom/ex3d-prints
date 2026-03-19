@@ -299,8 +299,8 @@ export default function MakerSignup() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-orange-500 to-red-600 rounded-2xl mb-6">
             <Printer className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-4xl font-bold text-slate-900 mb-4">Become a Maker</h1>
-          <p className="text-xl text-slate-600">Join our network of professional 3D printers.</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-4">Apply to Become a Maker</h1>
+          <p className="text-xl text-slate-600">Submit your application to join our network of professional 3D printers. We'll review and get back to you within 1–3 business days.</p>
         </div>
 
         <Card className="shadow-2xl border-0">
