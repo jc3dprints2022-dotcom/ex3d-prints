@@ -3,11 +3,11 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2, Trash2, Trophy, TrendingUp, Award } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2, Trash2, Trophy, TrendingUp, Award, CheckCircle, XCircle, ClipboardList } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -15,12 +15,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-
-const CAMPUS_LOCATIONS = [
-  { value: "erau_prescott", label: "ERAU Prescott" },
-  { value: "erau_daytona", label: "ERAU Daytona" },
-  { value: "arizona_state", label: "Arizona State University" },
-];
 
 export default function MakerToolsSection() {
   const [makers, setMakers] = useState([]);
