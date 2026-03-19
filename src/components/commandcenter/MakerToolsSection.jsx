@@ -83,21 +83,66 @@ export default function MakerToolsSection() {
     setShowMakerDialog(true);
   };
 
-  const handleUpdateCampus = async (makerId, newCampus) => {
-    setUpdatingCampus(makerId);
+  const handleApproveApplication = async (application) => {
+    setProcessingApp(application.id);
     try {
-      await base44.entities.User.update(makerId, { campus_location: newCampus });
-      toast({ title: "Campus location updated" });
+      // Get the user
+      const allUsers = await base44.entities.User.list();
+      const applicant = allUsers.find(u => u.id === application.user_id);
+      if (!applicant) throw new Error('User not found');
+
+      // Update application to approved
+      await base44.entities.MakerApplication.update(application.id, { status: 'approved' });
+
+      // Grant maker role and maker_id to user
+      await base44.entities.User.update(applicant.id, {
+        business_roles: [...(applicant.business_roles || []).filter(r => r !== 'maker'), 'maker'],
+        maker_id: application.id,
+        account_status: 'active'
+      });
+
+      // Send approval email
+      try {
+        await base44.functions.invoke('sendEmail', {
+          to: application.email,
+          subject: '🎉 Your Maker Application Was Approved! — EX3D Prints',
+          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><h1 style="color:#f97316;">Welcome to the Maker Network!</h1><p>Hi ${application.full_name},</p><p>Great news — your application to become a Maker on EX3D Prints has been <strong>approved</strong>!</p><p>You can now log in and access your Maker Hub to start accepting orders.</p><p>Thank you,<br/>The EX3D Team</p></div>`
+        });
+      } catch (e) { console.error('Approval email failed', e); }
+
+      toast({ title: "Application approved!", description: `${application.full_name} is now a maker.` });
       loadMakers();
     } catch (error) {
-      console.error("Failed to update campus:", error);
-      toast({ title: "Failed to update campus", variant: "destructive" });
+      toast({ title: "Failed to approve", description: error.message, variant: "destructive" });
     }
-    setUpdatingCampus(null);
+    setProcessingApp(null);
   };
 
-  const getCampusLabel = (value) => {
-    return CAMPUS_LOCATIONS.find(c => c.value === value)?.label || value || 'Not Set';
+  const handleRejectApplication = async (application) => {
+    setProcessingApp(application.id);
+    try {
+      await base44.entities.MakerApplication.update(application.id, {
+        status: 'rejected',
+        admin_notes: rejectReason || 'Application did not meet requirements.'
+      });
+
+      // Send rejection email
+      try {
+        await base44.functions.invoke('sendEmail', {
+          to: application.email,
+          subject: 'Your Maker Application — EX3D Prints',
+          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><h1 style="color:#f97316;">Application Update</h1><p>Hi ${application.full_name},</p><p>After reviewing your application, we're unable to approve it at this time${rejectReason ? ': ' + rejectReason : '.'}</p><p>You're welcome to reapply in the future.</p><p>Thank you,<br/>The EX3D Team</p></div>`
+        });
+      } catch (e) { console.error('Rejection email failed', e); }
+
+      toast({ title: "Application rejected" });
+      setRejectingApp(null);
+      setRejectReason('');
+      loadMakers();
+    } catch (error) {
+      toast({ title: "Failed to reject", description: error.message, variant: "destructive" });
+    }
+    setProcessingApp(null);
   };
 
   const handleDeleteMaker = async (maker) => {
