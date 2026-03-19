@@ -23,13 +23,6 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
   const [selectedReward, setSelectedReward] = useState(null);
   const [paymentMethod, setPaymentMethod] = useState(null); // 'exp' or 'money'
   const [myRedemptions, setMyRedemptions] = useState([]);
-  const [shippingAddress, setShippingAddress] = useState({
-    name: '',
-    street: '',
-    city: '',
-    state: '',
-    zip: ''
-  });
   const { toast } = useToast();
 
   useEffect(() => {
