@@ -246,15 +246,11 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
                           {canRedeem ? 'Use EXP' : 'Not Enough'}
                         </Button>
                         <Button
-                          onClick={() => {
-                            setSelectedReward(reward);
-                            setPaymentMethod('money');
-                          }}
-                          disabled={outOfStock}
+                          onClick={() => handleAddToCart(reward)}
+                          disabled={outOfStock || redeeming === reward.id}
                           className="w-full bg-teal-600 hover:bg-teal-700"
                         >
-                          <CreditCard className="w-4 h-4 mr-1" />
-                          $15
+                          {redeeming === reward.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><ShoppingCart className="w-4 h-4 mr-1" />$15 Cart</>}
                         </Button>
                       </div>
                     </CardContent>
