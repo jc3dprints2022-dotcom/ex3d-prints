@@ -269,8 +269,8 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
         </Card>
       )}
 
-      {/* Confirmation Dialog */}
-      <Dialog open={!!selectedReward} onOpenChange={() => {
+      {/* EXP Confirmation Dialog */}
+      <Dialog open={!!selectedReward && paymentMethod === 'exp'} onOpenChange={() => {
         setSelectedReward(null);
         setPaymentMethod(null);
       }}>
