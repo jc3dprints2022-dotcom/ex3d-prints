@@ -5,8 +5,17 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Clock, ArrowDown, ShoppingCart, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const DROP_PRICE = 5;
+
+const DEFAULT_COLORS = ["White", "Black", "Gray", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink"];
 
 export default function DesignDrop() {
   const [products, setProducts] = useState([]);
@@ -14,6 +23,9 @@ export default function DesignDrop() {
   const [user, setUser] = useState(null);
   const [addingToCart, setAddingToCart] = useState({});
   const [addedToCart, setAddedToCart] = useState({});
+  const [purchasedProductIds, setPurchasedProductIds] = useState(new Set());
+  const [selectedColors, setSelectedColors] = useState({});
+  const [cartProductIds, setCartProductIds] = useState(new Set());
   const gridRef = useRef(null);
   const { toast } = useToast();
 
@@ -26,8 +38,37 @@ export default function DesignDrop() {
     try {
       const u = await base44.auth.me();
       setUser(u);
+      await loadPurchasedAndCartIds(u.id);
     } catch {
       setUser(null);
+    }
+  };
+
+  const loadPurchasedAndCartIds = async (userId) => {
+    try {
+      // Check orders already placed for drop items (unit_price === DROP_PRICE)
+      const orders = await base44.entities.Order.filter({ customer_id: userId });
+      const purchasedIds = new Set();
+      orders.forEach(order => {
+        (order.items || []).forEach(item => {
+          if (item.unit_price === DROP_PRICE) {
+            purchasedIds.add(item.product_id);
+          }
+        });
+      });
+      setPurchasedProductIds(purchasedIds);
+
+      // Check current cart
+      const cartItems = await base44.entities.Cart.filter({ user_id: userId });
+      const inCartIds = new Set();
+      cartItems.forEach(item => {
+        if (item.unit_price === DROP_PRICE) {
+          inCartIds.add(item.product_id);
+        }
+      });
+      setCartProductIds(inCartIds);
+    } catch {
+      // ignore
     }
   };
 
@@ -43,23 +84,33 @@ export default function DesignDrop() {
         const valid = productsData.filter((p) => p && p.status === 'active' && p.images?.length > 0);
         if (valid.length > 0) {
           setProducts(valid);
+          initColors(valid);
           setLoading(false);
           return;
         }
       }
 
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
-      setProducts(
-        allProducts.
-        filter((p) => p.images?.length > 0).
-        sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).
-        slice(0, 12)
-      );
+      const filtered = allProducts
+        .filter((p) => p.images?.length > 0)
+        .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+        .slice(0, 12);
+      setProducts(filtered);
+      initColors(filtered);
     } catch (err) {
       console.error("Failed to load products:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  const initColors = (prods) => {
+    const colorMap = {};
+    prods.forEach(p => {
+      const colors = p.colors?.length > 0 ? p.colors : DEFAULT_COLORS;
+      colorMap[p.id] = colors[0];
+    });
+    setSelectedColors(colorMap);
   };
 
   const handleAddToCart = async (e, product) => {
@@ -71,28 +122,32 @@ export default function DesignDrop() {
       return;
     }
 
+    if (purchasedProductIds.has(product.id)) {
+      toast({ title: "Already purchased", description: "You've already ordered this design.", variant: "destructive" });
+      return;
+    }
+
+    if (cartProductIds.has(product.id)) {
+      toast({ title: "Already in cart", description: "This design is already in your cart." });
+      return;
+    }
+
     setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
     try {
-      const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: product.id });
-      if (existing.length > 0) {
-        await base44.entities.Cart.update(existing[0].id, {
-          quantity: existing[0].quantity + 1,
-          unit_price: DROP_PRICE,
-          total_price: (existing[0].quantity + 1) * DROP_PRICE
-        });
-      } else {
-        await base44.entities.Cart.create({
-          user_id: user.id,
-          product_id: product.id,
-          product_name: product.name,
-          quantity: 1,
-          unit_price: DROP_PRICE,
-          total_price: DROP_PRICE,
-          selected_material: product.materials?.[0] || 'PLA',
-          selected_color: product.colors?.[0] || 'White'
-        });
-      }
+      await base44.entities.Cart.create({
+        user_id: user.id,
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+        unit_price: DROP_PRICE,
+        total_price: DROP_PRICE,
+        selected_material: product.materials?.[0] || 'PLA',
+        selected_color: selectedColors[product.id] || product.colors?.[0] || 'White',
+        is_design_drop: true,
+      });
+
       setAddedToCart((prev) => ({ ...prev, [product.id]: true }));
+      setCartProductIds(prev => new Set(prev).add(product.id));
       window.dispatchEvent(new Event('cartUpdated'));
       toast({ title: "Added to cart!", description: `${product.name} — $${DROP_PRICE}` });
       setTimeout(() => setAddedToCart((prev) => ({ ...prev, [product.id]: false })), 2000);
@@ -107,6 +162,12 @@ export default function DesignDrop() {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const getProductColors = (product) => {
+    return product.colors?.length > 0 ? product.colors : DEFAULT_COLORS;
+  };
+
+  const isUnavailable = (productId) => purchasedProductIds.has(productId) || cartProductIds.has(productId);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
@@ -115,9 +176,9 @@ export default function DesignDrop() {
           <div className="inline-block bg-teal-500/20 border border-teal-400/40 text-teal-300 text-sm font-semibold px-4 py-1 rounded-full mb-6 uppercase tracking-wider">
             Limited-Time Drop
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Premium 3D Designs
-$5 Each
-
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
+            Premium 3D Designs<br />
+            <span className="text-teal-400">$5 Each</span>
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
             Pick a design, we match it with a local printer near you, and ship it straight to your door. Simple as that.
@@ -126,14 +187,13 @@ $5 Each
             onClick={scrollToGrid}
             size="lg"
             className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full shadow-lg shadow-teal-500/30 font-bold">
-            
             Browse Designs
             <ArrowDown className="ml-2 w-5 h-5" />
           </Button>
         </div>
       </section>
 
-      {/* Urgency Banner — moved above products */}
+      {/* Urgency Banner */}
       <section className="bg-amber-50 border-b border-amber-200 py-8 px-4 text-center">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-2">
           <Clock className="w-7 h-7 text-amber-500" />
@@ -152,73 +212,108 @@ $5 Each
             <p className="text-slate-500">All prints are made locally and shipped to you. Shipping shown at checkout.</p>
           </div>
 
-          {loading ?
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) =>
-            <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            )}
-            </div> :
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-              {products.map((product) =>
-            <Link
-              key={product.id}
-              to={`${createPageUrl("ProductDetail")}?id=${product.id}`}
-              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
-              
-                  <div className="aspect-square overflow-hidden bg-gray-50 relative">
-                    <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                
-                  </div>
-                  <div className="p-3 flex flex-col gap-2 flex-1">
-                    <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-600 font-bold text-lg">${DROP_PRICE}</span>
-                      {product.price && product.price > DROP_PRICE &&
-                  <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
-                  }
-                    </div>
-                    <Button
-                  size="sm"
-                  onClick={(e) => handleAddToCart(e, product)}
-                  disabled={addingToCart[product.id]}
-                  className={`w-full mt-auto text-xs font-semibold transition-all ${
-                  addedToCart[product.id] ?
-                  "bg-green-500 hover:bg-green-500" :
-                  "bg-teal-600 hover:bg-teal-700"}`
-                  }>
-                  
-                      {addedToCart[product.id] ?
-                  <><Check className="w-3 h-3 mr-1" /> Added!</> :
-
-                  <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
-                  }
-                    </Button>
-                  </div>
-                </Link>
-            )}
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+              ))}
             </div>
-          }
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+              {products.map((product) => {
+                const colors = getProductColors(product);
+                const unavailable = isUnavailable(product.id);
+
+                return (
+                  <div
+                    key={product.id}
+                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+                  >
+                    <Link to={`${createPageUrl("ProductDetail")}?id=${product.id}`}>
+                      <div className="aspect-square overflow-hidden bg-gray-50 relative">
+                        <img
+                          src={product.images[0]}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        {unavailable && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                            <span className="bg-white text-slate-800 text-xs font-bold px-3 py-1 rounded-full">
+                              {purchasedProductIds.has(product.id) ? "Already Purchased" : "In Cart"}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </Link>
+                    <div className="p-3 flex flex-col gap-2 flex-1">
+                      <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-teal-600 font-bold text-lg">${DROP_PRICE}</span>
+                        {product.price && product.price > DROP_PRICE && (
+                          <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
+                        )}
+                      </div>
+
+                      {/* Color Selector */}
+                      <Select
+                        value={selectedColors[product.id] || colors[0]}
+                        onValueChange={(val) => setSelectedColors(prev => ({ ...prev, [product.id]: val }))}
+                        disabled={unavailable}
+                      >
+                        <SelectTrigger className="h-8 text-xs">
+                          <SelectValue placeholder="Select color" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {colors.map(color => (
+                            <SelectItem key={color} value={color} className="text-xs">{color}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        size="sm"
+                        onClick={(e) => handleAddToCart(e, product)}
+                        disabled={addingToCart[product.id] || unavailable}
+                        className={`w-full mt-auto text-xs font-semibold transition-all ${
+                          unavailable
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : addedToCart[product.id]
+                            ? "bg-green-500 hover:bg-green-500"
+                            : "bg-teal-600 hover:bg-teal-700"
+                        }`}
+                      >
+                        {addedToCart[product.id] ? (
+                          <><Check className="w-3 h-3 mr-1" /> Added!</>
+                        ) : unavailable ? (
+                          purchasedProductIds.has(product.id) ? "Already Purchased" : "In Cart"
+                        ) : (
+                          <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Bottom CTA */}
       <section className="bg-slate-900 text-white py-20 px-4 text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-3xl font-bold mb-3">Ready to Get Your First Print?</h2>
-          <p className="text-white/70 mb-8">Browse the designs above and place your first order in minutes.</p>
+          <h2 className="text-3xl font-bold mb-3">Want to see more designs?</h2>
+          <p className="text-white/70 mb-8">Browse hundreds of high quality designs on our marketplace.</p>
           <Button
-            onClick={scrollToGrid}
+            asChild
             size="lg"
             className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full font-bold shadow-lg shadow-teal-500/20">
-            
-            Get Your First Print
+            <Link to={createPageUrl("Marketplace")}>
+              Marketplace
+            </Link>
           </Button>
         </div>
       </section>
-    </div>);
-
+    </div>
+  );
 }
