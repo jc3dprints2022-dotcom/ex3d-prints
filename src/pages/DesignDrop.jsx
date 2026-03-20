@@ -38,9 +38,9 @@ export default function DesignDrop() {
       if (featuredList.length > 0) {
         featuredList.sort((a, b) => a.display_order - b.display_order);
         const productsData = await Promise.all(
-          featuredList.map(f => base44.entities.Product.get(f.product_id).catch(() => null))
+          featuredList.map((f) => base44.entities.Product.get(f.product_id).catch(() => null))
         );
-        const valid = productsData.filter(p => p && p.status === 'active' && p.images?.length > 0);
+        const valid = productsData.filter((p) => p && p.status === 'active' && p.images?.length > 0);
         if (valid.length > 0) {
           setProducts(valid);
           setLoading(false);
@@ -50,10 +50,10 @@ export default function DesignDrop() {
 
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
       setProducts(
-        allProducts
-          .filter(p => p.images?.length > 0)
-          .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
-          .slice(0, 12)
+        allProducts.
+        filter((p) => p.images?.length > 0).
+        sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).
+        slice(0, 12)
       );
     } catch (err) {
       console.error("Failed to load products:", err);
@@ -71,14 +71,14 @@ export default function DesignDrop() {
       return;
     }
 
-    setAddingToCart(prev => ({ ...prev, [product.id]: true }));
+    setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
     try {
       const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: product.id });
       if (existing.length > 0) {
         await base44.entities.Cart.update(existing[0].id, {
           quantity: existing[0].quantity + 1,
           unit_price: DROP_PRICE,
-          total_price: (existing[0].quantity + 1) * DROP_PRICE,
+          total_price: (existing[0].quantity + 1) * DROP_PRICE
         });
       } else {
         await base44.entities.Cart.create({
@@ -89,17 +89,17 @@ export default function DesignDrop() {
           unit_price: DROP_PRICE,
           total_price: DROP_PRICE,
           selected_material: product.materials?.[0] || 'PLA',
-          selected_color: product.colors?.[0] || 'White',
+          selected_color: product.colors?.[0] || 'White'
         });
       }
-      setAddedToCart(prev => ({ ...prev, [product.id]: true }));
+      setAddedToCart((prev) => ({ ...prev, [product.id]: true }));
       window.dispatchEvent(new Event('cartUpdated'));
       toast({ title: "Added to cart!", description: `${product.name} — $${DROP_PRICE}` });
-      setTimeout(() => setAddedToCart(prev => ({ ...prev, [product.id]: false })), 2000);
+      setTimeout(() => setAddedToCart((prev) => ({ ...prev, [product.id]: false })), 2000);
     } catch (err) {
       toast({ title: "Error", description: "Could not add to cart.", variant: "destructive" });
     } finally {
-      setAddingToCart(prev => ({ ...prev, [product.id]: false }));
+      setAddingToCart((prev) => ({ ...prev, [product.id]: false }));
     }
   };
 
@@ -115,9 +115,9 @@ export default function DesignDrop() {
           <div className="inline-block bg-teal-500/20 border border-teal-400/40 text-teal-300 text-sm font-semibold px-4 py-1 rounded-full mb-6 uppercase tracking-wider">
             Limited-Time Drop
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
-            Premium 3D Designs —{" "}
-            <span className="text-teal-400">$5 Each</span>
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Premium 3D Designs
+$5 Each
+
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
             Pick a design, we match it with a local printer near you, and ship it straight to your door. Simple as that.
@@ -125,8 +125,8 @@ export default function DesignDrop() {
           <Button
             onClick={scrollToGrid}
             size="lg"
-            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full shadow-lg shadow-teal-500/30 font-bold"
-          >
+            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full shadow-lg shadow-teal-500/30 font-bold">
+            
             Browse Designs
             <ArrowDown className="ml-2 w-5 h-5" />
           </Button>
@@ -152,56 +152,56 @@ export default function DesignDrop() {
             <p className="text-slate-500">All prints are made locally and shipped to you. Shipping shown at checkout.</p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-              ))}
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-              {products.map((product) => (
-                <Link
-                  key={product.id}
-                  to={`${createPageUrl("ProductDetail")}?id=${product.id}`}
-                  className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
-                >
+          {loading ?
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) =>
+            <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+            )}
+            </div> :
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+              {products.map((product) =>
+            <Link
+              key={product.id}
+              to={`${createPageUrl("ProductDetail")}?id=${product.id}`}
+              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
+              
                   <div className="aspect-square overflow-hidden bg-gray-50 relative">
                     <img
-                      src={product.images[0]}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
+                  src={product.images[0]}
+                  alt={product.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                
                   </div>
                   <div className="p-3 flex flex-col gap-2 flex-1">
                     <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
                     <div className="flex items-center gap-2">
                       <span className="text-teal-600 font-bold text-lg">${DROP_PRICE}</span>
-                      {product.price && product.price > DROP_PRICE && (
-                        <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
-                      )}
+                      {product.price && product.price > DROP_PRICE &&
+                  <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
+                  }
                     </div>
                     <Button
-                      size="sm"
-                      onClick={(e) => handleAddToCart(e, product)}
-                      disabled={addingToCart[product.id]}
-                      className={`w-full mt-auto text-xs font-semibold transition-all ${
-                        addedToCart[product.id]
-                          ? "bg-green-500 hover:bg-green-500"
-                          : "bg-teal-600 hover:bg-teal-700"
-                      }`}
-                    >
-                      {addedToCart[product.id] ? (
-                        <><Check className="w-3 h-3 mr-1" /> Added!</>
-                      ) : (
-                        <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
-                      )}
+                  size="sm"
+                  onClick={(e) => handleAddToCart(e, product)}
+                  disabled={addingToCart[product.id]}
+                  className={`w-full mt-auto text-xs font-semibold transition-all ${
+                  addedToCart[product.id] ?
+                  "bg-green-500 hover:bg-green-500" :
+                  "bg-teal-600 hover:bg-teal-700"}`
+                  }>
+                  
+                      {addedToCart[product.id] ?
+                  <><Check className="w-3 h-3 mr-1" /> Added!</> :
+
+                  <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
+                  }
                     </Button>
                   </div>
                 </Link>
-              ))}
+            )}
             </div>
-          )}
+          }
         </div>
       </section>
 
@@ -213,12 +213,12 @@ export default function DesignDrop() {
           <Button
             onClick={scrollToGrid}
             size="lg"
-            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full font-bold shadow-lg shadow-teal-500/20"
-          >
+            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full font-bold shadow-lg shadow-teal-500/20">
+            
             Get Your First Print
           </Button>
         </div>
       </section>
-    </div>
-  );
+    </div>);
+
 }
