@@ -6,6 +6,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package } from "lucide-react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+const DROP_PRICE = 5;
+const DEFAULT_COLORS = ["White", "Black", "Gray", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink"];
 
 export default function Cart() {
   const [user, setUser] = useState(null);
