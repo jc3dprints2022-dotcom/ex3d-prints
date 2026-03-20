@@ -65,10 +65,10 @@ export default function HomepageFeaturedSection() {
       return;
     }
 
-    if (featuredProducts.length >= 10) {
+    if (featuredProducts.length >= 12) {
       toast({
         title: "Maximum reached",
-        description: "You can only feature up to 10 products on the homepage",
+        description: "You can only feature up to 12 products on the homepage",
         variant: "destructive"
       });
       return;
@@ -186,10 +186,10 @@ export default function HomepageFeaturedSection() {
         <div>
           <h2 className="text-3xl font-bold text-white mb-2">Homepage Featured Products</h2>
           <p className="text-cyan-400">
-            Select up to 10 products to feature in the homepage background slideshow ({featuredProducts.length}/10)
+            Select up to 12 products to feature in the homepage background slideshow ({featuredProducts.length}/12)
           </p>
         </div>
-        {featuredProducts.length < 10 && (
+        {featuredProducts.length < 12 && (
           <Button
             onClick={() => setShowAddDialog(true)}
             className="bg-cyan-600 hover:bg-cyan-700"
