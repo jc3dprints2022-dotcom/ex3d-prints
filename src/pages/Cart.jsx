@@ -283,34 +283,26 @@ export default function Cart() {
                         </div>
 
                         {/* Quantity and Price */}
-                         <div className="flex items-center justify-between mt-4">
+                        <div className="flex items-center justify-between mt-4">
                           <div className="flex items-center gap-3">
-                            {item.is_drop_item ? (
-                              <span className="text-xs text-amber-600 bg-amber-50 border border-amber-200 px-2 py-1 rounded-full font-medium">
-                                $5 Drop — Qty locked at 1
-                              </span>
-                            ) : (
-                              <>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                                  disabled={item.quantity <= 1}
-                                >
-                                  <Minus className="w-4 h-4" />
-                                </Button>
-                                <span className="text-lg font-semibold w-12 text-center">
-                                  {item.quantity}
-                                </span>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                                >
-                                  <Plus className="w-4 h-4" />
-                                </Button>
-                              </>
-                            )}
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
+                              disabled={item.quantity <= 1}
+                            >
+                              <Minus className="w-4 h-4" />
+                            </Button>
+                            <span className="text-lg font-semibold w-12 text-center">
+                              {item.quantity}
+                            </span>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                            >
+                              <Plus className="w-4 h-4" />
+                            </Button>
                           </div>
                           <div className="text-right">
                             <p className="text-sm text-gray-600">

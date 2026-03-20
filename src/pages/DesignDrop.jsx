@@ -138,8 +138,8 @@ $5 Each
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-2">
           <Clock className="w-7 h-7 text-amber-500" />
           <h3 className="text-xl font-bold text-amber-900">Limited-Time $5 Launch Drop</h3>
-          <p className="text-amber-700 text-sm max-w-md">These prices are part of our launch promotion. Once the drop ends, standard pricing applies. Don't miss your chance to grab a premium 3D design at $5 each. (Limit 1 per account)
-
+          <p className="text-amber-700 text-sm max-w-md">
+            These prices are part of our launch promotion. Once the drop ends, standard pricing applies. Don't miss your chance to grab premium 3D designs at $5 each.
           </p>
         </div>
       </section>
