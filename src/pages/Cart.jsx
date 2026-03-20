@@ -283,14 +283,38 @@ export default function Cart() {
                             )}
                             <div className="text-sm text-gray-600 space-y-1 mt-2">
                               <p><span className="font-medium">Material:</span> {item.selected_material}</p>
-                              <p><span className="font-medium">Color:</span> {item.selected_color}</p>
-                              {!isCustomRequest && (
+                              {item.unit_price === DROP_PRICE ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="font-medium">Color:</span>
+                                  <Select
+                                    value={item.selected_color || "White"}
+                                    onValueChange={(val) => handleUpdateColor(item, val)}
+                                  >
+                                    <SelectTrigger className="h-7 text-xs w-32">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {(product?.colors?.length > 0 ? product.colors : DEFAULT_COLORS).map(color => (
+                                        <SelectItem key={color} value={color} className="text-xs">{color}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              ) : (
+                                <p><span className="font-medium">Color:</span> {item.selected_color}</p>
+                              )}
+                              {!isCustomRequest && item.unit_price !== DROP_PRICE && (
                                 <p><span className="font-medium">Resolution:</span> {item.selected_resolution}mm</p>
                               )}
                               {item.multi_color_selections && (
                                 <p className="text-purple-600">
                                   <span className="font-medium">Multi-color:</span> {item.multi_color_selections.join(', ')}
                                 </p>
+                              )}
+                              {item.unit_price === DROP_PRICE && (
+                                <span className="inline-block px-2 py-0.5 bg-teal-100 text-teal-700 text-xs font-semibold rounded">
+                                  $5 Design Drop
+                                </span>
                               )}
                             </div>
                           </div>
