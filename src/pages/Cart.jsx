@@ -184,6 +184,18 @@ export default function Cart() {
     return cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
   };
 
+  const handleUpdateColor = async (item, newColor) => {
+    try {
+      if (user) {
+        await base44.entities.Cart.update(item.id, { selected_color: newColor });
+        await loadCart(user.id);
+      }
+      toast({ title: "Color updated" });
+    } catch (error) {
+      toast({ title: "Failed to update color", variant: "destructive" });
+    }
+  };
+
   const handleProceedToCheckout = () => {
     if (!user) {
       toast({ 
