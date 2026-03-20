@@ -331,24 +331,30 @@ export default function Cart() {
                         {/* Quantity and Price */}
                         <div className="flex items-center justify-between mt-4">
                           <div className="flex items-center gap-3">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
-                              disabled={item.quantity <= 1}
-                            >
-                              <Minus className="w-4 h-4" />
-                            </Button>
-                            <span className="text-lg font-semibold w-12 text-center">
-                              {item.quantity}
-                            </span>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
-                            >
-                              <Plus className="w-4 h-4" />
-                            </Button>
+                            {item.unit_price === DROP_PRICE ? (
+                              <span className="text-sm text-gray-500 italic">Qty: 1 (limit 1 per design)</span>
+                            ) : (
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
+                                  disabled={item.quantity <= 1}
+                                >
+                                  <Minus className="w-4 h-4" />
+                                </Button>
+                                <span className="text-lg font-semibold w-12 text-center">
+                                  {item.quantity}
+                                </span>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
+                                >
+                                  <Plus className="w-4 h-4" />
+                                </Button>
+                              </>
+                            )}
                           </div>
                           <div className="text-right">
                             <p className="text-sm text-gray-600">
