@@ -115,8 +115,8 @@ export default function DesignDrop() {
           <div className="inline-block bg-teal-500/20 border border-teal-400/40 text-teal-300 text-sm font-semibold px-4 py-1 rounded-full mb-6 uppercase tracking-wider">
             Limited-Time Drop
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Premium 3D Designs
-$5 Each
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Premium 3D Designs$5 Each
+
 
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
