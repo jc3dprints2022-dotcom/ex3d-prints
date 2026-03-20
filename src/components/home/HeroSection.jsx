@@ -62,7 +62,7 @@ export default function HeroSection() {
           base44.entities.Product.get(f.product_id).catch(() => null)
         );
         const productsData = await Promise.all(productPromises);
-        const validProducts = productsData.filter(p => p && p.images && p.images.length > 0);
+        const validProducts = productsData.filter(p => p && p.status === 'active' && p.images && p.images.length > 0);
         
         if (validProducts.length > 0) {
           setProducts(validProducts);
