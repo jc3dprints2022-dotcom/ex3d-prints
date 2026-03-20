@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Clock, ArrowDown, ShoppingCart, Check } from "lucide-react";
+import { Clock, ArrowDown, ShoppingCart, Check, Lock } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const DROP_PRICE = 5;
@@ -14,6 +14,8 @@ export default function DesignDrop() {
   const [user, setUser] = useState(null);
   const [addingToCart, setAddingToCart] = useState({});
   const [addedToCart, setAddedToCart] = useState({});
+  // Set of product IDs already in cart or already purchased
+  const [ownedProductIds, setOwnedProductIds] = useState(new Set());
   const gridRef = useRef(null);
   const { toast } = useToast();
 
@@ -26,8 +28,27 @@ export default function DesignDrop() {
     try {
       const u = await base44.auth.me();
       setUser(u);
+      await loadOwned(u.id);
     } catch {
       setUser(null);
+    }
+  };
+
+  const loadOwned = async (userId) => {
+    try {
+      // Check cart items
+      const cartItems = await base44.entities.Cart.filter({ user_id: userId });
+      const cartProductIds = cartItems.map(c => c.product_id);
+
+      // Check completed/paid orders
+      const orders = await base44.entities.Order.filter({ customer_id: userId });
+      const purchasedProductIds = orders
+        .filter(o => ['accepted', 'printing', 'done_printing', 'shipped', 'delivered', 'completed', 'dropped_off'].includes(o.status))
+        .flatMap(o => (o.items || []).map(i => i.product_id));
+
+      setOwnedProductIds(new Set([...cartProductIds, ...purchasedProductIds]));
+    } catch {
+      // ignore
     }
   };
 
@@ -50,10 +71,10 @@ export default function DesignDrop() {
 
       const allProducts = await base44.entities.Product.filter({ status: 'active' });
       setProducts(
-        allProducts.
-        filter((p) => p.images?.length > 0).
-        sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).
-        slice(0, 12)
+        allProducts
+          .filter((p) => p.images?.length > 0)
+          .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
+          .slice(0, 12)
       );
     } catch (err) {
       console.error("Failed to load products:", err);
@@ -71,27 +92,24 @@ export default function DesignDrop() {
       return;
     }
 
+    if (ownedProductIds.has(product.id)) return;
+
     setAddingToCart((prev) => ({ ...prev, [product.id]: true }));
     try {
-      const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: product.id });
-      if (existing.length > 0) {
-        await base44.entities.Cart.update(existing[0].id, {
-          quantity: existing[0].quantity + 1,
-          unit_price: DROP_PRICE,
-          total_price: (existing[0].quantity + 1) * DROP_PRICE
-        });
-      } else {
-        await base44.entities.Cart.create({
-          user_id: user.id,
-          product_id: product.id,
-          product_name: product.name,
-          quantity: 1,
-          unit_price: DROP_PRICE,
-          total_price: DROP_PRICE,
-          selected_material: product.materials?.[0] || 'PLA',
-          selected_color: product.colors?.[0] || 'White'
-        });
-      }
+      await base44.entities.Cart.create({
+        user_id: user.id,
+        product_id: product.id,
+        product_name: product.name,
+        quantity: 1,
+        unit_price: DROP_PRICE,
+        total_price: DROP_PRICE,
+        selected_material: product.materials?.[0] || 'PLA',
+        selected_color: product.colors?.[0] || 'White',
+        // Flag to lock quantity in cart
+        is_drop_item: true,
+      });
+
+      setOwnedProductIds((prev) => new Set([...prev, product.id]));
       setAddedToCart((prev) => ({ ...prev, [product.id]: true }));
       window.dispatchEvent(new Event('cartUpdated'));
       toast({ title: "Added to cart!", description: `${product.name} — $${DROP_PRICE}` });
@@ -107,6 +125,12 @@ export default function DesignDrop() {
     gridRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const getButtonState = (product) => {
+    if (ownedProductIds.has(product.id)) return 'owned';
+    if (addedToCart[product.id]) return 'added';
+    return 'default';
+  };
+
   return (
     <div className="min-h-screen bg-white">
       {/* Hero */}
@@ -115,9 +139,9 @@ export default function DesignDrop() {
           <div className="inline-block bg-teal-500/20 border border-teal-400/40 text-teal-300 text-sm font-semibold px-4 py-1 rounded-full mb-6 uppercase tracking-wider">
             Limited-Time Drop
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">Premium 3D Designs
-$5 Each
-
+          <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
+            Premium 3D Designs —{" "}
+            <span className="text-teal-400">$5 Each</span>
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
             Pick a design, we match it with a local printer near you, and ship it straight to your door. Simple as that.
@@ -125,15 +149,15 @@ $5 Each
           <Button
             onClick={scrollToGrid}
             size="lg"
-            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full shadow-lg shadow-teal-500/30 font-bold">
-            
+            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full shadow-lg shadow-teal-500/30 font-bold"
+          >
             Browse Designs
             <ArrowDown className="ml-2 w-5 h-5" />
           </Button>
         </div>
       </section>
 
-      {/* Urgency Banner — moved above products */}
+      {/* Urgency Banner */}
       <section className="bg-amber-50 border-b border-amber-200 py-8 px-4 text-center">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-2">
           <Clock className="w-7 h-7 text-amber-500" />
@@ -152,73 +176,80 @@ $5 Each
             <p className="text-slate-500">All prints are made locally and shipped to you. Shipping shown at checkout.</p>
           </div>
 
-          {loading ?
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {Array.from({ length: 8 }).map((_, i) =>
-            <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
-            )}
-            </div> :
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
-              {products.map((product) =>
-            <Link
-              key={product.id}
-              to={`${createPageUrl("ProductDetail")}?id=${product.id}`}
-              className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col">
-              
-                  <div className="aspect-square overflow-hidden bg-gray-50 relative">
-                    <img
-                  src={product.images[0]}
-                  alt={product.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                
-                  </div>
-                  <div className="p-3 flex flex-col gap-2 flex-1">
-                    <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
-                    <div className="flex items-center gap-2">
-                      <span className="text-teal-600 font-bold text-lg">${DROP_PRICE}</span>
-                      {product.price && product.price > DROP_PRICE &&
-                  <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
-                  }
-                    </div>
-                    <Button
-                  size="sm"
-                  onClick={(e) => handleAddToCart(e, product)}
-                  disabled={addingToCart[product.id]}
-                  className={`w-full mt-auto text-xs font-semibold transition-all ${
-                  addedToCart[product.id] ?
-                  "bg-green-500 hover:bg-green-500" :
-                  "bg-teal-600 hover:bg-teal-700"}`
-                  }>
-                  
-                      {addedToCart[product.id] ?
-                  <><Check className="w-3 h-3 mr-1" /> Added!</> :
-
-                  <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
-                  }
-                    </Button>
-                  </div>
-                </Link>
-            )}
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-gray-100 rounded-2xl aspect-square animate-pulse" />
+              ))}
             </div>
-          }
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+              {products.map((product) => {
+                const btnState = getButtonState(product);
+                return (
+                  <Link
+                    key={product.id}
+                    to={`${createPageUrl("ProductDetail")}?id=${product.id}`}
+                    className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
+                  >
+                    <div className="aspect-square overflow-hidden bg-gray-50 relative">
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                    </div>
+                    <div className="p-3 flex flex-col gap-2 flex-1">
+                      <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
+                      <div className="flex items-center gap-2">
+                        <span className="text-teal-600 font-bold text-lg">${DROP_PRICE}</span>
+                        {product.price && product.price > DROP_PRICE && (
+                          <span className="text-slate-400 text-sm line-through">${product.price.toFixed(2)}</span>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={(e) => handleAddToCart(e, product)}
+                        disabled={addingToCart[product.id] || btnState === 'owned'}
+                        className={`w-full mt-auto text-xs font-semibold transition-all ${
+                          btnState === 'owned'
+                            ? "bg-slate-300 hover:bg-slate-300 text-slate-500 cursor-not-allowed"
+                            : btnState === 'added'
+                            ? "bg-green-500 hover:bg-green-500"
+                            : "bg-teal-600 hover:bg-teal-700"
+                        }`}
+                      >
+                        {btnState === 'owned' ? (
+                          <><Lock className="w-3 h-3 mr-1" /> Already Owned</>
+                        ) : btnState === 'added' ? (
+                          <><Check className="w-3 h-3 mr-1" /> Added!</>
+                        ) : (
+                          <><ShoppingCart className="w-3 h-3 mr-1" /> Add to Cart</>
+                        )}
+                      </Button>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
         </div>
       </section>
 
       {/* Bottom CTA */}
       <section className="bg-slate-900 text-white py-20 px-4 text-center">
         <div className="max-w-xl mx-auto">
-          <h2 className="text-3xl font-bold mb-3">Ready to Get Your First Print?</h2>
-          <p className="text-white/70 mb-8">Browse the designs above and place your first order in minutes.</p>
+          <h2 className="text-3xl font-bold mb-3">Want to see more designs?</h2>
+          <p className="text-white/70 mb-8">Browse hundreds of high quality designs on our marketplace.</p>
           <Button
-            onClick={scrollToGrid}
+            asChild
             size="lg"
-            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full font-bold shadow-lg shadow-teal-500/20">
-            
-            Get Your First Print
+            className="bg-teal-500 hover:bg-teal-400 text-white text-lg px-10 py-6 rounded-full font-bold shadow-lg shadow-teal-500/20"
+          >
+            <Link to={createPageUrl("Marketplace")}>Marketplace</Link>
           </Button>
         </div>
       </section>
-    </div>);
-
+    </div>
+  );
 }
