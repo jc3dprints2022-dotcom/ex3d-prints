@@ -15,10 +15,10 @@ Deno.serve(async (req) => {
 
         const { to, subject, body, from_name } = await req.json();
 
-        if (!to || !subject || !body) {
+        if (!to || !subject) {
             return new Response(JSON.stringify({ 
                 success: false,
-                error: 'Missing required fields: to, subject, body' 
+                error: 'Missing required fields: to, subject' 
             }), { 
                 status: 400,
                 headers: { 'Content-Type': 'application/json' }

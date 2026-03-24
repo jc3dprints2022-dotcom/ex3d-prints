@@ -41,6 +41,13 @@ export default function EmailBuilder({ onSave, initialContent }) {
     loadCampaigns();
   }, []);
 
+  // Auto-sync HTML to parent whenever blocks or background change
+  React.useEffect(() => {
+    if (onSave) {
+      onSave({ html: getEmailHTML(), blocks });
+    }
+  }, [blocks, bgColor, bgImage]);
+
   const loadCampaigns = async () => {
     setLoadingCampaigns(true);
     try {
