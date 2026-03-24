@@ -13,7 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const DROP_PRICE = 5;
+const DROP_PRICE = 10;
 
 const DEFAULT_COLORS = ["White", "Black", "Gray", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink"];
 
@@ -46,7 +46,6 @@ export default function DesignDrop() {
 
   const loadPurchasedAndCartIds = async (userId) => {
     try {
-      // Check orders already placed for drop items (unit_price === DROP_PRICE)
       const orders = await base44.entities.Order.filter({ customer_id: userId });
       const purchasedIds = new Set();
       orders.forEach(order => {
@@ -58,7 +57,6 @@ export default function DesignDrop() {
       });
       setPurchasedProductIds(purchasedIds);
 
-      // Check current cart
       const cartItems = await base44.entities.Cart.filter({ user_id: userId });
       const inCartIds = new Set();
       cartItems.forEach(item => {
@@ -178,7 +176,7 @@ export default function DesignDrop() {
           </div>
           <h1 className="text-5xl md:text-6xl font-extrabold mb-4 leading-tight">
             Premium 3D Designs<br />
-            <span className="text-teal-400">$5 Each</span>
+            <span className="text-teal-400">$10 Each</span>
           </h1>
           <p className="text-xl text-white/80 mb-10 max-w-xl mx-auto">
             Pick a design, we match it with a local printer near you, and ship it straight to your door. Simple as that.
@@ -197,9 +195,9 @@ export default function DesignDrop() {
       <section className="bg-amber-50 border-b border-amber-200 py-8 px-4 text-center">
         <div className="max-w-2xl mx-auto flex flex-col items-center gap-2">
           <Clock className="w-7 h-7 text-amber-500" />
-          <h3 className="text-xl font-bold text-amber-900">Limited-Time $5 Launch Drop</h3>
+          <h3 className="text-xl font-bold text-amber-900">Limited-Time $10 Launch Drop</h3>
           <p className="text-amber-700 text-sm max-w-md">
-            These prices are part of our launch promotion. Once the drop ends, standard pricing applies. Don't miss your chance to grab premium 3D designs at $5 each.
+            These prices are part of our launch promotion. Once the drop ends, standard pricing applies. Don't miss your chance to grab premium 3D designs at $10 each.
           </p>
         </div>
       </section>
