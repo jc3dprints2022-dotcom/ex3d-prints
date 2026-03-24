@@ -288,8 +288,7 @@ export default function EmailComposerSection() {
                  <EmailBuilder
                    onSave={(content) => {
                      setEmailContent(content);
-                     setMessage(content.html);
-                     toast({ title: "Email saved to composer!" });
+                     setMessage(content.html || "");
                    }}
                    initialContent={emailContent}
                  />
