@@ -116,8 +116,8 @@ export default function EmailComposerSection() {
   };
 
   const handleSend = async () => {
-    if (!recipient || !subject || !message) {
-      toast({ title: "Please fill in all fields", variant: "destructive" });
+    if (!recipient || !subject) {
+      toast({ title: "Please select a recipient and enter a subject", variant: "destructive" });
       return;
     }
 
