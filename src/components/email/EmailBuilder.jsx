@@ -158,51 +158,61 @@ export default function EmailBuilder({ onSave, initialContent }) {
   };
 
   const getEmailHTML = () => {
-    const bgStyle = bgImage ? `background-image: url('${bgImage}'); background-size: cover; background-position: center;` : `background-color: ${bgColor};`;
-    return `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-          body { font-family: Arial, sans-serif; margin: 0; padding: 0; ${bgStyle} }
-          .email-container { max-width: 600px; margin: 0 auto; background: transparent; }
-          img { max-width: 100%; height: auto; display: block; }
-          .text-block { padding: 20px; margin: 0; }
-          .button-block { text-align: center; padding: 20px; margin: 0; }
-          .image-block { text-align: center; padding: 20px; margin: 0; }
-          .spacer-block { margin: 0; }
-          .divider-block { margin: 0; }
-          .footer-block { background: #000000; color: #ffffff; padding: 20px; text-align: center; font-size: 12px; margin: 0; }
-        </style>
-      </head>
-      <body style="margin: 0; padding: 0; ${bgStyle}">
-        <div class="email-container" style="margin: 0 auto; max-width: 600px;">
-          ${blocks.map((block) => {
-            switch (block.type) {
-              case "text":
-                return `<div class="text-block" style="font-size: ${block.fontSize}px; color: ${block.color}; text-align: ${block.alignment};">${block.content}</div>`;
-              case "button":
-                return `<div class="button-block"><a href="${block.link}" style="display: inline-block; padding: 12px 24px; background: ${block.bgColor}; color: ${block.textColor}; text-decoration: none; border-radius: 6px; font-weight: bold;">${block.content}</a></div>`;
-              case "image":
-                return `<div class="image-block"><img src="${block.src}" style="width: ${block.width}px; max-width: 100%; height: auto; border-radius: 6px;" /></div>`;
-              case "spacer":
-                return `<div class="spacer-block" style="height: ${block.height}px;"></div>`;
-              case "hero":
-                return `<div style="background-image: url('${block.bgImage}'); background-size: cover; background-position: center; height: ${block.height}px; display: flex; align-items: center; justify-content: center; text-align: center;"><div><h1 style="color: ${block.titleColor}; margin: 0 0 10px 0;">${block.title}</h1><p style="color: ${block.subtitleColor}; margin: 0;">${block.subtitle}</p></div></div>`;
-              case "divider":
-                return `<div class="divider-block" style="border-top: ${block.height}px solid ${block.color}; margin: 20px 0;"></div>`;
-              case "footer":
-                return `<div class="footer-block">${block.content}</div>`;
-              default:
-                return "";
-            }
-          }).join("")}
-        </div>
-      </body>
-      </html>
-    `;
+    const bodyBg = bgImage
+      ? `background-image: url('${bgImage}'); background-size: cover; background-position: center;`
+      : `background-color: ${bgColor};`;
+
+    const renderBlock = (block) => {
+      switch (block.type) {
+        case "text":
+          // Convert newlines to <br> so paragraph spacing is preserved
+          const textContent = (block.content || "").replace(/\n/g, "<br />");
+          return `<div style="font-family: Arial, sans-serif; font-size: ${block.fontSize || 16}px; color: ${block.color || '#000000'}; text-align: ${block.alignment || 'left'}; padding: 16px 24px; line-height: 1.6; margin: 0;">${textContent}</div>`;
+
+        case "hero":
+          return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-image: url('${block.bgImage}'); background-size: cover; background-position: center; background-color: #333333; height: ${block.height || 300}px;"><tr><td align="center" valign="middle" style="padding: 40px 20px; text-align: center;"><h1 style="font-family: Arial, sans-serif; color: ${block.titleColor || '#ffffff'}; font-size: 36px; font-weight: bold; margin: 0 0 12px 0; text-align: center; line-height: 1.2;">${block.title || ''}</h1><p style="font-family: Arial, sans-serif; color: ${block.subtitleColor || '#ffffff'}; font-size: 18px; margin: 0; text-align: center; line-height: 1.4;">${block.subtitle || ''}</p></td></tr></table>`;
+
+        case "button":
+          return `<div style="text-align: center; padding: 16px 24px; margin: 0;"><a href="${block.link || '#'}" style="display: inline-block; padding: 12px 28px; background-color: ${block.bgColor || '#14b8a6'}; color: ${block.textColor || '#ffffff'}; text-decoration: none; border-radius: 6px; font-family: Arial, sans-serif; font-size: 16px; font-weight: bold;">${block.content || 'Button'}</a></div>`;
+
+        case "image":
+          return `<div style="text-align: center; padding: 16px 24px; margin: 0;"><img src="${block.src}" alt="" style="width: ${block.width || 300}px; max-width: 100%; height: auto; display: inline-block; border-radius: 6px;" /></div>`;
+
+        case "spacer":
+          return `<div style="height: ${block.height || 20}px; font-size: 1px; line-height: 1px;">&nbsp;</div>`;
+
+        case "divider":
+          return `<div style="padding: 8px 24px; margin: 0;"><div style="border-top: ${block.height || 1}px solid ${block.color || '#e5e7eb'};"></div></div>`;
+
+        case "footer":
+          return `<div style="background-color: #000000; color: #ffffff; padding: 20px 24px; text-align: center; font-family: Arial, sans-serif; font-size: 12px; margin: 0; line-height: 1.6;">${block.content || ''}</div>`;
+
+        default:
+          return "";
+      }
+    };
+
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Email</title>
+</head>
+<body style="margin: 0; padding: 0; ${bodyBg} font-family: Arial, sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="${bodyBg}">
+    <tr>
+      <td align="center" style="padding: 0;">
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width: 600px; width: 100%; background-color: #ffffff;">
+          <tr><td style="padding: 0;">
+            ${blocks.map(renderBlock).join("\n")}
+          </td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
   };
 
   return (
