@@ -85,8 +85,8 @@ Deno.serve(async (req) => {
     }
 
     const [addrFrom, addrTo] = await Promise.all([
-      shippoPost('/addresses/', { name: fromAddr.name, street1: fromAddr.street, city: fromAddr.city, state: fromAddr.state, zip: fromAddr.zip, country: 'US', phone: fromAddr.phone || '', validate: false }, apiKey),
-      shippoPost('/addresses/', { name: toAddr.name || 'Customer', street1: toAddr.street, city: toAddr.city, state: toAddr.state, zip: toAddr.zip, country: 'US', phone: toAddr.phone || '', validate: true }, apiKey)
+      shippoPost('/addresses/', { name: fromAddr.name, street1: fromAddr.street, city: fromAddr.city, state: fromAddr.state, zip: fromAddr.zip, country: 'US', phone: fromAddr.phone || '', email: fromAddr.email || 'jc3dprints2022@gmail.com', validate: false }, apiKey),
+      shippoPost('/addresses/', { name: toAddr.name || 'Customer', street1: toAddr.street, city: toAddr.city, state: toAddr.state, zip: toAddr.zip, country: 'US', phone: toAddr.phone || '', email: 'jc3dprints2022@gmail.com', validate: false }, apiKey)
     ]);
 
     const shipment = await shippoPost('/shipments/', {
