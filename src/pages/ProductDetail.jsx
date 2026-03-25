@@ -29,6 +29,8 @@ const COLORS = [
 export default function ProductDetail() {
   const urlParams = new URLSearchParams(window.location.search);
   const id = urlParams.get('id');
+  const fromDesignDrop = urlParams.get('from') === 'designdrop';
+  const dropPrice = fromDesignDrop ? 10 : null;
   
   const [product, setProduct] = useState(null);
   const [selectedMaterial, setSelectedMaterial] = useState('');
@@ -219,15 +221,17 @@ export default function ProductDetail() {
         selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
       });
 
+      const effectivePrice = dropPrice !== null ? dropPrice : product.price;
       const cartData = {
         user_id: user.id,
         product_id: product.id,
         quantity,
         selected_material: selectedMaterial,
         selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
-        unit_price: product.price,
-        total_price: product.price * quantity,
-        multi_color_selections: product.multi_color ? multiColorSelections : null
+        unit_price: effectivePrice,
+        total_price: effectivePrice * quantity,
+        multi_color_selections: product.multi_color ? multiColorSelections : null,
+        ...(dropPrice !== null ? { is_design_drop: true } : {})
       };
 
       if (existingCartItems.length > 0) {
@@ -337,24 +341,28 @@ export default function ProductDetail() {
       {/* Mobile Back Button Header */}
       <div className="md:hidden sticky top-0 z-40 bg-white dark:bg-gray-800 border-b dark:border-gray-700 safe-area-top shadow-sm">
         <div className="flex items-center px-4 h-14">
-          <Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 touch-target">
+          <Link to={fromDesignDrop ? createPageUrl("DesignDrop") : createPageUrl("Marketplace")} onClick={scrollToTop} className="inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 touch-target">
             <ChevronLeft className="w-6 h-6 mr-1" />
-            <span className="font-medium">Back</span>
+            <span className="font-medium">{fromDesignDrop ? 'Back to Drop' : 'Back'}</span>
           </Link>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-12">
-        <Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hidden md:inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 mb-8 touch-target">
+        <Link to={fromDesignDrop ? createPageUrl("DesignDrop") : createPageUrl("Marketplace")} onClick={scrollToTop} className="hidden md:inline-flex items-center text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 mb-8 touch-target">
           <ChevronLeft className="w-5 h-5 mr-1" />
-          Back to Marketplace
+          {fromDesignDrop ? 'Back to Design Drop' : 'Back to Marketplace'}
         </Link>
 
         <div className="grid md:grid-cols-2 gap-12 mb-12">
           {/* Product Info - Mobile */}
           <div className="md:hidden">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
-            <p className="text-3xl font-bold text-teal-600 mb-4">${product.price.toFixed(2)}</p>
+            {fromDesignDrop && <div className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-2">🎉 Design Drop Special</div>}
+            <p className="text-3xl font-bold text-teal-600 mb-4">
+              ${dropPrice !== null ? dropPrice.toFixed(2) : product.price.toFixed(2)}
+              {dropPrice !== null && <span className="text-lg text-gray-400 line-through ml-2">${product.price.toFixed(2)}</span>}
+            </p>
             {product.review_count > 0 ? (
               <div className="flex items-center gap-2 mb-6">
                 <div className="flex">
@@ -581,7 +589,7 @@ export default function ProductDetail() {
 
                     <Button onClick={handleAddToCart} size="lg" className="w-full mb-2">
                       <ShoppingCart className="w-5 h-5 mr-2" />
-                      Add to Cart - ${(product.price * quantity).toFixed(2)}
+                      Add to Cart - ${((dropPrice ?? product.price) * quantity).toFixed(2)}
                     </Button>
 
                     <Button
@@ -703,7 +711,11 @@ export default function ProductDetail() {
               </Button>
             </div>
             <div className="mb-8">
-              <p className="text-4xl font-bold text-teal-600">${product.price.toFixed(2)}</p>
+              {fromDesignDrop && <div className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-2">🎉 Design Drop Special</div>}
+              <p className="text-4xl font-bold text-teal-600">
+                ${dropPrice !== null ? dropPrice.toFixed(2) : product.price.toFixed(2)}
+                {dropPrice !== null && <span className="text-2xl text-gray-400 line-through ml-2">${product.price.toFixed(2)}</span>}
+              </p>
             </div>
             {product.review_count > 0 ? (
               <div className="flex items-center gap-2 mb-6">
@@ -821,7 +833,7 @@ export default function ProductDetail() {
 
                   <Button onClick={handleAddToCart} size="lg" className="w-full">
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Add to Cart - ${(product.price * quantity).toFixed(2)}
+                    Add to Cart - ${((dropPrice ?? product.price) * quantity).toFixed(2)}
                   </Button>
                 </div>
               </CardContent>

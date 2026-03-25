@@ -227,21 +227,19 @@ export default function DesignDrop() {
                     key={product.id}
                     className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col"
                   >
-                    <Link to={`${createPageUrl("ProductDetail")}?id=${product.id}`}>
-                      <div className="aspect-square overflow-hidden bg-gray-50 relative">
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        {unavailable && (
-                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                            <span className="bg-white text-slate-800 text-xs font-bold px-3 py-1 rounded-full">
-                              {purchasedProductIds.has(product.id) ? "Already Purchased" : "In Cart"}
-                            </span>
-                          </div>
-                        )}
-                      </div>
+                    <Link to={`${createPageUrl("ProductDetail")}?id=${product.id}&from=designdrop&drop_price=10`} className="aspect-square overflow-hidden bg-gray-50 block relative">
+                      <img
+                        src={product.images[0]}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      {unavailable && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <span className="bg-white text-slate-800 text-xs font-bold px-3 py-1 rounded-full">
+                            {purchasedProductIds.has(product.id) ? "Already Purchased" : "In Cart"}
+                          </span>
+                        </div>
+                      )}
                     </Link>
                     <div className="p-3 flex flex-col gap-2 flex-1">
                       <h3 className="font-semibold text-slate-800 text-sm leading-snug line-clamp-2">{product.name}</h3>
@@ -289,9 +287,9 @@ export default function DesignDrop() {
                         )}
                       </Button>
                     </div>
-                  </div>
-                );
-              })}
+                    </div>
+                    );
+                    })}
             </div>
           )}
         </div>
