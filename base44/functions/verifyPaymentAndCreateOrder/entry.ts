@@ -161,6 +161,12 @@ Deno.serve(async (req) => {
         const totalAmount = session.amount_total / 100;
         console.log('Total amount:', totalAmount);
 
+        // Calculate actual payout: 50% of what customer paid for items (excluding shipping)
+        const shippingFeeFromMeta = parseFloat(session.metadata?.shipping_fee || 0);
+        const amountPaidForItems = totalAmount - shippingFeeFromMeta;
+        const makerPayoutAmount = Math.max(0, amountPaidForItems * 0.5);
+        console.log('Maker payout amount (50% of paid items):', makerPayoutAmount);
+
         // Create the order
         console.log('Creating order...');
         const isPriority = session.metadata.is_priority === 'true';
@@ -193,7 +199,9 @@ Deno.serve(async (req) => {
             is_priority: isPriority,
             campus_location: campusLocation,
             is_local_delivery: isLocalDelivery,
-            shipping_address: shippingAddress
+            shipping_address: shippingAddress,
+            maker_payout_amount: makerPayoutAmount,
+            shipping_cost: shippingFeeFromMeta
         });
 
         console.log('✅ Order created:', newOrder.id);

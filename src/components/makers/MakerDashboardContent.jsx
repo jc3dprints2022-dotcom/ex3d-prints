@@ -80,13 +80,15 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       // Completed = done printing (shipped/dropped_off/delivered)
       const completedOrders = myOrders.filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status)).length;
 
-      // Earnings = 50% of items total (shipping excluded)
+      // Earnings = maker_payout_amount if set (actual paid amount * 50%), else fallback
+      const getOrderEarnings = (o) => {
+        if (o.maker_payout_amount != null) return o.maker_payout_amount;
+        const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+        return itemsTotal * 0.5;
+      };
       const calcEarnings = (orderList) => orderList
         .filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status))
-        .reduce((sum, o) => {
-          const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
-          return sum + itemsTotal * 0.5;
-        }, 0);
+        .reduce((sum, o) => sum + getOrderEarnings(o), 0);
 
       const totalEarnings = calcEarnings(myOrders);
 
@@ -474,9 +476,12 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                           <div className="text-right">
                             <p className="text-sm text-gray-500">Your Earnings:</p>
                             <p className="text-xl font-bold text-green-600">
-                             ${((order.items || []).reduce((s, item) => s + (item.total_price || 0), 0) * 0.5).toFixed(2)}
+                             ${(order.maker_payout_amount != null
+                               ? order.maker_payout_amount
+                               : (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0) * 0.5
+                             ).toFixed(2)}
                             </p>
-                            <p className="text-xs text-gray-400">50% of item cost</p>
+                            <p className="text-xs text-gray-400">50% of amount paid</p>
                           </div>
                         )}
                       </div>
