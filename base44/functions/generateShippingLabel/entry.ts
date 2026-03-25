@@ -57,13 +57,13 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Order has no shipping address' }, { status: 400 });
     }
 
-    let fromAddr = { name: 'EX3D Prints', street: '1 N Gurley St', city: 'Prescott', state: 'AZ', zip: '86301' };
+    let fromAddr = { name: 'EX3D Prints', street: '1 N Gurley St', city: 'Prescott', state: 'AZ', zip: '86301', email: 'jc3dprints2022@gmail.com' };
     if (order.maker_id) {
       try {
         const makers = await base44.asServiceRole.entities.User.filter({ maker_id: order.maker_id });
         if (makers.length > 0 && makers[0].address?.street) {
           const m = makers[0];
-          fromAddr = { name: m.full_name || 'EX3D Maker', street: m.address.street, city: m.address.city, state: m.address.state, zip: m.address.zip, phone: m.phone || '' };
+          fromAddr = { name: m.full_name || 'EX3D Maker', street: m.address.street, city: m.address.city, state: m.address.state, zip: m.address.zip, phone: m.phone || '', email: m.email || 'jc3dprints2022@gmail.com' };
         }
       } catch (e) {
         console.error('Could not fetch maker address, using default:', e.message);
