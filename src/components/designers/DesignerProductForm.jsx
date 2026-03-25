@@ -12,17 +12,19 @@ import ImageCropEditor from "../shared/ImageCropEditor";
 
 const CATEGORIES = [
   { value: "kit_cards", label: "Kit Cards" },
-  { value: "plane_models", label: "Plane Models" },
   { value: "rocket_models", label: "Rocket Models" },
   { value: "halloween", label: "Halloween" },
-  { value: "embry_riddle", label: "Embry-Riddle" },
-  { value: "dorm_essentials", label: "Dorm Essentials"},
-  { value: "desk", label: "Desk"},
-  { value: "art", label: "Art"},
-  { value: "fashion", label: "Fashion"},
-  { value: "gadgets", label: "Gadgets"},
-  { value: "toys_and_games", label: "Toys & Games"},
-  { value: "holidays", label: "Holidays"},
+  { value: "easter", label: "Easter" },
+  { value: "april_fools", label: "April Fools" },
+  { value: "independence_day", label: "Independence Day" },
+  { value: "thanksgiving", label: "Thanksgiving" },
+  { value: "christmas", label: "Christmas" },
+  { value: "valentines_day", label: "Valentine's Day" },
+  { value: "dorm_essentials", label: "Dorm Essentials" },
+  { value: "desk", label: "Desk" },
+  { value: "art", label: "Art" },
+  { value: "gadgets", label: "Gadgets" },
+  { value: "toys_and_games", label: "Toys & Games" },
   { value: "misc", label: "Misc" }
 ];
 
