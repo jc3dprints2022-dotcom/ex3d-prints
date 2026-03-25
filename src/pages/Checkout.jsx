@@ -216,7 +216,7 @@ export default function Checkout() {
       console.log('Cart items:', cartItems);
       console.log('Coupon code:', couponCode);
       console.log('Referral code:', referralCode);
-      console.log('Is priority:', isPriority);
+
       
       const shippingFee = getShippingFee();
       const finalCartItems = [...cartItems];
