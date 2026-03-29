@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
-import { Truck, Package, Check, Loader2 } from 'lucide-react';
+import { createShippingKitCheckout } from '@/functions/createShippingKitCheckout';
+import { Truck, Package, Tag, Box, Check, Loader2 } from 'lucide-react';
 
 export default function ShippingKitStore({ subscription, userId, onKitOrdered }) {
   const [ordering, setOrdering] = useState(false);
@@ -17,39 +18,11 @@ export default function ShippingKitStore({ subscription, userId, onKitOrdered })
   const orderKit = async () => {
     setOrdering(true);
     try {
-      const user = await base44.auth.me();
-      
-      await base44.entities.ShippingKitOrder.create({
-        user_id: userId,
-        subscription_plan: subscription?.plan_name || 'Basic',
-        cost: getKitPrice(),
-        status: 'pending',
-        shipping_address: user.address || {},
-        kit_contents: ['packing_tape', 'boxes', 'packing_paper']
-      });
-
-      // Increment shipping kits counter
-      await base44.auth.updateMe({
-        shipping_kits_received: (user.shipping_kits_received || 0) + 1
-      });
-
-      await base44.entities.AuditLog.create({
-        event_type: 'shipping_kit_order',
-        user_id: userId,
-        details: {
-          plan: subscription?.plan_name,
-          cost: getKitPrice()
-        },
-        severity: 'info'
-      });
-
-      toast({ 
-        title: "Shipping Kit Ordered!", 
-        description: "Your kit will be shipped to your registered address within 3-5 business days." 
-      });
-
-      if (onKitOrdered) {
-        onKitOrdered();
+      const response = await createShippingKitCheckout({});
+      if (response.data?.checkout_url) {
+        window.location.href = response.data.checkout_url;
+      } else {
+        throw new Error(response.data?.error || 'Failed to create checkout');
       }
     } catch (error) {
       toast({ 
@@ -84,27 +57,22 @@ export default function ShippingKitStore({ subscription, userId, onKitOrdered })
           <div className="space-y-4 mb-6">
             <h4 className="font-semibold text-gray-900">Each kit includes:</h4>
             <div className="grid gap-3">
-              <div className="flex items-center gap-3 p-3 bg-white border rounded-lg">
-                <Package className="w-5 h-5 text-teal-500" />
-                <div>
-                  <p className="font-medium text-gray-900">Packing Tape</p>
-                  <p className="text-sm text-gray-700">Heavy-duty shipping tape</p>
+              {[
+                { icon: Box, label: '5 Large Shipping Boxes', desc: 'For bigger prints and multi-item orders' },
+                { icon: Box, label: '5 Small Shipping Boxes', desc: 'Perfect for single smaller prints' },
+                { icon: Package, label: 'Packing Paper', desc: 'Protective wrapping for fragile prints' },
+                { icon: Tag, label: 'Shipping Labels', desc: 'Pre-cut adhesive labels for easy application' },
+                { icon: Package, label: 'EX3D Prints Stickers', desc: 'Branded stickers to finish your packages' },
+                { icon: Package, label: 'Packing Tape', desc: 'Heavy-duty tape to seal your shipments' },
+              ].map(({ icon: Icon, label, desc }) => (
+                <div key={label} className="flex items-center gap-3 p-3 bg-white border rounded-lg">
+                  <Icon className="w-5 h-5 text-teal-500 shrink-0" />
+                  <div>
+                    <p className="font-medium text-gray-900">{label}</p>
+                    <p className="text-sm text-gray-600">{desc}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-white border rounded-lg">
-                <Package className="w-5 h-5 text-teal-500" />
-                <div>
-                  <p className="font-medium text-gray-900">Shipping Boxes</p>
-                  <p className="text-sm text-gray-700">Various sizes for different prints</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3 p-3 bg-white border rounded-lg">
-                <Package className="w-5 h-5 text-teal-500" />
-                <div>
-                  <p className="font-medium text-gray-900">Packing Paper</p>
-                  <p className="text-sm text-gray-700">Protective padding material</p>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
