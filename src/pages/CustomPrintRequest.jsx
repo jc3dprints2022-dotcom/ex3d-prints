@@ -253,17 +253,17 @@ export default function CustomPrintRequest() {
 
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
-                  <Label htmlFor="printFiles">3D Files (STL, OBJ, 3MF) *</Label>
+                  <Label htmlFor="printFiles">3D Files *</Label>
                   <Input
                     id="printFiles"
                     type="file"
                     multiple
                     onChange={(e) => handleInputChange('files', e.target.files)}
-                    accept=".stl,.obj,.3mf"
+                    accept=".stl,.obj,.3mf,.step,.stp,.iges,.igs,.fbx,.dae,.x3d,.wrl,.amf,.gcode"
                     className="mt-2"
                     required
                   />
-                  <p className="text-sm text-slate-500 mt-1">Upload your 3D model files</p>
+                  <p className="text-sm text-slate-500 mt-1">STL, OBJ, 3MF, STEP, IGES, FBX, AMF and more — select multiple files at once</p>
                 </div>
 
                 <div>
