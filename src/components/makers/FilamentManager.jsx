@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, Plus, Loader2, Package } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
-const MATERIALS = ["PLA", "PETG", "ABS", "TPU"];
+const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "PC"];
 const COLORS = [
   "White", "Black", "Gray", "Silver", "Gold", "Brown",
   "Red", "Blue", "Yellow", "Green", "Orange", "Purple", "Pink", 

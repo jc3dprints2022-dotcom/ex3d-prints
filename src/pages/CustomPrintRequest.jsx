@@ -11,7 +11,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 
-const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "No preference"];
+const MATERIALS = ["PLA", "PETG", "ABS", "TPU", "PC", "No preference"];
 const COLORS = [
   "White", "Black", "Gray", "Silver", "Gold", "Brown", "Beige",
   "Red", "Blue", "Yellow", "Green", "Orange", "Purple", "Pink",
