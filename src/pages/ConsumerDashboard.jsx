@@ -51,6 +51,8 @@ export default function ConsumerDashboard() {
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [showAllCustomRequests, setShowAllCustomRequests] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [satisfactionOrder, setSatisfactionOrder] = useState(null);
+  const [issueDescription, setIssueDescription] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
   const { toast } = useToast();
 
@@ -182,15 +184,32 @@ export default function ConsumerDashboard() {
   const handleConfirmPickup = async (orderId) => {
     if (!confirm('Confirm you have picked up this order?')) return;
     try {
+      const order = orders.find(o => o.id === orderId);
       await base44.entities.Order.update(orderId, { 
         status: 'delivered',
-        picked_up_at: new Date().toISOString()
+        picked_up_at: new Date().toISOString(),
+        delivered_at: new Date().toISOString()
       });
       toast({ title: "Pickup confirmed! Thank you!" });
       loadOrders(user);
+      setSatisfactionOrder(order);
     } catch (error) {
       toast({ title: "Failed to confirm pickup", variant: "destructive" });
     }
+  };
+
+  const handleSatisfactionResponse = async (satisfied) => {
+    if (!satisfactionOrder) return;
+    if (!satisfied && !issueDescription.trim()) return;
+    await base44.entities.Order.update(satisfactionOrder.id, {
+      customer_satisfaction: satisfied,
+      issue_flag: !satisfied,
+      issue_description: satisfied ? "" : issueDescription
+    });
+    toast({ title: satisfied ? "Thanks for your feedback! 🎉" : "Sorry to hear that. We'll look into it." });
+    setSatisfactionOrder(null);
+    setIssueDescription("");
+    loadOrders(user);
   };
 
   const handleReviewSubmit = async (e) => {
@@ -806,6 +825,51 @@ export default function ConsumerDashboard() {
           </main>
         </div>
       </div>
+
+      {/* Satisfaction Dialog */}
+      <Dialog open={!!satisfactionOrder} onOpenChange={() => { setSatisfactionOrder(null); setIssueDescription(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>How was your order? 🎉</DialogTitle>
+            <DialogDescription>Was everything correct with your order?</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <Button className="bg-green-600 hover:bg-green-700 h-16 text-base" onClick={() => handleSatisfactionResponse(true)}>
+                ✅ Yes, perfect!
+              </Button>
+              <Button variant="outline" className="border-red-400 text-red-600 h-16 text-base hover:bg-red-50" onClick={() => setIssueDescription(" ")}>
+                ❌ No, there was an issue
+              </Button>
+            </div>
+            {issueDescription !== "" && (
+              <div className="space-y-2">
+                <Label>What went wrong?</Label>
+                <Select onValueChange={val => setIssueDescription(val)}>
+                  <SelectTrigger><SelectValue placeholder="Select issue type" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Wrong color">Wrong color</SelectItem>
+                    <SelectItem value="Wrong material">Wrong material</SelectItem>
+                    <SelectItem value="Print quality issue">Print quality issue</SelectItem>
+                    <SelectItem value="Missing item">Missing item</SelectItem>
+                    <SelectItem value="Damaged print">Damaged print</SelectItem>
+                    <SelectItem value="Other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Textarea
+                  value={issueDescription === " " ? "" : issueDescription}
+                  onChange={e => setIssueDescription(e.target.value)}
+                  placeholder="Tell us more (optional)..."
+                  rows={3}
+                />
+                <Button className="w-full bg-red-600 hover:bg-red-700" onClick={() => handleSatisfactionResponse(false)} disabled={!issueDescription.trim()}>
+                  Submit Issue Report
+                </Button>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Review Modal */}
       <Dialog open={reviewModalOpen} onOpenChange={setReviewModalOpen}>

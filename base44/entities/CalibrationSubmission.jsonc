@@ -1,0 +1,46 @@
+{
+  "name": "CalibrationSubmission",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string",
+      "description": "Maker user ID"
+    },
+    "maker_name": {
+      "type": "string",
+      "description": "Maker's full name"
+    },
+    "maker_email": {
+      "type": "string",
+      "description": "Maker's email"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Uploaded calibration cube images"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending",
+      "description": "Review status of the calibration submission"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "description": "Admin reason for rejection"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal admin notes"
+    }
+  },
+  "required": [
+    "maker_id"
+  ]
+}

@@ -1,0 +1,301 @@
+{
+  "name": "Order",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Customer user ID"
+    },
+    "customer_username": {
+      "type": "string",
+      "description": "Customer's account username for delivery identification"
+    },
+    "maker_id": {
+      "type": "string",
+      "description": "Assigned maker ID"
+    },
+    "assigned_to_makers": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of maker IDs when order is assigned to multiple makers"
+    },
+    "assigned_printer_id": {
+      "type": "string",
+      "description": "Printer assigned to this order"
+    },
+    "custom_request_id": {
+      "type": "string",
+      "description": "Reference to CustomPrintRequest if this order came from a custom request"
+    },
+    "campus_location": {
+      "type": "string",
+      "enum": [
+        "erau_prescott",
+        "erau_daytona",
+        "arizona_state"
+      ],
+      "description": "Campus location for this order"
+    },
+    "is_priority": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a priority order (overnight delivery)"
+    },
+    "is_local_delivery": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is local drop-off delivery (no shipping)"
+    },
+    "shipping_address": {
+      "type": "object",
+      "description": "Customer shipping address for this order",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "shipping_label_url": {
+      "type": "string",
+      "description": "URL to the generated USPS shipping label PDF"
+    },
+    "shipping_cost": {
+      "type": "number",
+      "description": "Actual USPS postage cost for this shipment"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "custom_request_id": {
+            "type": "string",
+            "description": "Reference to CustomPrintRequest for this specific item"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "selected_material": {
+            "type": "string"
+          },
+          "selected_color": {
+            "type": "string"
+          },
+          "selected_resolution": {
+            "type": "number",
+            "default": 0.2
+          },
+          "use_recycled_filament": {
+            "type": "boolean",
+            "default": false
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "total_price": {
+            "type": "number"
+          },
+          "print_files": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "print_time_hours": {
+            "type": "number"
+          },
+          "weight_grams": {
+            "type": "number"
+          },
+          "dimensions": {
+            "type": "object",
+            "properties": {
+              "length": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            }
+          },
+          "multi_color": {
+            "type": "boolean",
+            "default": false
+          },
+          "multi_color_selections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "print_file_scale": {
+            "type": "number",
+            "default": 100
+          },
+          "designer_id": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "special_requirements": {
+            "type": "string"
+          },
+          "admin_notes": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Product or custom request images"
+          },
+          "business_name": {
+            "type": "string",
+            "description": "Business name for business orders"
+          },
+          "business_customization": {
+            "type": "string",
+            "description": "Customization details for business orders"
+          }
+        }
+      }
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "accepted",
+        "printing",
+        "done_printing",
+        "shipped",
+        "completed",
+        "dropped_off",
+        "delivered",
+        "cancelled",
+        "unassigned"
+      ],
+      "default": "pending",
+      "description": "Order lifecycle: pending\u2192accepted\u2192printing\u2192done_printing\u2192shipped\u2192delivered (complete)"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "failed",
+        "refunded"
+      ],
+      "default": "pending"
+    },
+    "payment_intent_id": {
+      "type": "string"
+    },
+    "stripe_session_id": {
+      "type": "string"
+    },
+    "delivery_option": {
+      "type": "string",
+      "enum": [
+        "campus_pickup"
+      ],
+      "default": "campus_pickup"
+    },
+    "tracking_number": {
+      "type": "string"
+    },
+    "estimated_delivery": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "actual_print_hours": {
+      "type": "number"
+    },
+    "cancellation_reason": {
+      "type": "string"
+    },
+    "dropped_off_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shipped_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When order was marked shipped"
+    },
+    "picked_up_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "delivered_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When order was confirmed delivered by customer"
+    },
+    "stripe_transfer_id": {
+      "type": "string"
+    },
+    "maker_payout_amount": {
+      "type": "number"
+    },
+    "maker_payout_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "issue_flag": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the customer reported an issue with this order"
+    },
+    "issue_description": {
+      "type": "string",
+      "description": "Customer-reported issue details"
+    },
+    "customer_satisfaction": {
+      "type": "boolean",
+      "description": "Whether customer was satisfied (true=happy, false=unhappy)"
+    },
+    "perfect_order": {
+      "type": "boolean",
+      "description": "Auto-calculated: delivered on time, no issues, customer satisfied"
+    }
+  },
+  "required": [
+    "customer_id",
+    "items",
+    "total_amount"
+  ]
+}

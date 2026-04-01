@@ -32,7 +32,8 @@ import FilamentManager from "../components/makers/FilamentManager";
 import BankInfoManager from "../components/shared/BankInfoManager";
 import MakerExpRedeemTab from "../components/makers/MakerExpRedeemTab";
 import { createPageUrl } from "@/utils";
-import AnnouncementBanner from "@/components/shared/AnnouncementBanner"; // Added import
+import AnnouncementBanner from "@/components/shared/AnnouncementBanner";
+import CalibrationGate from "../components/makers/CalibrationGate"; // Added import
 
 export default function MakerDashboard() {
   const [user, setUser] = useState(null);
@@ -741,98 +742,67 @@ The EX3D Team`
 
         <TabsContent value="setup">
           <div className="space-y-6">
-            <div className="flex justify-end">
-              <Dialog open={showPrinterDialog} onOpenChange={setShowPrinterDialog}>
-                <DialogTrigger asChild>
-                  <Button onClick={() => { setEditingPrinter(null); setShowPrinterDialog(true); }}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Printer
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>{editingPrinter ? 'Edit Printer' : 'Add New Printer'}</DialogTitle>
-                    <DialogDescription>
-                      {editingPrinter ? 'Update your printer information' : 'Register a new 3D printer to your maker account'}
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AddPrinterForm
-                    printer={editingPrinter}
-                    onClose={() => {
-                      setShowPrinterDialog(false);
-                      setEditingPrinter(null);
-                    }}
-                    onSuccess={() => {
-                      setShowPrinterDialog(false);
-                      setEditingPrinter(null);
-                      loadDashboard();
-                    }}
-                  />
-                </DialogContent>
-              </Dialog>
-            </div>
+            <CalibrationGate user={user}>
+              <div className="flex justify-end">
+                <Dialog open={showPrinterDialog} onOpenChange={setShowPrinterDialog}>
+                  <DialogTrigger asChild>
+                    <Button onClick={() => { setEditingPrinter(null); setShowPrinterDialog(true); }}>
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Printer
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader>
+                      <DialogTitle>{editingPrinter ? 'Edit Printer' : 'Add New Printer'}</DialogTitle>
+                      <DialogDescription>
+                        {editingPrinter ? 'Update your printer information' : 'Register a new 3D printer to your maker account'}
+                      </DialogDescription>
+                    </DialogHeader>
+                    <AddPrinterForm
+                      printer={editingPrinter}
+                      onClose={() => { setShowPrinterDialog(false); setEditingPrinter(null); }}
+                      onSuccess={() => { setShowPrinterDialog(false); setEditingPrinter(null); loadDashboard(); }}
+                    />
+                  </DialogContent>
+                </Dialog>
+              </div>
 
-            <div className="grid md:grid-cols-2 gap-4">
-              {printers.map(printer => (
-                <Card key={printer.id} className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    setEditingPrinter(printer);
-                    setShowPrinterDialog(true);
-                  }}>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{printer.name || `${printer.brand} ${printer.model}`}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Brand:</span>
-                        <span className="font-medium">{printer.brand}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Model:</span>
-                        <span className="font-medium">{printer.model}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Status:</span>
-                        <Badge className={
-                          printer.status === 'active' ? 'bg-green-100 text-green-900' :
-                            printer.status === 'printing' ? 'bg-blue-100 text-blue-900' :
-                              printer.status === 'maintenance' ? 'bg-yellow-100 text-yellow-900' :
-                                'bg-gray-100 text-gray-900'
-                        }>
-                          {printer.status}
-                        </Badge>
-                      </div>
-                      {printer.multi_color_capable && (
-                        <div className="pt-2 border-t">
-                          <span className="text-sm text-purple-600 font-medium">
-                            ✨ Multi-color capable
-                          </span>
+              <div className="grid md:grid-cols-2 gap-4">
+                {printers.map(printer => (
+                  <Card key={printer.id} className="cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => { setEditingPrinter(printer); setShowPrinterDialog(true); }}>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{printer.name || `${printer.brand} ${printer.model}`}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between"><span className="text-gray-600">Brand:</span><span className="font-medium">{printer.brand}</span></div>
+                        <div className="flex justify-between"><span className="text-gray-600">Model:</span><span className="font-medium">{printer.model}</span></div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Status:</span>
+                          <Badge className={printer.status === 'active' ? 'bg-green-100 text-green-900' : printer.status === 'printing' ? 'bg-blue-100 text-blue-900' : printer.status === 'maintenance' ? 'bg-yellow-100 text-yellow-900' : 'bg-gray-100 text-gray-900'}>{printer.status}</Badge>
                         </div>
-                      )}
-                    </div>
+                        {printer.multi_color_capable && <div className="pt-2 border-t"><span className="text-sm text-purple-600 font-medium">✨ Multi-color capable</span></div>}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {printers.length === 0 && (
+                <Card>
+                  <CardContent className="p-12 text-center">
+                    <Printer className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                    <p className="text-gray-600 mb-4">No printers registered yet</p>
+                    <Button onClick={() => setShowPrinterDialog(true)}><Plus className="w-4 h-4 mr-2" />Add Your First Printer</Button>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
+              )}
 
-            {printers.length === 0 && (
-              <Card>
-                <CardContent className="p-12 text-center">
-                  <Printer className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-                  <p className="text-gray-600 mb-4">No printers registered yet</p>
-                  <Button onClick={() => setShowPrinterDialog(true)}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Printer
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Filament Manager Section */}
-            <div className="mt-8">
-              <FilamentManager makerId={user?.maker_id} />
-            </div>
+              <div className="mt-8">
+                <FilamentManager makerId={user?.maker_id} />
+              </div>
+            </CalibrationGate>
           </div>
         </TabsContent>
 
