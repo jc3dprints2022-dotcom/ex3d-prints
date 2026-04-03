@@ -19,12 +19,21 @@ export default function CalibrationGate({ user, children }) {
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [images, setImages] = useState([]);
+  const [dialogOpen, setDialogOpen] = useState(true);
   const [calibrationStlUrl] = useState(localStorage.getItem("calibration_stl_url") || "");
+  const [overhangStlUrl] = useState(localStorage.getItem("overhang_stl_url") || "");
   const { toast } = useToast();
 
   useEffect(() => {
     loadSubmission();
   }, [user?.maker_id]);
+
+  // Re-open dialog when user switches to this tab
+  useEffect(() => {
+    if (!loading && submission?.status !== "approved") {
+      setDialogOpen(true);
+    }
+  }, [loading, submission]);
 
   const loadSubmission = async () => {
     if (!user?.maker_id) { setLoading(false); return; }
@@ -70,15 +79,15 @@ export default function CalibrationGate({ user, children }) {
     return <>{children}</>;
   }
 
-  const isOpen = !loading && submission?.status !== "approved";
+  const isOpen = !loading && submission?.status !== "approved" && dialogOpen;
 
   return (
     <>
       {/* Still render children underneath (visible but non-functional) */}
       <div className={isOpen ? "pointer-events-none opacity-30 select-none" : ""}>{children}</div>
 
-      <Dialog open={isOpen} onOpenChange={() => {}}>
-        <DialogContent className="sm:max-w-lg" onPointerDownOutside={e => e.preventDefault()} onEscapeKeyDown={e => e.preventDefault()}>
+      <Dialog open={isOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {submission?.status === "pending" ? (
@@ -122,15 +131,26 @@ export default function CalibrationGate({ user, children }) {
                   <p className="text-sm text-orange-700 mb-3">
                     Download the official EX3D calibration file, print it, and take clear photos of the result (multiple angles recommended).
                   </p>
+                  <div className="flex flex-col gap-2">
                   {calibrationStlUrl ? (
                     <a href={calibrationStlUrl} download target="_blank" rel="noopener noreferrer">
                       <Button variant="outline" size="sm" className="border-orange-400 text-orange-700">
-                        <Download className="w-4 h-4 mr-2" /> Download Calibration File
+                        <Download className="w-4 h-4 mr-2" /> Download Calibration Cube
                       </Button>
                     </a>
                   ) : (
-                    <p className="text-xs text-gray-500 italic">Calibration file not yet available. Check back soon or contact support.</p>
+                    <p className="text-xs text-gray-500 italic">Calibration cube file not yet available.</p>
                   )}
+                  {overhangStlUrl ? (
+                    <a href={overhangStlUrl} download target="_blank" rel="noopener noreferrer">
+                      <Button variant="outline" size="sm" className="border-orange-400 text-orange-700">
+                        <Download className="w-4 h-4 mr-2" /> Download Overhang Test
+                      </Button>
+                    </a>
+                  ) : (
+                    <p className="text-xs text-gray-500 italic">Overhang test file not yet available.</p>
+                  )}
+                </div>
                 </div>
 
                 {/* Step 2 */}

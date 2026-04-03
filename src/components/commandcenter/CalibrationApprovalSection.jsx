@@ -19,7 +19,9 @@ export default function CalibrationApprovalSection() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [calibrationStlUrl, setCalibrationStlUrl] = useState(localStorage.getItem("calibration_stl_url") || "");
+  const [overhangStlUrl, setOverhangStlUrl] = useState(localStorage.getItem("overhang_stl_url") || "");
   const [uploadingStl, setUploadingStl] = useState(false);
+  const [uploadingOverhang, setUploadingOverhang] = useState(false);
   const [reviewingId, setReviewingId] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [filter, setFilter] = useState("pending");
@@ -43,8 +45,20 @@ export default function CalibrationApprovalSection() {
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
     setCalibrationStlUrl(file_url);
     localStorage.setItem("calibration_stl_url", file_url);
-    toast({ title: "Calibration STL uploaded and saved!" });
+    toast({ title: "Calibration Cube file uploaded!" });
     setUploadingStl(false);
+    e.target.value = null;
+  };
+
+  const handleOverhangUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadingOverhang(true);
+    const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    setOverhangStlUrl(file_url);
+    localStorage.setItem("overhang_stl_url", file_url);
+    toast({ title: "Overhang Test file uploaded!" });
+    setUploadingOverhang(false);
     e.target.value = null;
   };
 
@@ -90,23 +104,46 @@ export default function CalibrationApprovalSection() {
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-white">Maker Calibration Approvals</h2>
 
-      {/* Upload Official STL */}
+      {/* Upload Official Approval Files */}
       <Card className="bg-slate-900 border-cyan-500/30">
-        <CardHeader><CardTitle className="text-cyan-400">Official Calibration Cube STL</CardTitle></CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-gray-400 text-sm">Upload the master calibration STL that makers must download and print before being approved.</p>
-          {calibrationStlUrl && (
-            <div className="flex items-center gap-3 p-3 bg-green-900/30 rounded border border-green-500/30">
-              <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
-              <span className="text-green-300 text-sm truncate flex-1">{calibrationStlUrl.split('/').pop()}</span>
-              <a href={calibrationStlUrl} download target="_blank" rel="noopener noreferrer">
-                <Button size="sm" variant="outline" className="text-xs"><Download className="w-3 h-3 mr-1" /> Download</Button>
-              </a>
+        <CardHeader><CardTitle className="text-cyan-400">Official Printer Approval Files</CardTitle></CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-gray-400 text-sm">Upload the files makers must download, print, and photograph before being approved to join the network.</p>
+
+          {/* File 1 - Calibration Cube */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-white">1. Calibration Cube</p>
+            {calibrationStlUrl && (
+              <div className="flex items-center gap-3 p-3 bg-green-900/30 rounded border border-green-500/30">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                <span className="text-green-300 text-sm truncate flex-1">{calibrationStlUrl.split('/').pop()}</span>
+                <a href={calibrationStlUrl} download target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="text-xs"><Download className="w-3 h-3 mr-1" /> Download</Button>
+                </a>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <Input type="file" accept=".stl,.obj,.3mf" onChange={handleStlUpload} disabled={uploadingStl} className="text-white" />
+              {uploadingStl && <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />}
             </div>
-          )}
-          <div className="flex items-center gap-3">
-            <Input type="file" accept=".stl,.obj,.3mf" onChange={handleStlUpload} disabled={uploadingStl} className="text-white" />
-            {uploadingStl && <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />}
+          </div>
+
+          {/* File 2 - Overhang Test */}
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-white">2. Overhang / Quality Test</p>
+            {overhangStlUrl && (
+              <div className="flex items-center gap-3 p-3 bg-green-900/30 rounded border border-green-500/30">
+                <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0" />
+                <span className="text-green-300 text-sm truncate flex-1">{overhangStlUrl.split('/').pop()}</span>
+                <a href={overhangStlUrl} download target="_blank" rel="noopener noreferrer">
+                  <Button size="sm" variant="outline" className="text-xs"><Download className="w-3 h-3 mr-1" /> Download</Button>
+                </a>
+              </div>
+            )}
+            <div className="flex items-center gap-3">
+              <Input type="file" accept=".stl,.obj,.3mf" onChange={handleOverhangUpload} disabled={uploadingOverhang} className="text-white" />
+              {uploadingOverhang && <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />}
+            </div>
           </div>
         </CardContent>
       </Card>
