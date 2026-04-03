@@ -20,8 +20,7 @@ import SystemSettingsSection from "../components/commandcenter/SystemSettingsSec
 import ItemManagementSection from "../components/commandcenter/ItemManagementSection";
 import EmailManagementSection from "../components/commandcenter/EmailManagementSection";
 import ExpManagementSection from "../components/commandcenter/ExpManagementSection";
-import PerfectOrderDashboard from "../components/commandcenter/PerfectOrderDashboard";
-import CalibrationApprovalSection from "../components/commandcenter/CalibrationApprovalSection";
+
 
 
 export default function JC3DCommandCenter() {
@@ -71,8 +70,6 @@ export default function JC3DCommandCenter() {
 
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
-    { value: "perfect_orders", label: "🎯 Perfect Orders" },
-    { value: "calibration", label: "🔧 Calibration Approvals" },
     { value: "items", label: "📋 Item Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
@@ -86,10 +83,6 @@ export default function JC3DCommandCenter() {
     switch (activeSection) {
       case "dashboard":
         return <DashboardSection />;
-      case "perfect_orders":
-        return <PerfectOrderDashboard />;
-      case "calibration":
-        return <CalibrationApprovalSection />;
       case "orders":
         return <OrderRoutingSection />;
       case "payments":

@@ -118,6 +118,46 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
     setRedeeming(null);
   };
 
+  const KIT_CONTENTS = [
+    "5 Small Boxes",
+    "5 Large Boxes",
+    "Packing Tape",
+    "Packing Paper",
+    "Shipping Labels",
+    "EX3D Stickers"
+  ];
+
+  const handleAddKitToCart = async (kitType) => {
+    const isStarter = kitType === 'starter';
+    const kitId = `shipping_kit_${kitType}`;
+    const kitName = isStarter ? 'Starter Shipping Kit' : 'Continual Shipping Kit';
+    const price = isStarter ? 20 : 18;
+    setRedeeming(kitId);
+    try {
+      const currentUser = await base44.auth.me();
+      const existing = await base44.entities.Cart.filter({ user_id: currentUser.id, product_id: kitId });
+      if (existing.length > 0) {
+        await base44.entities.Cart.update(existing[0].id, { quantity: existing[0].quantity + 1, total_price: (existing[0].quantity + 1) * price });
+        toast({ title: "Quantity updated in cart!" });
+      } else {
+        await base44.entities.Cart.create({
+          user_id: currentUser.id,
+          product_id: kitId,
+          product_name: kitName,
+          quantity: 1,
+          unit_price: price,
+          total_price: price,
+          selected_material: 'shipping_kit'
+        });
+        toast({ title: "Added to cart!", description: `${kitName} ($${price}) added. Adjust quantity in your cart.` });
+      }
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (error) {
+      toast({ title: "Failed to add to cart", description: error.message, variant: "destructive" });
+    }
+    setRedeeming(null);
+  };
+
   return (
     <div className="space-y-6">
       {/* Shipping Kits */}
@@ -129,30 +169,52 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Kit Contents */}
+          <div className="mb-4 p-3 bg-gray-50 rounded-lg border">
+            <p className="text-sm font-semibold text-gray-700 mb-2">📦 Every kit includes:</p>
+            <div className="grid grid-cols-2 gap-1">
+              {KIT_CONTENTS.map(item => (
+                <div key={item} className="flex items-center gap-1 text-sm text-gray-600">
+                  <CheckCircle className="w-3 h-3 text-teal-500 flex-shrink-0" />
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="grid md:grid-cols-2 gap-4">
             <Card className="border-teal-300 border-2">
               <CardContent className="p-4">
                 <h3 className="font-bold text-lg mb-1">Starter Shipping Kit</h3>
-                <p className="text-sm text-gray-600 mb-3">Your first kit — includes boxes, packing tape, and packing paper to get you started shipping orders.</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-teal-600">2,000 EXP</Badge>
-                  <span className="text-sm text-gray-500">or $20.00</span>
+                <p className="text-sm text-gray-600 mb-3">Your first kit — everything you need to start shipping orders professionally.</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl font-bold text-teal-700">$20.00</span>
+                  <Badge className="bg-teal-100 text-teal-700">2,000 EXP alt.</Badge>
                 </div>
-                <Button className="w-full bg-teal-600 hover:bg-teal-700" onClick={() => toast({ title: "Coming soon!", description: "Contact support to order your starter kit." })}>
-                  Order Starter Kit
+                <Button
+                  className="w-full bg-teal-600 hover:bg-teal-700"
+                  disabled={redeeming === 'shipping_kit_starter'}
+                  onClick={() => handleAddKitToCart('starter')}
+                >
+                  {redeeming === 'shipping_kit_starter' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShoppingCart className="w-4 h-4 mr-2" />}
+                  Add to Cart
                 </Button>
               </CardContent>
             </Card>
             <Card className="border-blue-300 border-2">
               <CardContent className="p-4">
                 <h3 className="font-bold text-lg mb-1">Continual Shipping Kit</h3>
-                <p className="text-sm text-gray-600 mb-3">Restock kit for active makers — same supplies as the starter at a discounted rate.</p>
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className="bg-blue-600">1,800 EXP</Badge>
-                  <span className="text-sm text-gray-500">or $18.00</span>
+                <p className="text-sm text-gray-600 mb-3">Restock kit for active makers — same supplies at a discounted rate.</p>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="text-2xl font-bold text-blue-700">$18.00</span>
+                  <Badge className="bg-blue-100 text-blue-700">1,800 EXP alt.</Badge>
                 </div>
-                <Button className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => toast({ title: "Coming soon!", description: "Contact support to order your continual kit." })}>
-                  Order Continual Kit
+                <Button
+                  className="w-full bg-blue-600 hover:bg-blue-700"
+                  disabled={redeeming === 'shipping_kit_continual'}
+                  onClick={() => handleAddKitToCart('continual')}
+                >
+                  {redeeming === 'shipping_kit_continual' ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <ShoppingCart className="w-4 h-4 mr-2" />}
+                  Add to Cart
                 </Button>
               </CardContent>
             </Card>

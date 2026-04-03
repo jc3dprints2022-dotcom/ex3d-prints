@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Package, DollarSign, TrendingUp, Eye, ShoppingCart, Heart } from "lucide-react";
+import PerfectOrderDashboard from "./PerfectOrderDashboard";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -240,6 +241,15 @@ export default function DashboardSection() {
 
   return (
     <div className="space-y-6">
+      <Tabs defaultValue="overview">
+        <TabsList className="bg-slate-900 border-slate-700 mb-4">
+          <TabsTrigger value="overview" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">📊 Overview</TabsTrigger>
+          <TabsTrigger value="perfect_orders" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">🎯 Perfect Orders</TabsTrigger>
+        </TabsList>
+        <TabsContent value="perfect_orders">
+          <PerfectOrderDashboard />
+        </TabsContent>
+        <TabsContent value="overview">
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-slate-900 border-cyan-500/30">
@@ -415,6 +425,8 @@ export default function DashboardSection() {
           </CardContent>
         </Card>
       </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

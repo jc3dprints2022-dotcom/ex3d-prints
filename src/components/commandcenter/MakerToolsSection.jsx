@@ -3,7 +3,8 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2, Trash2, Trophy, TrendingUp, Award, CheckCircle, XCircle, ClipboardList } from "lucide-react";
+import { User, Mail, Phone, Package, Printer, AlertCircle, MapPin, Loader2, Trash2, Trophy, TrendingUp, Award, CheckCircle, XCircle, ClipboardList, FlaskConical } from "lucide-react";
+import CalibrationApprovalSection from "./CalibrationApprovalSection";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -213,7 +214,7 @@ export default function MakerToolsSection() {
   return (
     <div className="space-y-6">
       <Tabs defaultValue="applications">
-        <TabsList className="grid w-full grid-cols-3 bg-slate-900 border-slate-700">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-900 border-slate-700">
           <TabsTrigger value="applications" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
             <ClipboardList className="w-4 h-4 mr-1" />
             Applications {applications.length > 0 && <Badge className="ml-1 bg-red-500 text-white text-xs px-1">{applications.length}</Badge>}
@@ -223,6 +224,10 @@ export default function MakerToolsSection() {
           </TabsTrigger>
           <TabsTrigger value="performance" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
             🏅 Performance
+          </TabsTrigger>
+          <TabsTrigger value="calibration" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            <FlaskConical className="w-4 h-4 mr-1" />
+            Calibrations {/* badge added dynamically */}
           </TabsTrigger>
         </TabsList>
 
@@ -565,6 +570,9 @@ export default function MakerToolsSection() {
               </Card>
             )}
           </div>
+        </TabsContent>
+        <TabsContent value="calibration">
+          <CalibrationApprovalSection />
         </TabsContent>
       </Tabs>
 
