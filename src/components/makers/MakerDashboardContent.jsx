@@ -19,6 +19,7 @@ import BankInfoManager from "../shared/BankInfoManager";
 import MakerExpRedeemTab from "../makers/MakerExpRedeemTab";
 import { createPageUrl } from "@/utils";
 import AnnouncementBanner from "../shared/AnnouncementBanner";
+import CalibrationGate from "../makers/CalibrationGate";
 
 export default function MakerDashboardContent({ user: propUser, onUpdate }) {
   const [user, setUser] = useState(propUser);
@@ -607,6 +608,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
         <TabsContent value="setup">
           <div className="space-y-6">
+            <CalibrationGate user={user}>
             <div className="flex justify-end">
               <Dialog open={showPrinterDialog} onOpenChange={setShowPrinterDialog}>
                 <DialogTrigger asChild>
@@ -624,15 +626,8 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                   </DialogHeader>
                   <AddPrinterForm
                     printer={editingPrinter}
-                    onClose={() => {
-                      setShowPrinterDialog(false);
-                      setEditingPrinter(null);
-                    }}
-                    onSuccess={() => {
-                      setShowPrinterDialog(false);
-                      setEditingPrinter(null);
-                      loadDashboard();
-                    }}
+                    onClose={() => { setShowPrinterDialog(false); setEditingPrinter(null); }}
+                    onSuccess={() => { setShowPrinterDialog(false); setEditingPrinter(null); loadDashboard(); }}
                   />
                 </DialogContent>
               </Dialog>
@@ -641,10 +636,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
             <div className="grid md:grid-cols-2 gap-4">
               {printers.map(printer => (
                 <Card key={printer.id} className="cursor-pointer hover:shadow-lg transition-shadow"
-                  onClick={() => {
-                    setEditingPrinter(printer);
-                    setShowPrinterDialog(true);
-                  }}>
+                  onClick={() => { setEditingPrinter(printer); setShowPrinterDialog(true); }}>
                   <CardHeader>
                     <CardTitle className="text-lg">{printer.name || `${printer.brand} ${printer.model}`}</CardTitle>
                   </CardHeader>
@@ -691,6 +683,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
             <div className="mt-8">
               <FilamentManager makerId={user?.maker_id} />
             </div>
+            </CalibrationGate>
           </div>
         </TabsContent>
 

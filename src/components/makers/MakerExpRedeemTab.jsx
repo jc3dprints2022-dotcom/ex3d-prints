@@ -149,6 +149,30 @@ export default function MakerExpRedeemTab({ user, onUpdate }) {
           total_price: price,
           selected_material: 'shipping_kit'
         });
+
+        // Create ShippingKitOrder record so admin can see & fulfill it
+        await base44.entities.ShippingKitOrder.create({
+          user_id: currentUser.id,
+          subscription_plan: kitType,
+          cost: price,
+          status: 'pending',
+          shipping_address: currentUser.address || {}
+        });
+
+        // Notify admin via email
+        try {
+          const addressStr = currentUser.address
+            ? `${currentUser.address.street}, ${currentUser.address.city}, ${currentUser.address.state} ${currentUser.address.zip}`
+            : 'No address on file';
+          await base44.integrations.Core.SendEmail({
+            to: 'jc3dprintsllc@gmail.com',
+            subject: `📦 New Shipping Kit Order — ${kitName}`,
+            body: `A maker has ordered a shipping kit and needs it shipped.\n\nMaker: ${currentUser.full_name}\nEmail: ${currentUser.email}\nKit: ${kitName} ($${price})\nShip to: ${addressStr}\n\nLog in to the Command Center → Maker Tools → to manage this order.`
+          });
+        } catch (emailErr) {
+          console.error('Admin kit email failed:', emailErr);
+        }
+
         toast({ title: "Added to cart!", description: `${kitName} ($${price}) added. Adjust quantity in your cart.` });
       }
       window.dispatchEvent(new Event('cartUpdated'));
