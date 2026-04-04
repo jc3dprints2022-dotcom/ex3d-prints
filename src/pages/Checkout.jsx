@@ -144,6 +144,15 @@ export default function Checkout() {
       console.log('=== Enriched Items ===', enrichedItems);
       setCartItems(enrichedItems);
 
+      // Axon: begin_checkout
+      if (typeof window.axon === 'function') {
+        window.axon('track', 'begin_checkout', {
+          currency: 'USD',
+          value: enrichedItems.reduce((sum, i) => sum + (i.total_price || 0), 0),
+          items: enrichedItems.map(i => ({ item_id: i.product_id, item_name: i.product_name, price: i.unit_price, quantity: i.quantity }))
+        });
+      }
+
       // Auto-calculate shipping immediately once we have items + address
       if (prefilledAddr?.street && prefilledAddr?.city && prefilledAddr?.state && prefilledAddr?.zip) {
         const addrForCalc = prefilledAddr;

@@ -216,6 +216,11 @@ export default function Layout({ children, currentPageName }) {
   };
 
   const trackPageView = async () => {
+    // Axon: page_view
+    if (typeof window.axon === 'function') {
+      window.axon('track', 'page_view');
+    }
+
     try {
       let userType = 'not_signed_in';
       let userId = null;

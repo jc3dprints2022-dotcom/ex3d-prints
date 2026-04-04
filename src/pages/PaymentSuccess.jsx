@@ -35,6 +35,16 @@ export default function PaymentSuccess() {
       if (data.success) {
         setSuccess(true);
         setOrderId(data.order_id);
+
+        // Axon: purchase
+        if (typeof window.axon === 'function') {
+          window.axon('track', 'purchase', {
+            currency: 'USD',
+            value: data.total_amount || 0,
+            transaction_id: data.order_id || sessionId
+          });
+        }
+
         toast({ 
           title: "Payment successful!", 
           description: "Your order has been placed." 

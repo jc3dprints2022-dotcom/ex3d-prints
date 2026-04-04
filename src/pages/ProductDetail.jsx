@@ -109,7 +109,16 @@ export default function ProductDetail() {
       
       setProduct(productData);
       setLoading(false);
-      
+
+      // Axon: view_item
+      if (typeof window.axon === 'function') {
+        window.axon('track', 'view_item', {
+          currency: 'USD',
+          value: productData.price,
+          items: [{ item_id: productData.id, item_name: productData.name, price: productData.price, quantity: 1 }]
+        });
+      }
+
       if (productData.materials?.length > 0) setSelectedMaterial(productData.materials[0]);
       if (productData.colors?.length > 0) setSelectedColor(productData.colors[0]);
 
@@ -247,6 +256,16 @@ export default function ProductDetail() {
         await base44.entities.Cart.create(cartData);
         toast({ title: "Added to cart!" });
       }
+
+      // Axon: add_to_cart
+      if (typeof window.axon === 'function') {
+        window.axon('track', 'add_to_cart', {
+          currency: 'USD',
+          value: (dropPrice ?? product.price) * quantity,
+          items: [{ item_id: product.id, item_name: product.name, price: dropPrice ?? product.price, quantity }]
+        });
+      }
+
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
       console.error("Failed to add to cart:", error);
