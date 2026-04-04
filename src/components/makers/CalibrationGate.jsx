@@ -3,7 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Upload, CheckCircle, Clock, XCircle, Download } from "lucide-react";
+import { Loader2, Upload, CheckCircle, Clock, XCircle, Download, AlertTriangle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Dialog,
@@ -74,15 +74,61 @@ export default function CalibrationGate({ user, children }) {
     loadSubmission();
   };
 
-  // Approved — transparent, just render children
+  // Approved — no banner, just render children
   if (!loading && submission?.status === "approved") {
     return <>{children}</>;
   }
+
+  const statusBanner = !loading ? (
+    <div className={`mb-4 p-4 rounded-lg border flex items-start gap-3 ${
+      submission?.status === "pending"
+        ? "bg-yellow-50 border-yellow-300"
+        : submission?.status === "rejected"
+        ? "bg-red-50 border-red-300"
+        : "bg-orange-50 border-orange-300"
+    }`}>
+      <AlertTriangle className={`w-5 h-5 flex-shrink-0 mt-0.5 ${
+        submission?.status === "pending" ? "text-yellow-600" :
+        submission?.status === "rejected" ? "text-red-600" : "text-orange-600"
+      }`} />
+      <div className="flex-1">
+        <p className={`font-semibold text-sm ${
+          submission?.status === "pending" ? "text-yellow-900" :
+          submission?.status === "rejected" ? "text-red-900" : "text-orange-900"
+        }`}>
+          {submission?.status === "pending"
+            ? "⏳ Calibration Under Review — Orders On Hold"
+            : submission?.status === "rejected"
+            ? "❌ Calibration Rejected — Please Resubmit"
+            : "⚠️ Printer Approval Required Before Receiving Orders"}
+        </p>
+        <p className={`text-sm mt-1 ${
+          submission?.status === "pending" ? "text-yellow-800" :
+          submission?.status === "rejected" ? "text-red-800" : "text-orange-800"
+        }`}>
+          {submission?.status === "pending"
+            ? "You will not receive order assignments until your calibration print is approved. We review submissions as quickly as possible — usually within 24 hours. You'll receive an email when it's done."
+            : submission?.status === "rejected"
+            ? `Your submission was rejected. Please review the feedback and resubmit. Reason: ${submission.rejection_reason || "Did not meet quality standards."}`
+            : "You must complete the printer approval process before orders can be assigned to you. Click the button below to get started."}
+        </p>
+        {submission?.status === "pending" && (
+          <p className="text-xs text-yellow-700 mt-1">Submitted on {new Date(submission.created_date).toLocaleDateString()}</p>
+        )}
+      </div>
+      {!submission?.status && (
+        <button onClick={() => setDialogOpen(true)} className="text-xs bg-orange-600 text-white px-3 py-1.5 rounded font-medium hover:bg-orange-700">
+          Get Started
+        </button>
+      )}
+    </div>
+  ) : null;
 
   const isOpen = !loading && submission?.status !== "approved" && dialogOpen;
 
   return (
     <>
+      {statusBanner}
       {/* Still render children underneath (visible but non-functional) */}
       <div className={isOpen ? "pointer-events-none opacity-30 select-none" : ""}>{children}</div>
 
