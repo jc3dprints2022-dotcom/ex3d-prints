@@ -115,12 +115,19 @@ export default function CalibrationGate({ user, children }) {
         {submission?.status === "pending" && (
           <p className="text-xs text-yellow-700 mt-1">Submitted on {new Date(submission.created_date).toLocaleDateString()}</p>
         )}
-      </div>
-      {!submission?.status && (
-        <button onClick={() => setDialogOpen(true)} className="text-xs bg-orange-600 text-white px-3 py-1.5 rounded font-medium hover:bg-orange-700">
-          Get Started
+        <button
+          onClick={() => setDialogOpen(true)}
+          className={`text-xs text-white px-3 py-1.5 rounded font-medium mt-2 ${
+            submission?.status === "pending" ? "bg-yellow-600 hover:bg-yellow-700" :
+            submission?.status === "rejected" ? "bg-red-600 hover:bg-red-700" :
+            "bg-orange-600 hover:bg-orange-700"
+          }`}
+        >
+          {submission?.status === "pending" ? "View / Re-upload" :
+           submission?.status === "rejected" ? "Resubmit" :
+           "Get Started"}
         </button>
-      )}
+      </div>
     </div>
   ) : null;
 
