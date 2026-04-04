@@ -38,10 +38,15 @@ export default function PaymentSuccess() {
 
         // Axon: purchase
         if (typeof window.axon === 'function') {
+          const pendingPurchase = JSON.parse(sessionStorage.getItem('axon_pending_purchase') || '{}');
+          sessionStorage.removeItem('axon_pending_purchase');
           window.axon('track', 'purchase', {
             currency: 'USD',
-            value: data.total_amount || 0,
-            transaction_id: data.order_id || sessionId
+            value: pendingPurchase.value || data.total_amount || 0,
+            shipping: pendingPurchase.shipping || 0,
+            tax: 0,
+            transaction_id: data.order_id || sessionId,
+            items: pendingPurchase.items || []
           });
         }
 
