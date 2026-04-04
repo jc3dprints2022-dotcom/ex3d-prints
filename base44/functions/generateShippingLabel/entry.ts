@@ -1,18 +1,8 @@
 import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 
 const SHIPPO_BASE = 'https://api.goshippo.com';
-const TEST_EMAIL = 'jc3dprints2022@gmail.com';
 
-async function getShippoKey(userEmail, base44) {
-  if (userEmail === TEST_EMAIL) {
-    return Deno.env.get('SHIPPO_TEST_API_KEY');
-  }
-  try {
-    const admins = await base44.asServiceRole.entities.User.filter({ role: 'admin' });
-    if (admins[0]?.shipping_api_mode === 'test') {
-      return Deno.env.get('SHIPPO_TEST_API_KEY');
-    }
-  } catch (_) {}
+function getShippoKey() {
   return Deno.env.get('SHIPPO_API_KEY');
 }
 
@@ -43,7 +33,7 @@ Deno.serve(async (req) => {
     const { orderId } = await req.json();
     if (!orderId) return Response.json({ error: 'orderId is required' }, { status: 400 });
 
-    const apiKey = await getShippoKey(user.email, base44);
+    const apiKey = getShippoKey();
     if (!apiKey) return Response.json({ error: 'Shippo API key not configured' }, { status: 500 });
 
     const order = await base44.asServiceRole.entities.Order.get(orderId);
