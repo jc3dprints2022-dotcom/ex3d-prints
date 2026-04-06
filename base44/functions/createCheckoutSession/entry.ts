@@ -201,7 +201,8 @@ Deno.serve(async (req) => {
                 is_priority: isPriority ? 'true' : 'false',
                 campus_location: campusLocation || '',
                 shipping_address: JSON.stringify(shippingAddress || {}),
-                is_local_delivery: isLocalDelivery ? 'true' : 'false'
+                is_local_delivery: isLocalDelivery ? 'true' : 'false',
+                shipping_fee: shippingFee ? String(shippingFee) : '0'
             },
         };
 
