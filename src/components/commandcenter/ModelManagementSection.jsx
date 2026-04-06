@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Upload, X, Package, Link as LinkIcon, PlusCircle, Pencil, Crop, Home } from "lucide-react";
+import VariantsEditor from "../shared/VariantsEditor";
 import { useToast } from "@/components/ui/use-toast";
 import AdminDesignReviewModal from "../admin/AdminDesignReviewModal";
 import ImageCropEditor from "../shared/ImageCropEditor";
@@ -80,14 +81,14 @@ export default function ModelManagementSection() {
   const initialFormData = {
     name: '',
     description: '',
-    price: '', // Will be auto-calculated
+    price: '',
     print_time_hours: '',
     weight_grams: '',
     dimensions: { length: '', width: '', height: '' },
     category: '',
-    materials: [],
-    colors: [],
-    tags: [], // Preserving tags
+    materials: ['PLA'],
+    colors: [...COLORS],
+    tags: [],
     images: [],
     print_files: [],
     multi_color: false,
@@ -100,6 +101,8 @@ export default function ModelManagementSection() {
     wholesale_price: '',
     lead_time_days: '',
     business_industry: '',
+    variants_enabled: false,
+    variants: [],
   };
 
   const [formData, setFormData] = useState(initialFormData);
@@ -306,8 +309,8 @@ export default function ModelManagementSection() {
       weight_grams: product.weight_grams?.toString() || '',
       dimensions: product.dimensions || { length: '', width: '', height: '' },
       category: product.category,
-      materials: product.materials || [],
-      colors: product.colors || [],
+      materials: product.materials || ['PLA'],
+      colors: product.colors || [...COLORS],
       tags: product.tags || [],
       images: product.images || [],
       print_files: product.print_files || [],
@@ -321,6 +324,8 @@ export default function ModelManagementSection() {
       wholesale_price: product.wholesale_price?.toString() || '',
       lead_time_days: product.lead_time_days?.toString() || '',
       business_industry: product.business_industry || '',
+      variants_enabled: !!(product.variants?.length > 0),
+      variants: product.variants || [],
     });
     setLicenseVerified(true);
     setShowForm(true);
@@ -459,6 +464,7 @@ export default function ModelManagementSection() {
         infill_percentage: formData.infill_percentage ? parseFloat(formData.infill_percentage) : 15,
         use_shown_colors: formData.use_shown_colors,
         shown_color_specs: formData.use_shown_colors ? formData.shown_color_specs : [],
+        variants: formData.variants_enabled ? formData.variants : [],
         rating: editingProduct ? editingProduct.rating : 0, // Preserve rating on update
         review_count: editingProduct ? editingProduct.review_count : 0, // Preserve on update
         view_count: editingProduct ? editingProduct.view_count : 0, // Preserve on update
@@ -926,6 +932,27 @@ export default function ModelManagementSection() {
                   </p>
                 </div>
               )}
+
+              {/* Variants Section */}
+              <div className="p-4 rounded-lg border border-slate-600">
+                <div className="flex items-center space-x-2 mb-3">
+                  <Checkbox
+                    id="variants_enabled"
+                    checked={formData.variants_enabled}
+                    onCheckedChange={(checked) => setFormData(prev => ({...prev, variants_enabled: checked, variants: checked ? prev.variants : []}))}
+                  />
+                  <Label htmlFor="variants_enabled" className="text-white font-medium cursor-pointer">
+                    Add product variants (e.g. Size, Style with custom pricing)
+                  </Label>
+                </div>
+                {formData.variants_enabled && (
+                  <VariantsEditor
+                    variants={formData.variants}
+                    onChange={(v) => setFormData(prev => ({...prev, variants: v}))}
+                    dark={true}
+                  />
+                )}
+              </div>
 
               {formData.use_shown_colors && (
                 <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">

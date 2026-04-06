@@ -1,0 +1,380 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "Brief product description for business listings"
+    },
+    "price": {
+      "type": "number"
+    },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business"
+      ],
+      "default": "consumer",
+      "description": "Which marketplace this product belongs to"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "print",
+        "design"
+      ],
+      "default": "print",
+      "description": "Whether this is a physical print or digital design"
+    },
+    "seller_type": {
+      "type": "string",
+      "enum": [
+        "maker",
+        "designer"
+      ],
+      "description": "Type of seller who created this listing"
+    },
+    "seller_id": {
+      "type": "string",
+      "description": "ID of the maker or designer who owns this listing"
+    },
+    "wholesale_price": {
+      "type": "number",
+      "description": "Wholesale price for business marketplace (required for business listings)"
+    },
+    "suggested_retail_price": {
+      "type": "number",
+      "description": "Optional suggested retail price for business buyers"
+    },
+    "business_industry": {
+      "type": "string",
+      "enum": [
+        "Local Souvenir Shops",
+        "Toy Shop",
+        "Health & Personal Care",
+        "Office & Desk",
+        "Other"
+      ],
+      "description": "Industry/retail type for business products"
+    },
+    "capacity_per_day": {
+      "type": "number",
+      "description": "How many units can be produced per day"
+    },
+    "can_ship": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this product can be shipped"
+    },
+    "local_delivery_eligible": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether local delivery is available"
+    },
+    "local_delivery_radius_miles": {
+      "type": "number",
+      "description": "Delivery radius in miles if local delivery eligible"
+    },
+    "eligible_zip_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Specific ZIP codes eligible for local delivery"
+    },
+    "is_core_business_product": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a core product for business subscriptions"
+    },
+    "stripe_product_id": {
+      "type": "string",
+      "description": "Stripe product ID"
+    },
+    "stripe_price_id": {
+      "type": "string",
+      "description": "Stripe default price ID"
+    },
+    "exp_cost": {
+      "type": "number",
+      "description": "EXP points required to redeem (for EXP-only products)"
+    },
+    "is_exp_product": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is an EXP-only product (not purchasable with money)"
+    },
+    "print_time_hours": {
+      "type": "number",
+      "description": "Estimated print time in hours"
+    },
+    "weight_grams": {
+      "type": "number",
+      "description": "Weight of the print in grams"
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "description": "Dimensions in mm"
+    },
+    "infill_percentage": {
+      "type": "number",
+      "default": 15,
+      "description": "Infill percentage for printing (default 15%)"
+    },
+    "print_file_scale": {
+      "type": "number",
+      "default": 100,
+      "description": "Scale percentage for print files (default 100%)"
+    },
+    "custom_scale": {
+      "type": "number",
+      "description": "Optional custom scale set by designer for this specific listing"
+    },
+    "designer_id": {
+      "type": "string"
+    },
+    "designer_name": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "kit_cards",
+        "rocket_models",
+        "halloween",
+        "easter",
+        "april_fools",
+        "independence_day",
+        "dorm_essentials",
+        "desk",
+        "art",
+        "gadgets",
+        "toys_and_games",
+        "thanksgiving",
+        "christmas",
+        "valentines_day",
+        "home_decor",
+        "office_supplies",
+        "accessories",
+        "collectibles",
+        "misc"
+      ],
+      "default": "misc"
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "colors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "use_shown_colors": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, print with exact colors shown in listing images"
+    },
+    "shown_color_specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file_index": {
+            "type": "number",
+            "description": "Index of the print file (0-based)"
+          },
+          "color": {
+            "type": "string",
+            "description": "Color to use for this file"
+          },
+          "quantity": {
+            "type": "number",
+            "description": "How many copies to print",
+            "default": 1
+          }
+        }
+      },
+      "description": "Specifications for shown colors mode - maps files to colors and quantities"
+    },
+    "variants": {
+      "type": "array",
+      "description": "Custom product variants (e.g. Size, Style)",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Variant type name (e.g. Size)"
+          },
+          "same_price": {
+            "type": "boolean",
+            "default": true,
+            "description": "Whether all options share the same price"
+          },
+          "base_price": {
+            "type": "number",
+            "description": "Price when same_price is true"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "print_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rating": {
+      "type": "number"
+    },
+    "review_count": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "inactive",
+        "rejected",
+        "draft"
+      ],
+      "default": "draft"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "sales_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times this product has been sold"
+    },
+    "rejection_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of times makers rejected orders for this product"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "enum": [
+        "inappropriate",
+        "violates_copyright",
+        "unreasonable_pricing",
+        "violates_terms_of_service",
+        "other"
+      ]
+    },
+    "admin_feedback": {
+      "type": "string"
+    },
+    "version_of": {
+      "type": "string"
+    },
+    "availability_type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital",
+        "both"
+      ],
+      "default": "physical",
+      "description": "Whether design is for physical printing, digital download, or both"
+    },
+    "protection_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium",
+      "description": "How restricted access to the design is"
+    },
+    "multi_color": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this design requires multi-color printing"
+    },
+    "number_of_colors": {
+      "type": "number",
+      "description": "Number of colors required for multi-color prints"
+    },
+    "is_boosted": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this product is currently boosted for visibility"
+    },
+    "boost_start_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the boost started"
+    },
+    "boost_end_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the boost ends"
+    },
+    "boost_duration_weeks": {
+      "type": "number",
+      "description": "Number of weeks the boost was purchased for"
+    },
+    "boost_pending_payment": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this listing has a pending boost payment (after approval)"
+    }
+  },
+  "required": [
+    "name",
+    "description"
+  ]
+}

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Upload, X, Crop, TrendingUp } from "lucide-react";
+import VariantsEditor from "../shared/VariantsEditor";
 import { useToast } from "@/components/ui/use-toast";
 import ImageCropEditor from "../shared/ImageCropEditor";
 
@@ -38,6 +39,8 @@ const COLORS = [
 export default function DesignerProductForm({ designerId, designerName, existingProduct, onSuccess, onCancel }) {
   const [licenseVerified, setLicenseVerified] = useState(!!existingProduct);
   const [saving, setSaving] = useState(false);
+  const [variantsEnabled, setVariantsEnabled] = useState(!!(existingProduct?.variants?.length > 0));
+  const [variants, setVariants] = useState(existingProduct?.variants || []);
   const [cropEditorOpen, setCropEditorOpen] = useState(false);
   const [currentCropImage, setCurrentCropImage] = useState({ url: "", index: -1 });
   const [boostWeeks, setBoostWeeks] = useState(0);
@@ -73,6 +76,8 @@ export default function DesignerProductForm({ designerId, designerName, existing
           images: [],
           print_files: [],
           assembly_instructions: [],
+          materials: ['PLA'],
+          colors: [...COLORS],
         }
   );
 
@@ -263,6 +268,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         category: formData.category,
         materials: ['PLA'],
         colors: ALL_COLORS,
+        variants: variantsEnabled ? variants : [],
         tags: [],
         images: formData.images,
         print_files: formData.print_files,
@@ -509,6 +515,23 @@ export default function DesignerProductForm({ designerId, designerName, existing
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* Variants Section */}
+      <div className="p-4 rounded-lg border border-gray-200">
+        <div className="flex items-center space-x-2 mb-3">
+          <Checkbox
+            id="variants_enabled_designer"
+            checked={variantsEnabled}
+            onCheckedChange={(checked) => { setVariantsEnabled(checked); if (!checked) setVariants([]); }}
+          />
+          <Label htmlFor="variants_enabled_designer" className="font-medium cursor-pointer">
+            Add product variants (e.g. Size, Style with custom pricing)
+          </Label>
+        </div>
+        {variantsEnabled && (
+          <VariantsEditor variants={variants} onChange={setVariants} dark={false} />
         )}
       </div>
 

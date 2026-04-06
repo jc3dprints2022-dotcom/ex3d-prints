@@ -47,6 +47,7 @@ export default function ProductDetail() {
   const [designer, setDesigner] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
   const [allProducts, setAllProducts] = useState([]);
+  const [selectedVariants, setSelectedVariants] = useState({});
 
   const { toast } = useToast();
 
@@ -115,7 +116,15 @@ export default function ProductDetail() {
         window.axon('track', 'view_item', {
           currency: 'USD',
           value: productData.price,
-          items: [{ item_id: productData.id, item_name: productData.name, price: productData.price, quantity: 1 }]
+          items: [{
+            item_id: productData.id,
+            item_name: productData.name,
+            item_category: productData.category || '',
+            item_variant: productData.variants?.length > 0 ? productData.variants[0].type : '',
+            image_url: productData.images?.[0] || '',
+            price: productData.price,
+            quantity: 1
+          }]
         });
       }
 
@@ -259,10 +268,19 @@ export default function ProductDetail() {
 
       // Axon: add_to_cart
       if (typeof window.axon === 'function') {
+        const variantLabel = Object.entries(selectedVariants).map(([type, opt]) => `${type}:${opt.name}`).join(', ');
         window.axon('track', 'add_to_cart', {
           currency: 'USD',
           value: (dropPrice ?? product.price) * quantity,
-          items: [{ item_id: product.id, item_name: product.name, price: dropPrice ?? product.price, quantity }]
+          items: [{
+            item_id: product.id,
+            item_name: product.name,
+            item_category: product.category || '',
+            item_variant: variantLabel,
+            image_url: product.images?.[0] || '',
+            price: dropPrice ?? product.price,
+            quantity
+          }]
         });
       }
 
@@ -354,6 +372,20 @@ export default function ProductDetail() {
   }
 
   const showMaterialSelector = product.materials && product.materials.length > 1;
+
+  const getEffectivePrice = () => {
+    // If a variant option with a price is selected, use it
+    const variantPrices = Object.values(selectedVariants).filter(opt => opt.price !== '' && opt.price !== undefined && !isNaN(parseFloat(opt.price)));
+    if (variantPrices.length > 0) return parseFloat(variantPrices[0].price);
+    return dropPrice !== null ? dropPrice : product.price;
+  };
+  const effectivePrice = getEffectivePrice();
+
+  const hasVariants = product.variants && product.variants.length > 0;
+
+  const handleVariantChange = (variantType, optionName, optionPrice) => {
+    setSelectedVariants(prev => ({ ...prev, [variantType]: { name: optionName, price: optionPrice } }));
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-safe-bottom">
@@ -524,27 +556,33 @@ export default function ProductDetail() {
             <div className="md:hidden">
               <Card className="mb-6">
                 <CardContent className="p-4 space-y-4">
-                  {showMaterialSelector && (
-                    <div>
-                      <Label htmlFor="material-mobile">Material *</Label>
-                      <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
-                        <SelectTrigger id="material-mobile">
-                          <SelectValue placeholder="Select material" />
+                  {hasVariants && product.variants.map((variant, vi) => (
+                    <div key={vi}>
+                      <Label htmlFor={`variant-mobile-${vi}`}>{variant.type} *</Label>
+                      <Select
+                        value={selectedVariants[variant.type]?.name || ''}
+                        onValueChange={(val) => {
+                          const opt = variant.options.find(o => o.name === val);
+                          handleVariantChange(variant.type, val, variant.same_price ? variant.base_price : opt?.price);
+                        }}
+                      >
+                        <SelectTrigger id={`variant-mobile-${vi}`}>
+                          <SelectValue placeholder={`Select ${variant.type}`} />
                         </SelectTrigger>
                         <SelectContent>
-                          {product.materials.map((material) => (
-                            <SelectItem key={material} value={material}>
-                              {material}
+                          {variant.options.map((opt) => (
+                            <SelectItem key={opt.name} value={opt.name}>
+                              {opt.name}{!variant.same_price && opt.price ? ` — $${parseFloat(opt.price).toFixed(2)}` : ''}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
                     </div>
-                  )}
+                  ))}
 
-                  {!product.multi_color && (
+                  {showMaterialSelector && (
                     <div>
-                      <Label htmlFor="color-mobile">Color *</Label>
+                      <Label htmlFor="material-mobile">Material *</Label>
                       <Select value={selectedColor} onValueChange={setSelectedColor}>
                         <SelectTrigger id="color-mobile">
                           <SelectValue placeholder="Select color" />
@@ -608,7 +646,7 @@ export default function ProductDetail() {
 
                     <Button onClick={handleAddToCart} size="lg" className="w-full mb-2">
                       <ShoppingCart className="w-5 h-5 mr-2" />
-                      Add to Cart - ${((dropPrice ?? product.price) * quantity).toFixed(2)}
+                      Add to Cart - ${(effectivePrice * quantity).toFixed(2)}
                     </Button>
 
                     <Button
@@ -764,27 +802,33 @@ export default function ProductDetail() {
             {/* Add to Cart Card */}
             <Card className="mb-6">
               <CardContent className="p-6 space-y-4">
-                {showMaterialSelector && (
-                  <div>
-                    <Label htmlFor="material">Material *</Label>
-                    <Select value={selectedMaterial} onValueChange={setSelectedMaterial}>
-                      <SelectTrigger id="material">
-                        <SelectValue placeholder="Select material" />
+                {hasVariants && product.variants.map((variant, vi) => (
+                  <div key={vi}>
+                    <Label htmlFor={`variant-desktop-${vi}`}>{variant.type} *</Label>
+                    <Select
+                      value={selectedVariants[variant.type]?.name || ''}
+                      onValueChange={(val) => {
+                        const opt = variant.options.find(o => o.name === val);
+                        handleVariantChange(variant.type, val, variant.same_price ? variant.base_price : opt?.price);
+                      }}
+                    >
+                      <SelectTrigger id={`variant-desktop-${vi}`}>
+                        <SelectValue placeholder={`Select ${variant.type}`} />
                       </SelectTrigger>
                       <SelectContent>
-                        {product.materials.map((material) => (
-                          <SelectItem key={material} value={material}>
-                            {material}
+                        {variant.options.map((opt) => (
+                          <SelectItem key={opt.name} value={opt.name}>
+                            {opt.name}{!variant.same_price && opt.price ? ` — $${parseFloat(opt.price).toFixed(2)}` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
                   </div>
-                )}
+                ))}
 
-                {!product.multi_color && (
+                {showMaterialSelector && (
                   <div>
-                    <Label htmlFor="color">Color *</Label>
+                    <Label htmlFor="material">Material *</Label>
                     <Select value={selectedColor} onValueChange={setSelectedColor}>
                       <SelectTrigger id="color">
                         <SelectValue placeholder="Select color" />
@@ -852,7 +896,7 @@ export default function ProductDetail() {
 
                   <Button onClick={handleAddToCart} size="lg" className="w-full">
                     <ShoppingCart className="w-5 h-5 mr-2" />
-                    Add to Cart - ${((dropPrice ?? product.price) * quantity).toFixed(2)}
+                    Add to Cart - ${(effectivePrice * quantity).toFixed(2)}
                   </Button>
                 </div>
               </CardContent>
