@@ -81,11 +81,11 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       // Completed = done printing (shipped/dropped_off/delivered)
       const completedOrders = myOrders.filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status)).length;
 
-      // Earnings = maker_payout_amount if set (actual paid amount * 50%), else fallback
+      // Earnings = maker_payout_amount if set, else (total_amount - shipping_cost) / 2
       const getOrderEarnings = (o) => {
         if (o.maker_payout_amount != null) return o.maker_payout_amount;
-        const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
-        return itemsTotal * 0.5;
+        const listingTotal = (o.total_amount || 0) - (o.shipping_cost || 0);
+        return listingTotal * 0.5;
       };
       const calcEarnings = (orderList) => orderList
         .filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status))
@@ -479,7 +479,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                             <p className="text-xl font-bold text-green-600">
                              ${(order.maker_payout_amount != null
                                ? order.maker_payout_amount
-                               : (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0) * 0.5
+                               : ((order.total_amount || 0) - (order.shipping_cost || 0)) * 0.5
                              ).toFixed(2)}
                             </p>
                             <p className="text-xs text-gray-400">50% of listing cost</p>
@@ -538,7 +538,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
-                          <p className="font-semibold">Listing Total: ${((order.items || []).reduce((s, item) => s + (item.total_price || 0), 0)).toFixed(2)}</p>
+                          <p className="font-semibold">Listing Total: ${((order.total_amount || 0) - (order.shipping_cost || 0)).toFixed(2)}</p>
                           {order.tracking_number && (
                             <p className="text-xs text-blue-600 mt-1 font-mono">📦 {order.tracking_number}</p>
                           )}
