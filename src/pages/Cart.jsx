@@ -386,8 +386,8 @@ export default function Cart() {
                     <span>${calculateTotal().toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between text-gray-600">
-                    <span>Delivery</span>
-                    <span className="text-green-600 font-medium">FREE</span>
+                    <span>Shipping</span>
+                    <span className="text-gray-500 text-sm italic">Calculated at checkout</span>
                   </div>
                   <div className="border-t pt-2 mt-2">
                     <div className="flex justify-between text-lg font-bold">
