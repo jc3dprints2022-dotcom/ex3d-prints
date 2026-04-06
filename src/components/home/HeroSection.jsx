@@ -180,7 +180,7 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Fast, Affordable, <br />
+            Existing and Custom, <br />
             <span className="text-teal-400">3D Printed Items</span>
           </h1>
 

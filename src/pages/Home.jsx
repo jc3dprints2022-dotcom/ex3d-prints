@@ -82,6 +82,14 @@ export default function Home() {
         </div>
       </div>
 
+      <div className="bg-gray-50 py-10">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <p className="text-slate-600 text-lg leading-relaxed">
+            Browse ready to buy items from local makers or submit a custom request. If you need something designed, we do it for free. Every order is matched with a trusted local maker to keep shipping low and quality high. If it is not right, we remake it free.
+          </p>
+        </div>
+      </div>
+
       {/* For Shoppers Section */}
       <section className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
