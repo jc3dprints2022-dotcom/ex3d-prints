@@ -590,7 +590,7 @@ export default function ModelManagementSection() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid md:grid-cols-3 gap-4">
+              <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name" className="text-white">Product Name *</Label>
                   <Input
@@ -631,21 +631,6 @@ export default function ModelManagementSection() {
                         ))}
                     </SelectContent>
                     </Select>
-                </div>
-                <div>
-                  <Label htmlFor="marketplace_type" className="text-white">Marketplace *</Label>
-                  <Select
-                    value={formData.marketplace_type}
-                    onValueChange={(value) => setFormData({ ...formData, marketplace_type: value })}
-                  >
-                    <SelectTrigger id="marketplace_type" className="text-white bg-transparent">
-                      <SelectValue placeholder="Select marketplace" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-gray-900 text-white">
-                      <SelectItem value="consumer">Consumer Marketplace</SelectItem>
-                      <SelectItem value="business">Business Marketplace</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
 
@@ -760,42 +745,6 @@ export default function ModelManagementSection() {
                 </div>
               </div>
 
-              {formData.marketplace_type === 'business' && (
-                <div className="grid md:grid-cols-3 gap-4 p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
-                  <div>
-                    <Label htmlFor="wholesale_price" className="text-white">Wholesale Price (per unit) *</Label>
-                    <Input
-                      id="wholesale_price"
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={formData.wholesale_price}
-                      onChange={(e) => setFormData({...formData, wholesale_price: e.target.value})}
-                      className="bg-slate-800 border-purple-500/30 text-white"
-                      placeholder="0.00"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="business_industry" className="text-white">Industry / Retail Type *</Label>
-                    <Select
-                      value={formData.business_industry}
-                      onValueChange={(value) => setFormData({ ...formData, business_industry: value })}
-                    >
-                      <SelectTrigger id="business_industry" className="bg-slate-800 text-white border-purple-500/30">
-                        <SelectValue placeholder="Select industry" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-900 text-white border border-gray-700">
-                        {BUSINESS_INDUSTRIES.map(industry => (
-                          <SelectItem key={industry} value={industry} className="text-white focus:text-white hover:text-white">
-                            {industry}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
 
               <div>
                 <Label className="text-white">Dimensions (mm) *</Label>
@@ -953,6 +902,38 @@ export default function ModelManagementSection() {
                   />
                 )}
               </div>
+
+              <div className="flex items-center space-x-2 p-4 bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-lg border border-purple-500/30">
+                <Checkbox
+                  id="multi_color"
+                  checked={formData.multi_color}
+                  onCheckedChange={(checked) => setFormData(prev => ({...prev, multi_color: checked}))}
+                />
+                <Label htmlFor="multi_color" className="text-white font-medium cursor-pointer">
+                  This design requires multi-color printing
+                </Label>
+              </div>
+
+              {formData.multi_color && (
+                <div className="p-4 bg-purple-900/30 rounded-lg border border-purple-500/30">
+                  <Label htmlFor="number_of_colors" className="text-white">
+                    Number of Colors Required (2-6) *
+                  </Label>
+                  <Input
+                    id="number_of_colors"
+                    type="number"
+                    min="2"
+                    max="6"
+                    value={formData.number_of_colors}
+                    onChange={(e) => setFormData(prev => ({...prev, number_of_colors: e.target.value}))}
+                    className="bg-slate-800 border-purple-500/30 text-white mt-2"
+                    required={formData.multi_color}
+                  />
+                  <p className="text-xs text-purple-300 mt-2">
+                    Customers will need to select exactly this many colors when ordering
+                  </p>
+                </div>
+              )}
 
               {formData.use_shown_colors && (
                 <div className="p-4 bg-blue-900/30 rounded-lg border border-blue-500/30">
