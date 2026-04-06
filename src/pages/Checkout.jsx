@@ -271,7 +271,8 @@ export default function Checkout() {
       if (response.data && response.data.url) {
         console.log('Redirecting to Stripe:', response.data.url);
         // Save cart data for Axon purchase event on success page
-        sessionStorage.setItem('axon_pending_purchase', JSON.stringify({
+        // Use localStorage (not sessionStorage) so it survives the Stripe redirect to a different origin
+        localStorage.setItem('axon_pending_purchase', JSON.stringify({
           items: finalCartItems.map(i => ({ item_id: i.product_id, item_name: i.product_name, price: i.unit_price, quantity: i.quantity })),
           value: calculateSubtotal(),
           shipping: shippingFee,

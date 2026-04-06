@@ -38,8 +38,8 @@ export default function PaymentSuccess() {
 
         // Axon: purchase
         if (typeof window.axon === 'function') {
-          const pendingPurchase = JSON.parse(sessionStorage.getItem('axon_pending_purchase') || '{}');
-          sessionStorage.removeItem('axon_pending_purchase');
+          const pendingPurchase = JSON.parse(localStorage.getItem('axon_pending_purchase') || '{}');
+          localStorage.removeItem('axon_pending_purchase');
           window.axon('track', 'purchase', {
             currency: 'USD',
             value: pendingPurchase.value || data.total_amount || 0,
