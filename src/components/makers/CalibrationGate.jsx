@@ -20,13 +20,22 @@ export default function CalibrationGate({ user, children }) {
   const [submitting, setSubmitting] = useState(false);
   const [images, setImages] = useState([]);
   const [dialogOpen, setDialogOpen] = useState(true);
-  const [calibrationStlUrl] = useState(localStorage.getItem("calibration_stl_url") || "");
-  const [overhangStlUrl] = useState(localStorage.getItem("overhang_stl_url") || "");
+  const [calibrationStlUrl, setCalibrationStlUrl] = useState("");
+  const [overhangStlUrl, setOverhangStlUrl] = useState("");
   const { toast } = useToast();
 
   useEffect(() => {
     loadSubmission();
+    loadStlUrls();
   }, [user?.maker_id]);
+
+  const loadStlUrls = async () => {
+    const resources = await base44.entities.MarketingResource.list();
+    const calibration = resources.find(r => r.title === "calibration_cube_stl");
+    const overhang = resources.find(r => r.title === "overhang_test_stl");
+    if (calibration) setCalibrationStlUrl(calibration.file_url);
+    if (overhang) setOverhangStlUrl(overhang.file_url);
+  };
 
   // Re-open dialog when user switches to this tab
   useEffect(() => {

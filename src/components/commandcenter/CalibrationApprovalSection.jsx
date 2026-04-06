@@ -18,8 +18,10 @@ const STATUS_COLORS = {
 export default function CalibrationApprovalSection() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [calibrationStlUrl, setCalibrationStlUrl] = useState(localStorage.getItem("calibration_stl_url") || "");
-  const [overhangStlUrl, setOverhangStlUrl] = useState(localStorage.getItem("overhang_stl_url") || "");
+  const [calibrationStlUrl, setCalibrationStlUrl] = useState("");
+  const [overhangStlUrl, setOverhangStlUrl] = useState("");
+  const [calibrationResourceId, setCalibrationResourceId] = useState(null);
+  const [overhangResourceId, setOverhangResourceId] = useState(null);
   const [uploadingStl, setUploadingStl] = useState(false);
   const [uploadingOverhang, setUploadingOverhang] = useState(false);
   const [reviewingId, setReviewingId] = useState(null);
@@ -29,7 +31,16 @@ export default function CalibrationApprovalSection() {
 
   useEffect(() => {
     loadSubmissions();
+    loadStlUrls();
   }, []);
+
+  const loadStlUrls = async () => {
+    const resources = await base44.entities.MarketingResource.list();
+    const calibration = resources.find(r => r.title === "calibration_cube_stl");
+    const overhang = resources.find(r => r.title === "overhang_test_stl");
+    if (calibration) { setCalibrationStlUrl(calibration.file_url); setCalibrationResourceId(calibration.id); }
+    if (overhang) { setOverhangStlUrl(overhang.file_url); setOverhangResourceId(overhang.id); }
+  };
 
   const loadSubmissions = async () => {
     setLoading(true);
@@ -43,8 +54,13 @@ export default function CalibrationApprovalSection() {
     if (!file) return;
     setUploadingStl(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    if (calibrationResourceId) {
+      await base44.entities.MarketingResource.update(calibrationResourceId, { file_url, file_name: file.name });
+    } else {
+      const created = await base44.entities.MarketingResource.create({ title: "calibration_cube_stl", file_url, file_name: file.name, target_audience: "makers" });
+      setCalibrationResourceId(created.id);
+    }
     setCalibrationStlUrl(file_url);
-    localStorage.setItem("calibration_stl_url", file_url);
     toast({ title: "Calibration Cube file uploaded!" });
     setUploadingStl(false);
     e.target.value = null;
@@ -55,8 +71,13 @@ export default function CalibrationApprovalSection() {
     if (!file) return;
     setUploadingOverhang(true);
     const { file_url } = await base44.integrations.Core.UploadFile({ file });
+    if (overhangResourceId) {
+      await base44.entities.MarketingResource.update(overhangResourceId, { file_url, file_name: file.name });
+    } else {
+      const created = await base44.entities.MarketingResource.create({ title: "overhang_test_stl", file_url, file_name: file.name, target_audience: "makers" });
+      setOverhangResourceId(created.id);
+    }
     setOverhangStlUrl(file_url);
-    localStorage.setItem("overhang_stl_url", file_url);
     toast({ title: "Overhang Test file uploaded!" });
     setUploadingOverhang(false);
     e.target.value = null;
