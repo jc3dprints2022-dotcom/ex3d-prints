@@ -278,13 +278,16 @@ export default function Layout({ children, currentPageName }) {
 
       const userData = await base44.auth.me().catch(() => null);
       if (!userData) {
-        setUser(null);
-        sessionStorage.removeItem('cached_user');
-        sessionStorage.removeItem('user_cache_time');
-        const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
-        setCartCount(localCart.length);
-        const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
-        setWishlistCount(localWishlist.length);
+        // Don't clear cached user on a single failed fetch — could be a transient error.
+        // Only clear if there was never a cached user.
+        const wasCached = sessionStorage.getItem('cached_user');
+        if (!wasCached) {
+          setUser(null);
+          const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
+          setCartCount(localCart.length);
+          const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
+          setWishlistCount(localWishlist.length);
+        }
         return;
       }
       

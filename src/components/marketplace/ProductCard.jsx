@@ -31,13 +31,31 @@ export default function ProductCard({ product, user: initialUser }) {
   const handleAddToCart = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    // Get user from state or fetch if not available
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch {
+        currentUser = null;
+      }
+    }
+
+    if (!currentUser) {
+      toast({ 
+        title: "Please sign in", 
+        description: "Please sign in to add to cart.",
+        variant: "destructive"
+      });
+      return;
+    }
     
     setAddingToCart(true);
     try {
-      const user = await base44.auth.me();
-      
       const existingCartItems = await base44.entities.Cart.filter({ 
-        user_id: user.id,
+        user_id: currentUser.id,
         product_id: product.id 
       });
       
@@ -51,7 +69,7 @@ export default function ProductCard({ product, user: initialUser }) {
         toast({ title: "Quantity updated in cart!" });
       } else {
         await base44.entities.Cart.create({
-          user_id: user.id,
+          user_id: currentUser.id,
           product_id: product.id,
           quantity: 1,
           selected_material: product.materials?.[0] || 'PLA',
@@ -65,19 +83,11 @@ export default function ProductCard({ product, user: initialUser }) {
 
       window.dispatchEvent(new Event('cartUpdated'));
     } catch (error) {
-      if (error.message.includes('not authenticated')) {
-        toast({ 
-          title: "Please sign in", 
-          description: "Please sign in to add to cart.",
-          variant: "destructive"
-        });
-      } else {
-        toast({ 
-          title: "Something went wrong", 
-          description: "Something went wrong adding this item to your cart. Please try again or refresh the page.",
-          variant: "destructive" 
-        });
-      }
+      toast({ 
+        title: "Something went wrong", 
+        description: "Failed to add to cart. Please try again.",
+        variant: "destructive" 
+      });
     }
     setAddingToCart(false);
   };
