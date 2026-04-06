@@ -68,8 +68,8 @@ export default function Marketplace() {
   });
 
   useEffect(() => {
-    loadUser();
-    loadProducts();
+    // Run in parallel instead of sequentially
+    Promise.all([loadUser(), loadProducts()]);
   }, [searchQuery]);
 
   useEffect(() => {
@@ -128,23 +128,10 @@ export default function Marketplace() {
 
     setLoading(true);
     try {
-      // Force fresh fetch with retry logic
-      let allProducts = [];
-      let retryCount = 0;
-      
-      while (retryCount < 3) {
-        try {
-          allProducts = await base44.entities.Product.list();
-          if (allProducts && allProducts.length > 0) break;
-        } catch (err) {
-          console.warn(`Product fetch attempt ${retryCount + 1} failed:`, err);
-        }
-        retryCount++;
-        if (retryCount < 3) await new Promise(r => setTimeout(r, 800));
-      }
+      const allProducts = await base44.entities.Product.list();
       
       // Only show active products in marketplace
-      const activeProducts = allProducts.filter(p => p.status === 'active');
+      const activeProducts = (allProducts || []).filter(p => p.status === 'active');
       setProducts(activeProducts);
       
       // Calculate which categories have products
@@ -413,7 +400,7 @@ export default function Marketplace() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {displayedProducts.map(product => (
-                    <ProductCard key={product.id} product={product} />
+                    <ProductCard key={product.id} product={product} user={user} />
                   ))}
                 </div>
 

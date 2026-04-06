@@ -8,29 +8,25 @@ import { Star, ShoppingCart, ChevronLeft, ChevronRight, Package, Heart } from "l
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
-export default function ProductCard({ product }) {
+export default function ProductCard({ product, user: initialUser }) {
   const { toast } = useToast();
   const [addingToCart, setAddingToCart] = React.useState(false);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
-  const [isInWishlist, setIsInWishlist] = React.useState(false);
-  const [user, setUser] = React.useState(null);
+  const [user, setUser] = React.useState(initialUser || null);
+  const [isInWishlist, setIsInWishlist] = React.useState(
+    initialUser?.wishlist?.includes(product.id) || false
+  );
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
   React.useEffect(() => {
-    loadUser();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-      if (currentUser.wishlist && currentUser.wishlist.includes(product.id)) {
-        setIsInWishlist(true);
-      }
-    } catch (error) {
-      setUser(null);
+    // Only fetch user if not provided by parent
+    if (!initialUser) {
+      base44.auth.me().then(u => {
+        setUser(u);
+        setIsInWishlist(u?.wishlist?.includes(product.id) || false);
+      }).catch(() => {});
     }
-  };
+  }, [initialUser]);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
