@@ -185,7 +185,7 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Unique 3D Printed Items. Made Near You
+            Local Makers. Better Prices. Guaranteed Results.
           </p>
 
           {/* CTA Buttons */}

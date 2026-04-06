@@ -108,6 +108,12 @@ export default function HowItWorksSection() {
               </Link>
             </Button>
           </div>
+
+          <div className="text-center pb-8">
+            <p className="text-slate-600 max-w-3xl mx-auto text-lg leading-relaxed">
+              Browse ready to buy items from local makers or submit a custom request. If you need something designed, we do it for free. Every order is matched with a trusted local maker to keep shipping low and quality high. If it is not right, we remake it free.
+            </p>
+          </div>
         </div>
       </div>
     </section>

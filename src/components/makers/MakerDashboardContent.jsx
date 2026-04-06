@@ -482,7 +482,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                                : (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0) * 0.5
                              ).toFixed(2)}
                             </p>
-                            <p className="text-xs text-gray-400">50% of amount paid</p>
+                            <p className="text-xs text-gray-400">50% of listing cost</p>
                           </div>
                         )}
                       </div>
@@ -538,7 +538,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
                       <div className="flex justify-between items-center pt-4 border-t">
                         <div>
-                          <p className="font-semibold">Total: ${order.total_amount.toFixed(2)}</p>
+                          <p className="font-semibold">Listing Total: ${((order.items || []).reduce((s, item) => s + (item.total_price || 0), 0)).toFixed(2)}</p>
                           {order.tracking_number && (
                             <p className="text-xs text-blue-600 mt-1 font-mono">📦 {order.tracking_number}</p>
                           )}
