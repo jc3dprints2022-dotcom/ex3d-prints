@@ -87,7 +87,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const checkUserAuth = async () => {
+  const checkUserAuth = async (retryCount = 0) => {
     try {
       // Now check if the user is authenticated
       setIsLoadingAuth(true);
@@ -97,10 +97,18 @@ export const AuthProvider = ({ children }) => {
       setIsLoadingAuth(false);
     } catch (error) {
       console.error('User auth check failed:', error);
+      
+      // Retry up to 2 times with a delay before declaring auth failure
+      // This prevents kicking users out due to transient 401s right after SSO login
+      if ((error.status === 401 || error.status === 403) && retryCount < 2) {
+        await new Promise(resolve => setTimeout(resolve, 1000 * (retryCount + 1)));
+        return checkUserAuth(retryCount + 1);
+      }
+      
       setIsLoadingAuth(false);
       setIsAuthenticated(false);
       
-      // If user auth fails, it might be an expired token
+      // Only set auth_required after all retries are exhausted
       if (error.status === 401 || error.status === 403) {
         setAuthError({
           type: 'auth_required',
