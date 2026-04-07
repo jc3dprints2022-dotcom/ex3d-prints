@@ -31,6 +31,7 @@ export default function Checkout() {
   });
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
+  const [isLocalDelivery, setIsLocalDelivery] = useState(false);
   const [calculatingShipping, setCalculatingShipping] = useState(false);
   const [shippingCost, setShippingCost] = useState(null);
   const { toast } = useToast();
@@ -205,6 +206,7 @@ export default function Checkout() {
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
   const getShippingFee = () => {
+    if (isLocalDelivery) return 0;
     if (shippingCost !== null) return shippingCost;
     return calculateSubtotal() < 35 ? 5.99 : 0;
   };
@@ -221,7 +223,7 @@ export default function Checkout() {
       return;
     }
 
-    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
+    if (!isLocalDelivery && (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip)) {
       toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
       return;
     }
@@ -265,9 +267,9 @@ export default function Checkout() {
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: false,
         campusLocation: "erau_prescott",
-        shippingAddress: shippingAddress,
-        shippingFee: shippingFee,
-        isLocalDelivery: false
+        shippingAddress: isLocalDelivery ? null : shippingAddress,
+        shippingFee: isLocalDelivery ? 0 : shippingFee,
+        isLocalDelivery: isLocalDelivery
       };
       
       console.log('Calling createCheckoutSession with:', checkoutData);
@@ -385,7 +387,35 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {savedAddresses.length > 0 && (
+                {/* Local Delivery Toggle */}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant={!isLocalDelivery ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setIsLocalDelivery(false); }}
+                    className={!isLocalDelivery ? "bg-teal-600 hover:bg-teal-700" : ""}
+                  >
+                    Ship to Address
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={isLocalDelivery ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => { setIsLocalDelivery(true); setShippingCost(null); }}
+                    className={isLocalDelivery ? "bg-orange-500 hover:bg-orange-600" : ""}
+                  >
+                    Local Delivery
+                  </Button>
+                </div>
+
+                {isLocalDelivery && (
+                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <p className="text-sm text-orange-800 font-medium">🏠 Local Delivery Selected</p>
+                    <p className="text-xs text-orange-700 mt-1">No shipping cost — your order will be delivered locally. We'll contact you to arrange drop-off.</p>
+                  </div>
+                )}
+                {!isLocalDelivery && savedAddresses.length > 0 && (
                   <div>
                     <Label className="mb-2">Saved Addresses</Label>
                     <Select 
@@ -425,125 +455,127 @@ export default function Checkout() {
                   </div>
                 )}
 
-                <>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                    <div>
-                      <Label htmlFor="name" className="text-sm">Full Name *</Label>
-                      <Input
-                        id="name"
-                        value={shippingAddress.name}
-                        onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
-                        required
-                        className="text-sm"
-                      />
+                {!isLocalDelivery && (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                      <div>
+                        <Label htmlFor="name" className="text-sm">Full Name *</Label>
+                        <Input
+                          id="name"
+                          value={shippingAddress.name}
+                          onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
+                          required
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="phone" className="text-sm">Phone *</Label>
+                        <Input
+                          id="phone"
+                          value={shippingAddress.phone}
+                          onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
+                          required
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="phone" className="text-sm">Phone *</Label>
-                      <Input
-                        id="phone"
-                        value={shippingAddress.phone}
-                        onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
-                        required
-                        className="text-sm"
-                      />
-                    </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="street" className="text-sm">Street Address *</Label>
-                    <Input
-                      id="street"
-                      value={shippingAddress.street}
-                      onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                      required
-                      className="text-sm"
-                    />
-                  </div>
+                    <div>
+                      <Label htmlFor="street" className="text-sm">Street Address *</Label>
+                      <Input
+                        id="street"
+                        value={shippingAddress.street}
+                        onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
+                        required
+                        className="text-sm"
+                      />
+                    </div>
 
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
-                    <div className="col-span-2 sm:col-span-1">
-                      <Label htmlFor="city" className="text-sm">City *</Label>
-                      <Input
-                        id="city"
-                        value={shippingAddress.city}
-                        onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                        required
-                        className="text-sm"
-                      />
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                      <div className="col-span-2 sm:col-span-1">
+                        <Label htmlFor="city" className="text-sm">City *</Label>
+                        <Input
+                          id="city"
+                          value={shippingAddress.city}
+                          onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
+                          required
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state" className="text-sm">State *</Label>
+                        <Input
+                          id="state"
+                          value={shippingAddress.state}
+                          onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
+                          required
+                          className="text-sm"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="zip" className="text-sm">ZIP *</Label>
+                        <Input
+                          id="zip"
+                          value={shippingAddress.zip}
+                          onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
+                          onBlur={() => {
+                            const addr = {...shippingAddress, zip: shippingAddress.zip};
+                            if (addr.street && addr.city && addr.state && addr.zip) {
+                              calculateShippingCost(addr);
+                            }
+                          }}
+                          required
+                          className="text-sm"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <Label htmlFor="state" className="text-sm">State *</Label>
-                      <Input
-                        id="state"
-                        value={shippingAddress.state}
-                        onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                        required
-                        className="text-sm"
-                      />
+
+                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <p className="text-sm text-blue-700">
+                        <span className="font-medium">Standard Delivery:</span> Est. 3-5 business days
+                      </p>
+                      {calculatingShipping && (
+                        <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Calculating real shipping cost...
+                        </div>
+                      )}
+                      {shippingCost !== null && !calculatingShipping && (
+                        <p className="text-xs text-green-700 font-semibold mt-1">
+                          ✓ Shipping rate calculated: ${shippingCost.toFixed(2)}
+                        </p>
+                      )}
                     </div>
-                    <div>
-                      <Label htmlFor="zip" className="text-sm">ZIP *</Label>
-                      <Input
-                        id="zip"
-                        value={shippingAddress.zip}
-                        onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
-                        onBlur={() => {
-                          const addr = {...shippingAddress, zip: shippingAddress.zip};
-                          if (addr.street && addr.city && addr.state && addr.zip) {
-                            calculateShippingCost(addr);
+
+                    <div className="flex items-center space-x-2 pt-2">
+                      <input
+                        type="checkbox"
+                        id="saveAddress"
+                        onChange={async (e) => {
+                          if (e.target.checked && user) {
+                            try {
+                              const newAddress = {
+                                ...shippingAddress,
+                                id: `addr_${Date.now()}`,
+                                is_default: savedAddresses.length === 0
+                              };
+                              const updatedAddresses = [...savedAddresses, newAddress];
+                              await base44.auth.updateMe({ saved_addresses: updatedAddresses });
+                              setSavedAddresses(updatedAddresses);
+                              toast({ title: "Address saved!" });
+                            } catch (error) {
+                              toast({ title: "Failed to save address", variant: "destructive" });
+                            }
                           }
                         }}
-                        required
-                        className="text-sm"
+                        className="w-4 h-4 text-teal-600 rounded"
                       />
+                      <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
+                        Save this address for future orders
+                      </Label>
                     </div>
-                  </div>
-
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-700">
-                      <span className="font-medium">Standard Delivery:</span> Est. 3-5 business days
-                    </p>
-                    {calculatingShipping && (
-                      <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
-                        <Loader2 className="w-3 h-3 animate-spin" />
-                        Calculating real shipping cost...
-                      </div>
-                    )}
-                    {shippingCost !== null && !calculatingShipping && (
-                      <p className="text-xs text-green-700 font-semibold mt-1">
-                        ✓ Shipping rate calculated: ${shippingCost.toFixed(2)}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="flex items-center space-x-2 pt-2">
-                    <input
-                      type="checkbox"
-                      id="saveAddress"
-                      onChange={async (e) => {
-                        if (e.target.checked && user) {
-                          try {
-                            const newAddress = {
-                              ...shippingAddress,
-                              id: `addr_${Date.now()}`,
-                              is_default: savedAddresses.length === 0
-                            };
-                            const updatedAddresses = [...savedAddresses, newAddress];
-                            await base44.auth.updateMe({ saved_addresses: updatedAddresses });
-                            setSavedAddresses(updatedAddresses);
-                            toast({ title: "Address saved!" });
-                          } catch (error) {
-                            toast({ title: "Failed to save address", variant: "destructive" });
-                          }
-                        }
-                      }}
-                      className="w-4 h-4 text-teal-600 rounded"
-                    />
-                    <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
-                      Save this address for future orders
-                    </Label>
-                  </div>
-                </>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -602,9 +634,9 @@ export default function Checkout() {
                   <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Shipping{calculatingShipping ? ' (calculating...)' : ''}</span>
-                  <span className={calculatingShipping ? 'text-gray-400' : ''}>
-                    {calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
+                  <span>Shipping{!isLocalDelivery && calculatingShipping ? ' (calculating...)' : ''}</span>
+                  <span className={!isLocalDelivery && calculatingShipping ? 'text-gray-400' : 'text-green-600 font-medium'}>
+                    {isLocalDelivery ? 'Free (Local)' : calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
                   </span>
                 </div>
                 {couponCode && (
