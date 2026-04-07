@@ -1,0 +1,205 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Loader2, Package, Download, CheckCircle, MapPin, Mail } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { generateShippingKitLabel } from "@/functions/generateShippingKitLabel";
+
+const STATUS_COLORS = {
+  pending: "bg-yellow-100 text-yellow-800",
+  processing: "bg-blue-100 text-blue-800",
+  shipped: "bg-green-100 text-green-800",
+  delivered: "bg-teal-100 text-teal-800",
+  cancelled: "bg-red-100 text-red-800"
+};
+
+export default function ShippingKitOrdersSection() {
+  const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [generatingLabel, setGeneratingLabel] = useState(null);
+  const [markingShipped, setMarkingShipped] = useState(null);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    setLoading(true);
+    const kitOrders = await base44.entities.ShippingKitOrder.list("-created_date");
+    setOrders(kitOrders);
+
+    // Load user info for each order
+    const uniqueUserIds = [...new Set(kitOrders.map(o => o.user_id).filter(Boolean))];
+    const userMap = {};
+    await Promise.all(uniqueUserIds.map(async (uid) => {
+      const user = await base44.entities.User.get(uid).catch(() => null);
+      if (user) userMap[uid] = user;
+    }));
+    setUsers(userMap);
+    setLoading(false);
+  };
+
+  const handleGenerateLabel = async (order) => {
+    setGeneratingLabel(order.id);
+    const user = users[order.user_id];
+    if (!user?.address?.street) {
+      toast({ title: "No shipping address found for this maker", variant: "destructive" });
+      setGeneratingLabel(null);
+      return;
+    }
+
+    const result = await generateShippingKitLabel({ kitOrderId: order.id });
+    if (result?.data?.label_url) {
+      window.open(result.data.label_url, "_blank");
+      await loadOrders();
+      toast({ title: "Shipping label generated!" });
+    } else {
+      toast({ title: result?.data?.error || "Failed to generate label", variant: "destructive" });
+    }
+    setGeneratingLabel(null);
+  };
+
+  const handleMarkShipped = async (order, trackingNumber) => {
+    setMarkingShipped(order.id);
+    const tracking = trackingNumber || prompt("Enter tracking number (optional):");
+    await base44.entities.ShippingKitOrder.update(order.id, {
+      status: "shipped",
+      tracking_number: tracking || order.tracking_number || ""
+    });
+
+    // Notify the maker
+    const user = users[order.user_id];
+    if (user?.email) {
+      await base44.integrations.Core.SendEmail({
+        to: user.email,
+        subject: "Your EX3D Shipping Kit Has Shipped! 📦",
+        body: `Hi ${user.full_name},\n\nGreat news — your EX3D shipping kit is on its way!${tracking ? `\n\nTracking Number: ${tracking}` : ""}\n\nYou should receive it within a few business days.\n\nThe EX3D Team`
+      }).catch(() => {});
+    }
+
+    toast({ title: "Order marked as shipped!" });
+    loadOrders();
+    setMarkingShipped(null);
+  };
+
+  const pendingCount = orders.filter(o => o.status === "pending" || o.status === "processing").length;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">Shipping Kit Orders ({orders.length})</h2>
+        <Button size="sm" variant="outline" onClick={loadOrders} className="border-slate-600 text-slate-300">
+          Refresh
+        </Button>
+      </div>
+
+      {pendingCount > 0 && (
+        <div className="bg-yellow-900/30 border border-yellow-500/40 rounded-lg p-3 text-yellow-300 text-sm">
+          ⚠️ {pendingCount} order{pendingCount > 1 ? "s" : ""} pending fulfillment
+        </div>
+      )}
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12 text-slate-500">
+          <Package className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+          <p>No shipping kit orders yet</p>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {orders.map(order => {
+            const user = users[order.user_id];
+            return (
+              <Card key={order.id} className="bg-slate-800 border-slate-700">
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="font-semibold text-white">{user?.full_name || "Unknown Maker"}</p>
+                        <Badge className={STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"}>
+                          {order.status}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-slate-400">
+                        <Mail className="w-3 h-3" />
+                        {user?.email || order.user_id}
+                      </div>
+                      <p className="text-xs text-slate-500 mt-1">
+                        Ordered: {new Date(order.created_date).toLocaleDateString()} · Cost: ${(order.cost / 100).toFixed(2)}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      {order.tracking_number && (
+                        <p className="text-xs text-cyan-400 mb-1">Tracking: {order.tracking_number}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Shipping Address */}
+                  {(order.shipping_address?.street || user?.address?.street) && (
+                    <div className="flex items-start gap-2 mb-3 p-2 bg-slate-900 rounded text-sm text-slate-300">
+                      <MapPin className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
+                      <span>
+                        {(() => {
+                          const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
+                          return `${addr?.name || user?.full_name || ""}, ${addr?.street}, ${addr?.city}, ${addr?.state} ${addr?.zip}`;
+                        })()}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Label URL if already generated */}
+                  {order.shipping_label_url && (
+                    <div className="mb-3">
+                      <a href={order.shipping_label_url} target="_blank" rel="noopener noreferrer">
+                        <Button size="sm" variant="outline" className="border-cyan-500 text-cyan-400 hover:bg-cyan-900/30">
+                          <Download className="w-4 h-4 mr-1" /> Download Label
+                        </Button>
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Actions */}
+                  {order.status !== "shipped" && order.status !== "delivered" && order.status !== "cancelled" && (
+                    <div className="flex gap-2 mt-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-slate-600 text-slate-300"
+                        onClick={() => handleGenerateLabel(order)}
+                        disabled={generatingLabel === order.id}
+                      >
+                        {generatingLabel === order.id
+                          ? <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                          : <Download className="w-4 h-4 mr-1" />}
+                        {order.shipping_label_url ? "Re-generate Label" : "Generate Label"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleMarkShipped(order, order.tracking_number)}
+                        disabled={markingShipped === order.id}
+                      >
+                        {markingShipped === order.id
+                          ? <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                          : <CheckCircle className="w-4 h-4 mr-1" />}
+                        Mark Shipped
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}

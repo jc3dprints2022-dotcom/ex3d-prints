@@ -51,7 +51,7 @@ Deno.serve(async (req) => {
 
         // Handle maker subscription events
         if (event.type === 'customer.subscription.created' || event.type === 'customer.subscription.updated') {
-            const subscription = event.data.object as Stripe.Subscription;
+            const subscription = event.data.object;
             console.log('Processing subscription event:', subscription.id);
 
             const userId = subscription.metadata?.user_id;
@@ -67,7 +67,7 @@ Deno.serve(async (req) => {
                         stripe_subscription_id: subscription.id,
                         subscription_started_at: new Date().toISOString()
                     });
-                    console.log(`✅ Activated subscription for user ${userId}: ${planId} (${billingCycle})`);
+                    console.log(`Activated subscription for user ${userId}: ${planId} (${billingCycle})`);
                 } catch (error) {
                     console.error('Failed to update subscription:', error);
                 }
@@ -78,7 +78,7 @@ Deno.serve(async (req) => {
 
         // Handle subscription cancellation
         if (event.type === 'customer.subscription.deleted') {
-            const subscription = event.data.object as Stripe.Subscription;
+            const subscription = event.data.object;
             console.log('Processing subscription cancellation:', subscription.id);
 
             const userId = subscription.metadata?.user_id;
@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
                         subscription_status: 'cancelled',
                         stripe_subscription_id: null
                     });
-                    console.log(`✅ Cancelled subscription for user ${userId}`);
+                    console.log(`Cancelled subscription for user ${userId}`);
                 } catch (error) {
                     console.error('Failed to cancel subscription:', error);
                 }
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
         }
 
         if (event.type === 'checkout.session.completed') {
-            const session = event.data.object as Stripe.Checkout.Session;
+            const session = event.data.object;
             console.log('Processing completed checkout session:', session.id);
 
             // Handle business subscription checkout
@@ -113,23 +113,21 @@ Deno.serve(async (req) => {
                     const subscription = await base44.asServiceRole.entities.BusinessSubscription.get(subscriptionId);
                     
                     if (subscription) {
-                        // Update subscription to active
                         await base44.asServiceRole.entities.BusinessSubscription.update(subscriptionId, {
                             status: 'active',
-                            stripe_subscription_id: session.subscription as string
+                            stripe_subscription_id: session.subscription
                         });
                         
-                        // Create initial production order split across makers
                         await base44.asServiceRole.functions.invoke('createBusinessSubscriptionOrders', {
                             subscriptionId: subscriptionId
                         });
                         
-                        console.log('✅ Business subscription activated and orders created');
+                        console.log('Business subscription activated and orders created');
                     }
                     
                     return Response.json({ success: true });
                 } catch (error) {
-                    console.error('❌ Failed to process business subscription:', error);
+                    console.error('Failed to process business subscription:', error);
                     return Response.json({ error: error.message }, { status: 500 });
                 }
             }
@@ -149,7 +147,6 @@ Deno.serve(async (req) => {
                 }
 
                 try {
-                    // Create redemption record
                     const redemption = await base44.asServiceRole.entities.ExpRedemption.create({
                         user_id: userId,
                         reward_id: rewardId,
@@ -159,7 +156,6 @@ Deno.serve(async (req) => {
                         status: 'pending'
                     });
 
-                    // Update stock if applicable
                     const reward = await base44.asServiceRole.entities.ExpReward.get(rewardId);
                     if (reward && reward.stock_quantity !== undefined) {
                         await base44.asServiceRole.entities.ExpReward.update(rewardId, {
@@ -169,7 +165,6 @@ Deno.serve(async (req) => {
 
                     const user = await base44.asServiceRole.entities.User.get(userId);
 
-                    // Send email to admin
                     const emailBody = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
     <h1 style="color: #14b8a6;">New Filament Reward Order</h1>
@@ -177,18 +172,15 @@ Deno.serve(async (req) => {
     <p><strong>Reward:</strong> ${rewardName}</p>
     <p><strong>Payment Method:</strong> Card Payment (Stripe)</p>
     <p><strong>Amount Paid:</strong> $${(session.amount_total / 100).toFixed(2)}</p>
-    
     <h2 style="color: #111827; margin-top: 30px;">Customer Information</h2>
     <p><strong>Name:</strong> ${user?.full_name || 'Unknown'}</p>
     <p><strong>Email:</strong> ${user?.email || 'Unknown'}</p>
     <p><strong>User ID:</strong> ${userId}</p>
-    
     <h2 style="color: #111827; margin-top: 30px;">Shipping Address</h2>
     <p>${shippingAddress.name || user?.full_name || 'Unknown'}<br>
     ${shippingAddress.street || 'N/A'}<br>
     ${shippingAddress.city || 'N/A'}, ${shippingAddress.state || 'N/A'} ${shippingAddress.zip || 'N/A'}</p>
-</div>
-                    `;
+</div>`;
 
                     await base44.asServiceRole.integrations.Core.SendEmail({
                         from_name: 'EX3D Prints',
@@ -197,11 +189,46 @@ Deno.serve(async (req) => {
                         body: emailBody
                     });
 
-                    console.log('✅ Filament reward order processed and email sent');
+                    console.log('Filament reward order processed and email sent');
                     return Response.json({ success: true });
                 } catch (error) {
-                    console.error('❌ Failed to process filament reward:', error);
+                    console.error('Failed to process filament reward:', error);
                     return Response.json({ error: 'Failed to process filament reward' }, { status: 500 });
+                }
+            }
+
+            // Handle shipping kit payment — fulfilled by admin, not assigned to a maker
+            if (session.metadata?.payment_type === 'shipping_kit') {
+                console.log('Processing shipping kit payment');
+                const userId = session.metadata?.user_id;
+                const kitCost = session.amount_total || 2000;
+
+                if (!userId) {
+                    console.error('Missing user_id in shipping kit metadata');
+                    return Response.json({ error: 'Missing user_id' }, { status: 400 });
+                }
+
+                try {
+                    await base44.asServiceRole.entities.ShippingKitOrder.create({
+                        user_id: userId,
+                        cost: kitCost,
+                        status: 'pending',
+                        kit_contents: ['packing_tape', 'boxes', 'packing_paper']
+                    });
+
+                    const makerUser = await base44.asServiceRole.entities.User.get(userId);
+                    await base44.asServiceRole.integrations.Core.SendEmail({
+                        from_name: 'EX3D Prints',
+                        to: 'jc3dprints2022@gmail.com',
+                        subject: `New Shipping Kit Order - ${makerUser?.full_name || userId}`,
+                        body: `<div style="font-family:Arial,sans-serif;max-width:600px"><h2>New Shipping Kit Order</h2><p><strong>Maker:</strong> ${makerUser?.full_name || 'Unknown'}</p><p><strong>Email:</strong> ${makerUser?.email || 'N/A'}</p><p><strong>Amount Paid:</strong> $${(kitCost / 100).toFixed(2)}</p><p>Please fulfill this order from the Command Center, Maker Management, Shipping Kit Orders tab.</p></div>`
+                    }).catch(() => {});
+
+                    console.log('Shipping kit order created for user', userId);
+                    return Response.json({ success: true });
+                } catch (error) {
+                    console.error('Failed to create shipping kit order:', error);
+                    return Response.json({ error: error.message }, { status: 500 });
                 }
             }
 
@@ -219,7 +246,6 @@ Deno.serve(async (req) => {
                 }
 
                 try {
-                    // Activate the boost
                     const now = new Date();
                     const endDate = new Date();
                     endDate.setDate(now.getDate() + (boostWeeks * 7));
@@ -231,46 +257,27 @@ Deno.serve(async (req) => {
                         boost_duration_weeks: boostWeeks
                     });
 
-                    console.log(`✅ Boost activated for product ${productId} for ${boostWeeks} weeks`);
+                    console.log(`Boost activated for product ${productId} for ${boostWeeks} weeks`);
 
-                    // Get designer info for email
                     const designer = await base44.asServiceRole.entities.User.get(designerUserId);
                     const product = await base44.asServiceRole.entities.Product.get(productId);
                     
                     if (designer && product) {
-                        // Send confirmation email to designer
                         await base44.asServiceRole.integrations.Core.SendEmail({
                             to: designer.email,
                             subject: '🚀 Your Listing Boost is Active!',
-                            body: `Hi ${designer.full_name},
-
-Great news! Your boost payment has been processed and your listing is now featured.
-
-Product: ${product.name}
-Boost Duration: ${boostWeeks} week${boostWeeks > 1 ? 's' : ''}
-Boost Active Until: ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-
-Your listing will now appear at the top of search results and category pages, giving you maximum visibility and increased sales potential.
-
-Track your boosted listing performance in your Designer Dashboard.
-
-Best regards,
-The EX3D Team`
+                            body: `Hi ${designer.full_name},\n\nGreat news! Your boost payment has been processed and your listing is now featured.\n\nProduct: ${product.name}\nBoost Duration: ${boostWeeks} week${boostWeeks > 1 ? 's' : ''}\nBoost Active Until: ${endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}\n\nYour listing will now appear at the top of search results and category pages.\n\nTrack your boosted listing performance in your Designer Dashboard.\n\nBest regards,\nThe EX3D Team`
                         });
-                        
-                        console.log('✅ Boost confirmation email sent to designer');
                     }
 
-                    return Response.json({ 
-                        success: true,
-                        message: 'Boost activated successfully'
-                    });
+                    return Response.json({ success: true, message: 'Boost activated successfully' });
                 } catch (boostError) {
-                    console.error('❌ Failed to activate boost:', boostError);
+                    console.error('Failed to activate boost:', boostError);
                     return Response.json({ error: 'Failed to activate boost' }, { status: 500 });
                 }
             }
 
+            // Regular product order
             const customerId = session.metadata?.customer_id;
             
             if (!customerId) {
@@ -285,7 +292,6 @@ The EX3D Team`
                 return new Response(JSON.stringify({ error: 'Customer not found' }), { status: 404 });
             }
 
-            // Invoke the function to verify payment, create order, etc.
             const { data: verifyResult, error: invokeError } = await base44.asServiceRole.functions.invoke('verifyPaymentAndCreateOrder', {
                 sessionId: session.id,
                 customerId: customerId
@@ -299,25 +305,21 @@ The EX3D Team`
             if (verifyResult?.success && verifyResult.order_id) {
                 console.log('Order created successfully:', verifyResult.order_id);
                 
-                // Calculate and award EXP points (5 EXP per dollar spent on subtotal)
                 const orderSubtotal = session.amount_subtotal ? session.amount_subtotal / 100 : 0; 
                 let expEarned = Math.floor(orderSubtotal * 5);
                 
-                // Check if this is the user's first purchase
                 const allUserOrders = await base44.asServiceRole.entities.Order.filter({ 
                     customer_id: customerId,
                     payment_status: 'paid'
                 });
                 
-                // The 'verifyPaymentAndCreateOrder' function has just created this order.
-                // So if the length is 1, it implies this is the very first order for this customer.
                 const isFirstPurchase = allUserOrders.length === 1; 
                 let firstPurchaseBonus = 0;
                 
                 if (isFirstPurchase) {
                     firstPurchaseBonus = 250;
                     expEarned += firstPurchaseBonus;
-                    console.log('🎉 First purchase detected! Adding 250 EXP bonus');
+                    console.log('First purchase detected! Adding 250 EXP bonus');
                 }
                 
                 if (expEarned > 0) {
@@ -328,9 +330,7 @@ The EX3D Team`
                         exp_points: currentExp + expEarned,
                         total_exp_earned: totalExpEarned
                     });
-                    console.log(`Updated user ${customerId} EXP: +${expEarned}, new total: ${currentExp + expEarned}`);
 
-                    // Log EXP transaction for purchase
                     const purchaseExpAmount = Math.floor(orderSubtotal * 5);
                     await base44.asServiceRole.entities.ExpTransaction.create({
                         user_id: customerId,
@@ -340,19 +340,16 @@ The EX3D Team`
                         source: 'purchase',
                         description: `Earned ${purchaseExpAmount} EXP from order #${verifyResult.order_id.slice(-8)} ($${orderSubtotal.toFixed(2)})`
                     });
-                    console.log(`Created EXP transaction for user ${customerId}: ${purchaseExpAmount} EXP`);
                     
-                    // Log first purchase bonus if applicable
                     if (isFirstPurchase && firstPurchaseBonus > 0) {
                         await base44.asServiceRole.entities.ExpTransaction.create({
                             user_id: customerId,
                             action: 'earned',
                             amount: firstPurchaseBonus,
                             order_id: verifyResult.order_id,
-                            source: 'purchase', // Still linked to purchase, but specifically the bonus
-                            description: `First Purchase Bonus: ${firstPurchaseBonus} EXP! 🎉`
+                            source: 'purchase',
+                            description: `First Purchase Bonus: ${firstPurchaseBonus} EXP!`
                         });
-                        console.log(`✅ First purchase bonus logged: ${firstPurchaseBonus} EXP`);
                     }
                 }
 
@@ -362,15 +359,12 @@ The EX3D Team`
                 const referralCode = session.metadata?.referral_code;
 
                 if (hasReferral && referrerId && referralCode) {
-                    console.log('Processing referral bonus for code:', referralCode);
-                    
                     try {
                         const referrer = await base44.asServiceRole.entities.User.get(referrerId);
                         
                         if (referrer) {
                             const referralBonus = 250;
                             
-                            // Award 250 EXP to referrer
                             await base44.asServiceRole.entities.User.update(referrerId, {
                                 exp_points: (referrer.exp_points || 0) + referralBonus,
                                 referral_count: (referrer.referral_count || 0) + 1,
@@ -385,11 +379,6 @@ The EX3D Team`
                                 description: `Referral bonus for referring ${customer.full_name}`
                             });
                             
-                            console.log(`✅ Awarded ${referralBonus} EXP to referrer ${referrer.full_name}`);
-                            
-                            // Award 250 EXP to new customer (in addition to purchase + first purchase bonus)
-                            // customer.exp_points here still refers to the initial customer object fetched at the start of the webhook,
-                            // before any updates from the current session's purchase EXP.
                             const currentCustomerExp = (customer.exp_points || 0) + expEarned;
                             await base44.asServiceRole.entities.User.update(customerId, {
                                 exp_points: currentCustomerExp + referralBonus,
@@ -405,25 +394,11 @@ The EX3D Team`
                                 description: `Welcome bonus from referral code ${referralCode}`
                             });
                             
-                            console.log(`✅ Awarded ${referralBonus} EXP to new customer ${customer.full_name}`);
-                            
-                            // Send notification emails
                             try {
                                 await base44.asServiceRole.integrations.Core.SendEmail({
                                     to: referrer.email,
                                     subject: '🎉 Your Referral Earned You 250 EXP!',
-                                    body: `Hi ${referrer.full_name},
-
-Great news! ${customer.full_name} just completed their first purchase using your referral code!
-
-You've earned 250 EXP as a thank you for spreading the word.
-
-Keep sharing your referral code to earn more rewards!
-
-Your code: ${referralCode}
-
-Best regards,
-The EX3D Team`
+                                    body: `Hi ${referrer.full_name},\n\nGreat news! ${customer.full_name} just completed their first purchase using your referral code!\n\nYou've earned 250 EXP as a thank you for spreading the word.\n\nKeep sharing your referral code to earn more rewards!\n\nYour code: ${referralCode}\n\nBest regards,\nThe EX3D Team`
                                 });
                                 
                                 const bonusText = isFirstPurchase ? `\nPlus, you earned a ${firstPurchaseBonus} EXP first purchase bonus!\n` : '';
@@ -431,31 +406,15 @@ The EX3D Team`
                                 await base44.asServiceRole.integrations.Core.SendEmail({
                                     to: customer.email,
                                     subject: '🎁 Welcome Bonus: 250 EXP Added!',
-                                    body: `Hi ${customer.full_name},
-
-Welcome to EX3D Prints! 
-
-Thanks for using referral code ${referralCode} - we've added 250 EXP to your account as a welcome bonus!
-
-Plus, you earned ${Math.floor(orderSubtotal * 5)} EXP from your purchase.${bonusText}
-Total EXP earned: ${expEarned + referralBonus} EXP
-
-Start redeeming your points for discounts on your next order!
-
-Best regards,
-The EX3D Team`
+                                    body: `Hi ${customer.full_name},\n\nWelcome to EX3D Prints!\n\nThanks for using referral code ${referralCode} - we've added 250 EXP to your account as a welcome bonus!\n\nPlus, you earned ${Math.floor(orderSubtotal * 5)} EXP from your purchase.${bonusText}\nTotal EXP earned: ${expEarned + referralBonus} EXP\n\nStart redeeming your points for discounts on your next order!\n\nBest regards,\nThe EX3D Team`
                                 });
-                                
-                                console.log('✅ Referral notification emails sent');
                             } catch (emailError) {
-                                console.error('⚠️ Failed to send referral emails:', emailError);
+                                console.error('Failed to send referral emails:', emailError);
                             }
                         }
                     } catch (referralError) {
-                        console.error('❌ Failed to process referral bonus:', referralError);
+                        console.error('Failed to process referral bonus:', referralError);
                     }
-                } else {
-                    console.log('No referral code in this order');
                 }
                 
                 return new Response(JSON.stringify({ 
@@ -480,7 +439,7 @@ The EX3D Team`
         });
 
     } catch (err) {
-        console.error('❌ Webhook processing error:', err.message);
+        console.error('Webhook processing error:', err.message);
         return new Response(JSON.stringify({ error: `Webhook Error: ${err.message}` }), {
             status: 400,
             headers: { 'Content-Type': 'application/json' }
