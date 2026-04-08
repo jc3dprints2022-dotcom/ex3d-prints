@@ -147,25 +147,25 @@ export default function HeroSection() {
             {/*
             {preloadedImages.has(nextImageIndex) && (
             <div
-             className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
-             style={{
-               opacity: isTransitioning ? 1 : 0,
-               zIndex: 20,
-               pointerEvents: isTransitioning ? "auto" : "none",
-             }}
-             onClick={handleImageClick}
+            className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
+            style={{
+              opacity: isTransitioning ? 1 : 0,
+              zIndex: 20,
+              pointerEvents: isTransitioning ? "auto" : "none",
+            }}
+            onClick={handleImageClick}
             >
-             <img
-               src={products[nextImageIndex]?.images?.[0]}
-               alt="Featured product"
-               className="w-full h-full object-cover"
-               style={{
-                 filter: "brightness(0.5)",
-                 transform: "translateZ(0)",
-                 backfaceVisibility: "hidden",
-               }}
-               draggable={false}
-             />
+            <img
+              src={products[nextImageIndex]?.images?.[0]}
+              alt="Featured product"
+              className="w-full h-full object-cover"
+              style={{
+                filter: "brightness(0.5)",
+                transform: "translateZ(0)",
+                backfaceVisibility: "hidden",
+              }}
+              draggable={false}
+            />
             </div>
             )}
             */}
@@ -180,7 +180,7 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">Forgot a Gift?
-<span className="text-teal-400">We've Got You.</span>
+We've Got You.
 
           </h1>
 
