@@ -84,21 +84,3 @@ export function CustomSection() {
     </section>
   );
 }
-
-export function NeedItSoonSection() {
-  const navigate = useNavigate();
-  return (
-    <section className="bg-white py-16">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-8">Need it soon?</h2>
-        <Button
-          size="lg"
-          className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
-          onClick={() => navigateToTop(navigate, createPageUrl("Marketplace"))}
-        >
-          Order Now
-        </Button>
-      </div>
-    </section>
-  );
-}
