@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
@@ -7,7 +7,8 @@ import { base44 } from "@/api/base44Client";
 export default function HeroSection() {
   const [products, setProducts] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [nextImageIndex, setNextImageIndex] = useState(null);
+  const [isFading, setIsFading] = useState(false);
   const [preloadedImages, setPreloadedImages] = useState(new Set());
 
   useEffect(() => {
@@ -26,21 +27,28 @@ export default function HeroSection() {
     }
   }, [products]);
 
+  const transitionTo = (nextIndex) => {
+    if (isFading || nextIndex === currentImageIndex) return;
+    setNextImageIndex(nextIndex);
+    setIsFading(true);
+    setTimeout(() => {
+      setCurrentImageIndex(nextIndex);
+      setNextImageIndex(null);
+      setIsFading(false);
+    }, 800);
+  };
+
   useEffect(() => {
     if (products.length > 1 && preloadedImages.size > 0) {
       const interval = setInterval(() => {
         const nextIndex = (currentImageIndex + 1) % products.length;
         if (preloadedImages.has(nextIndex)) {
-          setIsTransitioning(true);
-          setTimeout(() => {
-            setCurrentImageIndex(nextIndex);
-            setIsTransitioning(false);
-          }, 300);
+          transitionTo(nextIndex);
         }
       }, 4000);
       return () => clearInterval(interval);
     }
-  }, [products, currentImageIndex, preloadedImages]);
+  }, [products, currentImageIndex, preloadedImages, isFading]);
 
   const loadProducts = async () => {
     try {
@@ -79,11 +87,7 @@ export default function HeroSection() {
 
   const handleDotClick = (index) => {
     if (preloadedImages.has(index) && index !== currentImageIndex) {
-      setIsTransitioning(true);
-      setTimeout(() => {
-        setCurrentImageIndex(index);
-        setIsTransitioning(false);
-      }, 800);
+      transitionTo(index);
     }
   };
 
@@ -93,19 +97,32 @@ export default function HeroSection() {
       <div className="absolute inset-0">
         {products.length > 0 && preloadedImages.size > 0 && (
           <>
+            {/* Current image - fades out */}
             <div
-              className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
-              style={{ opacity: isTransitioning ? 0 : 1, zIndex: 10, pointerEvents: isTransitioning ? "none" : "auto" }}
+              className="absolute inset-0 cursor-pointer"
+              style={{ opacity: isFading ? 0 : 1, transition: "opacity 800ms ease-in-out", zIndex: 10, pointerEvents: isFading ? "none" : "auto" }}
               onClick={handleImageClick}
             >
               <img
                 src={products[currentImageIndex]?.images?.[0]}
                 alt="Featured product"
                 className="w-full h-full object-cover"
-                style={{ filter: "brightness(0.6)", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+                style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
                 draggable={false}
               />
             </div>
+            {/* Next image - fades in underneath */}
+            {nextImageIndex !== null && (
+              <div className="absolute inset-0" style={{ zIndex: 9 }}>
+                <img
+                  src={products[nextImageIndex]?.images?.[0]}
+                  alt="Next featured product"
+                  className="w-full h-full object-cover"
+                  style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
+                  draggable={false}
+                />
+              </div>
+            )}
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/40 pointer-events-none" style={{ zIndex: 30 }} />
           </>
         )}
