@@ -102,11 +102,11 @@ export default function HeroSection() {
                 src={products[currentImageIndex]?.images?.[0]}
                 alt="Featured product"
                 className="w-full h-full object-cover"
-                style={{ filter: "brightness(0.4)", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
+                style={{ filter: "brightness(0.6)", transform: "translateZ(0)", backfaceVisibility: "hidden" }}
                 draggable={false}
               />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 pointer-events-none" style={{ zIndex: 30 }} />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/40 pointer-events-none" style={{ zIndex: 30 }} />
           </>
         )}
       </div>
