@@ -146,27 +146,27 @@ export default function HeroSection() {
             {/* Next Image - Only visible during transition and if preloaded */}
             {/*
             {preloadedImages.has(nextImageIndex) && (
-             <div
-               className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
-               style={{
-                 opacity: isTransitioning ? 1 : 0,
-                 zIndex: 20,
-                 pointerEvents: isTransitioning ? "auto" : "none",
-               }}
-               onClick={handleImageClick}
-             >
-               <img
-                 src={products[nextImageIndex]?.images?.[0]}
-                 alt="Featured product"
-                 className="w-full h-full object-cover"
-                 style={{
-                   filter: "brightness(0.5)",
-                   transform: "translateZ(0)",
-                   backfaceVisibility: "hidden",
-                 }}
-                 draggable={false}
-               />
-             </div>
+            <div
+              className="absolute inset-0 cursor-pointer transition-opacity duration-700 ease-in-out"
+              style={{
+                opacity: isTransitioning ? 1 : 0,
+                zIndex: 20,
+                pointerEvents: isTransitioning ? "auto" : "none",
+              }}
+              onClick={handleImageClick}
+            >
+              <img
+                src={products[nextImageIndex]?.images?.[0]}
+                alt="Featured product"
+                className="w-full h-full object-cover"
+                style={{
+                  filter: "brightness(0.5)",
+                  transform: "translateZ(0)",
+                  backfaceVisibility: "hidden",
+                }}
+                draggable={false}
+              />
+            </div>
             )}
             */}
 
@@ -184,8 +184,8 @@ We've Got You.
 
           </h1>
 
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Local Makers. Better Prices. Guaranteed Results.
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">Unique 3D printed gifts delivered in days, not weeks.
+
           </p>
 
           {/* CTA Buttons */}
