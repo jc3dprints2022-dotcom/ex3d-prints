@@ -1,8 +1,13 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Zap, DollarSign, RefreshCw } from "lucide-react";
+
+function navigateToTop(navigate, url) {
+  navigate(url);
+  window.scrollTo(0, 0);
+}
 
 export function HowItWorksHome() {
   const steps = [
@@ -59,6 +64,7 @@ export function WhyUsSection() {
 }
 
 export function CustomSection() {
+  const navigate = useNavigate();
   return (
     <section className="bg-gray-50 py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -68,11 +74,29 @@ export function CustomSection() {
           Tell us what you want. We handle the rest.
         </p>
         <Button
-          asChild
           size="lg"
           className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+          onClick={() => navigateToTop(navigate, createPageUrl("CustomPrintRequest"))}
         >
-          <Link to={createPageUrl("CustomPrintRequest")}>Request a Gift</Link>
+          Request a Gift
+        </Button>
+      </div>
+    </section>
+  );
+}
+
+export function NeedItSoonSection() {
+  const navigate = useNavigate();
+  return (
+    <section className="bg-white py-16">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-2xl md:text-3xl font-bold text-slate-900 mb-8">Need it soon?</h2>
+        <Button
+          size="lg"
+          className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+          onClick={() => navigateToTop(navigate, createPageUrl("Marketplace"))}
+        >
+          Order Now
         </Button>
       </div>
     </section>

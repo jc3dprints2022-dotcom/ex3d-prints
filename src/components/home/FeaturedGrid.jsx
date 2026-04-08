@@ -81,11 +81,14 @@ export default function FeaturedGrid() {
 
         <div className="flex justify-center">
           <Button
-            asChild
             size="lg"
             className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+            onClick={() => {
+              window.location.href = createPageUrl("Marketplace");
+              window.scrollTo(0, 0);
+            }}
           >
-            <Link to={createPageUrl("Marketplace")}>Shop Now</Link>
+            Shop Now
           </Button>
         </div>
       </div>
