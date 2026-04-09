@@ -1,90 +1,79 @@
-import { createClient } from 'npm:@base44/sdk@0.7.1';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.23';
 
 Deno.serve(async (req) => {
-    console.log('=== Checking for stale orders ===');
-    
-    try {
-        const serviceKey = Deno.env.get('BASE44_SERVICE_ROLE_KEY');
-        if (!serviceKey) {
-            throw new Error("Service role key not configured.");
-        }
-        const base44 = createClient({ serviceRoleKey: serviceKey });
+  console.log('=== Checking for expired order offers (12hr) ===');
+  try {
+    const base44 = createClientFromRequest(req);
 
-        const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        console.log('Looking for orders pending since before:', twentyFourHoursAgo.toISOString());
+    const now = new Date();
 
-        // Get all orders with 'pending' status
-        const allOrders = await base44.entities.Order.list();
-        const staleOrders = allOrders.filter(order => {
-            if (order.status !== 'pending') return false;
-            const orderDate = new Date(order.created_date);
-            return orderDate < twentyFourHoursAgo;
-        });
+    // Load all orders that are pending with an active offer
+    const allOrders = await base44.asServiceRole.entities.Order.list();
 
-        console.log(`Found ${staleOrders.length} stale orders`);
+    const expiredOffers = allOrders.filter(order => {
+      if (order.status !== 'pending') return false;
+      if (order.offer_status !== 'offered') return false;
+      if (!order.offer_expires_at) {
+        // Legacy orders without offer_expires_at: use 12hr from created_date
+        return new Date(order.created_date) < new Date(now - 12 * 60 * 60 * 1000);
+      }
+      return new Date(order.offer_expires_at) < now;
+    });
 
-        if (staleOrders.length === 0) {
-            return Response.json({ 
-                success: true, 
-                message: 'No stale orders found',
-                checked_at: new Date().toISOString()
-            });
-        }
-        
-        let reassignments = 0;
-        const errors = [];
+    console.log(`Found ${expiredOffers.length} expired offer(s)`);
 
-        for (const order of staleOrders) {
-            try {
-                console.log(`Processing order ${order.id}, current maker: ${order.maker_id}`);
-                
-                // Call assignment function, excluding current maker
-                const result = await base44.functions.invoke('assignOrderToMaker', {
-                    orderId: order.id,
-                    excludedMakerIds: order.maker_id ? [order.maker_id] : []
-                });
-
-                if (result.data?.success) {
-                    reassignments++;
-                    
-                    // Add note to order
-                    const newNote = `${order.notes || ''}\n[AUTO-REASSIGN ${new Date().toISOString()}] Reassigned from ${order.maker_id || 'unassigned'} to ${result.data.assignedMaker.maker_id} due to 24hr inactivity`.trim();
-                    await base44.entities.Order.update(order.id, { 
-                        notes: newNote,
-                        updated_date: new Date().toISOString()
-                    });
-                    
-                    console.log(`✓ Order ${order.id} reassigned to ${result.data.assignedMaker.maker_id}`);
-                } else {
-                    errors.push(`Order ${order.id}: ${result.data?.error || 'Failed to reassign.'}`);
-                    console.log(`✗ Order ${order.id}: ${result.data?.error || 'Failed to reassign'}`);
-                }
-            } catch (e) {
-                errors.push(`Order ${order.id}: ${e.message}`);
-                console.error(`✗ Order ${order.id} error:`, e.message);
-            }
-        }
-
-        console.log('=== Reassignment complete ===');
-        console.log(`Reassigned: ${reassignments}, Errors: ${errors.length}`);
-
-        return Response.json({
-            success: true,
-            summary: {
-                stale_orders_found: staleOrders.length,
-                successfully_reassigned: reassignments,
-                errors: errors.length
-            },
-            reassigned_count: reassignments,
-            errors: errors,
-            checked_at: new Date().toISOString()
-        });
-
-    } catch (error) {
-        console.error('Critical error:', error);
-        return Response.json({ 
-            success: false, 
-            error: error.message 
-        }, { status: 500 });
+    if (expiredOffers.length === 0) {
+      return Response.json({ success: true, message: 'No expired offers found', checked_at: now.toISOString() });
     }
+
+    let reassigned = 0;
+    const errors = [];
+
+    for (const order of expiredOffers) {
+      try {
+        const expiredMakerId = order.current_offered_maker_id || order.maker_id;
+        const newSkipped = [...new Set([...(order.skipped_maker_ids || []), ...(expiredMakerId ? [expiredMakerId] : [])])];
+
+        console.log(`Order ${order.id} offer expired for maker ${expiredMakerId} — trying next maker`);
+
+        // Mark offer as expired
+        await base44.asServiceRole.entities.Order.update(order.id, {
+          offer_status: 'expired',
+          maker_id: null,
+          current_offered_maker_id: null,
+          skipped_maker_ids: newSkipped,
+          notes: `${order.notes || ''}\n[AUTO-EXPIRE ${now.toISOString()}] Offer to ${expiredMakerId} expired after 12 hrs`.trim(),
+        });
+
+        // Re-offer to next best maker
+        const result = await base44.asServiceRole.functions.invoke('assignOrderToMaker', {
+          orderId: order.id,
+          skippedMakerIds: newSkipped,
+        });
+
+        if (result.data?.success) {
+          reassigned++;
+          console.log(`✓ Order ${order.id} re-offered to ${result.data.offeredTo?.full_name}`);
+        } else {
+          errors.push(`Order ${order.id}: ${result.data?.error || 'No eligible makers'}`);
+          console.log(`✗ Order ${order.id}: ${result.data?.error}`);
+        }
+      } catch (e) {
+        errors.push(`Order ${order.id}: ${e.message}`);
+        console.error(`✗ Order ${order.id}:`, e.message);
+      }
+    }
+
+    return Response.json({
+      success: true,
+      expired_found: expiredOffers.length,
+      re_offered: reassigned,
+      errors,
+      checked_at: now.toISOString(),
+    });
+
+  } catch (error) {
+    console.error('checkAndReassignStaleOrders error:', error);
+    return Response.json({ success: false, error: error.message }, { status: 500 });
+  }
 });
