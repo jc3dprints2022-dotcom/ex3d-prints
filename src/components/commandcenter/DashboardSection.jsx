@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Package, DollarSign, TrendingUp, Eye, ShoppingCart, Heart } from "lucide-react";
+import { Users, Package, DollarSign, TrendingUp, Eye, ShoppingCart, Heart, CreditCard } from "lucide-react";
+import { getStripeSalesOverview } from "@/functions/getStripeSalesOverview";
 import PerfectOrderDashboard from "./PerfectOrderDashboard";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +18,9 @@ export default function DashboardSection() {
   const [viewsTimeRange, setViewsTimeRange] = useState('week');
   const [visitsData, setVisitsData] = useState([]);
   const [visitsTimeRange, setVisitsTimeRange] = useState('week');
+  const [stripeSales, setStripeSales] = useState(null);
+  const [stripeDays, setStripeDays] = useState(30);
+  const [stripeLoading, setStripeLoading] = useState(false);
   const [cartWishlistData, setCartWishlistData] = useState({
     usersWithCarts: 0,
     usersWithWishlists: 0,
@@ -36,6 +40,21 @@ export default function DashboardSection() {
   useEffect(() => {
     loadVisitsData();
   }, [visitsTimeRange]);
+
+  useEffect(() => {
+    loadStripeSales();
+  }, [stripeDays]);
+
+  const loadStripeSales = async () => {
+    setStripeLoading(true);
+    try {
+      const { data } = await getStripeSalesOverview({ days: stripeDays });
+      setStripeSales(data);
+    } catch (error) {
+      console.error('Failed to load Stripe data:', error);
+    }
+    setStripeLoading(false);
+  };
 
   const loadStats = async () => {
     try {
@@ -250,6 +269,65 @@ export default function DashboardSection() {
           <PerfectOrderDashboard />
         </TabsContent>
         <TabsContent value="overview">
+      {/* Stripe Sales Overview */}
+      <Card className="bg-slate-900 border-cyan-500/30">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle className="flex items-center gap-2 text-white">
+              <CreditCard className="w-5 h-5 text-cyan-400" />
+              Stripe Sales Overview
+            </CardTitle>
+            <Tabs value={String(stripeDays)} onValueChange={(v) => setStripeDays(Number(v))}>
+              <TabsList className="bg-slate-800">
+                <TabsTrigger value="7" className="data-[state=active]:bg-cyan-600">7 Days</TabsTrigger>
+                <TabsTrigger value="30" className="data-[state=active]:bg-cyan-600">30 Days</TabsTrigger>
+                <TabsTrigger value="90" className="data-[state=active]:bg-cyan-600">90 Days</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {stripeLoading ? (
+            <p className="text-slate-400 text-sm">Loading Stripe data...</p>
+          ) : stripeSales ? (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-slate-800 rounded-lg p-4">
+                  <p className="text-slate-400 text-sm">Total Revenue</p>
+                  <p className="text-2xl font-bold text-white">${stripeSales.totalRevenue?.toFixed(2)}</p>
+                </div>
+                <div className="bg-slate-800 rounded-lg p-4">
+                  <p className="text-slate-400 text-sm">Transactions</p>
+                  <p className="text-2xl font-bold text-white">{stripeSales.totalTransactions}</p>
+                </div>
+              </div>
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={stripeSales.chartData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                  <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+                  <YAxis stroke="#94a3b8" />
+                  <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #06b6d4' }} formatter={(v) => [`$${v.toFixed(2)}`, 'Revenue']} />
+                  <Line type="monotone" dataKey="revenue" stroke="#06b6d4" strokeWidth={2} dot={false} name="Revenue" />
+                </LineChart>
+              </ResponsiveContainer>
+              <div>
+                <p className="text-sm font-semibold text-cyan-400 mb-2">Recent Transactions</p>
+                <div className="space-y-1 max-h-48 overflow-y-auto">
+                  {stripeSales.recentTransactions?.map((tx) => (
+                    <div key={tx.id} className="flex justify-between items-center p-2 bg-slate-800 rounded text-sm border border-slate-700">
+                      <span className="text-slate-300 truncate max-w-[60%]">{tx.description}</span>
+                      <span className="text-white font-semibold">${tx.amount.toFixed(2)} <span className="text-slate-400 font-normal">{tx.created}</span></span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-slate-400 text-sm">No data available.</p>
+          )}
+        </CardContent>
+      </Card>
+
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="bg-slate-900 border-cyan-500/30">
