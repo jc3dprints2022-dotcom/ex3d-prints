@@ -51,8 +51,8 @@ Deno.serve(async (req) => {
         try {
             await base44.asServiceRole.functions.invoke('sendEmail', {
                 to: application.email,
-                subject: 'Maker Application Approved! - EX3D Prints',
-                body: `Hi ${application.full_name},\n\nCongratulations! Your application to become a maker on EX3D Prints has been approved!\n\nYou can now access your Maker Dashboard to add your printers and start fulfilling orders.\n\nBest regards,\nThe EX3D Team`
+                subject: 'Welcome to the EX3D Maker Network!',
+                body: `Hi ${application.full_name},\n\nGreat news — your application to become a Maker on EX3D Prints has been approved!\n\nYou can now log in and access your Maker Hub here:\nhttps://ex3dprints.com/ConsumerDashboard?tab=maker\n\nOnce you're in, you'll see a setup checklist on your dashboard. Please complete the checklist to finish setting up your account and start receiving orders.\n\nThis includes:\n- Printing and uploading your test files for quality approval\n- Adding your printers and filament\n- Connecting your Stripe account\n\nOnce everything is complete, you'll be fully set up and ready to go.\n\nWelcome to the network — we're excited to have you.\n\nThank you,\nThe EX3D Team`
             });
         } catch(e) {
             console.error("Failed to send approval email, but proceeding:", e.message);
