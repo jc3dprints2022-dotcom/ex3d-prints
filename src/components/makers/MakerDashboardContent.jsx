@@ -59,7 +59,17 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       setUser(currentUser);
 
       const allOrders = await base44.entities.Order.list();
+      // Filter out supply/admin orders — never show on maker dashboard
+      const isProductionOrder = (order) => {
+        const notes = (order.notes || '').toLowerCase();
+        if (notes.includes('[supply]') || notes.includes('shipping kit') || notes.includes('filament supply')) return false;
+        const items = order.items || [];
+        if (items.length === 0) return false;
+        return items.some(i => i.selected_material || (i.print_files && i.print_files.length > 0));
+      };
+
       const myOrders = allOrders.filter(order => {
+        if (!isProductionOrder(order)) return false;
         const isAssignedMaker = order.maker_id === currentUser.maker_id;
         const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && 
                                    ['pending', 'unassigned'].includes(order.status) && 
