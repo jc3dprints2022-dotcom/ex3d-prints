@@ -20,12 +20,14 @@ import MakerExpRedeemTab from "../makers/MakerExpRedeemTab";
 import { createPageUrl } from "@/utils";
 import AnnouncementBanner from "../shared/AnnouncementBanner";
 import CalibrationGate from "../makers/CalibrationGate";
+import MakerOnboarding from "../makers/MakerOnboarding";
 
 export default function MakerDashboardContent({ user: propUser, onUpdate }) {
   const [user, setUser] = useState(propUser);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState([]);
   const [printers, setPrinters] = useState([]);
+  const [filaments, setFilaments] = useState([]);
   const [showPrinterDialog, setShowPrinterDialog] = useState(false);
   const [editingPrinter, setEditingPrinter] = useState(null);
   const [stats, setStats] = useState({
@@ -35,6 +37,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
     monthlyEarnings: 0,
     weeklyHours: 0
   });
+  const [activeTab, setActiveTab] = useState("orders");
   const [editingInfo, setEditingInfo] = useState(false);
   const [infoFormData, setInfoFormData] = useState({
     email: '',
@@ -76,6 +79,11 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
         maker_id: currentUser.maker_id
       });
       setPrinters(allPrinters);
+
+      const allFilaments = await base44.entities.Filament.filter({
+        maker_id: currentUser.maker_id
+      }).catch(() => []);
+      setFilaments(allFilaments);
 
       const activeOrders = myOrders.filter(o => ['pending', 'accepted', 'printing'].includes(o.status)).length;
       // Completed = done printing (shipped/dropped_off/delivered)
@@ -339,9 +347,22 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
     );
   }
 
+  const handleOnboardingNavigate = (tab) => {
+    setActiveTab(tab);
+  };
+
   return (
     <div className="space-y-6">
       <AnnouncementBanner userRole="maker" userId={user?.id} />
+      {user && !user.maker_onboarding_completed && (
+        <MakerOnboarding
+          user={user}
+          printers={printers}
+          filament={filaments}
+          onNavigate={handleOnboardingNavigate}
+          onComplete={loadDashboard}
+        />
+      )}
       
       <div className="flex items-center justify-between">
         <div>
@@ -415,7 +436,7 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
         </Card>
       </div>
 
-      <Tabs defaultValue="orders" className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="orders">
             <Package className="w-4 h-4 mr-2" />
