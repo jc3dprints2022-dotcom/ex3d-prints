@@ -3,521 +3,305 @@ import { base44 } from "@/api/base44Client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { DollarSign, TrendingUp, Package, Clock, Loader2 } from "lucide-react";
+import { DollarSign, TrendingUp, Package, Loader2, AlertTriangle } from "lucide-react";
 import { Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
 import { useToast } from "@/components/ui/use-toast";
 
-function DesignerPayoutsContent({ orders }) {
-  const [designersList, setDesignersList] = useState([]);
+// Exclude supply/admin orders from all financial calculations
+function isProductionOrder(order) {
+  const notes = (order.notes || '').toLowerCase();
+  if (notes.includes('[supply]') || notes.includes('shipping kit') || notes.includes('filament supply')) return false;
+  const items = order.items || [];
+  return items.some(i => i.selected_material || (i.print_files && i.print_files.length > 0));
+}
+
+export default function PaymentsFinancialsSection() {
+  const [allOrders, setAllOrders] = useState([]);
+  const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [revenueRange, setRevenueRange] = useState('30days');
+  const { toast } = useToast();
 
-  useEffect(() => {
-    loadDesignerPayouts();
-  }, [orders]);
+  useEffect(() => { loadData(); }, []);
 
-  const loadDesignerPayouts = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const completedOrders = orders.filter(o =>
-        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-      );
-
-      const designerEarnings = {};
-      
-      for (const order of completedOrders) {
-        for (const item of order.items || []) {
-          if (item.designer_id && item.designer_id !== 'admin') {
-            if (!designerEarnings[item.designer_id]) {
-              designerEarnings[item.designer_id] = 0;
-            }
-            designerEarnings[item.designer_id] += item.total_price * 0.10;
-          }
-        }
-      }
-
-      const allUsers = await base44.entities.User.list();
-      const designersList = [];
-
-      for (const [designerId, earnings] of Object.entries(designerEarnings)) {
-        const designer = allUsers.find(u => u.designer_id === designerId);
-        if (designer) {
-          designersList.push({
-            designer_id: designerId,
-            full_name: designer.full_name,
-            email: designer.email,
-            earnings: earnings
-          });
-        }
-      }
-
-      designersList.sort((a, b) => b.earnings - a.earnings);
-      setDesignersList(designersList);
-    } catch (error) {
-      console.error('Failed to load designer payouts:', error);
+      const [orders, allUsers] = await Promise.all([
+        base44.entities.Order.list(),
+        base44.entities.User.list(),
+      ]);
+      setAllOrders(orders);
+      setUsers(allUsers);
+    } catch (e) {
+      console.error(e);
+      toast({ title: "Failed to load financial data", variant: "destructive" });
     }
     setLoading(false);
   };
 
+  // Only production (3D print) orders
+  const orders = allOrders.filter(isProductionOrder);
+
+  // Paid & completed subsets
+  const paidOrders = orders.filter(o => o.payment_status === 'paid');
+  const completedPaid = orders.filter(o =>
+    ['completed', 'delivered', 'dropped_off', 'shipped', 'done_printing'].includes(o.status) && o.payment_status === 'paid'
+  );
+  const pendingPaid = orders.filter(o => o.payment_status === 'pending');
+  const refundedOrders = orders.filter(o => o.payment_status === 'refunded');
+
+  // Core financial metrics
+  const grossRevenue = paidOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+  const shippingTotal = paidOrders.reduce((s, o) => s + (o.shipping_cost || 0), 0);
+  const listingRevenue = grossRevenue - shippingTotal;
+  const refundedTotal = refundedOrders.reduce((s, o) => s + (o.total_amount || 0), 0);
+  const netRevenue = grossRevenue - refundedTotal;
+
+  // Stripe fees estimate: 2.9% + $0.30 per transaction
+  const estimatedStripeFees = paidOrders.reduce((s, o) => s + (o.total_amount || 0) * 0.029 + 0.30, 0);
+
+  // Maker payouts: 50% of listing cost (excl. shipping), + $4 per priority order
+  const makerPayoutsTotal = completedPaid.reduce((s, o) => {
+    const listing = (o.total_amount || 0) - (o.shipping_cost || 0);
+    const base = listing * 0.50;
+    const priority = o.is_priority ? 4 : 0;
+    return s + base + priority;
+  }, 0);
+
+  // Designer payouts: 10% of item total for attributed items
+  let designerPayoutsTotal = 0;
+  completedPaid.forEach(o => {
+    (o.items || []).forEach(item => {
+      if (item.designer_id && item.designer_id !== 'admin') {
+        designerPayoutsTotal += (item.total_price || 0) * 0.10;
+      }
+    });
+  });
+
+  // Platform net profit: net revenue - stripe fees - maker payouts - designer payouts
+  const platformProfit = netRevenue - estimatedStripeFees - makerPayoutsTotal - designerPayoutsTotal;
+
+  const avgOrderValue = paidOrders.length > 0 ? grossRevenue / paidOrders.length : 0;
+
+  // Per-maker earnings
+  const makerEarnings = {};
+  completedPaid.forEach(o => {
+    if (!o.maker_id) return;
+    if (!makerEarnings[o.maker_id]) makerEarnings[o.maker_id] = { earnings: 0, orders: 0 };
+    const listing = (o.total_amount || 0) - (o.shipping_cost || 0);
+    makerEarnings[o.maker_id].earnings += listing * 0.50 + (o.is_priority ? 4 : 0);
+    makerEarnings[o.maker_id].orders++;
+  });
+  const makersList = Object.entries(makerEarnings).map(([id, data]) => {
+    const u = users.find(u => u.maker_id === id);
+    return { id, name: u?.full_name || `...${id.slice(-6)}`, email: u?.email || '', ...data };
+  }).sort((a, b) => b.earnings - a.earnings);
+
+  // Per-designer earnings
+  const designerEarnings = {};
+  completedPaid.forEach(o => {
+    (o.items || []).forEach(item => {
+      if (!item.designer_id || item.designer_id === 'admin') return;
+      if (!designerEarnings[item.designer_id]) designerEarnings[item.designer_id] = { earnings: 0, sales: 0 };
+      designerEarnings[item.designer_id].earnings += (item.total_price || 0) * 0.10;
+      designerEarnings[item.designer_id].sales += item.quantity || 1;
+    });
+  });
+  const designersList = Object.entries(designerEarnings).map(([id, data]) => {
+    const u = users.find(u => u.designer_id === id);
+    return { id, name: u?.full_name || `...${id.slice(-6)}`, email: u?.email || '', ...data };
+  }).sort((a, b) => b.earnings - a.earnings);
+
+  // Revenue chart data
+  const getTimeStart = (range) => {
+    const d = new Date();
+    const map = { day: 1, week: 7, '30days': 30, '90days': 90 };
+    if (map[range]) d.setDate(d.getDate() - map[range]);
+    else return null; // alltime
+    return d;
+  };
+
+  const buildRevenueChart = () => {
+    const start = getTimeStart(revenueRange);
+    const filtered = start ? paidOrders.filter(o => new Date(o.created_date) >= start) : paidOrders;
+    const byDate = {};
+    filtered.forEach(o => {
+      const d = new Date(o.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (!byDate[d]) byDate[d] = { date: d, gross: 0, orders: 0 };
+      byDate[d].gross += o.total_amount || 0;
+      byDate[d].orders++;
+    });
+    return Object.values(byDate)
+      .sort((a, b) => new Date(a.date + ' 2025') - new Date(b.date + ' 2025'))
+      .map(row => ({ ...row, gross: parseFloat(row.gross.toFixed(2)) }));
+  };
+
+  const chartData = buildRevenueChart();
+
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
+      <div className="flex justify-center items-center min-h-[300px]">
+        <Loader2 className="w-10 h-10 animate-spin text-cyan-500" />
       </div>
     );
   }
 
-  if (designersList.length === 0) {
-    return <p className="text-center text-gray-500 py-8">No designer payouts yet</p>;
-  }
-
-  return (
-    <div className="space-y-3 max-h-96 overflow-y-auto">
-      {designersList.map(designer => (
-        <div key={designer.designer_id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-          <div className="flex-1">
-            <p className="font-semibold">{designer.full_name}</p>
-            <p className="text-sm text-gray-600">{designer.email}</p>
-            <p className="text-xs text-gray-500 mt-1">Designer ID: {designer.designer_id}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-bold text-red-600">${designer.earnings.toFixed(2)}</p>
-            <p className="text-xs text-gray-500">Owed</p>
-          </div>
-        </div>
-      ))}
-    </div>
+  const statCard = (label, value, sub, color = "text-white") => (
+    <Card className="bg-slate-900 border-cyan-500/30">
+      <CardContent className="p-5">
+        <p className="text-sm text-gray-400 mb-1">{label}</p>
+        <p className={`text-2xl font-bold ${color}`}>{value}</p>
+        {sub && <p className="text-xs text-gray-500 mt-1">{sub}</p>}
+      </CardContent>
+    </Card>
   );
-}
 
-export default function PaymentsFinancialsSection() {
-  const [orders, setOrders] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [ordersTimeRange, setOrdersTimeRange] = useState('week');
-  const [profitTimeRange, setProfitTimeRange] = useState('week');
-  const [ordersChartData, setOrdersChartData] = useState([]);
-  const [profitChartData, setProfitChartData] = useState([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
-  const [avgPricePerHour, setAvgPricePerHour] = useState(0); // This state will now hold Avg Price/Order
-  const [platformRevenue, setPlatformRevenue] = useState(0); // New state for Platform Revenue
-  const [makerProfits, setMakerProfits] = useState(0); // New state for Maker Profits
-  const [designerProfits, setDesignerProfits] = useState(0); // New state for Designer Profits
-  const [loading, setLoading] = useState(true); // New loading state
-  const [makersList, setMakersList] = useState([]); // New state for maker payouts
-
-  const { toast } = useToast();
-
-  useEffect(() => {
-    loadFinancialData();
-  }, []);
-
-  useEffect(() => {
-    if (orders.length > 0) {
-      generateOrdersChart();
-      generateProfitChart();
-    }
-  }, [orders, ordersTimeRange, profitTimeRange]);
-
-  const loadFinancialData = async () => {
-    setLoading(true);
-    try {
-      const allOrders = await base44.entities.Order.list();
-      const allProducts = await base44.entities.Product.list();
-      const allUsers = await base44.entities.User.list(); // Fetch all users
-
-      setOrders(allOrders);
-      setProducts(allProducts);
-
-      // Calculate metrics based on completed and paid orders
-      const completedOrders = allOrders.filter(o =>
-        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-      );
-
-      const revenue = completedOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-      setTotalRevenue(revenue);
-
-      // Calculate average price per order (reusing avgPricePerHour state for this)
-      const avgPricePerOrder = completedOrders.length > 0
-        ? revenue / completedOrders.length
-        : 0;
-      setAvgPricePerHour(avgPricePerOrder);
-
-      // Platform revenue (50% + $0.30 per order)
-      const calculatedPlatformRevenue = completedOrders.reduce((sum, o) => {
-        const baseRevenue = ((o.total_amount || 0) * 0.50) + 0.30;
-        // If priority, add 0% of $4 = $0
-        const priorityRevenue = o.is_priority ? 0 : 0;
-        return sum + baseRevenue + priorityRevenue;
-      }, 0);
-      setPlatformRevenue(calculatedPlatformRevenue);
-
-      // Maker profits (50% PLUS ALL of priority fees)
-      const calculatedMakerProfits = completedOrders.reduce((sum, o) => {
-        const baseProfit = ((o.total_amount || 0) * 0.50) - 0.30;
-        // If priority, add 100% of $4 = $4
-        const priorityProfit = o.is_priority ? 4 : 0;
-        return sum + baseProfit + priorityProfit;
-      }, 0);
-      setMakerProfits(calculatedMakerProfits);
-
-      // Designer profits (10% of item totals for non-admin designers)
-      let calculatedDesignerProfits = 0;
-      completedOrders.forEach(order => {
-        order.items?.forEach(item => {
-          if (item.designer_id && item.designer_id !== 'admin') {
-            calculatedDesignerProfits += item.total_price * 0.10;
-          }
-        });
-      });
-
-      // Calculate per-maker earnings
-      const makerEarnings = {};
-      completedOrders.forEach(order => {
-        if (order.maker_id) {
-          if (!makerEarnings[order.maker_id]) {
-            makerEarnings[order.maker_id] = 0;
-          }
-          const baseEarning = ((order.total_amount || 0) * 0.50) - 0.30;
-          const priorityEarning = order.is_priority ? 4 : 0;
-          makerEarnings[order.maker_id] += baseEarning + priorityEarning;
-        }
-      });
-
-      // Get maker details
-      const makersList = [];
-      for (const [makerId, earnings] of Object.entries(makerEarnings)) {
-        const maker = allUsers.find(u => u.maker_id === makerId); // Assuming 'maker_id' is a property on User
-        if (maker) {
-          makersList.push({
-            maker_id: makerId,
-            full_name: maker.full_name,
-            email: maker.email,
-            earnings: earnings
-          });
-        }
-      }
-
-      // Sort by earnings (highest first)
-      makersList.sort((a, b) => b.earnings - a.earnings);
-      setMakersList(makersList);
-
-      // The useEffect hook with [orders, ordersTimeRange, profitTimeRange] dependencies
-      // will trigger generateOrdersChart and generateProfitChart after setOrders(allOrders).
-
-    } catch (error) {
-      console.error("Failed to load financial data:", error);
-      toast({ title: "Failed to load data", variant: "destructive" });
-    }
-    setLoading(false);
-  };
-
-  const getTimeRangeDate = (range) => {
-    const now = new Date();
-    const startDate = new Date();
-
-    switch(range) {
-      case 'day':
-        startDate.setDate(now.getDate() - 1);
-        break;
-      case 'week':
-        startDate.setDate(now.getDate() - 7);
-        break;
-      case '30days':
-        startDate.setDate(now.getDate() - 30);
-        break;
-      case '90days':
-        startDate.setDate(now.getDate() - 90);
-        break;
-      case 'alltime':
-        return null; // No filter for all time
-      default:
-        startDate.setDate(now.getDate() - 7);
-    }
-
-    return startDate;
-  };
-
-  const generateOrdersChart = () => {
-    const startDate = getTimeRangeDate(ordersTimeRange);
-    const now = new Date();
-
-    const filteredOrders = startDate
-      ? orders.filter(o => {
-          const orderDate = new Date(o.created_date);
-          return orderDate >= startDate && orderDate <= now;
-        })
-      : orders;
-
-    // Group orders by date
-    const groupedData = {};
-    filteredOrders.forEach(order => {
-      const date = new Date(order.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      if (!groupedData[date]) {
-        groupedData[date] = 0;
-      }
-      groupedData[date]++;
-    });
-
-    const chartData = Object.entries(groupedData)
-      .map(([date, count]) => ({ date, orders: count }))
-      .sort((a, b) => {
-        const dateA = new Date(a.date + ', 2024');
-        const dateB = new Date(b.date + ', 2024');
-        return dateA - dateB;
-      });
-
-    setOrdersChartData(chartData);
-  };
-
-  const generateProfitChart = () => {
-    const startDate = getTimeRangeDate(profitTimeRange);
-    const now = new Date();
-
-    const filteredOrders = startDate
-      ? orders.filter(o => {
-          const orderDate = new Date(o.created_date);
-          return orderDate >= startDate && orderDate <= now && o.payment_status === 'paid';
-        })
-      : orders.filter(o => o.payment_status === 'paid');
-
-    // Group profit by date
-    const groupedData = {};
-    filteredOrders.forEach(order => {
-      const date = new Date(order.created_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      if (!groupedData[date]) {
-        groupedData[date] = 0;
-      }
-      groupedData[date] += (order.total_amount || 0);
-    });
-
-    const chartData = Object.entries(groupedData)
-      .map(([date, profit]) => ({ date, profit: parseFloat(profit.toFixed(2)) }))
-      .sort((a, b) => {
-        const dateA = new Date(a.date + ', 2024');
-        const dateB = new Date(b.date + ', 2024');
-        return dateA - dateB;
-      });
-
-    setProfitChartData(chartData);
-  };
-
-  const getStatusBadge = (status) => {
-    const colors = {
-      paid: 'bg-green-100 text-green-800',
-      pending: 'bg-yellow-100 text-yellow-800',
-      failed: 'bg-red-100 text-red-800',
-      refunded: 'bg-gray-100 text-gray-800',
-      completed: 'bg-green-100 text-green-800', // Added for visibility
-      delivered: 'bg-green-100 text-green-800', // Added for visibility
-      dropped_off: 'bg-green-100 text-green-800' // Added for visibility
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
+  const statusBadge = (s) => {
+    const map = { paid: 'bg-green-700 text-green-100', pending: 'bg-yellow-700 text-yellow-100', refunded: 'bg-gray-700 text-gray-200', failed: 'bg-red-700 text-red-100' };
+    return <Badge className={map[s] || 'bg-gray-700 text-gray-200'}>{s}</Badge>;
   };
 
   return (
     <div className="space-y-6">
       {/* Revenue Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCard("Gross Revenue", `$${grossRevenue.toFixed(2)}`, `from ${paidOrders.length} paid orders`, "text-green-400")}
+        {statCard("Net Revenue", `$${netRevenue.toFixed(2)}`, `after $${refundedTotal.toFixed(2)} in refunds`, "text-cyan-400")}
+        {statCard("Platform Profit", `$${platformProfit.toFixed(2)}`, "after fees + payouts", platformProfit >= 0 ? "text-emerald-400" : "text-red-400")}
+        {statCard("Avg Order Value", `$${avgOrderValue.toFixed(2)}`, `${paidOrders.length} paid orders`)}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {statCard("Maker Payouts", `$${makerPayoutsTotal.toFixed(2)}`, "50% listing + priority fees", "text-orange-400")}
+        {statCard("Designer Payouts", `$${designerPayoutsTotal.toFixed(2)}`, "10% per attributed sale", "text-blue-400")}
+        {statCard("Est. Stripe Fees", `$${estimatedStripeFees.toFixed(2)}`, "2.9% + $0.30/txn estimate")}
+        {statCard("Refunds Issued", `$${refundedTotal.toFixed(2)}`, `${refundedOrders.length} orders refunded`, "text-red-400")}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        {statCard("Shipping Revenue", `$${shippingTotal.toFixed(2)}`, "from shipping charges")}
+        {statCard("Pending Payment", `$${pendingPaid.reduce((s, o) => s + (o.total_amount || 0), 0).toFixed(2)}`, `${pendingPaid.length} orders pending`)}
+        {statCard("Completed & Paid Orders", completedPaid.length, `of ${orders.length} total production orders`)}
+      </div>
+
+      {/* Revenue Chart */}
+      <Card className="bg-slate-900 border-cyan-500/30">
+        <CardHeader>
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <CardTitle className="text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-cyan-400" /> Revenue Over Time
+            </CardTitle>
+            <Tabs value={revenueRange} onValueChange={setRevenueRange}>
+              <TabsList className="bg-slate-800">
+                <TabsTrigger value="week" className="data-[state=active]:bg-cyan-600">Week</TabsTrigger>
+                <TabsTrigger value="30days" className="data-[state=active]:bg-cyan-600">30d</TabsTrigger>
+                <TabsTrigger value="90days" className="data-[state=active]:bg-cyan-600">90d</TabsTrigger>
+                <TabsTrigger value="alltime" className="data-[state=active]:bg-cyan-600">All</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={280}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+              <XAxis dataKey="date" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+              <YAxis yAxisId="left" stroke="#94a3b8" />
+              <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" />
+              <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #06b6d4' }} />
+              <Legend />
+              <Line yAxisId="left" type="monotone" dataKey="gross" stroke="#10b981" name="Gross Revenue ($)" strokeWidth={2} dot={false} />
+              <Line yAxisId="right" type="monotone" dataKey="orders" stroke="#06b6d4" name="Orders" strokeWidth={2} dot={false} />
+            </LineChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Maker & Designer Payouts */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card className="bg-slate-900 border-orange-500/30">
+          <CardHeader>
+            <CardTitle className="text-orange-400">Maker Payouts</CardTitle>
+            <p className="text-xs text-gray-400">50% of listing cost + $4 per priority order</p>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${totalRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">From all completed paid orders</p>
+            {makersList.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No maker payouts yet.</p>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {makersList.map(m => (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-slate-800 rounded border border-slate-700">
+                    <div>
+                      <p className="font-semibold text-white">{m.name}</p>
+                      <p className="text-xs text-gray-400">{m.email} · {m.orders} orders</p>
+                    </div>
+                    <p className="text-xl font-bold text-orange-400">${m.earnings.toFixed(2)}</p>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-2 border-t border-slate-700">
+                  <span className="text-gray-400 text-sm">Total</span>
+                  <span className="text-orange-400 font-bold">${makerPayoutsTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg Price/Order</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+        <Card className="bg-slate-900 border-blue-500/30">
+          <CardHeader>
+            <CardTitle className="text-blue-400">Designer Payouts</CardTitle>
+            <p className="text-xs text-gray-400">10% of item price for attributed designs</p>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">${avgPricePerHour.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">Per completed order</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Platform Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${platformRevenue.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">50% + $0.30 per completed order</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Maker Profits</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${makerProfits.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">50% (+ priority fees)</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Designer Profits</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">${designerProfits.toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground mt-1">10% per sale of their designs</p>
+            {designersList.length === 0 ? (
+              <p className="text-gray-500 text-center py-8">No designer payouts yet.</p>
+            ) : (
+              <div className="space-y-2 max-h-80 overflow-y-auto">
+                {designersList.map(d => (
+                  <div key={d.id} className="flex items-center justify-between p-3 bg-slate-800 rounded border border-slate-700">
+                    <div>
+                      <p className="font-semibold text-white">{d.name}</p>
+                      <p className="text-xs text-gray-400">{d.email} · {d.sales} units sold</p>
+                    </div>
+                    <p className="text-xl font-bold text-blue-400">${d.earnings.toFixed(2)}</p>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-2 border-t border-slate-700">
+                  <span className="text-gray-400 text-sm">Total</span>
+                  <span className="text-blue-400 font-bold">${designerPayoutsTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Orders Over Time Chart */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Orders Placed Over Time</CardTitle>
-            <Tabs value={ordersTimeRange} onValueChange={setOrdersTimeRange}>
-              <TabsList>
-                <TabsTrigger value="day">Last Day</TabsTrigger>
-                <TabsTrigger value="week">Last Week</TabsTrigger>
-                <TabsTrigger value="30days">30 Days</TabsTrigger>
-                <TabsTrigger value="90days">90 Days</TabsTrigger>
-                <TabsTrigger value="alltime">All Time</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={ordersChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="orders" stroke="#14b8a6" name="Orders" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Profit Over Time Chart */}
-      <Card>
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Profit Over Time</CardTitle>
-            <Tabs value={profitTimeRange} onValueChange={setProfitTimeRange}>
-              <TabsList>
-                <TabsTrigger value="day">Last Day</TabsTrigger>
-                <TabsTrigger value="week">Last Week</TabsTrigger>
-                <TabsTrigger value="30days">30 Days</TabsTrigger>
-                <TabsTrigger value="90days">90 Days</TabsTrigger>
-                <TabsTrigger value="alltime">All Time</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={profitChartData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="profit" stroke="#10b981" name="Profit ($)" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
       {/* Recent Transactions */}
-      <Card>
+      <Card className="bg-slate-900 border-cyan-500/30">
         <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
+          <CardTitle className="text-white">Recent Transactions</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4 max-h-96 overflow-y-auto">
+          <div className="space-y-2 max-h-96 overflow-y-auto">
             {orders
               .sort((a, b) => new Date(b.created_date) - new Date(a.created_date))
-              .slice(0, 20)
+              .slice(0, 25)
               .map(order => (
-                <div key={order.id} className="flex justify-between items-center p-3 border rounded">
+                <div key={order.id} className="flex justify-between items-center p-3 bg-slate-800 rounded border border-slate-700">
                   <div>
-                    <p className="font-semibold">Order #{order.id.slice(-8)}</p>
-                    <p className="text-sm text-gray-600">
-                      {new Date(order.created_date).toLocaleString()}
-                    </p>
+                    <p className="font-semibold text-white">#{order.id.slice(-8)}</p>
+                    <p className="text-xs text-gray-400">{new Date(order.created_date).toLocaleString()}</p>
                   </div>
-                  <div className="text-right">
-                    <p className="font-semibold">${order.total_amount?.toFixed(2)}</p>
-                    <Badge className={getStatusBadge(order.payment_status)}>
-                      {order.payment_status}
-                    </Badge>
+                  <div className="text-right flex flex-col items-end gap-1">
+                    <p className="font-semibold text-white">${(order.total_amount || 0).toFixed(2)}</p>
+                    {statusBadge(order.payment_status)}
                   </div>
                 </div>
               ))}
           </div>
         </CardContent>
       </Card>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Maker Payouts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Maker Payouts</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Total owed to makers for completed orders (50% + all of priority fees)
-            </p>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-              </div>
-            ) : makersList.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">No maker payouts yet</p>
-            ) : (
-              <div className="space-y-3 max-h-96 overflow-y-auto">
-                {makersList.map(maker => (
-                  <div key={maker.maker_id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                    <div className="flex-1">
-                      <p className="font-semibold">{maker.full_name}</p>
-                      <p className="text-sm text-gray-600">{maker.email}</p>
-                      <p className="text-xs text-gray-500 mt-1">Maker ID: {maker.maker_id}</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-green-600">${maker.earnings.toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">Owed</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Designer Payouts */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Designer Payouts</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Total owed to designers for their designs (10% per sale)
-            </p>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <Loader2 className="w-8 h-8 animate-spin mx-auto text-gray-400" />
-              </div>
-            ) : (
-              <DesignerPayoutsContent orders={orders} />
-            )}
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
