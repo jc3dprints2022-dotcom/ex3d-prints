@@ -10,6 +10,7 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import DesignDrop from './pages/DesignDrop';
+import StripeSetupComplete from './pages/StripeSetupComplete';
 
 const { Pages, Layout, mainPage } = pagesConfig;
 const mainPageKey = mainPage ?? Object.keys(Pages)[0];
@@ -62,6 +63,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/DesignDrop" element={<LayoutWrapper currentPageName="DesignDrop"><DesignDrop /></LayoutWrapper>} />
+      <Route path="/StripeSetupComplete" element={<LayoutWrapper currentPageName="StripeSetupComplete"><StripeSetupComplete /></LayoutWrapper>} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

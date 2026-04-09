@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import {
   Loader2, Package, DollarSign, Clock, CheckCircle,
   Printer, Settings, FileText, TrendingUp, AlertCircle,
-  Download, Mail, Plus, Calendar, Star, MapPin
+  Download, Mail, Plus, Calendar, Star, MapPin, ExternalLink
 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import AddPrinterForm from "../makers/AddPrinterForm";
@@ -701,43 +701,33 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
                 </p>
               </CardHeader>
               <CardContent className="space-y-4">
-                {user?.stripe_connect_account_id && user?.stripe_connect_onboarding_complete ? (
+                {user?.stripe_connect_account_id ? (
                   <div className="p-4 bg-green-50 rounded-lg border border-green-200">
                     <div className="flex items-center gap-2 mb-2">
                       <CheckCircle className="w-5 h-5 text-green-600" />
-                      <p className="font-semibold text-green-900">Payment Account Connected</p>
+                      <p className="font-semibold text-green-900">Stripe Account Created</p>
                     </div>
-                    <p className="text-sm text-green-700">
+                    <p className="text-sm text-green-700 mb-3">
                       Your Stripe account is connected. You'll automatically receive payments when orders are completed.
                     </p>
-                    <p className="text-xs text-green-600 mt-2">
-                      Payments are transferred within 2-3 business days after order completion.
-                    </p>
-                  </div>
-                ) : user?.stripe_connect_account_id ? (
-                  <div className="p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <AlertCircle className="w-5 h-5 text-yellow-600" />
-                      <p className="font-semibold text-yellow-900">Onboarding Incomplete</p>
-                    </div>
-                    <p className="text-sm text-yellow-700 mb-3">
-                      Complete your Stripe onboarding to start receiving automatic payments.
-                    </p>
-                    <Button
-                      onClick={async () => {
-                        try {
-                          const { data } = await base44.functions.invoke('createStripeConnectOnboarding');
-                          if (data.onboarding_url) {
-                            window.location.href = data.onboarding_url;
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          try {
+                            const { data } = await base44.functions.invoke('getStripeDashboardLink');
+                            if (data.url) window.open(data.url, '_blank');
+                          } catch (error) {
+                            toast({ title: "Failed to open Stripe dashboard", variant: "destructive" });
                           }
-                        } catch (error) {
-                          toast({ title: "Failed to start onboarding", variant: "destructive" });
-                        }
-                      }}
-                      className="bg-yellow-600 hover:bg-yellow-700"
-                    >
-                      Complete Setup
-                    </Button>
+                        }}
+                        className="border-green-400 text-green-700 hover:bg-green-100"
+                      >
+                        <ExternalLink className="w-4 h-4 mr-1" />
+                        Access Stripe Dashboard
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
