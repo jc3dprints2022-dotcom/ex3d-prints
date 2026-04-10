@@ -31,7 +31,7 @@ export default function Checkout() {
   });
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
-  const [isLocalDelivery, setIsLocalDelivery] = useState(false);
+  const [isLocalDelivery] = useState(false);
   const [calculatingShipping, setCalculatingShipping] = useState(false);
   const [shippingCost, setShippingCost] = useState(null);
   const { toast } = useToast();
@@ -206,7 +206,6 @@ export default function Checkout() {
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
   const getShippingFee = () => {
-    if (isLocalDelivery) return 0;
     if (shippingCost !== null) return shippingCost;
     return calculateSubtotal() < 35 ? 5.99 : 0;
   };
@@ -387,35 +386,13 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Local Delivery Toggle */}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant={!isLocalDelivery ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => { setIsLocalDelivery(false); }}
-                    className={!isLocalDelivery ? "bg-teal-600 hover:bg-teal-700" : ""}
-                  >
-                    Ship to Address
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={isLocalDelivery ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => { setIsLocalDelivery(true); setShippingCost(null); }}
-                    className={isLocalDelivery ? "bg-orange-500 hover:bg-orange-600" : ""}
-                  >
-                    Local Delivery
-                  </Button>
-                </div>
 
-                {isLocalDelivery && (
+                {false && (
                   <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                     <p className="text-sm text-orange-800 font-medium">🏠 Local Delivery Selected</p>
-                    <p className="text-xs text-orange-700 mt-1">No shipping cost — your order will be delivered locally. We'll contact you to arrange drop-off.</p>
-                  </div>
+                    </div>
                 )}
-                {!isLocalDelivery && savedAddresses.length > 0 && (
+                {savedAddresses.length > 0 && (
                   <div>
                     <Label className="mb-2">Saved Addresses</Label>
                     <Select 
@@ -455,7 +432,7 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {!isLocalDelivery && (
+                {(
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                       <div>
@@ -634,9 +611,9 @@ export default function Checkout() {
                   <span>{formatPrice(calculateSubtotal())}</span>
                 </div>
                 <div className="flex justify-between text-gray-600">
-                  <span>Shipping{!isLocalDelivery && calculatingShipping ? ' (calculating...)' : ''}</span>
-                  <span className={!isLocalDelivery && calculatingShipping ? 'text-gray-400' : 'text-green-600 font-medium'}>
-                    {isLocalDelivery ? 'Free (Local)' : calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
+                  <span>Shipping{calculatingShipping ? ' (calculating...)' : ''}</span>
+                  <span className={calculatingShipping ? 'text-gray-400' : 'text-green-600 font-medium'}>
+                    {calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
                   </span>
                 </div>
                 {couponCode && (
