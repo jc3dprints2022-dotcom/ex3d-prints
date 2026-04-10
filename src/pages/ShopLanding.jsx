@@ -23,14 +23,6 @@ const PAGE_CONFIG = {
     { icon: ShieldCheck, text: "Secure Checkout" },
     { icon: CheckCircle, text: "Quality Guaranteed" },
   ],
-  categories: [
-    { label: "Gifts", value: "misc" },
-    { label: "Home Decor", value: "home_decor" },
-    { label: "Desk", value: "desk" },
-    { label: "Toys & Games", value: "toys_and_games" },
-    { label: "Art", value: "art" },
-    { label: "Seasonal", value: "christmas" },
-  ],
   whyUs: [
     {
       icon: Users,
@@ -81,9 +73,20 @@ function track(event, props = {}) {
 }
 
 export default function ShopLanding() {
+  const FEATURED_NAMES = [
+    "saturn v",
+    "starship v2",
+    "heart vase",
+    "print in place solar system",
+    "desk organizer",
+    "flexi dragon",
+    "slider satisfying egg fidget",
+    "interlocking spiral fidget roy collection",
+    "v-22 osprey kit card",
+  ];
+
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeCategory, setActiveCategory] = useState(null);
   const featuredRef = useRef(null);
 
   // Determine headline variant from URL param
@@ -97,17 +100,14 @@ export default function ShopLanding() {
     trackScrollDepth();
   }, []);
 
-  useEffect(() => {
-    loadFeatured();
-  }, [activeCategory]);
-
   const loadFeatured = async () => {
     setLoading(true);
     try {
-      const filter = { status: "active" };
-      if (activeCategory) filter.category = activeCategory;
-      const products = await base44.entities.Product.filter(filter, "-sales_count", 8);
-      setFeaturedProducts(products.filter((p) => p.images?.length > 0).slice(0, mode === "marketplace" ? 4 : 8));
+      const all = await base44.entities.Product.filter({ status: "active" });
+      const matched = FEATURED_NAMES.map((name) =>
+        all.find((p) => p.name?.toLowerCase().includes(name.toLowerCase()))
+      ).filter(Boolean);
+      setFeaturedProducts(matched);
     } catch (_) {
       setFeaturedProducts([]);
     }
@@ -216,45 +216,11 @@ export default function ShopLanding() {
         </div>
       </section>
 
-      {/* ── Category Chips ──────────────────────────────────── */}
-      <div className="bg-white border-b px-4 py-3">
-        <div className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto scrollbar-hide pb-1">
-          <button
-            onClick={() => setActiveCategory(null)}
-            className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-              !activeCategory
-                ? "bg-teal-600 text-white"
-                : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-            }`}
-          >
-            All
-          </button>
-          {PAGE_CONFIG.categories.map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => {
-                setActiveCategory(cat.value === activeCategory ? null : cat.value);
-                track("category_chip_click", { category: cat.label });
-              }}
-              className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                activeCategory === cat.value
-                  ? "bg-teal-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {cat.label}
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* ── Featured Products ───────────────────────────────── */}
       <section ref={featuredRef} className="max-w-6xl mx-auto px-4 py-12">
-        <div className="flex items-center gap-3 mb-6">
-          <span className="bg-orange-100 text-orange-700 text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-            Popular Right Now
-          </span>
-          <h2 className="text-xl font-bold text-gray-900">Featured Prints</h2>
+        <div className="mb-6">
+          <h2 className="text-2xl font-bold text-gray-900">Featured Prints</h2>
         </div>
 
         {loading ? (
