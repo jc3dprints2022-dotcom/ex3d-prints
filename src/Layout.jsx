@@ -378,9 +378,9 @@ export default function Layout({ children, currentPageName }) {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      window.location.href = `/shopnow?search=${encodeURIComponent(searchQuery)}`;
+      window.location.href = `${createPageUrl("Marketplace")}?search=${encodeURIComponent(searchQuery)}`;
     } else {
-      window.location.href = "/shopnow";
+      window.location.href = createPageUrl("Marketplace");
     }
   };
 
@@ -395,10 +395,10 @@ export default function Layout({ children, currentPageName }) {
 
             <nav className="hidden md:flex items-center space-x-8">
               <Link
-                to="/shopnow"
+                to={createPageUrl("Marketplace")}
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === "/shopnow" || location.pathname.startsWith(createPageUrl("ProductDetail"))
+                  location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
                     ? "bg-teal-500 text-white"
                     : "bg-teal-50 text-teal-700 hover:bg-teal-100"
                 }`}
@@ -623,7 +623,7 @@ export default function Layout({ children, currentPageName }) {
               {/* Marketplace Section */}
               <div className="pt-2">
                 <Link
-                  to="/shopnow"
+                  to={createPageUrl("Marketplace")}
                   className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >

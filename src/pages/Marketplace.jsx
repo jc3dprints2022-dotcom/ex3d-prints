@@ -266,20 +266,20 @@ export default function Marketplace() {
       {/* Top Bar */}
       <div className="bg-white border-b sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <Input
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 sm:h-10"
+                className="pl-10 h-10"
               />
             </div>
-            <Button asChild size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shadow-xl sm:size-lg">
+            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xl">
               <Link to={createPageUrl("CustomPrintRequest")}>
-                <Upload className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Upload Custom Files</span>
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Custom Files
               </Link>
             </Button>
           </div>
