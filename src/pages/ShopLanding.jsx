@@ -249,7 +249,7 @@ export default function ShopLanding() {
 
         {/* Browse More CTA below grid */}
         <div className="text-center mt-10">
-          <Link to={marketplaceUrl(activeCategory)} onClick={() => track("browse_more_click")}>
+          <Link to={marketplaceUrl()} onClick={() => track("browse_more_click")}>
             <Button variant="outline" className="border-teal-500 text-teal-600 hover:bg-teal-50 px-8 py-3 h-auto rounded-full text-base">
               Browse More Products
               <ArrowRight className="w-4 h-4 ml-2" />
