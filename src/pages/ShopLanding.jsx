@@ -81,7 +81,7 @@ export default function ShopLanding() {
     "desk organizer",
     "flexi dragon",
     "slider satisfying egg fidget",
-    "interlocking spiral fidget roy collection",
+    "interlocking spiral fidget toy collection",
     "v-22 osprey kit card",
   ];
 
@@ -136,7 +136,7 @@ export default function ShopLanding() {
   };
 
   const productUrl = (p) => buildUrl(`/ProductDetail?id=${p.id}`);
-  const marketplaceUrl = (cat) => buildUrl("/Marketplace", cat ? { category: cat } : {});
+  const marketplaceUrl = (cat) => buildUrl("/shopnow", cat ? { category: cat } : {});
 
   return (
     <div className="min-h-screen bg-white font-sans">

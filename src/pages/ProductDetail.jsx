@@ -431,11 +431,11 @@ export default function ProductDetail() {
                 <span className="text-sm text-gray-600">
                   {product.rating.toFixed(1)} ({product.review_count})
                 </span>
-              </div>
-            )}
-          </div>
+                </div>
+                ) : null}
+                </div>
 
-          {/* Image Gallery / 3D Viewer */}
+                {/* Image Gallery / 3D Viewer */}
           <div>
             {/* View Toggle */}
             {product.print_files && product.print_files.length > 0 && (
