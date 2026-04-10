@@ -66,7 +66,6 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/DesignDrop" element={<LayoutWrapper currentPageName="DesignDrop"><DesignDrop /></LayoutWrapper>} />
-      <Route path="/shop" element={<ShopLanding />} />
       <Route path="/marketplace" element={<ShopLanding />} />
       <Route path="/shopnow" element={<LayoutWrapper currentPageName="ShopNow"><ShopNow /></LayoutWrapper>} />
       <Route path="/StripeSetupComplete" element={<LayoutWrapper currentPageName="StripeSetupComplete"><StripeSetupComplete /></LayoutWrapper>} />

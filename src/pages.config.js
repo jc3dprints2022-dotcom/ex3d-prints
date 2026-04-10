@@ -78,7 +78,7 @@ import HowItWorks from './pages/HowItWorks';
 
 import MakerHowItWorks from './pages/MakerHowItWorks';
 import MakerSignup from './pages/MakerSignup';
-import Marketplace from './pages/Marketplace';
+
 import PaymentSuccess from './pages/PaymentSuccess';
 import Privacy from './pages/Privacy';
 import ProductDetail from './pages/ProductDetail';
@@ -123,7 +123,7 @@ export const PAGES = {
 
     "MakerHowItWorks": MakerHowItWorks,
     "MakerSignup": MakerSignup,
-    "Marketplace": Marketplace,
+
     "PaymentSuccess": PaymentSuccess,
     "Privacy": Privacy,
     "ProductDetail": ProductDetail,
