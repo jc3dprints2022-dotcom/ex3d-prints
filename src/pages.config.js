@@ -75,7 +75,7 @@ import ForDesigners from './pages/ForDesigners';
 import ForMakers from './pages/ForMakers';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
-import MakerDashboard from './pages/MakerDashboard';
+
 import MakerHowItWorks from './pages/MakerHowItWorks';
 import MakerSignup from './pages/MakerSignup';
 import Marketplace from './pages/Marketplace';
@@ -120,7 +120,7 @@ export const PAGES = {
     "ForMakers": ForMakers,
     "Home": Home,
     "HowItWorks": HowItWorks,
-    "MakerDashboard": MakerDashboard,
+
     "MakerHowItWorks": MakerHowItWorks,
     "MakerSignup": MakerSignup,
     "Marketplace": Marketplace,

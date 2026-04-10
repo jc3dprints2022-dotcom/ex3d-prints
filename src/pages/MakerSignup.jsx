@@ -51,8 +51,8 @@ export default function MakerSignup() {
         setUser(currentUser);
 
         if (currentUser.business_roles?.includes('maker')) {
-          // Already a maker, redirect to dashboard
-          window.location.href = createPageUrl("MakerDashboard");
+          // Already a maker, redirect to Maker Hub tab on ConsumerDashboard
+          window.location.href = createPageUrl("ConsumerDashboard") + "?tab=maker";
           return;
         } else if (currentUser.maker_application_id) {
           // User has an application ID, try to fetch it
