@@ -51,6 +51,9 @@ export default function ConsumerDashboard() {
   const [showAllOrders, setShowAllOrders] = useState(false);
   const [showAllCustomRequests, setShowAllCustomRequests] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [refundDialogOrder, setRefundDialogOrder] = useState(null);
+  const [refundReason, setRefundReason] = useState("");
+  const [submittingRefund, setSubmittingRefund] = useState(false);
   const [satisfactionOrder, setSatisfactionOrder] = useState(null);
   const [issueDescription, setIssueDescription] = useState("");
   const [deletingAccount, setDeletingAccount] = useState(false);
@@ -170,7 +173,7 @@ export default function ConsumerDashboard() {
   const handleCancelOrder = async (orderId) => {
     if (!confirm('Are you sure you want to cancel this order?')) return;
     try {
-      await base44.entities.Order.update(orderId, { 
+      await base44.entities.Order.update(orderId, {
         status: 'cancelled',
         cancellation_reason: 'Customer requested cancellation'
       });
@@ -179,6 +182,29 @@ export default function ConsumerDashboard() {
     } catch (error) {
       toast({ title: "Failed to cancel order", variant: "destructive" });
     }
+  };
+
+  const handleRefundRequest = async () => {
+    if (!refundReason.trim()) return;
+    setSubmittingRefund(true);
+    try {
+      await base44.entities.Order.update(refundDialogOrder.id, {
+        issue_flag: true,
+        issue_description: `REFUND REQUEST: ${refundReason}`
+      });
+      await base44.functions.invoke('sendEmail', {
+        to: 'jc3dprints2022@gmail.com',
+        subject: `Refund Request - Order #${refundDialogOrder.id.slice(0,8)}`,
+        body: `<p>Customer ${user.full_name} (${user.email}) has requested a refund for order #${refundDialogOrder.id.slice(0,8)}.</p><p><strong>Reason:</strong> ${refundReason}</p><p>Total: $${refundDialogOrder.total_amount?.toFixed(2)}</p>`
+      }).catch(() => {});
+      toast({ title: "Refund request submitted", description: "We'll review your request and reach out within 1-2 business days." });
+      setRefundDialogOrder(null);
+      setRefundReason("");
+      loadOrders(user);
+    } catch (error) {
+      toast({ title: "Failed to submit refund request", variant: "destructive" });
+    }
+    setSubmittingRefund(false);
   };
 
   const handleConfirmPickup = async (orderId) => {
@@ -423,6 +449,51 @@ export default function ConsumerDashboard() {
                     </CardContent>
                   </Card>
                 </div>
+
+                {/* Current Orders */}
+                {orders.filter(o => !['delivered','cancelled','completed'].includes(o.status)).length > 0 && (
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Package className="w-5 h-5 text-teal-600" />
+                        Current Orders
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-3">
+                        {orders.filter(o => !['delivered','cancelled','completed'].includes(o.status)).map(order => (
+                          <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 border rounded-lg">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-medium text-sm truncate">
+                                {order.items?.[0]?.product_name}{order.items?.length > 1 ? ` +${order.items.length - 1} more` : ''}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1 flex-wrap">
+                                {getOrderStatusBadge(order.status)}
+                                <span className="text-xs text-gray-500">${order.total_amount?.toFixed(2)}</span>
+                                <span className="text-xs text-gray-400">#{order.id.slice(0,8)}</span>
+                              </div>
+                            </div>
+                            <div className="flex gap-2 flex-shrink-0">
+                              {order.status === 'pending' && (
+                                <Button variant="outline" size="sm" onClick={() => handleCancelOrder(order.id)}>
+                                  <XCircle className="w-3 h-3 mr-1" />Cancel
+                                </Button>
+                              )}
+                              {!['pending','cancelled'].includes(order.status) && !order.issue_description?.startsWith('REFUND') && (
+                                <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50" onClick={() => { setRefundDialogOrder(order); setRefundReason(""); }}>
+                                  Request Refund
+                                </Button>
+                              )}
+                              {order.issue_description?.startsWith('REFUND') && (
+                                <Badge className="bg-orange-100 text-orange-800 text-xs">Refund Requested</Badge>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
                 {/* Recently Viewed Products */}
                 {recentlyViewedProducts.length > 0 && (
@@ -825,6 +896,40 @@ export default function ConsumerDashboard() {
           </main>
         </div>
       </div>
+
+      {/* Refund Request Dialog */}
+      <Dialog open={!!refundDialogOrder} onOpenChange={() => { setRefundDialogOrder(null); setRefundReason(""); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Request a Refund</DialogTitle>
+            <DialogDescription>
+              Order #{refundDialogOrder?.id?.slice(0,8)} — ${refundDialogOrder?.total_amount?.toFixed(2)}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Reason for refund *</Label>
+              <Textarea
+                className="mt-2"
+                rows={4}
+                placeholder="Please describe why you're requesting a refund..."
+                value={refundReason}
+                onChange={e => setRefundReason(e.target.value)}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => { setRefundDialogOrder(null); setRefundReason(""); }}>Cancel</Button>
+              <Button
+                className="bg-red-600 hover:bg-red-700"
+                disabled={!refundReason.trim() || submittingRefund}
+                onClick={handleRefundRequest}
+              >
+                {submittingRefund ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" />Submitting...</> : 'Submit Refund Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Satisfaction Dialog */}
       <Dialog open={!!satisfactionOrder} onOpenChange={() => { setSatisfactionOrder(null); setIssueDescription(""); }}>
