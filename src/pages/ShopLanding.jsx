@@ -81,7 +81,7 @@ export default function ShopLanding() {
     "desk organizer",
     "flexi dragon",
     "slider satisfying egg fidget",
-    "interlocking spiral fidget roy collection",
+    "interlocking spiral fidget toy collection",
     "v-22 osprey kit card",
   ];
 
@@ -104,9 +104,12 @@ export default function ShopLanding() {
     setLoading(true);
     try {
       const all = await base44.entities.Product.filter({ status: "active" });
-      const matched = FEATURED_NAMES.map((name) =>
-        all.find((p) => p.name?.toLowerCase().includes(name.toLowerCase()))
-      ).filter(Boolean);
+      const matched = FEATURED_NAMES.map((name) => {
+        if (name === "desk organizer") {
+          return all.find((p) => p.name?.toLowerCase() === "desk organizer");
+        }
+        return all.find((p) => p.name?.toLowerCase().includes(name.toLowerCase()));
+      }).filter(Boolean);
       setFeaturedProducts(matched);
     } catch (_) {
       setFeaturedProducts([]);
