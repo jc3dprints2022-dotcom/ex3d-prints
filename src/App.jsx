@@ -10,9 +10,6 @@ import PageNotFound from './lib/PageNotFound';
 import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import DesignDrop from './pages/DesignDrop';
-import ShopNow from './pages/ShopNow';
-import ShopLanding from './pages/ShopLanding';
-import AdLanding from './pages/AdLanding';
 import StripeSetupComplete from './pages/StripeSetupComplete';
 
 const { Pages, Layout, mainPage } = pagesConfig;
@@ -66,10 +63,7 @@ const AuthenticatedApp = () => {
         />
       ))}
       <Route path="/DesignDrop" element={<LayoutWrapper currentPageName="DesignDrop"><DesignDrop /></LayoutWrapper>} />
-      <Route path="/marketplace" element={<ShopLanding />} />
-      <Route path="/shopnow" element={<LayoutWrapper currentPageName="ShopNow"><ShopNow /></LayoutWrapper>} />
       <Route path="/StripeSetupComplete" element={<LayoutWrapper currentPageName="StripeSetupComplete"><StripeSetupComplete /></LayoutWrapper>} />
-      <Route path="/shop" element={<AdLanding />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

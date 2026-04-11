@@ -41,7 +41,7 @@ export default function BottomNav() {
 
   const getNavItems = () => {
     const cartPath = user?.account_type === 'business' ? createPageUrl("BusinessCart") : createPageUrl("Cart");
-    const marketplacePath = user?.account_type === 'business' ? createPageUrl("BusinessMarketplace") : '/shopnow';
+    const marketplacePath = user?.account_type === 'business' ? createPageUrl("BusinessMarketplace") : createPageUrl("Marketplace");
     const dashboardPath = user?.account_type === 'business' ? createPageUrl("BusinessDashboard") : createPageUrl("ConsumerDashboard");
 
     return [

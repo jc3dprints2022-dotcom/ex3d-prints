@@ -431,11 +431,16 @@ export default function ProductDetail() {
                 <span className="text-sm text-gray-600">
                   {product.rating.toFixed(1)} ({product.review_count})
                 </span>
-                </div>
-                ) : null}
-                </div>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 mb-6 text-gray-500 text-sm">
+                <Star className="w-4 h-4 text-gray-300" />
+                <span>No reviews yet</span>
+              </div>
+            )}
+          </div>
 
-                {/* Image Gallery / 3D Viewer */}
+          {/* Image Gallery / 3D Viewer */}
           <div>
             {/* View Toggle */}
             {product.print_files && product.print_files.length > 0 && (
@@ -698,8 +703,7 @@ export default function ProductDetail() {
             </div>
 
             {/* Reviews - Compact Carousel */}
-            {reviews.length > 0 && (
-              <div>
+            <div>
               <Card>
                 <CardContent className="p-6">
                   <h1 className="font-bold text-lg mb-4 text-gray-900">⭐ Reviews</h1>
@@ -708,39 +712,44 @@ export default function ProductDetail() {
                   </div>
                   <div className="overflow-x-auto">
                     <div className="flex gap-4 pb-4" style={{ minWidth: 'min-content' }}>
-                      {reviews.map((review) => (
-                        <Card key={review.id} className="flex-shrink-0" style={{ width: '320px' }}>
-                          <CardContent className="p-4">
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`w-4 h-4 ${
-                                      star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
-                                    }`}
-                                  />
-                                ))}
+                      {reviews.length > 0 ? (
+                        reviews.map((review) => (
+                          <Card key={review.id} className="flex-shrink-0" style={{ width: '320px' }}>
+                            <CardContent className="p-4">
+                              <div className="flex items-center gap-2 mb-2">
+                                <div className="flex">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star
+                                      key={star}
+                                      className={`w-4 h-4 ${
+                                        star <= review.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'
+                                      }`}
+                                    />
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                            {review.title && (
-                              <h4 className="font-semibold text-gray-900 mb-1 text-sm">{review.title}</h4>
-                            )}
-                            {review.comment && (
-                              <p className="text-gray-700 text-sm mb-2 line-clamp-3">{review.comment}</p>
-                            )}
-                            <div className="text-xs text-gray-500">
-                              by {review.customer_name || 'Anonymous'}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                              {review.title && (
+                                <h4 className="font-semibold text-gray-900 mb-1 text-sm">{review.title}</h4>
+                              )}
+                              {review.comment && (
+                                <p className="text-gray-700 text-sm mb-2 line-clamp-3">{review.comment}</p>
+                              )}
+                              <div className="text-xs text-gray-500">
+                                by {review.customer_name || 'Anonymous'}
+                              </div>
+                            </CardContent>
+                          </Card>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-gray-500 w-full">
+                          No reviews yet. Be the first to leave a review!
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
               </Card>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Product Info - Desktop */}
