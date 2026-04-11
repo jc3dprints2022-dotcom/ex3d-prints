@@ -273,10 +273,15 @@ export default function Marketplace() {
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10"
+                className="pl-10 h-10 md:h-10"
               />
             </div>
-            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xl">
+            <Button asChild size="sm" className="bg-teal-600 hover:bg-teal-700 text-white shadow-md md:hidden flex-shrink-0">
+              <Link to={createPageUrl("CustomPrintRequest")}>
+                <Upload className="w-4 h-4" />
+              </Link>
+            </Button>
+            <Button asChild size="lg" className="bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-xl hidden md:flex">
               <Link to={createPageUrl("CustomPrintRequest")}>
                 <Upload className="w-4 h-4 mr-2" />
                 Upload Custom Files

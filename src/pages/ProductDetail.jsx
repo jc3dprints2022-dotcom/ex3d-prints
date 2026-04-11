@@ -432,12 +432,7 @@ export default function ProductDetail() {
                   {product.rating.toFixed(1)} ({product.review_count})
                 </span>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 mb-6 text-gray-500 text-sm">
-                <Star className="w-4 h-4 text-gray-300" />
-                <span>No reviews yet</span>
-              </div>
-            )}
+            ) : null}
           </div>
 
           {/* Image Gallery / 3D Viewer */}
