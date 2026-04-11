@@ -31,8 +31,8 @@ export default function SaturnV() {
           </p>
 
           {/* Hero Image */}
-          <div className="mb-10 mx-auto w-full max-w-sm aspect-[3/4] rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20">
-            <img src={PRODUCT_IMAGE} alt="Saturn V Model Kit" className="w-full h-full object-cover" />
+          <div className="mb-10 mx-auto rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 inline-block">
+            <img src={PRODUCT_IMAGE} alt="Saturn V Model Kit" className="w-auto h-auto max-w-full block" />
           </div>
 
           <a
