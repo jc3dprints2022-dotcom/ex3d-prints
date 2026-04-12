@@ -74,7 +74,7 @@ export default function SaturnV() {
             { label: "Height", value: "56cm (22 inches)" },
             { label: "Scale", value: "1:200" },
             { label: "Material", value: "PLA" },
-            { label: "Assembly", value: "Ships as a precision kit, press-fit, no glue required" }].
+            { label: "Assembly", value: "Ships as a precision kit, press-fit, some glue may be needed" }].
             map((spec) =>
             <div key={spec.label} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
                 <p className="text-xs text-gray-500 uppercase tracking-widest mb-1">{spec.label}</p>
@@ -94,7 +94,7 @@ export default function SaturnV() {
       <section className="py-24 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent">
         <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">Ready?</p>
         <h2 className="text-4xl font-bold mb-4">Your Desk Deserves This</h2>
-        <p className="text-gray-400 mb-10 max-w-sm mx-auto">Hand-printed, shipped in 5–7 days. Free shipping over $35.</p>
+        <p className="text-gray-400 mb-10 max-w-sm mx-auto">Hand-printed, shipped in 5–7 days.</p>
         <a
           href={PRODUCT_URL}
           className="inline-block bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-xl px-12 py-5 rounded-full shadow-xl shadow-orange-900/50 transition-all duration-200 hover:scale-105">
