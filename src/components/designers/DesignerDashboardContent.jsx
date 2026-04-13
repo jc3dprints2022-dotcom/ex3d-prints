@@ -4,8 +4,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings } from "lucide-react";
 import DesignerProductForm from "./DesignerProductForm";
+import DesignerSettingsTab from "./DesignerSettingsTab";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,6 +91,24 @@ export default function DesignerDashboardContent({ user, onUpdate }) {
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">Designer Hub</h2>
+
+      <Tabs defaultValue="designs">
+        <TabsList>
+          <TabsTrigger value="designs">
+            <Package className="w-4 h-4 mr-2" />
+            My Designs
+          </TabsTrigger>
+          <TabsTrigger value="settings">
+            <Settings className="w-4 h-4 mr-2" />
+            Settings
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="settings" className="mt-6">
+          <DesignerSettingsTab user={user} onUpdate={onUpdate} />
+        </TabsContent>
+
+        <TabsContent value="designs" className="mt-6">
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -251,6 +271,9 @@ export default function DesignerDashboardContent({ user, onUpdate }) {
           )}
         </>
       )}
+
+      </TabsContent>
+      </Tabs>
 
       <AlertDialog open={!!deletingProduct} onOpenChange={() => setDeletingProduct(null)}>
         <AlertDialogContent>

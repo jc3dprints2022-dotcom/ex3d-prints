@@ -275,6 +275,7 @@ export default function DesignerProductForm({ designerId, designerName, existing
         assembly_instructions: formData.assembly_instructions,
         designer_id: designerId,
         designer_name: designerName,
+        designer_user_id: null, // Will be set by backend or admin
         status: 'pending',
         multi_color: false,
         custom_scale: 100,
@@ -290,9 +291,15 @@ export default function DesignerProductForm({ designerId, designerName, existing
       };
 
       if (existingProduct) {
-        // For updates, update with pending status to trigger re-review
+        // For updates, preserve original designer ownership
+        const preservedDesignerFields = {
+          designer_id: existingProduct.designer_id || designerId,
+          designer_name: existingProduct.designer_name || designerName,
+          designer_user_id: existingProduct.designer_user_id,
+        };
         await base44.entities.Product.update(existingProduct.id, {
           ...productData,
+          ...preservedDesignerFields,
           status: 'pending',
           admin_feedback: null // Clear previous feedback
         });
