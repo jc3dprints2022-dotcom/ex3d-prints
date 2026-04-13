@@ -161,8 +161,12 @@ export default function ProductDetail() {
         }
       }).catch(() => {});
 
-      if (productData.designer_id) {
-        base44.entities.User.get(productData.designer_id).then(d => setDesigner(d)).catch(() => {});
+      if (productData.designer_user_id) {
+        base44.entities.User.get(productData.designer_user_id).then(d => setDesigner(d)).catch(() => {});
+      } else if (productData.designer_id && productData.designer_id !== 'admin') {
+        base44.entities.User.filter({ designer_id: productData.designer_id }).then(users => {
+          if (users[0]) setDesigner(users[0]);
+        }).catch(() => {});
       }
 
       // Load all active products for carousels in background
@@ -409,6 +413,14 @@ export default function ProductDetail() {
           {/* Product Info - Mobile */}
           <div className="md:hidden">
             <h1 className="text-2xl font-bold text-gray-900 mb-2">{product.name}</h1>
+            {designer && (
+              <p className="text-sm text-gray-500 mb-2">
+                Designed by{' '}
+                <Link to={`/DesignerProfile?id=${designer.id}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-blue-600 hover:underline font-medium">
+                  {designer.full_name}
+                </Link>
+              </p>
+            )}
             {fromDesignDrop && <div className="inline-block bg-teal-100 text-teal-800 text-xs font-bold px-3 py-1 rounded-full mb-2">🎉 Design Drop Special</div>}
             <p className="text-3xl font-bold text-teal-600 mb-4">
               ${dropPrice !== null ? dropPrice.toFixed(2) : product.price.toFixed(2)}
@@ -735,11 +747,7 @@ export default function ProductDetail() {
                             </CardContent>
                           </Card>
                         ))
-                      ) : (
-                        <div className="text-center py-8 text-gray-500 w-full">
-                          No reviews yet. Be the first to leave a review!
-                        </div>
-                      )}
+                      ) : null}
                     </div>
                   </div>
                 </CardContent>
@@ -752,6 +760,14 @@ export default function ProductDetail() {
             <div className="flex items-start justify-between mb-4">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">{product.name}</h1>
+                {designer && (
+                  <p className="text-sm text-gray-500 mb-1">
+                    Designed by{' '}
+                    <Link to={`/DesignerProfile?id=${designer.id}`} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-blue-600 hover:underline font-medium">
+                      {designer.full_name}
+                    </Link>
+                  </p>
+                )}
               </div>
               <Button
                 variant="ghost"
@@ -787,12 +803,7 @@ export default function ProductDetail() {
                   {product.rating.toFixed(1)} ({product.review_count} {product.review_count === 1 ? 'review' : 'reviews'})
                 </span>
               </div>
-            ) : (
-              <div className="flex items-center gap-2 mb-6 text-gray-500">
-                <Star className="w-5 h-5 text-gray-300" />
-                <span>No reviews yet. Be the first to leave a review!</span>
-              </div>
-            )}
+            ) : null}
 
             {/* Add to Cart Card */}
             <Card className="mb-6">

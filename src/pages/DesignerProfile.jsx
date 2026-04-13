@@ -29,9 +29,15 @@ export default function DesignerProfile() {
       const userData = await base44.entities.User.get(designerId);
       setDesigner(userData);
 
-      // Get designer's products
-      const allProducts = await base44.entities.Product.list();
-      const designerProducts = allProducts.filter(p => p.designer_id === designerId && p.status === 'active');
+      // Get designer's products — match by designer_user_id OR by user's designer_id field
+      const allProducts = await base44.entities.Product.filter({ status: 'active' });
+      const userDesignerId = userData.designer_id;
+      const designerProducts = allProducts
+        .filter(p =>
+          p.designer_user_id === designerId ||
+          (userDesignerId && p.designer_id === userDesignerId)
+        )
+        .sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
       setProducts(designerProducts);
     } catch (error) {
       console.error("Failed to load designer data:", error);
