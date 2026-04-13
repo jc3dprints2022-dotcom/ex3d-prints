@@ -670,37 +670,6 @@ export default function ProductDetail() {
               </Card>
             </div>
 
-            {/* Designer Info */}
-            {designer && (
-              <Card className="mb-6">
-                <CardContent className="p-4">
-                  <p className="text-sm text-gray-600 mb-2">Designed by</p>
-                  <Link 
-                    to={`${createPageUrl("DesignerProfile")}?id=${designer.id}`}
-                    onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                  >
-                    {designer.profile_image ? (
-                      <img
-                        src={designer.profile_image}
-                        alt={designer.full_name}
-                        className="w-12 h-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center">
-                        <User className="w-6 h-6 text-gray-400" />
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-semibold text-gray-900">{designer.full_name}</p>
-                      {designer.designer_name && (
-                        <p className="text-sm text-gray-600">@{designer.designer_name}</p>
-                      )}
-                    </div>
-                  </Link>
-                </CardContent>
-              </Card>
-            )}
 
             {/* Description */}
             <div className="mb-8 pb-8 border-b">
