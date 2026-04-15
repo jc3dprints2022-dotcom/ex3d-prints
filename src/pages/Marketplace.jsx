@@ -6,7 +6,7 @@ import { Search, X, Upload, SlidersHorizontal, Star, Loader2, ChevronLeft, Chevr
 import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
+
 import { Slider } from "@/components/ui/slider";
 import ProductCard from "../components/marketplace/ProductCard";
 
@@ -349,10 +349,7 @@ export default function Marketplace() {
                 <div className="space-y-2">
                   {MATERIALS.map(mat => (
                     <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
-                      <Checkbox
-                        id={`mat-${mat}`}
-                        checked={filters.materials.includes(mat)}
-                      />
+                      <input type="checkbox" readOnly checked={filters.materials.includes(mat)} className="w-4 h-4 accent-teal-600 cursor-pointer" />
                       <span className="text-sm">{mat}</span>
                     </div>
                   ))}
@@ -365,10 +362,7 @@ export default function Marketplace() {
                 <div className="space-y-2">
                   {[4, 3, 2, 1].map(rating => (
                     <div key={rating} className="flex items-center gap-2 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}>
-                      <Checkbox
-                        id={`rating-${rating}`}
-                        checked={filters.rating === rating}
-                      />
+                      <input type="checkbox" readOnly checked={filters.rating === rating} className="w-4 h-4 accent-teal-600 cursor-pointer" />
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm">{rating}+ Stars</span>
@@ -460,10 +454,7 @@ export default function Marketplace() {
                 <div className="space-y-2">
                   {MATERIALS.map(mat => (
                    <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
-                     <Checkbox
-                       id={`mob-mat-${mat}`}
-                       checked={filters.materials.includes(mat)}
-                     />
+                     <input type="checkbox" readOnly checked={filters.materials.includes(mat)} className="w-4 h-4 accent-teal-600 cursor-pointer" />
                      <span className="text-sm">{mat}</span>
                    </div>
                   ))}
@@ -476,10 +467,7 @@ export default function Marketplace() {
                 <div className="space-y-2">
                   {[4, 3, 2, 1].map(rating => (
                     <div key={rating} className="flex items-center gap-2 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}>
-                      <Checkbox
-                        id={`mob-rating-${rating}`}
-                        checked={filters.rating === rating}
-                      />
+                      <input type="checkbox" readOnly checked={filters.rating === rating} className="w-4 h-4 accent-teal-600 cursor-pointer" />
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm">{rating}+ Stars</span>
