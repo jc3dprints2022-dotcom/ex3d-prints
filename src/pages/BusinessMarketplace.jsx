@@ -1,382 +1,232 @@
-// ARCHIVED VERSION - Original BusinessMarketplace with use cases and full filtering
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Package, Award, Wrench, Cog, ArrowRight, Upload, 
-  CheckCircle, Building2, Users, Clock, Shield
-} from "lucide-react";
 import { createPageUrl } from "@/utils";
-import { Link } from "react-router-dom";
+import { Building2, ArrowRight, CheckCircle } from "lucide-react";
 
-const USE_CASES = [
-  { 
-    id: "retail", 
-    label: "Retail Products",
-    icon: Package,
-    description: "Products we manufacture for you to sell in your store or online shop",
-    color: "from-orange-500 to-orange-600"
-  },
-  { 
-    id: "branded", 
-    label: "Branded & Promotional Products",
-    icon: Award,
-    description: "Event merch, custom branded goods, marketing materials for your brand",
-    color: "from-purple-500 to-purple-600"
-  },
-  { 
-    id: "replacement", 
-    label: "Replacement & Functional Components",
-    icon: Wrench,
-    description: "Repeat/bulk production of functional parts for your operations",
-    color: "from-green-500 to-green-600"
-  },
-  { 
-    id: "prototypes", 
-    label: "Custom Parts & Prototypes",
-    icon: Cog,
-    description: "Engineering parts, one-offs, and prototype work for your projects",
-    color: "from-blue-500 to-blue-600"
-  }
+const INDUSTRIES = [
+  "Local Souvenir Shops",
+  "Toy Store",
+  "Health & Personal Care",
+  "Office & Desk",
+  "Other"
 ];
 
-const FILTER_OPTIONS = {
-  industry: ["Retail", "Manufacturing", "Education", "Healthcare", "Technology", "Other"],
-  product_type: ["Finished Goods", "Components", "Tools & Fixtures", "Promotional Items"],
-  material: ["PLA", "PETG", "ABS", "TPU", "Nylon"],
-  quantity: ["20-50", "50-100", "100-500", "500+"],
-  budget: ["Under $500", "$500-$2000", "$2000-$5000", "$5000+"],
-  lead_time: ["1-3 days", "3-7 days", "1-2 weeks", "2+ weeks"],
-  customization: ["None", "Logo/Branding", "Custom Design", "Full Custom"]
-};
+const QUANTITIES = [
+  { value: "30-100", label: "30-100 units", min: 30, max: 100 },
+  { value: "100-250", label: "100-250 units", min: 100, max: 250 },
+  { value: "250-500", label: "250-500 units", min: 250, max: 500 },
+  { value: "500-1000", label: "500-1,000 units", min: 500, max: 1000 },
+  { value: "1000+", label: "1,000+ units", min: 1000, max: 2000 }
+];
+
+const BUDGETS = [
+  { value: "0-100", label: "Under $100", min: 0, max: 100 },
+  { value: "100-500", label: "$100 - $500", min: 100, max: 500 },
+  { value: "500-2000", label: "$500 - $2,000", min: 500, max: 2000 },
+  { value: "2000-5000", label: "$2,000 - $5,000", min: 2000, max: 50000 },
+  { value: "5000+", label: "$5,000+", min: 5000, max: 20000 }
+];
 
 export default function BusinessMarketplace() {
-  const [user, setUser] = useState(null);
-  const [selectedUseCase, setSelectedUseCase] = useState(null);
-  const [activeFilters, setActiveFilters] = useState({});
-  const [products, setProducts] = useState([]);
-
-  useEffect(() => {
-    loadUser();
-    loadProducts();
-  }, []);
-
-  const loadUser = async () => {
-    try {
-      const currentUser = await base44.auth.me();
-      setUser(currentUser);
-    } catch (error) {
-      setUser(null);
-    }
-  };
-
-  const loadProducts = async () => {
-    try {
-      const allProducts = await base44.entities.Product.list();
-      const businessProducts = allProducts.filter(p => 
-        p.marketplace_type === 'business' && p.status === 'active'
-      );
-      setProducts(businessProducts);
-    } catch (error) {
-      console.error("Failed to load products:", error);
-    }
-  };
-
-  const handleUseCaseSelect = (useCaseId) => {
-    setSelectedUseCase(useCaseId);
-  };
-
-  const handleFilterToggle = (category, value) => {
-    setActiveFilters(prev => {
-      const current = prev[category] || [];
-      const updated = current.includes(value)
-        ? current.filter(v => v !== value)
-        : [...current, value];
-      return { ...prev, [category]: updated };
-    });
-  };
+  const [industry, setIndustry] = useState(null);
+  const [quantity, setQuantity] = useState(null);
+  const [budget, setBudget] = useState(null);
 
   const handleViewProducts = () => {
     const params = new URLSearchParams();
-    if (selectedUseCase) params.set('useCase', selectedUseCase);
-    Object.entries(activeFilters).forEach(([key, values]) => {
-      if (values.length > 0) {
-        params.set(key, values.join(','));
-      }
-    });
+    if (industry) params.set('industry', industry);
+    if (quantity) params.set('quantity', quantity);
+    if (budget) params.set('budget', budget);
+    
     window.location.href = `${createPageUrl("BusinessCatalog")}?${params.toString()}`;
   };
 
-  const handleResetFilters = () => {
-    setSelectedUseCase(null);
-    setActiveFilters({});
-  };
+  const canProceed = industry || quantity || budget;
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-slate-800 to-slate-900 text-white py-16">
-        <div className="max-w-7xl mx-auto px-4 text-center">
-          <h1 className="text-5xl font-bold mb-4">Enterprise 3D Manufacturing</h1>
-          <p className="text-xl text-slate-300 mb-12 max-w-3xl mx-auto">
-            We manufacture products for your business. Distributed production capacity. Quality-controlled processes. Scalable solutions.
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white py-20">
+        <div className="max-w-6xl mx-auto px-4 text-center">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6">
+            3D Printing for Your Business
+          </h1>
+          <p className="text-xl text-slate-300 max-w-3xl mx-auto">
+            We manufacture high-quality 3D printed products for businesses to sell.
           </p>
-          
-          <div className="flex flex-wrap justify-center gap-4 mb-8">
-            <Button asChild size="lg" className="bg-white text-slate-900 hover:bg-gray-100">
-              <Link to={createPageUrl("BusinessCatalog")}>
-                Browse Full Catalog
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="border-white text-white hover:bg-white/10">
-              <Link to={createPageUrl("BusinessCADUpload")}>
-                <Upload className="w-5 h-5 mr-2" />
-                Upload CAD Files
-              </Link>
-            </Button>
-          </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-12">
-        {/* Use Case Selection */}
-        {!selectedUseCase && (
-          <section className="mb-16">
-            <h2 className="text-3xl font-bold text-center mb-4">What do you need manufactured?</h2>
-            <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-              We produce high-quality 3D printed products for your business to sell or use
-            </p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {USE_CASES.map(useCase => {
-                const Icon = useCase.icon;
-                return (
-                  <Card 
-                    key={useCase.id}
-                    className="cursor-pointer hover:shadow-xl transition-all transform hover:-translate-y-1"
-                    onClick={() => handleUseCaseSelect(useCase.id)}
+      {/* Main Selection Interface */}
+      <div className="max-w-5xl mx-auto px-4 py-16">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold mb-3">Get Started in 3 Simple Steps</h2>
+          <p className="text-gray-600">
+            Help us understand your manufacturing needs
+          </p>
+        </div>
+
+        {/* 3-Column Selection Interface */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Industry Selection */}
+          <Card className={`transition-all ${industry ? 'ring-2 ring-teal-500' : ''}`}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
+                  1
+                </div>
+                <div>
+                  <h3 className="font-bold">Industry</h3>
+                  <p className="text-xs text-gray-600">Your retail type</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {INDUSTRIES.map(ind => (
+                  <div
+                    key={ind}
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
+                      industry === ind 
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
+                    }`}
+                    onClick={() => setIndustry(ind)}
                   >
-                    <CardContent className="pt-6">
-                      <div className={`w-16 h-16 rounded-lg bg-gradient-to-br ${useCase.color} flex items-center justify-center mb-4`}>
-                        <Icon className="w-8 h-8 text-white" />
-                      </div>
-                      <h3 className="text-xl font-bold mb-2">{useCase.label}</h3>
-                      <p className="text-gray-600 text-sm mb-4">{useCase.description}</p>
-                      <Button className="w-full">
-                        Select <ArrowRight className="w-4 h-4 ml-2" />
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </section>
-        )}
+                    {ind}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Filter Selection */}
-        {selectedUseCase && (
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-bold">Refine Your Search</h2>
-                <p className="text-gray-600">
-                  Selected: {USE_CASES.find(uc => uc.id === selectedUseCase)?.label}
+          {/* Quantity Selection */}
+          <Card className={`transition-all ${quantity ? 'ring-2 ring-teal-500' : ''}`}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
+                  2
+                </div>
+                <div>
+                  <h3 className="font-bold">Quantity</h3>
+                  <p className="text-xs text-gray-600">Units needed</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {QUANTITIES.map(q => (
+                  <div
+                    key={q.value}
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
+                      quantity === q.value 
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
+                    }`}
+                    onClick={() => setQuantity(q.value)}
+                  >
+                    {q.label}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Budget Selection */}
+          <Card className={`transition-all ${budget ? 'ring-2 ring-teal-500' : ''}`}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-8 h-8 rounded-full bg-teal-100 text-teal-700 flex items-center justify-center font-bold text-sm">
+                  3
+                </div>
+                <div>
+                  <h3 className="font-bold">Budget</h3>
+                  <p className="text-xs text-gray-600">Project budget</p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                {BUDGETS.map(b => (
+                  <div
+                    key={b.value}
+                    className={`cursor-pointer p-3 rounded-lg border-2 transition-all text-sm ${
+                      budget === b.value 
+                        ? 'border-teal-600 bg-teal-50 text-teal-900 font-semibold' 
+                        : 'border-gray-200 hover:border-teal-300 hover:bg-teal-50/50'
+                    }`}
+                    onClick={() => setBudget(b.value)}
+                  >
+                    {b.label}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* CTA Button */}
+        <div className="mt-12 text-center">
+          <Button 
+            size="lg" 
+            onClick={handleViewProducts}
+            disabled={!canProceed}
+            className={`text-lg px-12 py-6 h-auto ${
+              canProceed 
+                ? 'bg-teal-600 hover:bg-teal-700' 
+                : 'bg-gray-300 cursor-not-allowed'
+            }`}
+          >
+            View Curated Products
+            <ArrowRight className="w-5 h-5 ml-2" />
+          </Button>
+          {!canProceed && (
+            <p className="text-sm text-gray-500 mt-3">
+              Select at least one option to see curated products
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Why Choose Us */}
+      <div className="bg-slate-100 py-16 mt-16">
+        <div className="max-w-6xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-12">Why Businesses Choose EX3D</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <ArrowRight className="w-7 h-7 text-orange-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Lightning Fast</h3>
+                <p className="text-sm text-gray-600">
+                  24 hour production start. Most orders completed within 3-5 business days
                 </p>
-              </div>
-              <div className="flex gap-3">
-                <Button variant="outline" onClick={handleResetFilters}>
-                  Reset
-                </Button>
-                <Button onClick={handleViewProducts}>
-                  View Products <ArrowRight className="w-4 h-4 ml-2" />
-                </Button>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {Object.entries(FILTER_OPTIONS).map(([category, options]) => (
-                <Card key={category}>
-                  <CardHeader>
-                    <CardTitle className="text-lg capitalize">{category.replace('_', ' ')}</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {options.map(option => (
-                        <label key={option} className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={(activeFilters[category] || []).includes(option)}
-                            onChange={() => handleFilterToggle(category, option)}
-                            className="rounded border-gray-300"
-                          />
-                          <span className="text-sm">{option}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* CAD Upload CTA */}
-        <section className="mb-16">
-          <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0">
-            <CardContent className="py-12 text-center">
-              <Upload className="w-12 h-12 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold mb-4">Have CAD Files?</h2>
-              <p className="text-blue-100 mb-6 max-w-2xl mx-auto">
-                Upload your designs directly for instant quotes on custom manufacturing
-              </p>
-              <Button asChild size="lg" variant="secondary">
-                <Link to={createPageUrl("BusinessCADUpload")}>
-                  Get Custom Quote
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Value Props */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Why Choose Us</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Building2 className="w-8 h-8 text-purple-600" />
-              </div>
-              <h3 className="font-bold mb-2">Distributed Network</h3>
-              <p className="text-sm text-gray-600">Access to hundreds of qualified manufacturers</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-8 h-8 text-green-600" />
-              </div>
-              <h3 className="font-bold mb-2">Quality Assured</h3>
-              <p className="text-sm text-gray-600">Every product inspected before shipping</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-8 h-8 text-blue-600" />
-              </div>
-              <h3 className="font-bold mb-2">Fast Turnaround</h3>
-              <p className="text-sm text-gray-600">Most orders fulfilled within 3-5 business days</p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-8 h-8 text-orange-600" />
-              </div>
-              <h3 className="font-bold mb-2">Dedicated Support</h3>
-              <p className="text-sm text-gray-600">Real humans available to help with your project</p>
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing Tiers */}
-        <section className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">Volume Pricing</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Starter</CardTitle>
-                <p className="text-gray-600">20-99 units</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold mb-4">Base Price</p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Standard materials
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    5-7 day turnaround
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Quality inspection
-                  </li>
-                </ul>
               </CardContent>
             </Card>
-
-            <Card className="border-purple-600 border-2">
-              <CardHeader>
-                <Badge className="w-fit mb-2">Most Popular</Badge>
-                <CardTitle>Growth</CardTitle>
-                <p className="text-gray-600">100-499 units</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold mb-4">-15% off</p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    All starter features
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Priority production
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Dedicated support
-                  </li>
-                </ul>
+            
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Building2 className="w-7 h-7 text-teal-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Made Locally</h3>
+                <p className="text-sm text-gray-600">
+                  Network of Prescott.-based manufacturers ensures quality control and supports local economy
+                </p>
               </CardContent>
             </Card>
-
+            
             <Card>
-              <CardHeader>
-                <CardTitle>Enterprise</CardTitle>
-                <p className="text-gray-600">500+ units</p>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold mb-4">-25% off</p>
-                <ul className="space-y-2 text-sm">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    All growth features
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Custom materials
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    Account manager
-                  </li>
-                </ul>
+              <CardContent className="p-6 text-center">
+                <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <CheckCircle className="w-7 h-7 text-green-600" />
+                </div>
+                <h3 className="font-bold text-lg mb-2">Cost Effective</h3>
+                <p className="text-sm text-gray-600">
+                  Competitive pricing with volume discounts up to 15% off.
+                </p>
               </CardContent>
             </Card>
           </div>
-        </section>
-
-        {/* Final CTA */}
-        <section className="text-center">
-          <Card className="bg-slate-50 border-0">
-            <CardContent className="py-12">
-              <h2 className="text-3xl font-bold mb-4">Ready to Get Started?</h2>
-              <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
-                Contact our team to discuss your manufacturing needs or browse our catalog
-              </p>
-              <div className="flex flex-wrap justify-center gap-4">
-                <Button asChild size="lg">
-                  <Link to={createPageUrl("Contact")}>
-                    Contact Sales
-                  </Link>
-                </Button>
-                <Button asChild size="lg" variant="outline">
-                  <Link to={createPageUrl("BusinessCatalog")}>
-                    Browse Catalog
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
+        </div>
       </div>
     </div>
   );

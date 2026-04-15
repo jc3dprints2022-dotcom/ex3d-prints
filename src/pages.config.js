@@ -49,7 +49,17 @@
  */
 import AccountInfo from './pages/AccountInfo';
 import AccountTypeSelect from './pages/AccountTypeSelect';
-
+import AdminAuditLogs from './pages/AdminAuditLogs';
+import AdminPortalJC3D from './pages/AdminPortalJC3D';
+import BusinessCADUpload from './pages/BusinessCADUpload';
+import BusinessCart from './pages/BusinessCart';
+import BusinessCatalog from './pages/BusinessCatalog';
+import BusinessCheckout from './pages/BusinessCheckout';
+import BusinessDashboard from './pages/BusinessDashboard';
+import businessmarketplaceArchived from './pages/BusinessMarketplace.archived';
+import BusinessMarketplace from './pages/BusinessMarketplace';
+import BusinessProductDetail from './pages/BusinessProductDetail';
+import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import ConsumerDashboard from './pages/ConsumerDashboard';
@@ -73,7 +83,8 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import Privacy from './pages/Privacy';
 import ProductDetail from './pages/ProductDetail';
 import ReportIssue from './pages/ReportIssue';
-
+import SubscriptionConfirmation from './pages/SubscriptionConfirmation';
+import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
@@ -83,7 +94,17 @@ import __Layout from './Layout.jsx';
 export const PAGES = {
     "AccountInfo": AccountInfo,
     "AccountTypeSelect": AccountTypeSelect,
-
+    "AdminAuditLogs": AdminAuditLogs,
+    "AdminPortalJC3D": AdminPortalJC3D,
+    "BusinessCADUpload": BusinessCADUpload,
+    "BusinessCart": BusinessCart,
+    "BusinessCatalog": BusinessCatalog,
+    "BusinessCheckout": BusinessCheckout,
+    "BusinessDashboard": BusinessDashboard,
+    "BusinessMarketplace.archived": businessmarketplaceArchived,
+    "BusinessMarketplace": BusinessMarketplace,
+    "BusinessProductDetail": BusinessProductDetail,
+    "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
     "ConsumerDashboard": ConsumerDashboard,
@@ -107,7 +128,8 @@ export const PAGES = {
     "Privacy": Privacy,
     "ProductDetail": ProductDetail,
     "ReportIssue": ReportIssue,
-
+    "SubscriptionConfirmation": SubscriptionConfirmation,
+    "SystemDebug": SystemDebug,
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
