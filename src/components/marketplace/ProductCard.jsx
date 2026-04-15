@@ -9,17 +9,17 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function ProductCard({ product, user: initialUser }) {
-  if (!product) return null;
   const { toast } = useToast();
   const [addingToCart, setAddingToCart] = React.useState(false);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [user, setUser] = React.useState(initialUser || null);
   const [isInWishlist, setIsInWishlist] = React.useState(
-    initialUser?.wishlist?.includes(product.id) || false
+    initialUser?.wishlist?.includes(product?.id) || false
   );
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
   React.useEffect(() => {
+    if (!product) return;
     // Only fetch user if not provided by parent
     if (!initialUser) {
       base44.auth.me().then(u => {
@@ -162,6 +162,8 @@ export default function ProductCard({ product, user: initialUser }) {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  if (!product) return null;
 
   const handleCardClick = (e) => {
     e.preventDefault();
