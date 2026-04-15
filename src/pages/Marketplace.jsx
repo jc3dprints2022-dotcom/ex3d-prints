@@ -200,9 +200,9 @@ export default function Marketplace() {
     
     tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
-    setFilteredProducts(tempProducts);
-    // Show all products when category is selected
-    setDisplayedProducts(tempProducts);
+    const validProducts = tempProducts.filter(Boolean);
+    setFilteredProducts(validProducts);
+    setDisplayedProducts(validProducts);
     setPage(1);
     setHasMore(false);
   }, [filters, products, searchQuery]);
@@ -404,7 +404,7 @@ export default function Marketplace() {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {displayedProducts.map(product => (
+                  {displayedProducts.filter(Boolean).map(product => (
                     <ProductCard key={product.id} product={product} user={user} />
                   ))}
                 </div>
