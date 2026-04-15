@@ -11,15 +11,16 @@ function navigateToTop(navigate, url) {
 
 export function HowItWorksHome() {
   const steps = [
-    { number: "1", title: "Pick a gift", description: "Browse our marketplace for the perfect 3D printed gift." },
-    { number: "2", title: "We print in 24–48 hrs", description: "A local maker prints your order fast." },
-    { number: "3", title: "You get it fast", description: "Shipped or delivered to you in days." },
+    { number: "1", title: "Pick your rocket", description: "Choose Saturn V, SLS, or get both together as a bundle." },
+    { number: "2", title: "We print it fast", description: "Each model is produced quickly and carefully by local makers." },
+    { number: "3", title: "Build and display", description: "Your model arrives ready to assemble and display proudly." },
   ];
 
   return (
     <section className="bg-gray-50 py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase text-center mb-10">How It Works</h2>
+        <p className="text-2xl md:text-3xl font-bold text-slate-900 text-center mb-10">Simple from start to display</p>
         <div className="grid md:grid-cols-3 gap-8">
           {steps.map((step) => (
             <div key={step.number} className="text-center">
@@ -38,15 +39,15 @@ export function HowItWorksHome() {
 
 export function WhyUsSection() {
   const reasons = [
-    { icon: Zap, title: "Fast delivery", subtitle: "Days, not weeks" },
-    { icon: DollarSign, title: "From $10", subtitle: "Affordable unique gifts" },
-    { icon: RefreshCw, title: "Free remake", subtitle: "If it's not right" },
+    { icon: Zap, title: "Fast delivery", subtitle: "Ships in days, not weeks" },
+    { icon: DollarSign, title: "Built by makers around the US", subtitle: "Not mass produced" },
+    { icon: RefreshCw, title: "Free remake", subtitle: "If it's not right, we'll fix it" },
   ];
 
   return (
     <section className="bg-white py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase text-center mb-10">Why Us</h2>
+        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase text-center mb-10">Why EX3D Prints</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {reasons.map((r) => (
             <div key={r.title} className="text-center">

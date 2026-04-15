@@ -1,0 +1,22 @@
+{
+  "name": "MessageNote",
+  "type": "object",
+  "properties": {
+    "submission_id": {
+      "type": "string",
+      "description": "ID of the ContactSubmission this note belongs to"
+    },
+    "content": {
+      "type": "string",
+      "description": "Note content"
+    },
+    "created_by_name": {
+      "type": "string",
+      "description": "Admin name who created the note"
+    }
+  },
+  "required": [
+    "submission_id",
+    "content"
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "name": "MessageReply",
+  "type": "object",
+  "properties": {
+    "submission_id": {
+      "type": "string",
+      "description": "ID of the ContactSubmission this reply belongs to"
+    },
+    "sender_type": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "description": "Who sent the reply"
+    },
+    "content": {
+      "type": "string",
+      "description": "Reply content"
+    }
+  },
+  "required": [
+    "submission_id",
+    "sender_type",
+    "content"
+  ]
+}

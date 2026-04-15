@@ -132,22 +132,30 @@ export default function HeroSection() {
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Forgot a Gift?<br />
-            <span className="text-teal-400">{"We've Got You."}</span>
+            The Best Space Gifts<br />
+            <span className="text-teal-400">You Can Buy</span>
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Unique 3D printed gifts delivered in days, not weeks.
+            Premium Saturn V and SLS rocket model kits for people who love space.
           </p>
 
-          <div className="flex justify-center mb-8">
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
+              className="h-16 px-10 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl"
             >
-              <Link to={createPageUrl("Marketplace")}>Marketplace</Link>
+              <Link to="/SaturnV">Shop the Rocket Collection</Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              onClick={scrollToTop}
+              className="h-16 px-10 bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold shadow-2xl"
+            >
+              <Link to="/SaturnV">Get the Bundle for $60</Link>
             </Button>
           </div>
 
