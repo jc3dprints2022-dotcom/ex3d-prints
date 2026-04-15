@@ -9,6 +9,7 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function ProductCard({ product, user: initialUser }) {
+  if (!product) return null;
   const { toast } = useToast();
   const [addingToCart, setAddingToCart] = React.useState(false);
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
