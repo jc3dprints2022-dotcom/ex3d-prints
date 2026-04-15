@@ -14,8 +14,10 @@ export default function ProductCard({ product, user: initialUser }) {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [user, setUser] = React.useState(initialUser || null);
   const [isInWishlist, setIsInWishlist] = React.useState(
-    initialUser?.wishlist?.includes(product.id) || false
+    initialUser?.wishlist?.includes(product?.id) || false
   );
+
+  if (!product || !product.id) return null;
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
   React.useEffect(() => {
