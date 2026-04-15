@@ -352,7 +352,6 @@ export default function Marketplace() {
                       <Checkbox
                         id={`mat-${mat}`}
                         checked={filters.materials.includes(mat)}
-                        onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
                       />
                       <span className="text-sm">{mat}</span>
                     </div>
@@ -369,7 +368,6 @@ export default function Marketplace() {
                       <Checkbox
                         id={`rating-${rating}`}
                         checked={filters.rating === rating}
-                        onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
                       />
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
@@ -461,14 +459,13 @@ export default function Marketplace() {
                 <p className="text-sm font-medium mb-2">Materials</p>
                 <div className="space-y-2">
                   {MATERIALS.map(mat => (
-                    <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
-                      <Checkbox
-                        id={`mob-mat-${mat}`}
-                        checked={filters.materials.includes(mat)}
-                        onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
-                      />
-                      <span className="text-sm">{mat}</span>
-                    </div>
+                   <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
+                     <Checkbox
+                       id={`mob-mat-${mat}`}
+                       checked={filters.materials.includes(mat)}
+                     />
+                     <span className="text-sm">{mat}</span>
+                   </div>
                   ))}
                 </div>
               </div>
@@ -482,7 +479,6 @@ export default function Marketplace() {
                       <Checkbox
                         id={`mob-rating-${rating}`}
                         checked={filters.rating === rating}
-                        onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
                       />
                       <div className="flex items-center gap-1">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
