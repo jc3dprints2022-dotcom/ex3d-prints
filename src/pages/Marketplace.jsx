@@ -110,7 +110,7 @@ export default function Marketplace() {
       });
 
       if (data.success) {
-        setProducts(data.products);
+        setProducts((data.products || []).filter(p => p && p.id));
       } else {
         loadProducts();
       }
@@ -200,7 +200,7 @@ export default function Marketplace() {
     
     tempProducts = [...sortProducts(boostedProducts), ...sortProducts(nonBoostedProducts)];
     
-    const validProducts = tempProducts.filter(Boolean);
+    const validProducts = tempProducts.filter(p => p && p.id);
     setFilteredProducts(validProducts);
     setDisplayedProducts(validProducts);
     setPage(1);
@@ -406,7 +406,7 @@ export default function Marketplace() {
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {displayedProducts.filter(Boolean).map(product => (
+                  {displayedProducts.filter(p => p && p.id).map(product => (
                     <ProductCard key={product.id} product={product} user={user} />
                   ))}
                 </div>
