@@ -1,7 +1,7 @@
 import React from "react";
 import HeroSection from "../components/home/HeroSection";
 import FeaturedGrid from "../components/home/FeaturedGrid";
-import { HowItWorksHome, WhyUsSection, CustomSection } from "../components/home/HomeSections";
+import { HowItWorksHome, WhyUsSection, FounderSection } from "../components/home/HomeSections";
 
 export default function Home() {
   return (
@@ -10,7 +10,7 @@ export default function Home() {
       <FeaturedGrid />
       <HowItWorksHome />
       <WhyUsSection />
-      <CustomSection />
+      <FounderSection />
     </div>
   );
 }

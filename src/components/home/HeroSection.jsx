@@ -1,174 +1,38 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { Link } from "react-router-dom";
-import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
-import { base44 } from "@/api/base44Client";
 
 export default function HeroSection() {
-  const [products, setProducts] = useState([]);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [nextImageIndex, setNextImageIndex] = useState(null);
-  const [isFading, setIsFading] = useState(false);
-  const [preloadedImages, setPreloadedImages] = useState(new Set());
-
-  useEffect(() => {
-    loadProducts();
-  }, []);
-
-  useEffect(() => {
-    if (products.length > 0) {
-      products.forEach((product, index) => {
-        const img = new Image();
-        img.src = product.images[0];
-        img.onload = () => {
-          setPreloadedImages((prev) => new Set(prev).add(index));
-        };
-      });
-    }
-  }, [products]);
-
-  const transitionTo = (nextIndex) => {
-    if (isFading || nextIndex === currentImageIndex) return;
-    setNextImageIndex(nextIndex);
-    setIsFading(true);
-    setTimeout(() => {
-      setCurrentImageIndex(nextIndex);
-      setNextImageIndex(null);
-      setIsFading(false);
-    }, 800);
-  };
-
-  useEffect(() => {
-    if (products.length > 1 && preloadedImages.size > 0) {
-      const interval = setInterval(() => {
-        const nextIndex = (currentImageIndex + 1) % products.length;
-        if (preloadedImages.has(nextIndex)) {
-          transitionTo(nextIndex);
-        }
-      }, 4000);
-      return () => clearInterval(interval);
-    }
-  }, [products, currentImageIndex, preloadedImages, isFading]);
-
-  const loadProducts = async () => {
-    try {
-      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
-      if (featuredList.length > 0) {
-        featuredList.sort((a, b) => a.display_order - b.display_order);
-        const productsData = await Promise.all(
-          featuredList.map((f) => base44.entities.Product.get(f.product_id).catch(() => null))
-        );
-        const validProducts = productsData.filter((p) => p && p.status === "active" && p.images && p.images.length > 0);
-        if (validProducts.length > 0) {
-          setProducts(validProducts);
-          return;
-        }
-      }
-      const allProducts = await base44.entities.Product.list();
-      const topProducts = allProducts
-        .filter((p) => p.status === "active" && p.images && p.images.length > 0)
-        .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
-        .slice(0, 12);
-      setProducts(topProducts);
-    } catch (error) {
-      console.error("Failed to load products for slideshow:", error);
-    }
-  };
-
-  const handleImageClick = () => {
-    if (products[currentImageIndex]) {
-      window.location.href = `${createPageUrl("ProductDetail")}?id=${products[currentImageIndex].id}`;
-    }
-  };
-
-  const scrollToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  const handleDotClick = (index) => {
-    if (preloadedImages.has(index) && index !== currentImageIndex) {
-      transitionTo(index);
-    }
-  };
-
   return (
-    <section className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50 py-20 overflow-hidden" style={{ minHeight: "600px" }}>
-      {/* Background Slideshow */}
-      <div className="absolute inset-0">
-        {products.length > 0 && preloadedImages.size > 0 && (
-          <>
-            {/* Current image - fades out */}
-            <div
-              className="absolute inset-0 cursor-pointer"
-              style={{ opacity: isFading ? 0 : 1, transition: "opacity 800ms ease-in-out", zIndex: 10, pointerEvents: isFading ? "none" : "auto" }}
-              onClick={handleImageClick}
-            >
-              <img
-                src={products[currentImageIndex]?.images?.[0]}
-                alt="Featured product"
-                className="w-full h-full object-cover"
-                style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
-                draggable={false}
-              />
-            </div>
-            {/* Next image - fades in underneath */}
-            {nextImageIndex !== null && (
-              <div className="absolute inset-0" style={{ zIndex: 9 }}>
-                <img
-                  src={products[nextImageIndex]?.images?.[0]}
-                  alt="Next featured product"
-                  className="w-full h-full object-cover"
-                  style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
-                  draggable={false}
-                />
-              </div>
-            )}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/40 pointer-events-none" style={{ zIndex: 30 }} />
-          </>
-        )}
-      </div>
+    <section className="relative bg-[#0a0a0f] py-28 overflow-hidden min-h-[600px] flex items-center">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1a2e_0%,_#0a0a0f_70%)]" />
+      <div
+        className="absolute inset-0 opacity-20"
+        style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: "60px 60px" }}
+      />
 
-      {/* Main Content */}
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            Forgot a Gift?<br />
-            <span className="text-teal-400">{"We've Got You."}</span>
-          </h1>
-
-          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
-            Unique 3D printed gifts delivered in days, not weeks.
-          </p>
-
-          <div className="flex justify-center mb-8">
-            <Button
-              asChild
-              size="lg"
-              onClick={scrollToTop}
-              className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
-            >
-              <Link to={createPageUrl("Marketplace")}>Marketplace</Link>
+      <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center w-full">
+        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">EX3D Prints · Space Collection</p>
+        <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+          The Best Space Gifts<br />
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
+            You Can Buy
+          </span>
+        </h1>
+        <p className="text-xl md:text-2xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+          Premium Saturn V and SLS rocket model kits for people who love space.
+        </p>
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link to="/SaturnV">
+            <Button className="h-14 px-10 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg font-bold rounded-full shadow-lg shadow-orange-900/40 transition-all hover:scale-105 border-0">
+              Shop the Rocket Collection
             </Button>
-          </div>
-
-          {products.length > 1 && (
-            <div className="flex justify-center gap-2">
-              {products.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleDotClick(index)}
-                  disabled={!preloadedImages.has(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentImageIndex
-                      ? "bg-teal-400 w-8"
-                      : preloadedImages.has(index)
-                      ? "bg-white/50 hover:bg-white/80"
-                      : "bg-white/20"
-                  }`}
-                />
-              ))}
-            </div>
-          )}
+          </Link>
+          <Link to="/SaturnV">
+            <Button variant="outline" className="h-14 px-10 text-white border-white/30 bg-white/10 hover:bg-white/20 text-lg font-bold rounded-full backdrop-blur-sm">
+              Get the Bundle for $60
+            </Button>
+          </Link>
         </div>
       </div>
     </section>

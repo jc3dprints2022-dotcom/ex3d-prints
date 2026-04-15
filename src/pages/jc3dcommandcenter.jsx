@@ -20,8 +20,7 @@ import SystemSettingsSection from "../components/commandcenter/SystemSettingsSec
 import ItemManagementSection from "../components/commandcenter/ItemManagementSection";
 import EmailManagementSection from "../components/commandcenter/EmailManagementSection";
 import ExpManagementSection from "../components/commandcenter/ExpManagementSection";
-
-
+import MessagesSection from "../components/commandcenter/MessagesSection";
 
 export default function JC3DCommandCenter() {
   const [user, setUser] = useState(null);
@@ -76,6 +75,7 @@ export default function JC3DCommandCenter() {
     { value: "exp", label: "🏆 EXP Management" },
     { value: "email", label: "📧 Email Management" },
     { value: "makers", label: "🔧 Maker Tools & Performance" },
+    { value: "messages", label: "✉️ Messages" },
     { value: "settings", label: "⚙️ System Settings" }
   ];
 
@@ -95,6 +95,8 @@ export default function JC3DCommandCenter() {
         return <MakerToolsSection />;
       case "items":
         return <ItemManagementSection />;
+      case "messages":
+        return <MessagesSection />;
       case "settings":
         return <SystemSettingsSection />;
       default:
