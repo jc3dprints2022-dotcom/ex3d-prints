@@ -60,7 +60,7 @@ export default function Marketplace() {
   
   const [filters, setFilters] = useState({
     category: null,
-    materials: [], 
+    materials: [],
     priceRange: [0, 100],
     rating: 0,
     sortBy: "popular",
@@ -345,27 +345,29 @@ export default function Marketplace() {
 
               {/* Materials */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Materials</label>
+                <p className="text-sm font-medium mb-2">Materials</p>
                 <div className="space-y-2">
                   {MATERIALS.map(mat => (
-                    <label key={mat} className="flex items-center gap-2 cursor-pointer">
+                    <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
                       <Checkbox
+                        id={`mat-${mat}`}
                         checked={filters.materials.includes(mat)}
                         onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
                       />
                       <span className="text-sm">{mat}</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Rating */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Min Rating</label>
+                <p className="text-sm font-medium mb-2">Min Rating</p>
                 <div className="space-y-2">
                   {[4, 3, 2, 1].map(rating => (
-                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
+                    <div key={rating} className="flex items-center gap-2 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}>
                       <Checkbox
+                        id={`rating-${rating}`}
                         checked={filters.rating === rating}
                         onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
                       />
@@ -373,7 +375,7 @@ export default function Marketplace() {
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm">{rating}+ Stars</span>
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -456,27 +458,29 @@ export default function Marketplace() {
 
               {/* Materials */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Materials</label>
+                <p className="text-sm font-medium mb-2">Materials</p>
                 <div className="space-y-2">
                   {MATERIALS.map(mat => (
-                    <label key={mat} className="flex items-center gap-2 cursor-pointer">
+                    <div key={mat} className="flex items-center gap-2 cursor-pointer" onClick={() => handleMultiFilterToggle('materials', mat)}>
                       <Checkbox
+                        id={`mob-mat-${mat}`}
                         checked={filters.materials.includes(mat)}
                         onCheckedChange={() => handleMultiFilterToggle('materials', mat)}
                       />
                       <span className="text-sm">{mat}</span>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
 
               {/* Rating */}
               <div>
-                <label className="text-sm font-medium mb-2 block">Min Rating</label>
+                <p className="text-sm font-medium mb-2">Min Rating</p>
                 <div className="space-y-2">
                   {[4, 3, 2, 1].map(rating => (
-                    <label key={rating} className="flex items-center gap-2 cursor-pointer">
+                    <div key={rating} className="flex items-center gap-2 cursor-pointer" onClick={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}>
                       <Checkbox
+                        id={`mob-rating-${rating}`}
                         checked={filters.rating === rating}
                         onCheckedChange={() => setFilters(prev => ({ ...prev, rating: prev.rating === rating ? 0 : rating }))}
                       />
@@ -484,7 +488,7 @@ export default function Marketplace() {
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                         <span className="text-sm">{rating}+ Stars</span>
                       </div>
-                    </label>
+                    </div>
                   ))}
                 </div>
               </div>
