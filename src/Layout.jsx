@@ -393,7 +393,7 @@ export default function Layout({ children, currentPageName }) {
               <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-12 w-auto"/>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="hidden md:flex items-center space-x-8">
               <Link
                 to={createPageUrl("Marketplace")}
                 onClick={scrollToTop}
@@ -403,30 +403,88 @@ export default function Layout({ children, currentPageName }) {
                     : "bg-teal-50 text-teal-700 hover:bg-teal-100"
                 }`}
               >
-                Shop
+                Marketplace
               </Link>
-              <Link
-                to="/SaturnV"
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === "/SaturnV"
-                    ? "bg-orange-500 text-white"
-                    : "bg-orange-50 text-orange-700 hover:bg-orange-100"
-                }`}
-              >
-                Rocket Collection
-              </Link>
-              <Link
-                to="/About"
-                onClick={scrollToTop}
-                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === "/About"
-                    ? "bg-slate-700 text-white"
-                    : "bg-slate-100 text-slate-700 hover:bg-slate-200"
-                }`}
-              >
-                About
-              </Link>
+
+
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForMakers")
+                        ? "bg-orange-500 text-white"
+                        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Makers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForMakers")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.maker_id && (user.business_roles?.includes('maker')) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=maker`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Maker Hub
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("MakerSignup")} onClick={scrollToTop}>
+                        <span className="text-orange-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                      location.pathname === createPageUrl("ForDesigners")
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    } flex items-center gap-1`}
+                  >
+                    For Designers
+                    <ChevronDown className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop}>Overview</Link>
+                  </DropdownMenuItem>
+                  {user && user.designer_id && (user.business_roles?.includes('designer')) && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop}>
+                          <Settings className="w-4 h-4 mr-2" />
+                          Designer Hub
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop}>
+                        <span className="text-blue-600 font-semibold">Get Started</span>
+                      </Link>
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
 
             <div className="flex items-center space-x-4">
@@ -444,7 +502,7 @@ export default function Layout({ children, currentPageName }) {
 
               {/* Cart Icon */}
               <Link
-                to={createPageUrl("Cart")}
+                to={createPageUrl(user?.account_type === "business" ? "BusinessCart" : "Cart")}
                 className="relative"
               >
                 <Button variant="ghost" size="icon">
@@ -562,33 +620,77 @@ export default function Layout({ children, currentPageName }) {
 
           {mobileMenuOpen && (
             <div className="md:hidden border-t bg-white py-4">
+              {/* Marketplace Section */}
               <div className="pt-2">
                 <Link
                   to={createPageUrl("Marketplace")}
                   className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >
-                  Shop
+                  Marketplace
                 </Link>
               </div>
 
 
 
+              {/* For Makers Section */}
               <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Makers</p>
                 <Link
-                  to="/SaturnV"
-                  className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                  to={createPageUrl("ForMakers")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-teal-600 hover:bg-gray-50"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >
-                  Rocket Collection
+                  Overview
                 </Link>
+                {user && user.maker_id && user.business_roles?.includes('maker') && (
+                  <Link
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=maker`}
+                    className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Maker Hub
+                  </Link>
+                )}
+                {(!user || !(user.maker_id && user.business_roles?.includes('maker'))) && (
+                  <Link
+                    to={createPageUrl("MakerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Get Started
+                  </Link>
+                )}
+              </div>
+
+              {/* For Designers Section */}
+              <div className="border-t border-gray-100 mt-2 pt-2">
+                <p className="px-4 py-1 text-xs font-semibold text-gray-500 uppercase">For Designers</p>
                 <Link
-                  to="/About"
-                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-800 hover:bg-gray-50"
+                  to={createPageUrl("ForDesigners")}
+                  className="block px-4 py-2 text-sm font-medium text-slate-600 hover:text-blue-600 hover:bg-gray-50"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >
-                  About
+                  Overview
                 </Link>
+                {user && user.designer_id && user.business_roles?.includes('designer') && (
+                  <Link
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=designer`}
+                    className="block px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Designer Hub
+                  </Link>
+                )}
+                {(!user || !(user.designer_id && user.business_roles?.includes('designer'))) && (
+                  <Link
+                    to={createPageUrl("DesignerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    Get Started
+                  </Link>
+                )}
               </div>
             </div>
           )}
@@ -635,16 +737,13 @@ export default function Layout({ children, currentPageName }) {
                 <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-10 w-auto"/>
               </div>
               <p className="text-gray-300 mb-4">
-                Premium rocket models and space gifts, designed for people who love space.
+                The premier marketplace connecting 3D printing enthusiasts and makers worldwide.
               </p>
             </div>
 
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><Link to="/SaturnV" onClick={scrollToTop} className="hover:text-white">Rocket Collection</Link></li>
-                <li><Link to={createPageUrl("Marketplace")} onClick={scrollToTop} className="hover:text-white">Shop</Link></li>
-                <li><Link to="/About" onClick={scrollToTop} className="hover:text-white">About</Link></li>
                 <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
                 <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
               </ul>

@@ -59,16 +59,6 @@ export default function Contact() {
 
       const submission = await base44.entities.ContactSubmission.create(submissionData);
 
-      // Also save to Messages for admin panel
-      await base44.entities.Message.create({
-        name: formData.name,
-        email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-        status: 'open',
-        user_id: user?.id || null,
-      }).catch(() => {});
-
       // Send confirmation email to user
       try {
         await base44.functions.invoke('sendEmail', {

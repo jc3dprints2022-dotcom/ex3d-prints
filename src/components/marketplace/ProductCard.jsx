@@ -14,7 +14,7 @@ export default function ProductCard({ product, user: initialUser }) {
   const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
   const [user, setUser] = React.useState(initialUser || null);
   const [isInWishlist, setIsInWishlist] = React.useState(
-    initialUser?.wishlist?.includes(product?.id) || false
+    initialUser?.wishlist?.includes(product.id) || false
   );
   const [imageLoaded, setImageLoaded] = React.useState(false);
 
@@ -23,12 +23,10 @@ export default function ProductCard({ product, user: initialUser }) {
     if (!initialUser) {
       base44.auth.me().then(u => {
         setUser(u);
-        setIsInWishlist(u?.wishlist?.includes(product?.id) || false);
+        setIsInWishlist(u?.wishlist?.includes(product.id) || false);
       }).catch(() => {});
     }
   }, [initialUser]);
-
-  if (!product || !product.id) return null;
 
   const handleAddToCart = async (e) => {
     e.preventDefault();

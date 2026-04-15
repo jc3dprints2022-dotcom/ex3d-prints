@@ -1,5 +1,65 @@
+/**
+ * pages.config.js - Page routing configuration
+ * 
+ * This file is AUTO-GENERATED. Do not add imports or modify PAGES manually.
+ * Pages are auto-registered when you create files in the ./pages/ folder.
+ * 
+ * THE ONLY EDITABLE VALUE: mainPage
+ * This controls which page is the landing page (shown when users visit the app).
+ * 
+ * Example file structure:
+ * 
+ *   import HomePage from './pages/HomePage';
+ *   import Dashboard from './pages/Dashboard';
+ *   import Settings from './pages/Settings';
+ *   
+ *   export const PAGES = {
+ *       "HomePage": HomePage,
+ *       "Dashboard": Dashboard,
+ *       "Settings": Settings,
+ *   }
+ *   
+ *   export const pagesConfig = {
+ *       mainPage: "HomePage",
+ *       Pages: PAGES,
+ *   };
+ * 
+ * Example with Layout (wraps all pages):
+ *
+ *   import Home from './pages/Home';
+ *   import Settings from './pages/Settings';
+ *   import __Layout from './Layout.jsx';
+ *
+ *   export const PAGES = {
+ *       "Home": Home,
+ *       "Settings": Settings,
+ *   }
+ *
+ *   export const pagesConfig = {
+ *       mainPage: "Home",
+ *       Pages: PAGES,
+ *       Layout: __Layout,
+ *   };
+ *
+ * To change the main page from HomePage to Dashboard, use find_replace:
+ *   Old: mainPage: "HomePage",
+ *   New: mainPage: "Dashboard",
+ *
+ * The mainPage value must match a key in the PAGES object exactly.
+ */
 import AccountInfo from './pages/AccountInfo';
 import AccountTypeSelect from './pages/AccountTypeSelect';
+import AdminAuditLogs from './pages/AdminAuditLogs';
+import AdminPortalJC3D from './pages/AdminPortalJC3D';
+import BusinessCADUpload from './pages/BusinessCADUpload';
+import BusinessCart from './pages/BusinessCart';
+import BusinessCatalog from './pages/BusinessCatalog';
+import BusinessCheckout from './pages/BusinessCheckout';
+import BusinessDashboard from './pages/BusinessDashboard';
+import businessmarketplaceArchived from './pages/BusinessMarketplace.archived';
+import BusinessMarketplace from './pages/BusinessMarketplace';
+import BusinessProductDetail from './pages/BusinessProductDetail';
+import CampusManagementCenter from './pages/CampusManagementCenter';
 import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import ConsumerDashboard from './pages/ConsumerDashboard';
@@ -15,6 +75,7 @@ import ForDesigners from './pages/ForDesigners';
 import ForMakers from './pages/ForMakers';
 import Home from './pages/Home';
 import HowItWorks from './pages/HowItWorks';
+
 import MakerHowItWorks from './pages/MakerHowItWorks';
 import MakerSignup from './pages/MakerSignup';
 import Marketplace from './pages/Marketplace';
@@ -22,14 +83,28 @@ import PaymentSuccess from './pages/PaymentSuccess';
 import Privacy from './pages/Privacy';
 import ProductDetail from './pages/ProductDetail';
 import ReportIssue from './pages/ReportIssue';
+import SubscriptionConfirmation from './pages/SubscriptionConfirmation';
+import SystemDebug from './pages/SystemDebug';
 import Terms from './pages/Terms';
 import Wishlist from './pages/Wishlist';
 import jc3dcommandcenter from './pages/jc3dcommandcenter';
 import __Layout from './Layout.jsx';
 
+
 export const PAGES = {
     "AccountInfo": AccountInfo,
     "AccountTypeSelect": AccountTypeSelect,
+    "AdminAuditLogs": AdminAuditLogs,
+    "AdminPortalJC3D": AdminPortalJC3D,
+    "BusinessCADUpload": BusinessCADUpload,
+    "BusinessCart": BusinessCart,
+    "BusinessCatalog": BusinessCatalog,
+    "BusinessCheckout": BusinessCheckout,
+    "BusinessDashboard": BusinessDashboard,
+    "BusinessMarketplace.archived": businessmarketplaceArchived,
+    "BusinessMarketplace": BusinessMarketplace,
+    "BusinessProductDetail": BusinessProductDetail,
+    "CampusManagementCenter": CampusManagementCenter,
     "Cart": Cart,
     "Checkout": Checkout,
     "ConsumerDashboard": ConsumerDashboard,
@@ -45,6 +120,7 @@ export const PAGES = {
     "ForMakers": ForMakers,
     "Home": Home,
     "HowItWorks": HowItWorks,
+
     "MakerHowItWorks": MakerHowItWorks,
     "MakerSignup": MakerSignup,
     "Marketplace": Marketplace,
@@ -52,6 +128,8 @@ export const PAGES = {
     "Privacy": Privacy,
     "ProductDetail": ProductDetail,
     "ReportIssue": ReportIssue,
+    "SubscriptionConfirmation": SubscriptionConfirmation,
+    "SystemDebug": SystemDebug,
     "Terms": Terms,
     "Wishlist": Wishlist,
     "jc3dcommandcenter": jc3dcommandcenter,
