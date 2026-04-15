@@ -1,19 +1,12 @@
 import React from "react";
-import { useNavigate } from "react-router-dom";
-import { createPageUrl } from "@/utils";
-import { Button } from "@/components/ui/button";
-import { Zap, DollarSign, RefreshCw } from "lucide-react";
-
-function navigateToTop(navigate, url) {
-  navigate(url);
-  window.scrollTo(0, 0);
-}
+import { Link } from "react-router-dom";
+import { Zap, Users, RefreshCw } from "lucide-react";
 
 export function HowItWorksHome() {
   const steps = [
-    { number: "1", title: "Pick a gift", description: "Browse our marketplace for the perfect 3D printed gift." },
-    { number: "2", title: "We print in 24–48 hrs", description: "A local maker prints your order fast." },
-    { number: "3", title: "You get it fast", description: "Shipped or delivered to you in days." },
+    { number: "1", title: "Pick your rocket", description: "Choose Saturn V, SLS, or get both together as a bundle." },
+    { number: "2", title: "We print it fast", description: "Each model is produced quickly and carefully by local makers." },
+    { number: "3", title: "Build and display", description: "Your model arrives ready to assemble and display proudly." },
   ];
 
   return (
@@ -38,15 +31,15 @@ export function HowItWorksHome() {
 
 export function WhyUsSection() {
   const reasons = [
-    { icon: Zap, title: "Fast delivery", subtitle: "Days, not weeks" },
-    { icon: DollarSign, title: "From $10", subtitle: "Affordable unique gifts" },
-    { icon: RefreshCw, title: "Free remake", subtitle: "If it's not right" },
+    { icon: Zap, title: "Fast delivery", subtitle: "Ships in days, not weeks" },
+    { icon: Users, title: "Built by makers around the US", subtitle: "Not mass produced" },
+    { icon: RefreshCw, title: "Free remake", subtitle: "If it's not right, we'll fix it" },
   ];
 
   return (
     <section className="bg-white py-16">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase text-center mb-10">Why Us</h2>
+        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase text-center mb-10">Why EX3D Prints</h2>
         <div className="grid md:grid-cols-3 gap-8">
           {reasons.map((r) => (
             <div key={r.title} className="text-center">
@@ -63,23 +56,20 @@ export function WhyUsSection() {
   );
 }
 
-export function CustomSection() {
-  const navigate = useNavigate();
+export function FounderSection() {
   return (
     <section className="bg-gray-50 py-16">
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase mb-4">Custom</h2>
-        <h3 className="text-2xl md:text-3xl font-bold text-slate-900 mb-3">Need something specific?</h3>
-        <p className="text-lg text-slate-600 mb-8">
-          Tell us what you want. We handle the rest.
+        <h2 className="text-sm font-bold tracking-widest text-teal-600 uppercase mb-4">Built by Someone Who Loves Space</h2>
+        <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+          I'm Jacob, an aerospace engineering student who helps build real rocket engines. I made these models because I wanted high-quality versions of the greatest rockets ever built. Now EX3D Prints makes them for other people who feel the same way.
         </p>
-        <Button
-          size="lg"
-          className="h-20 px-20 bg-teal-600 hover:bg-teal-700 text-white text-2xl font-bold shadow-2xl"
-          onClick={() => navigateToTop(navigate, createPageUrl("CustomPrintRequest"))}
+        <Link
+          to="/SaturnV"
+          className="inline-block bg-teal-600 hover:bg-teal-700 text-white font-bold px-8 py-3 rounded-lg transition-colors"
         >
-          Request a Gift
-        </Button>
+          See the Rocket Collection
+        </Link>
       </div>
     </section>
   );

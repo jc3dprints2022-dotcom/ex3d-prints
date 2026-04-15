@@ -20,6 +20,7 @@ import SystemSettingsSection from "../components/commandcenter/SystemSettingsSec
 import ItemManagementSection from "../components/commandcenter/ItemManagementSection";
 import EmailManagementSection from "../components/commandcenter/EmailManagementSection";
 import ExpManagementSection from "../components/commandcenter/ExpManagementSection";
+import MessagesSection from "../components/commandcenter/MessagesSection";
 
 
 
@@ -70,6 +71,7 @@ export default function JC3DCommandCenter() {
 
   const sections = [
     { value: "dashboard", label: "📊 Dashboard" },
+    { value: "messages", label: "💬 Messages" },
     { value: "items", label: "📋 Item Management" },
     { value: "orders", label: "📦 Order Routing" },
     { value: "payments", label: "💰 Payments & Financials" },
@@ -95,6 +97,8 @@ export default function JC3DCommandCenter() {
         return <MakerToolsSection />;
       case "items":
         return <ItemManagementSection />;
+      case "messages":
+        return <MessagesSection />;
       case "settings":
         return <SystemSettingsSection />;
       default:

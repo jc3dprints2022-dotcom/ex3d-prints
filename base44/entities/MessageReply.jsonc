@@ -1,0 +1,25 @@
+{
+  "name": "MessageReply",
+  "type": "object",
+  "properties": {
+    "message_id": {
+      "type": "string"
+    },
+    "sender_type": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "user"
+      ],
+      "default": "admin"
+    },
+    "content": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "message_id",
+    "sender_type",
+    "content"
+  ]
+}
