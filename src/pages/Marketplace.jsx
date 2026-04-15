@@ -7,7 +7,7 @@ import { createPageUrl } from "@/utils";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
-import { Slider } from "@/components/ui/slider";
+
 import ProductCard from "../components/marketplace/ProductCard";
 
 const CATEGORIES = [
@@ -330,16 +330,20 @@ export default function Marketplace() {
               {/* Price Range */}
               <div>
                 <label className="text-sm font-medium mb-3 block">Price Range</label>
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
-                  max={100}
-                  step={5}
-                  className="mb-2"
-                />
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>${filters.priceRange[0]}</span>
-                  <span>${filters.priceRange[1]}</span>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500 w-6">$0</span>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={5}
+                      value={filters.priceRange[1]}
+                      onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, Number(e.target.value)] }))}
+                      className="flex-1 accent-teal-600"
+                    />
+                    <span className="text-xs text-gray-500 w-10">${filters.priceRange[1]}</span>
+                  </div>
                 </div>
               </div>
 
@@ -435,16 +439,18 @@ export default function Marketplace() {
               {/* Price Range */}
               <div>
                 <label className="text-sm font-medium mb-3 block">Price Range</label>
-                <Slider
-                  value={filters.priceRange}
-                  onValueChange={(value) => setFilters(prev => ({ ...prev, priceRange: value }))}
-                  max={100}
-                  step={5}
-                  className="mb-2"
-                />
-                <div className="flex justify-between text-xs text-gray-600">
-                  <span>${filters.priceRange[0]}</span>
-                  <span>${filters.priceRange[1]}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-gray-500 w-6">$0</span>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    value={filters.priceRange[1]}
+                    onChange={(e) => setFilters(prev => ({ ...prev, priceRange: [0, Number(e.target.value)] }))}
+                    className="flex-1 accent-teal-600"
+                  />
+                  <span className="text-xs text-gray-500 w-10">${filters.priceRange[1]}</span>
                 </div>
               </div>
 
