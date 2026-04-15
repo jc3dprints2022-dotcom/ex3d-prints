@@ -146,7 +146,7 @@ export default function HeroSection() {
               onClick={scrollToTop}
               className="h-16 px-10 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl">
               
-              <Link to="/SaturnV">Shop the Rocket Collection</Link>
+              <Link to={createPageUrl("Marketplace")}>Shop</Link>
             </Button>
             <Button
               asChild
@@ -154,7 +154,7 @@ export default function HeroSection() {
               onClick={scrollToTop}
               className="h-16 px-10 bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold shadow-2xl">
               
-              <Link to="/SaturnV">Get the Bundle for $60</Link>
+              <Link to="/rocketcollection">Rocket Collection</Link>
             </Button>
           </div>
 

@@ -5,10 +5,11 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 
-// Space-focused product IDs to show first
+// Space-focused product IDs to show first (in order)
 const SPACE_PRODUCT_IDS = [
   "693b06e655e441e07049d328", // Saturn V
   "69dbf08433850e148542d876", // SLS
+  // Starship, Space Race Display, One Small Step – search by name below
 ];
 
 const HIDDEN_PRODUCT_NAMES = [
@@ -17,6 +18,16 @@ const HIDDEN_PRODUCT_NAMES = [
   "baby crystal dragon",
   "coral headphone stand",
   "interlocking spiral fidget toy collection",
+  "heart vase",
+  "desk organizer",
+  "utility carabiner",
+];
+
+// Named products to feature (searched by name, case-insensitive partial match)
+const FEATURED_NAMED = [
+  "starship",
+  "space race",
+  "one small step",
 ];
 
 export default function FeaturedGrid() {
@@ -36,13 +47,17 @@ export default function FeaturedGrid() {
           !HIDDEN_PRODUCT_NAMES.some((n) => p.name?.toLowerCase().includes(n))
       );
 
-      // Put space products first, then sort rest by view count
+      // Put space IDs first, then named featured products, then rest by view count
       const spaceFirst = SPACE_PRODUCT_IDS.map((id) => valid.find((p) => p.id === id)).filter(Boolean);
+      const namedFeatured = FEATURED_NAMED.map((name) =>
+        valid.find((p) => p.name?.toLowerCase().includes(name) && !SPACE_PRODUCT_IDS.includes(p.id))
+      ).filter(Boolean);
+      const usedIds = new Set([...spaceFirst.map(p => p.id), ...namedFeatured.map(p => p.id)]);
       const rest = valid
-        .filter((p) => !SPACE_PRODUCT_IDS.includes(p.id))
+        .filter((p) => !usedIds.has(p.id))
         .sort((a, b) => (b.view_count || 0) - (a.view_count || 0));
 
-      setProducts([...spaceFirst, ...rest].slice(0, 6));
+      setProducts([...spaceFirst, ...namedFeatured, ...rest].slice(0, 6));
     } catch (error) {
       console.error("Failed to load featured products:", error);
     } finally {
@@ -96,7 +111,7 @@ export default function FeaturedGrid() {
           <Button
             size="lg"
             className="h-16 px-16 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl"
-            onClick={() => { window.location.href = "/SaturnV"; window.scrollTo(0, 0); }}
+            onClick={() => { window.location.href = "/rocketcollection"; window.scrollTo(0, 0); }}
           >
             Shop the Rocket Collection
           </Button>

@@ -66,6 +66,7 @@ const AuthenticatedApp = () => {
       <Route path="/StripeSetupComplete" element={<LayoutWrapper currentPageName="StripeSetupComplete"><StripeSetupComplete /></LayoutWrapper>} />
       <Route path="/About" element={<LayoutWrapper currentPageName="About"><About /></LayoutWrapper>} />
       <Route path="/SaturnV" element={<SaturnV />} />
+      <Route path="/rocketcollection" element={<SaturnV />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

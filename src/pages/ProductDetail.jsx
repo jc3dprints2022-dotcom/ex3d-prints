@@ -215,8 +215,9 @@ export default function ProductDetail() {
       return;
     }
 
-    if (!product.multi_color && !selectedColor) {
-      toast({ title: "Please select color", variant: "destructive" });
+    // Only require color selection if a dropdown is shown
+    if (showColorDropdown && !selectedColor) {
+      toast({ title: "Please select a color", variant: "destructive" });
       return;
     }
 
@@ -236,11 +237,16 @@ export default function ProductDetail() {
     }
 
     try {
+      // Determine the resolved color to store
+      const resolvedColor = product.multi_color
+        ? multiColorSelections.join(', ')
+        : (fixedColorLabel || selectedColor);
+
       const existingCartItems = await base44.entities.Cart.filter({
         user_id: user.id,
         product_id: product.id,
         selected_material: selectedMaterial,
-        selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
+        selected_color: resolvedColor,
       });
 
       const effectivePrice = dropPrice !== null ? dropPrice : product.price;
@@ -249,10 +255,11 @@ export default function ProductDetail() {
         product_id: product.id,
         quantity,
         selected_material: selectedMaterial,
-        selected_color: product.multi_color ? multiColorSelections.join(', ') : selectedColor,
+        selected_color: resolvedColor,
         unit_price: effectivePrice,
         total_price: effectivePrice * quantity,
         multi_color_selections: product.multi_color ? multiColorSelections : null,
+        use_shown_colors: useShownColors,
         ...(dropPrice !== null ? { is_design_drop: true } : {})
       };
 
@@ -375,7 +382,13 @@ export default function ProductDetail() {
     );
   }
 
-  const showMaterialSelector = product.materials && product.materials.length > 1;
+  // Color logic: show dropdown only when >1 color and not use_shown_colors and not multi_color
+  const useShownColors = product.use_shown_colors || false;
+  const hasMultipleColors = product.colors && product.colors.length > 1;
+  const showColorDropdown = !product.multi_color && !useShownColors && hasMultipleColors;
+  const fixedColorLabel = useShownColors
+    ? "Shown Colors (as pictured)"
+    : (product.colors && product.colors.length === 1 ? product.colors[0] : null);
 
   const getEffectivePrice = () => {
     // If a variant option with a price is selected, use it
@@ -587,21 +600,25 @@ export default function ProductDetail() {
                     </div>
                   ))}
 
-                  {showMaterialSelector && (
+                  {showColorDropdown && (
                     <div>
-                      <Label htmlFor="material-mobile">Material *</Label>
+                      <Label htmlFor="color-mobile">Color *</Label>
                       <Select value={selectedColor} onValueChange={setSelectedColor}>
                         <SelectTrigger id="color-mobile">
                           <SelectValue placeholder="Select color" />
                         </SelectTrigger>
                         <SelectContent>
-                          {product.colors && product.colors.map((color) => (
-                            <SelectItem key={color} value={color}>
-                              {color}
-                            </SelectItem>
+                          {product.colors.map((color) => (
+                            <SelectItem key={color} value={color}>{color}</SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
+                    </div>
+                  )}
+                  {fixedColorLabel && !product.multi_color && (
+                    <div>
+                      <Label>Color</Label>
+                      <div className="mt-1 px-3 py-2 bg-gray-50 border rounded-md text-sm text-gray-700">{fixedColorLabel}</div>
                     </div>
                   )}
 
@@ -801,21 +818,25 @@ export default function ProductDetail() {
                   </div>
                 ))}
 
-                {showMaterialSelector && (
+                {showColorDropdown && (
                   <div>
-                    <Label htmlFor="material">Material *</Label>
+                    <Label htmlFor="color-desktop">Color *</Label>
                     <Select value={selectedColor} onValueChange={setSelectedColor}>
-                      <SelectTrigger id="color">
+                      <SelectTrigger id="color-desktop">
                         <SelectValue placeholder="Select color" />
                       </SelectTrigger>
                       <SelectContent>
-                        {product.colors && product.colors.map((color) => (
-                          <SelectItem key={color} value={color}>
-                            {color}
-                          </SelectItem>
+                        {product.colors.map((color) => (
+                          <SelectItem key={color} value={color}>{color}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+                {fixedColorLabel && !product.multi_color && (
+                  <div>
+                    <Label>Color</Label>
+                    <div className="mt-1 px-3 py-2 bg-gray-50 border rounded-md text-sm text-gray-700">{fixedColorLabel}</div>
                   </div>
                 )}
 

@@ -393,7 +393,7 @@ export default function Layout({ children, currentPageName }) {
               <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-12 w-auto"/>
             </Link>
 
-            <nav className="hidden md:flex items-center space-x-4">
+            <nav className="hidden md:flex flex-1 items-center justify-evenly mx-6">
               <Link
                 to={createPageUrl("Marketplace")}
                 onClick={scrollToTop}
@@ -406,10 +406,10 @@ export default function Layout({ children, currentPageName }) {
                 Shop
               </Link>
               <Link
-                to="/SaturnV"
+                to="/rocketcollection"
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
-                  location.pathname === "/SaturnV"
+                  location.pathname === "/rocketcollection" || location.pathname === "/SaturnV"
                     ? "bg-orange-500 text-white"
                     : "bg-orange-50 text-orange-700 hover:bg-orange-100"
                 }`}
@@ -571,7 +571,7 @@ export default function Layout({ children, currentPageName }) {
                   Shop
                 </Link>
                 <Link
-                  to="/SaturnV"
+                  to="/rocketcollection"
                   className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded"
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >

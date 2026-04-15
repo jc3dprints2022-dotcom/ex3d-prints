@@ -110,17 +110,17 @@ export default function SaturnV() {
             Get the Saturn V and SLS together for $60. Built for people who love space.
           </p>
 
-          {/* Both rockets side by side */}
-          <div className="flex justify-center gap-6 mb-10">
+          {/* Both rockets side by side — aligned by center */}
+          <div className="flex justify-center items-center gap-6 mb-10">
             <div className="flex flex-col items-center">
-              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 max-w-[160px] sm:max-w-[200px]">
-                <img src={SATURN_V_IMAGE} alt="Saturn V" className="w-full h-auto block" />
+              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 w-[160px] sm:w-[200px] h-[220px] sm:h-[280px] flex items-center justify-center bg-gray-900">
+                <img src={SATURN_V_IMAGE} alt="Saturn V" className="max-w-full max-h-full object-contain" />
               </div>
               <p className="text-xs text-gray-400 mt-2">Saturn V</p>
             </div>
             <div className="flex flex-col items-center">
-              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 max-w-[160px] sm:max-w-[200px]">
-                <img src={SLS_IMAGE} alt="SLS" className="w-full h-auto block max-h-[220px] object-contain bg-gray-900" />
+              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 w-[160px] sm:w-[200px] h-[220px] sm:h-[280px] flex items-center justify-center bg-gray-900">
+                <img src={SLS_IMAGE} alt="SLS" className="max-w-full max-h-full object-contain" />
               </div>
               <p className="text-xs text-gray-400 mt-2">SLS</p>
             </div>
