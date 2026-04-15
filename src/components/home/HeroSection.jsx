@@ -65,10 +65,10 @@ export default function HeroSection() {
         }
       }
       const allProducts = await base44.entities.Product.list();
-      const topProducts = allProducts
-        .filter((p) => p.status === "active" && p.images && p.images.length > 0)
-        .sort((a, b) => (b.view_count || 0) - (a.view_count || 0))
-        .slice(0, 12);
+      const topProducts = allProducts.
+      filter((p) => p.status === "active" && p.images && p.images.length > 0).
+      sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).
+      slice(0, 12);
       setProducts(topProducts);
     } catch (error) {
       console.error("Failed to load products for slideshow:", error);
@@ -95,45 +95,45 @@ export default function HeroSection() {
     <section className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50 py-20 overflow-hidden" style={{ minHeight: "600px" }}>
       {/* Background Slideshow */}
       <div className="absolute inset-0">
-        {products.length > 0 && preloadedImages.size > 0 && (
-          <>
+        {products.length > 0 && preloadedImages.size > 0 &&
+        <>
             {/* Current image - fades out */}
             <div
-              className="absolute inset-0 cursor-pointer"
-              style={{ opacity: isFading ? 0 : 1, transition: "opacity 800ms ease-in-out", zIndex: 10, pointerEvents: isFading ? "none" : "auto" }}
-              onClick={handleImageClick}
-            >
+            className="absolute inset-0 cursor-pointer"
+            style={{ opacity: isFading ? 0 : 1, transition: "opacity 800ms ease-in-out", zIndex: 10, pointerEvents: isFading ? "none" : "auto" }}
+            onClick={handleImageClick}>
+            
               <img
-                src={products[currentImageIndex]?.images?.[0]}
-                alt="Featured product"
-                className="w-full h-full object-cover"
-                style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
-                draggable={false}
-              />
+              src={products[currentImageIndex]?.images?.[0]}
+              alt="Featured product"
+              className="w-full h-full object-cover"
+              style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
+              draggable={false} />
+            
             </div>
             {/* Next image - fades in underneath */}
-            {nextImageIndex !== null && (
-              <div className="absolute inset-0" style={{ zIndex: 9 }}>
+            {nextImageIndex !== null &&
+          <div className="absolute inset-0" style={{ zIndex: 9 }}>
                 <img
-                  src={products[nextImageIndex]?.images?.[0]}
-                  alt="Next featured product"
-                  className="w-full h-full object-cover"
-                  style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
-                  draggable={false}
-                />
+              src={products[nextImageIndex]?.images?.[0]}
+              alt="Next featured product"
+              className="w-full h-full object-cover"
+              style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
+              draggable={false} />
+            
               </div>
-            )}
+          }
             <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/40 pointer-events-none" style={{ zIndex: 30 }} />
           </>
-        )}
+        }
       </div>
 
       {/* Main Content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
         <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">
-            The Best Space Gifts<br />
-            <span className="text-teal-400">You Can Buy</span>
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">The Best Space G
+You Can Buy
+
           </h1>
 
           <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
@@ -145,40 +145,40 @@ export default function HeroSection() {
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-16 px-10 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl"
-            >
+              className="h-16 px-10 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl">
+              
               <Link to="/SaturnV">Shop the Rocket Collection</Link>
             </Button>
             <Button
               asChild
               size="lg"
               onClick={scrollToTop}
-              className="h-16 px-10 bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold shadow-2xl"
-            >
+              className="h-16 px-10 bg-orange-500 hover:bg-orange-600 text-white text-xl font-bold shadow-2xl">
+              
               <Link to="/SaturnV">Get the Bundle for $60</Link>
             </Button>
           </div>
 
-          {products.length > 1 && (
-            <div className="flex justify-center gap-2">
-              {products.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleDotClick(index)}
-                  disabled={!preloadedImages.has(index)}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    index === currentImageIndex
-                      ? "bg-teal-400 w-8"
-                      : preloadedImages.has(index)
-                      ? "bg-white/50 hover:bg-white/80"
-                      : "bg-white/20"
-                  }`}
-                />
-              ))}
+          {products.length > 1 &&
+          <div className="flex justify-center gap-2">
+              {products.map((_, index) =>
+            <button
+              key={index}
+              onClick={() => handleDotClick(index)}
+              disabled={!preloadedImages.has(index)}
+              className={`w-2 h-2 rounded-full transition-all ${
+              index === currentImageIndex ?
+              "bg-teal-400 w-8" :
+              preloadedImages.has(index) ?
+              "bg-white/50 hover:bg-white/80" :
+              "bg-white/20"}`
+              } />
+
+            )}
             </div>
-          )}
+          }
         </div>
       </div>
-    </section>
-  );
+    </section>);
+
 }
