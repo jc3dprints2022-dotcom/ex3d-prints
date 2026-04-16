@@ -19,16 +19,24 @@ export default function ForMakers() {
     const fetchRevenue = async () => {
       setLoading(true);
       try {
-        const [completed, dropped, delivered] = await Promise.all([
+        // Use actual payout records for accuracy
+        const payouts = await base44.entities.Payout.filter({ user_role: 'maker', status: 'completed' });
+        const paid = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
+        setTotalRevenue(paid);
+      } catch (error) {
+        // Fallback to order estimates
+        try {
+          const [completed, dropped, delivered] = await Promise.all([
             base44.entities.Order.filter({ status: 'completed' }),
             base44.entities.Order.filter({ status: 'dropped_off' }),
             base44.entities.Order.filter({ status: 'delivered' })
-        ]);
-        const allRevenueOrders = [...completed, ...dropped, ...delivered];
-        const revenue = allRevenueOrders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
-        setTotalRevenue(revenue);
-      } catch (error) {
-        console.error("Failed to fetch total revenue:", error);
+          ]);
+          const allOrders = [...completed, ...dropped, ...delivered];
+          const paid = allOrders.reduce((sum, order) => sum + (order.maker_payout_amount || order.total_amount * 0.50 || 0), 0);
+          setTotalRevenue(paid);
+        } catch (e) {
+          console.error("Failed to fetch revenue:", e);
+        }
       } finally {
         setLoading(false);
       }
@@ -36,7 +44,7 @@ export default function ForMakers() {
     fetchRevenue();
   }, []);
 
-  const paidToMakers = totalRevenue * 0.70;
+  const paidToMakers = totalRevenue;
 
   return (
     <div className="min-h-screen">

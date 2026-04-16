@@ -74,13 +74,20 @@ export default function Contact() {
       // Send notification to admin
       try {
         await base44.functions.invoke('sendEmail', {
-          to: 'support@ex3dprints.com',
-          subject: `New Contact Form Submission: ${formData.subject}`,
-          body: `New contact form submission received:\n\nFrom: ${formData.name} (${formData.email})\nSubject: ${formData.subject}\n\nMessage:\n${formData.message}\n\nSubmission ID: ${submission.id}\n\nPlease log in to the admin portal to respond.`
+          to: 'jc3dprints2022@gmail.com',
+          subject: `New Contact Message: ${formData.subject}`,
+          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#0891b2;">New Contact Form Message</h2>
+<p><strong>From:</strong> ${formData.name} (${formData.email})</p>
+<p><strong>Subject:</strong> ${formData.subject}</p>
+<div style="background:#f5f5f5;padding:15px;border-left:3px solid #0891b2;margin-top:15px;">
+  <p>${formData.message.replace(/\n/g, '<br/>')}</p>
+</div>
+<p style="margin-top:15px;color:#666;font-size:12px;">View and respond in the JC3D Command Center → Messages &amp; Feedback → Contact Messages</p>
+</div>`
         });
       } catch (adminEmailError) {
         console.error("Failed to send admin notification:", adminEmailError);
-        // Do not throw, main submission was successful. Log the error.
       }
 
       toast({

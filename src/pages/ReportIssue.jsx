@@ -61,7 +61,21 @@ export default function ReportIssuePage() {
       const report = await base44.entities.FeedbackReport.create(reportData);
 
       // Send notification email to admin
-      await base44.functions.invoke('notifyAdminFeedback', { reportId: report.id });
+      await base44.functions.invoke('sendEmail', {
+        to: 'jc3dprints2022@gmail.com',
+        subject: `[${formData.report_type.toUpperCase()}] New Feedback: ${formData.title}`,
+        body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#0891b2;">New Feedback Report</h2>
+<p><strong>Type:</strong> ${formData.report_type}</p>
+<p><strong>Priority:</strong> ${formData.priority}</p>
+<p><strong>Title:</strong> ${formData.title}</p>
+<p><strong>From:</strong> ${reportData.user_name} (${reportData.user_email})</p>
+<div style="background:#f5f5f5;padding:15px;border-left:3px solid #0891b2;margin-top:15px;">
+  <p>${formData.description.replace(/\n/g, '<br/>')}</p>
+</div>
+<p style="margin-top:15px;color:#666;font-size:12px;">View in the JC3D Command Center → Messages &amp; Feedback → Issues &amp; Requests</p>
+</div>`
+      }).catch(() => {});
 
       setSubmitted(true);
       toast({

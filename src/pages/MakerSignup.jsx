@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Printer, CheckCircle, Loader2, UserCheck } from "lucide-react";
+import { Printer, CheckCircle, Loader2, UserCheck, Globe } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 // Define available materials and colors for selection
@@ -28,6 +28,9 @@ const CAMPUS_LOCATIONS = [
 export default function MakerSignup() {
   const [user, setUser] = useState(null);
   const [formState, setFormState] = useState('form'); // 'form', 'submitting', 'submitted', 'already_maker', 'rejected_maker'
+  const [internationalEmail, setInternationalEmail] = useState('');
+  const [internationalCountry, setInternationalCountry] = useState('');
+  const [submittingInterest, setSubmittingInterest] = useState(false);
   const [formData, setFormData] = useState({
     full_name: '',
     email: '',
@@ -38,6 +41,7 @@ export default function MakerSignup() {
     city: '',
     state: '',
     zip: '',
+    country: '',
     materials: [],
     agree_terms: false
   });
@@ -178,6 +182,12 @@ export default function MakerSignup() {
       toast({ title: "Address required", description: "Please enter your complete address.", variant: "destructive" });
       return;
     }
+
+    // Check if country is provided and not US
+    if (formData.country && formData.country.trim() !== '' && formData.country.trim().toUpperCase() !== 'US' && formData.country.trim().toUpperCase() !== 'USA' && formData.country.trim().toUpperCase() !== 'UNITED STATES') {
+      setFormState('international');
+      return;
+    }
     
     setFormState('submitting');
     try {
@@ -290,6 +300,78 @@ export default function MakerSignup() {
     );
   }
 
+  if (formState === 'international') {
+    const handleSubmitInterest = async () => {
+      if (!internationalEmail.trim()) {
+        toast({ title: "Please enter your email", variant: "destructive" });
+        return;
+      }
+      setSubmittingInterest(true);
+      try {
+        // Save as a maker application with a special status so we can track it
+        await base44.entities.MakerApplication.create({
+          user_id: user?.id || 'anonymous',
+          full_name: formData.full_name || internationalEmail,
+          email: internationalEmail,
+          phone: formData.phone || '',
+          campus_location: `INTERNATIONAL|${internationalCountry}`,
+          materials: [],
+          status: 'pending',
+          admin_notes: `International applicant from: ${internationalCountry}. Interested in joining when EX3D expands to their region.`
+        });
+        await base44.functions.invoke('sendEmail', {
+          to: 'jc3dprints2022@gmail.com',
+          subject: `International Maker Interest — ${internationalCountry}`,
+          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#f97316;">International Maker Interest</h2>
+<p>Someone from outside the US wants to become a maker when you expand.</p>
+<p><strong>Email:</strong> ${internationalEmail}</p>
+<p><strong>Country/Region:</strong> ${internationalCountry}</p>
+</div>`
+        }).catch(() => {});
+        toast({ title: "Interest submitted!", description: "We'll reach out when we expand to your region." });
+        setFormState('submitted');
+      } catch (e) {
+        toast({ title: "Failed to submit", variant: "destructive" });
+      }
+      setSubmittingInterest(false);
+    };
+
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-6">
+        <Card className="max-w-xl text-center shadow-2xl">
+          <CardContent className="p-10">
+            <Printer className="w-16 h-16 text-orange-500 mx-auto mb-6" />
+            <h1 className="text-3xl font-bold text-slate-900 mb-4">Not Available in Your Region</h1>
+            <p className="text-slate-600 mb-4">
+              We currently only accept makers located in the United States. We're sorry for the inconvenience!
+            </p>
+            <p className="text-slate-600 mb-6">
+              If you'd like, leave your email and we'll reach out when we expand to your region.
+            </p>
+            <div className="space-y-3 text-left">
+              <div>
+                <Label htmlFor="intl-country">Your Country / Region</Label>
+                <Input id="intl-country" value={internationalCountry} onChange={e => setInternationalCountry(e.target.value)} placeholder="e.g. Canada, UK, Australia..." className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="intl-email">Your Email</Label>
+                <Input id="intl-email" type="email" value={internationalEmail} onChange={e => setInternationalEmail(e.target.value)} placeholder="your@email.com" className="mt-1" />
+              </div>
+              <Button onClick={handleSubmitInterest} disabled={submittingInterest} className="w-full bg-orange-500 hover:bg-orange-600">
+                {submittingInterest ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                Notify Me When Available
+              </Button>
+              <Button variant="outline" className="w-full" onClick={() => setFormState('form')}>
+                Go Back
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
 
 
   return (
@@ -342,34 +424,21 @@ export default function MakerSignup() {
               <div className="grid md:grid-cols-3 gap-6">
                 <div>
                   <Label htmlFor="city">City *</Label>
-                  <Input 
-                    id="city" 
-                    value={formData.city} 
-                    onChange={(e) => handleInputChange('city', e.target.value)} 
-                    placeholder="City"
-                    required
-                  />
+                  <Input id="city" value={formData.city} onChange={(e) => handleInputChange('city', e.target.value)} placeholder="City" required />
                 </div>
                 <div>
                   <Label htmlFor="state">State *</Label>
-                  <Input 
-                    id="state" 
-                    value={formData.state} 
-                    onChange={(e) => handleInputChange('state', e.target.value)} 
-                    placeholder="State"
-                    required
-                  />
+                  <Input id="state" value={formData.state} onChange={(e) => handleInputChange('state', e.target.value)} placeholder="State" required />
                 </div>
                 <div>
                   <Label htmlFor="zip">ZIP Code *</Label>
-                  <Input 
-                    id="zip" 
-                    value={formData.zip} 
-                    onChange={(e) => handleInputChange('zip', e.target.value)} 
-                    placeholder="12345"
-                    required
-                  />
+                  <Input id="zip" value={formData.zip} onChange={(e) => handleInputChange('zip', e.target.value)} placeholder="12345" required />
                 </div>
+              </div>
+              <div>
+                <Label htmlFor="country">Country (leave blank if USA)</Label>
+                <Input id="country" value={formData.country} onChange={(e) => handleInputChange('country', e.target.value)} placeholder="Leave blank if United States" />
+                <p className="text-xs text-slate-500 mt-1 flex items-center gap-1"><Globe className="w-3 h-3" /> We currently only accept makers in the United States.</p>
               </div>
 
               {/* Experience & Capacity */}

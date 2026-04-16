@@ -17,24 +17,28 @@ export default function ForDesigners() {
 
   const loadDesignerEarnings = async () => {
     try {
-      const allOrders = await base44.entities.Order.list();
-      const completedOrders = allOrders.filter(o =>
-        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-      );
-
-      let total = 0;
-      completedOrders.forEach(order => {
-        order.items?.forEach(item => {
-          if (item.designer_id) {
-            total += item.total_price * 0.10;
-          }
-        });
-      });
-
-      setTotalEarnings(total);
+      // Use actual payout records for accuracy
+      const payouts = await base44.entities.Payout.filter({ user_role: 'designer', status: 'completed' });
+      const paid = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
+      setTotalEarnings(paid);
     } catch (error) {
-      console.error("Failed to load designer earnings:", error);
-      setTotalEarnings(0);
+      // Fallback to order estimates
+      try {
+        const allOrders = await base44.entities.Order.list();
+        const completedOrders = allOrders.filter(o =>
+          ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+        );
+        let total = 0;
+        completedOrders.forEach(order => {
+          order.items?.forEach(item => {
+            if (item.designer_id) total += item.total_price * 0.10;
+          });
+        });
+        setTotalEarnings(total);
+      } catch (e) {
+        console.error("Failed to load designer earnings:", e);
+        setTotalEarnings(0);
+      }
     }
     setLoading(false);
   };

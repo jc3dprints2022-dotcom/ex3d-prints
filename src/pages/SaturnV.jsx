@@ -110,34 +110,26 @@ export default function SaturnV() {
             Get the Saturn V and SLS together for $60. Built for people who love space.
           </p>
 
-          {/* Both rockets side by side — aligned by center */}
-          <div className="flex justify-center items-center gap-6 mb-10">
-            <div className="flex flex-col items-center">
-              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 w-[160px] sm:w-[200px] h-[220px] sm:h-[280px] flex items-center justify-center bg-gray-900">
-                <img src={SATURN_V_IMAGE} alt="Saturn V" className="max-w-full max-h-full object-contain" />
+          {/* Both rockets side by side — centered */}
+          <div className="flex justify-center items-end gap-4 sm:gap-6 mb-10 w-full">
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 w-[140px] sm:w-[200px] h-[200px] sm:h-[280px] flex items-center justify-center bg-gray-900">
+                <img src={SATURN_V_IMAGE} alt="Saturn V" className="w-full h-full object-contain" />
               </div>
               <p className="text-xs text-gray-400 mt-2">Saturn V</p>
             </div>
-            <div className="flex flex-col items-center">
-              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 w-[160px] sm:w-[200px] h-[220px] sm:h-[280px] flex items-center justify-center bg-gray-900">
-                <img src={SLS_IMAGE} alt="SLS" className="max-w-full max-h-full object-contain" />
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 w-[140px] sm:w-[200px] h-[200px] sm:h-[280px] flex items-center justify-center bg-gray-900">
+                <img src={SLS_IMAGE} alt="SLS" className="w-full h-full object-contain" />
               </div>
               <p className="text-xs text-gray-400 mt-2">SLS</p>
             </div>
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-3">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-10 py-4 shadow-orange-900/40">
               Get the Bundle — $60
-            </Btn>
-          </div>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Btn type="saturn" className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm px-6 py-2">
-              Get Saturn V — $39
-            </Btn>
-            <Btn type="sls" className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm px-6 py-2">
-              Get SLS — $30
             </Btn>
           </div>
         </div>
@@ -192,7 +184,7 @@ export default function SaturnV() {
               <p className="text-orange-400 font-bold text-lg mb-3">$39</p>
               <p className="text-gray-400 text-sm leading-relaxed flex-1">A 56cm precision-printed model kit of the rocket that took humanity to the Moon.</p>
               <Btn type="saturn" className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">
-                Get Saturn V
+                Add to Cart
               </Btn>
             </div>
 
@@ -205,7 +197,7 @@ export default function SaturnV() {
               <p className="text-blue-400 font-bold text-lg mb-3">$30</p>
               <p className="text-gray-400 text-sm leading-relaxed flex-1">A 50cm precision-printed model kit inspired by the rocket taking humanity back to the Moon.</p>
               <Btn type="sls" className="mt-4 w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">
-                Get SLS
+                Add to Cart
               </Btn>
             </div>
 
@@ -295,14 +287,6 @@ export default function SaturnV() {
         <div className="flex flex-col sm:flex-row justify-center gap-4 mb-4">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-12 py-5 shadow-xl shadow-orange-900/50">
             Get the Bundle — $60
-          </Btn>
-        </div>
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
-          <Btn type="saturn" className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm px-8 py-3">
-            Get Saturn V — $39
-          </Btn>
-          <Btn type="sls" className="bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm px-8 py-3">
-            Get SLS — $30
           </Btn>
         </div>
         <p className="text-gray-700 text-xs mt-12">© 2025 EX3D Prints · Jacob L.</p>
