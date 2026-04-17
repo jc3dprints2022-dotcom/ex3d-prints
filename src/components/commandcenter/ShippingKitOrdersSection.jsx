@@ -47,8 +47,6 @@ export default function ShippingKitOrdersSection() {
       base44.entities.ExpRedemption.filter({ payment_type: "money" }).catch(() => [])
     ]);
 
-    console.log("Loaded ShippingKitOrder records:", kitOrders);
-
     setOrders(kitOrders);
     setFilamentOrders(redemptions);
 
@@ -84,28 +82,34 @@ export default function ShippingKitOrdersSection() {
       }
 
       const result = await generateShippingKitLabel({ kitOrderId: order.id });
-      console.log("generateShippingKitLabel result:", result);
 
       const newLabelUrl =
         result?.data?.label_url ||
         result?.data?.shipping_label_url ||
         "";
 
-      if (newLabelUrl) {
+      const newTrackingNumber =
+        result?.data?.tracking_number ||
+        order.tracking_number ||
+        "";
+
+      if (newLabelUrl || newTrackingNumber) {
         setOrders((prev) =>
           prev.map((o) =>
             o.id === order.id
               ? {
                   ...o,
-                  shipping_label_url: newLabelUrl,
-                  tracking_number: result?.data?.tracking_number || o.tracking_number,
+                  shipping_label_url: newLabelUrl || o.shipping_label_url,
+                  tracking_number: newTrackingNumber,
                   status: "processing"
                 }
               : o
           )
         );
 
-        window.open(newLabelUrl, "_blank", "noopener,noreferrer");
+        if (newLabelUrl) {
+          window.open(newLabelUrl, "_blank", "noopener,noreferrer");
+        }
 
         toast({
           title: "Shipping label generated!"
@@ -130,15 +134,16 @@ export default function ShippingKitOrdersSection() {
   const handleDownloadLabel = (order) => {
     const labelUrl = getLabelUrl(order);
 
-    if (!labelUrl) {
-      toast({
-        title: "No label found for this order",
-        variant: "destructive"
-      });
+    if (labelUrl) {
+      window.open(labelUrl, "_blank", "noopener,noreferrer");
       return;
     }
 
-    window.open(labelUrl, "_blank", "noopener,noreferrer");
+    toast({
+      title: "This order has a tracking number, but no label URL was found.",
+      description: "You may need to regenerate the label or check the saved shipping_label_url field.",
+      variant: "destructive"
+    });
   };
 
   const handleMarkShipped = async (order, trackingNumber) => {
@@ -225,6 +230,7 @@ export default function ShippingKitOrdersSection() {
                     : user?.address;
 
                   const labelUrl = getLabelUrl(order);
+                  const hasDownloadState = !!order.tracking_number;
 
                   return (
                     <Card key={order.id} className="bg-slate-800 border-slate-700">
@@ -248,10 +254,6 @@ export default function ShippingKitOrdersSection() {
                             <p className="text-xs text-slate-500 mt-1">
                               Ordered: {new Date(order.created_date).toLocaleDateString()} · Paid: $
                               {(order.cost / 100).toFixed(2)}
-                            </p>
-
-                            <p className="text-[11px] text-slate-500 mt-1 break-all">
-                              Label URL: {labelUrl || "none"}
                             </p>
                           </div>
 
@@ -277,7 +279,7 @@ export default function ShippingKitOrdersSection() {
                           order.status !== "delivered" &&
                           order.status !== "cancelled" && (
                             <div className="flex gap-2 mt-2">
-                              {labelUrl ? (
+                              {hasDownloadState ? (
                                 <Button
                                   size="sm"
                                   variant="outline"
