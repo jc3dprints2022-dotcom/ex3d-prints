@@ -2,16 +2,10 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SHIPPO_BASE = 'https://api.goshippo.com';
 
-// Keep API key in Base44 Secrets
-function getShippoKey() {
-  return Deno.env.get('SHIPPO_API_KEY');
-}
-
-// Default business sender info for USPS fallback
-// Replace these with your real business details
 const DEFAULT_SENDER = {
   name: 'EX3D Prints',
-  street: '3700 Willow Creek RD',
+  company: 'EX3D Prints',
+  street1: '3700 Willow Creek Rd',
   city: 'Prescott',
   state: 'AZ',
   zip: '86301',
@@ -19,6 +13,20 @@ const DEFAULT_SENDER = {
   phone: '6108583200',
   email: 'jc3dprints2022@gmail.com',
 };
+
+function getShippoKey() {
+  return Deno.env.get('SHIPPO_API_KEY');
+}
+
+function cleanString(value) {
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
+}
+
+function safeNumber(value, fallback) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
 function gToLb(grams) {
   return Math.max(0.1, Math.round((grams / 453.592) * 100) / 100);
@@ -28,18 +36,14 @@ function mmToIn(mm) {
   return Math.max(1, parseFloat((Number(mm || 0) / 25.4).toFixed(1)));
 }
 
-function cleanString(value) {
-  if (value === null || value === undefined) return '';
-  return String(value).trim();
+function buildPhone(value, fallback) {
+  const phone = cleanString(value) || cleanString(fallback);
+  return phone;
 }
 
-function cleanPhone(value) {
-  return cleanString(value);
-}
-
-function safeNumber(value, fallback) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
+function buildEmail(value, fallback) {
+  const email = cleanString(value) || cleanString(fallback);
+  return email;
 }
 
 async function shippoPost(path, body, apiKey) {
@@ -99,10 +103,10 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Order has no shipping address' }, { status: 400 });
     }
 
-    // Start with default business sender info
-    let fromAddr = {
+    let sender = {
       name: DEFAULT_SENDER.name,
-      street: DEFAULT_SENDER.street,
+      company: DEFAULT_SENDER.company,
+      street1: DEFAULT_SENDER.street1,
       city: DEFAULT_SENDER.city,
       state: DEFAULT_SENDER.state,
       zip: DEFAULT_SENDER.zip,
@@ -111,48 +115,54 @@ Deno.serve(async (req) => {
       email: DEFAULT_SENDER.email,
     };
 
-    // If the order has a maker, try to use that maker as sender
     if (order.maker_id) {
       try {
         const makers = await base44.asServiceRole.entities.User.filter({
           maker_id: order.maker_id,
         });
 
-        if (makers.length > 0 && makers[0].address?.street) {
+        if (makers.length > 0) {
           const maker = makers[0];
 
-          fromAddr = {
-            name: cleanString(maker.full_name) || 'EX3D Maker',
-            street: cleanString(maker.address?.street) || DEFAULT_SENDER.street,
+          sender = {
+            name: cleanString(maker.full_name) || DEFAULT_SENDER.name,
+            company: cleanString(maker.full_name) || DEFAULT_SENDER.company,
+            street1: cleanString(maker.address?.street) || DEFAULT_SENDER.street1,
             city: cleanString(maker.address?.city) || DEFAULT_SENDER.city,
             state: cleanString(maker.address?.state) || DEFAULT_SENDER.state,
             zip: cleanString(maker.address?.zip) || DEFAULT_SENDER.zip,
             country: 'US',
-            phone: cleanPhone(maker.phone) || DEFAULT_SENDER.phone,
-            email: cleanString(maker.email) || DEFAULT_SENDER.email,
+            phone: buildPhone(maker.phone, DEFAULT_SENDER.phone),
+            email: buildEmail(maker.email, DEFAULT_SENDER.email),
           };
         }
       } catch (e) {
-        console.error('Could not fetch maker address, using default sender:', e);
+        console.error('Could not fetch maker sender info, using default sender:', e);
       }
     }
 
-    // USPS specifically needs sender email + phone
-    if (!fromAddr.email || !fromAddr.phone) {
+    if (!sender.phone || !sender.email) {
       return Response.json(
         {
-          error: 'Sender info missing email or phone. USPS requires both for the sender address.',
-          sender: {
-            name: fromAddr.name,
-            email: fromAddr.email || null,
-            phone: fromAddr.phone || null,
-          },
+          error: 'Sender info missing before Shippo request',
+          sender,
         },
         { status: 400 }
       );
     }
 
-    const toAddr = order.shipping_address;
+    const recipientSource = order.shipping_address;
+
+    const recipient = {
+      name: cleanString(recipientSource.name) || 'Customer',
+      street1: cleanString(recipientSource.street),
+      city: cleanString(recipientSource.city),
+      state: cleanString(recipientSource.state),
+      zip: cleanString(recipientSource.zip),
+      country: 'US',
+      phone: cleanString(recipientSource.phone),
+      email: buildEmail(recipientSource.email, DEFAULT_SENDER.email),
+    };
 
     const orderItems = Array.isArray(order.items) ? order.items : [];
 
@@ -176,62 +186,37 @@ Deno.serve(async (req) => {
       parcelH = Math.max(3, ...dims.map((d) => mmToIn(d?.height || 60)));
     }
 
-    const [addrFrom, addrTo] = await Promise.all([
-      shippoPost(
-        '/addresses/',
+    const shipmentPayload = {
+      address_from: sender,
+      address_to: recipient,
+      address_return: sender,
+      parcels: [
         {
-          name: fromAddr.name,
-          street1: fromAddr.street,
-          city: fromAddr.city,
-          state: fromAddr.state,
-          zip: fromAddr.zip,
-          country: fromAddr.country,
-          phone: fromAddr.phone,
-          email: fromAddr.email,
-          validate: false,
+          length: String(parcelL),
+          width: String(parcelW),
+          height: String(parcelH),
+          distance_unit: 'in',
+          weight: String(weightLb),
+          mass_unit: 'lb',
         },
-        apiKey
-      ),
-      shippoPost(
-        '/addresses/',
-        {
-          name: cleanString(toAddr.name) || 'Customer',
-          street1: cleanString(toAddr.street),
-          city: cleanString(toAddr.city),
-          state: cleanString(toAddr.state),
-          zip: cleanString(toAddr.zip),
-          country: 'US',
-          phone: cleanPhone(toAddr.phone) || '',
-          email: cleanString(toAddr.email) || DEFAULT_SENDER.email,
-          validate: false,
-        },
-        apiKey
-      ),
-    ]);
+      ],
+      async: false,
+    };
 
-    const shipment = await shippoPost(
-      '/shipments/',
-      {
-        address_from: addrFrom.object_id,
-        address_to: addrTo.object_id,
-        parcels: [
-          {
-            length: String(parcelL),
-            width: String(parcelW),
-            height: String(parcelH),
-            distance_unit: 'in',
-            weight: String(weightLb),
-            mass_unit: 'lb',
-          },
-        ],
-        async: false,
-      },
-      apiKey
-    );
+    console.log('SHIPPO SHIPMENT PAYLOAD', JSON.stringify(shipmentPayload, null, 2));
+
+    const shipment = await shippoPost('/shipments/', shipmentPayload, apiKey);
+
+    console.log('SHIPPO SHIPMENT RESPONSE', JSON.stringify(shipment, null, 2));
 
     if (!shipment.rates || shipment.rates.length === 0) {
       return Response.json(
-        { error: 'No shipping rates available for this address' },
+        {
+          error: 'No shipping rates available for this address',
+          shipment_messages: shipment.messages || [],
+          address_from_seen_by_shippo: shipment.address_from || null,
+          address_return_seen_by_shippo: shipment.address_return || null,
+        },
         { status: 400 }
       );
     }
@@ -257,26 +242,33 @@ Deno.serve(async (req) => {
 
     if (!selectedRate?.object_id) {
       return Response.json(
-        { error: 'No valid shipping rate could be selected' },
+        {
+          error: 'No valid shipping rate could be selected',
+          rates: shipment.rates || [],
+        },
         { status: 400 }
       );
     }
 
-    const transaction = await shippoPost(
-      '/transactions/',
-      {
-        rate: selectedRate.object_id,
-        label_file_type: 'PDF',
-        async: false,
-      },
-      apiKey
-    );
+    const transactionPayload = {
+      rate: selectedRate.object_id,
+      label_file_type: 'PDF',
+      async: false,
+    };
+
+    console.log('SHIPPO TRANSACTION PAYLOAD', JSON.stringify(transactionPayload, null, 2));
+
+    const transaction = await shippoPost('/transactions/', transactionPayload, apiKey);
+
+    console.log('SHIPPO TRANSACTION RESPONSE', JSON.stringify(transaction, null, 2));
 
     if (transaction.status !== 'SUCCESS') {
       return Response.json(
         {
           error: 'Label purchase failed',
           details: transaction.messages || transaction.status,
+          shipment_address_from: shipment.address_from || null,
+          shipment_address_return: shipment.address_return || null,
         },
         { status: 500 }
       );
