@@ -2,41 +2,47 @@ import { createClientFromRequest } from 'npm:@base44/sdk@0.8.25';
 
 const SHIPPO_BASE = 'https://api.goshippo.com';
 
-function getShippoKey(): string | undefined {
+// Keep API key in Base44 Secrets
+function getShippoKey() {
   return Deno.env.get('SHIPPO_API_KEY');
 }
 
-function getDefaultSenderEmail(): string {
-  return Deno.env.get('SHIPPO_SENDER_EMAIL') || 'jc3dprints2022@gmail.com';
-}
+// Default business sender info for USPS fallback
+// Replace these with your real business details
+const DEFAULT_SENDER = {
+  name: 'EX3D Prints',
+  street: '1 N Gurley St',
+  city: 'Prescott',
+  state: 'AZ',
+  zip: '86301',
+  country: 'US',
+  phone: '9285551234',
+  email: 'jc3dprints2022@gmail.com',
+};
 
-function getDefaultSenderPhone(): string {
-  // Replace with your real business phone number
-  return Deno.env.get('SHIPPO_SENDER_PHONE') || '6108583200';
-}
-
-function gToLb(grams: number): number {
+function gToLb(grams) {
   return Math.max(0.1, Math.round((grams / 453.592) * 100) / 100);
 }
 
-function mmToIn(mm: number): number {
-  return Math.max(1, parseFloat((mm / 25.4).toFixed(1)));
+function mmToIn(mm) {
+  return Math.max(1, parseFloat((Number(mm || 0) / 25.4).toFixed(1)));
 }
 
-function cleanString(value: unknown): string {
-  return typeof value === 'string' ? value.trim() : '';
+function cleanString(value) {
+  if (value === null || value === undefined) return '';
+  return String(value).trim();
 }
 
-function cleanPhone(value: unknown): string {
+function cleanPhone(value) {
   return cleanString(value);
 }
 
-function safeNumber(value: unknown, fallback: number): number {
+function safeNumber(value, fallback) {
   const n = Number(value);
   return Number.isFinite(n) ? n : fallback;
 }
 
-async function shippoPost(path: string, body: unknown, apiKey: string) {
+async function shippoPost(path, body, apiKey) {
   const res = await fetch(`${SHIPPO_BASE}${path}`, {
     method: 'POST',
     headers: {
@@ -64,8 +70,8 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json().catch(() => null);
-    const orderId = body?.orderId;
+    const requestBody = await req.json().catch(() => null);
+    const orderId = requestBody?.orderId;
 
     if (!orderId) {
       return Response.json({ error: 'orderId is required' }, { status: 400 });
@@ -93,20 +99,19 @@ Deno.serve(async (req) => {
       return Response.json({ error: 'Order has no shipping address' }, { status: 400 });
     }
 
-    const defaultSenderEmail = getDefaultSenderEmail();
-    const defaultSenderPhone = getDefaultSenderPhone();
-
+    // Start with default business sender info
     let fromAddr = {
-      name: 'EX3D Prints',
-      street: '1 N Gurley St',
-      city: 'Prescott',
-      state: 'AZ',
-      zip: '86301',
-      country: 'US',
-      phone: defaultSenderPhone,
-      email: defaultSenderEmail,
+      name: DEFAULT_SENDER.name,
+      street: DEFAULT_SENDER.street,
+      city: DEFAULT_SENDER.city,
+      state: DEFAULT_SENDER.state,
+      zip: DEFAULT_SENDER.zip,
+      country: DEFAULT_SENDER.country,
+      phone: DEFAULT_SENDER.phone,
+      email: DEFAULT_SENDER.email,
     };
 
+    // If the order has a maker, try to use that maker as sender
     if (order.maker_id) {
       try {
         const makers = await base44.asServiceRole.entities.User.filter({
@@ -118,13 +123,13 @@ Deno.serve(async (req) => {
 
           fromAddr = {
             name: cleanString(maker.full_name) || 'EX3D Maker',
-            street: cleanString(maker.address?.street),
-            city: cleanString(maker.address?.city),
-            state: cleanString(maker.address?.state),
-            zip: cleanString(maker.address?.zip),
+            street: cleanString(maker.address?.street) || DEFAULT_SENDER.street,
+            city: cleanString(maker.address?.city) || DEFAULT_SENDER.city,
+            state: cleanString(maker.address?.state) || DEFAULT_SENDER.state,
+            zip: cleanString(maker.address?.zip) || DEFAULT_SENDER.zip,
             country: 'US',
-            phone: cleanPhone(maker.phone) || defaultSenderPhone,
-            email: cleanString(maker.email) || defaultSenderEmail,
+            phone: cleanPhone(maker.phone) || DEFAULT_SENDER.phone,
+            email: cleanString(maker.email) || DEFAULT_SENDER.email,
           };
         }
       } catch (e) {
@@ -132,16 +137,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    if (!fromAddr.street || !fromAddr.city || !fromAddr.state || !fromAddr.zip) {
-      return Response.json(
-        {
-          error: 'Sender address is incomplete',
-          sender: fromAddr,
-        },
-        { status: 400 }
-      );
-    }
-
+    // USPS specifically needs sender email + phone
     if (!fromAddr.email || !fromAddr.phone) {
       return Response.json(
         {
@@ -158,39 +154,26 @@ Deno.serve(async (req) => {
 
     const toAddr = order.shipping_address;
 
-    const totalGrams = Array.isArray(order.items)
-      ? order.items.reduce((sum: number, item: any) => {
-          const itemWeight = safeNumber(item?.weight_grams, 50);
-          const quantity = safeNumber(item?.quantity, 1);
-          return sum + itemWeight * quantity;
-        }, 0)
-      : 50;
+    const orderItems = Array.isArray(order.items) ? order.items : [];
 
-    const weightLb = gToLb(totalGrams);
+    const totalGrams = orderItems.reduce((sum, item) => {
+      const itemWeight = safeNumber(item?.weight_grams, 50);
+      const quantity = safeNumber(item?.quantity, 1);
+      return sum + itemWeight * quantity;
+    }, 0);
+
+    const weightLb = gToLb(totalGrams || 50);
 
     let parcelL = 6;
     let parcelW = 6;
     let parcelH = 4;
 
-    if (Array.isArray(order.items)) {
-      const dims = order.items
-        .map((item: any) => item?.dimensions)
-        .filter(Boolean);
+    const dims = orderItems.map((item) => item?.dimensions).filter(Boolean);
 
-      if (dims.length > 0) {
-        parcelL = Math.max(
-          4,
-          ...dims.map((d: any) => mmToIn(safeNumber(d?.length, 150)))
-        );
-        parcelW = Math.max(
-          4,
-          ...dims.map((d: any) => mmToIn(safeNumber(d?.width, 150)))
-        );
-        parcelH = Math.max(
-          3,
-          ...dims.map((d: any) => mmToIn(safeNumber(d?.height, 60)))
-        );
-      }
+    if (dims.length > 0) {
+      parcelL = Math.max(4, ...dims.map((d) => mmToIn(d?.length || 150)));
+      parcelW = Math.max(4, ...dims.map((d) => mmToIn(d?.width || 150)));
+      parcelH = Math.max(3, ...dims.map((d) => mmToIn(d?.height || 60)));
     }
 
     const [addrFrom, addrTo] = await Promise.all([
@@ -219,7 +202,7 @@ Deno.serve(async (req) => {
           zip: cleanString(toAddr.zip),
           country: 'US',
           phone: cleanPhone(toAddr.phone) || '',
-          email: cleanString(toAddr.email) || defaultSenderEmail,
+          email: cleanString(toAddr.email) || DEFAULT_SENDER.email,
           validate: false,
         },
         apiKey
@@ -233,11 +216,11 @@ Deno.serve(async (req) => {
         address_to: addrTo.object_id,
         parcels: [
           {
-            length: parcelL.toString(),
-            width: parcelW.toString(),
-            height: parcelH.toString(),
+            length: String(parcelL),
+            width: String(parcelW),
+            height: String(parcelH),
             distance_unit: 'in',
-            weight: weightLb.toString(),
+            weight: String(weightLb),
             mass_unit: 'lb',
           },
         ],
@@ -253,12 +236,13 @@ Deno.serve(async (req) => {
       );
     }
 
-    const uspsRates = shipment.rates.filter((r: any) => r.provider === 'USPS');
+    const uspsRates = shipment.rates.filter((r) => r.provider === 'USPS');
 
-    let selectedRate: any;
+    let selectedRate = null;
+
     if (order.is_priority) {
       selectedRate =
-        uspsRates.find((r: any) =>
+        uspsRates.find((r) =>
           cleanString(r.servicelevel?.token).toLowerCase().includes('priority')
         ) ||
         uspsRates[0] ||
@@ -266,7 +250,7 @@ Deno.serve(async (req) => {
     } else {
       const candidateRates = uspsRates.length > 0 ? uspsRates : shipment.rates;
       const sortedRates = [...candidateRates].sort(
-        (a: any, b: any) => parseFloat(a.amount) - parseFloat(b.amount)
+        (a, b) => parseFloat(a.amount) - parseFloat(b.amount)
       );
       selectedRate = sortedRates[0];
     }
@@ -332,7 +316,7 @@ Deno.serve(async (req) => {
 
     return Response.json(
       {
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error?.message || 'Unknown error',
       },
       { status: 500 }
     );
