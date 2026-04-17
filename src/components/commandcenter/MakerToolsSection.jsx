@@ -1,97 +1,83 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  Mail,
-  Phone,
-  Package,
-  Printer,
-  AlertCircle,
-  MapPin,
   Loader2,
-  Trash2,
-  Trophy,
-  TrendingUp,
-  Award,
+  Package,
+  Download,
   CheckCircle,
-  XCircle,
-  ClipboardList,
+  MapPin,
+  Mail,
   FlaskConical,
 } from "lucide-react";
-import CalibrationApprovalSection from "./CalibrationApprovalSection";
-import ShippingKitOrdersSection from "./ShippingKitOrdersSection";
 import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { generateShippingKitLabel } from "@/functions/generateShippingKitLabel";
 
-export default function MakerToolsSection() {
-  const [makers, setMakers] = useState([]);
-  const [printers, setPrinters] = useState([]);
-  const [filaments, setFilaments] = useState([]);
-  const [performance, setPerformance] = useState({});
-  const [perfList, setPerfList] = useState([]);
-  const [applications, setApplications] = useState([]);
+const STATUS_COLORS = {
+  pending: "bg-yellow-100 text-yellow-800",
+  processing: "bg-blue-100 text-blue-800",
+  shipped: "bg-green-100 text-green-800",
+  delivered: "bg-teal-100 text-teal-800",
+  cancelled: "bg-red-100 text-red-800",
+};
+
+function getLabelUrl(order) {
+  return (
+    order?.shipping_label_url ||
+    order?.label_url ||
+    order?.shippingLabelUrl ||
+    order?.labelUrl ||
+    ""
+  );
+}
+
+export default function ShippingKitOrdersSection() {
+  const [orders, setOrders] = useState([]);
+  const [filamentOrders, setFilamentOrders] = useState([]);
+  const [users, setUsers] = useState({});
   const [loading, setLoading] = useState(true);
-  const [selectedMaker, setSelectedMaker] = useState(null);
-  const [showMakerDialog, setShowMakerDialog] = useState(false);
-  const [deletingMaker, setDeletingMaker] = useState(null);
-  const [processingApp, setProcessingApp] = useState(null);
-  const [rejectReason, setRejectReason] = useState("");
-  const [rejectingApp, setRejectingApp] = useState(null);
+  const [generatingLabel, setGeneratingLabel] = useState(null);
+  const [markingShipped, setMarkingShipped] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    loadMakers();
+    loadOrders();
   }, []);
 
-  const loadMakers = async () => {
+  const loadOrders = async () => {
     setLoading(true);
 
     try {
-      const [users, allPrinters, allFilaments, allPerformance, allApplications] =
-        await Promise.all([
-          base44.entities.User.list().catch(() => []),
-          base44.entities.Printer.list().catch(() => []),
-          base44.entities.Filament.list().catch(() => []),
-          base44.entities.MakerPerformance.list().catch(() => []),
-          base44.entities.MakerApplication.filter({ status: "pending" }).catch(() => []),
-        ]);
+      const [kitOrders, redemptions] = await Promise.all([
+        base44.entities.ShippingKitOrder.list("-created_date").catch(() => []),
+        base44.entities.ExpRedemption.filter({ payment_type: "money" }).catch(() => []),
+      ]);
 
-      const makerUsers = (users || []).filter(
-        (u) => u?.business_roles?.includes("maker") && u?.maker_id
+      setOrders(kitOrders || []);
+      setFilamentOrders(redemptions || []);
+
+      const allOrders = [...(kitOrders || []), ...(redemptions || [])];
+      const uniqueUserIds = [...new Set(allOrders.map((o) => o.user_id).filter(Boolean))];
+
+      const userMap = {};
+
+      await Promise.all(
+        uniqueUserIds.map(async (uid) => {
+          const user = await base44.entities.User.get(uid).catch(() => null);
+          if (user) {
+            userMap[uid] = user;
+          }
+        })
       );
 
-      const perfMap = {};
-      (allPerformance || []).forEach((p) => {
-        if (!p?.maker_id) return;
-
-        if (
-          !perfMap[p.maker_id] ||
-          new Date(p.week_start) > new Date(perfMap[p.maker_id].week_start)
-        ) {
-          perfMap[p.maker_id] = p;
-        }
-      });
-
-      setMakers(makerUsers);
-      setPrinters(allPrinters || []);
-      setFilaments(allFilaments || []);
-      setPerformance(perfMap);
-      setPerfList(Object.values(perfMap));
-      setApplications(allApplications || []);
+      setUsers(userMap);
     } catch (error) {
-      console.error("Failed to load makers:", error);
+      console.error("Failed to load shipping kit orders:", error);
       toast({
-        title: "Failed to load maker tools",
+        title: "Failed to load orders",
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
@@ -100,847 +86,348 @@ export default function MakerToolsSection() {
     }
   };
 
-  const getMakerPrinters = (makerId) => {
-    return printers.filter((p) => p.maker_id === makerId);
-  };
-
-  const getMakerFilaments = (makerId) => {
-    return filaments.filter((f) => f.maker_id === makerId);
-  };
-
-  const handleViewMaker = (maker) => {
-    setSelectedMaker(maker);
-    setShowMakerDialog(true);
-  };
-
-  const handleApproveApplication = async (application) => {
-    setProcessingApp(application.id);
+  const handleGenerateLabel = async (order) => {
+    setGeneratingLabel(order.id);
 
     try {
-      const allUsers = await base44.entities.User.list();
-      const applicant = (allUsers || []).find((u) => u.id === application.user_id);
+      const user = users[order.user_id];
+      const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
 
-      if (!applicant) {
-        throw new Error("User not found");
-      }
-
-      await base44.entities.MakerApplication.update(application.id, {
-        status: "approved",
-      });
-
-      await base44.entities.User.update(applicant.id, {
-        business_roles: [
-          ...((applicant.business_roles || []).filter((r) => r !== "maker")),
-          "maker",
-        ],
-        maker_id: application.id,
-        account_status: "active",
-      });
-
-      try {
-        await base44.functions.invoke("sendEmail", {
-          to: application.email,
-          subject: "🎉 Your Maker Application Was Approved! — EX3D Prints",
-          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><h1 style="color:#f97316;">Welcome to the Maker Network!</h1><p>Hi ${application.full_name},</p><p>Great news — your application to become a Maker on EX3D Prints has been <strong>approved</strong>!</p><p>You can now log in and access your Maker Hub to start accepting orders.</p><p>Thank you,<br/>The EX3D Team</p></div>`,
+      if (!addr?.street) {
+        toast({
+          title: "No shipping address found for this maker",
+          variant: "destructive",
         });
-      } catch (emailError) {
-        console.error("Approval email failed", emailError);
+        return;
       }
 
-      toast({
-        title: "Application approved!",
-        description: `${application.full_name} is now a maker.`,
-      });
+      const result = await generateShippingKitLabel({ kitOrderId: order.id });
 
-      await loadMakers();
-    } catch (error) {
-      toast({
-        title: "Failed to approve",
-        description: error?.message || "Unknown error",
-        variant: "destructive",
-      });
-    } finally {
-      setProcessingApp(null);
-    }
-  };
+      const newLabelUrl =
+        result?.data?.label_url ||
+        result?.data?.shipping_label_url ||
+        "";
 
-  const handleRejectApplication = async (application) => {
-    setProcessingApp(application.id);
+      const newTrackingNumber =
+        result?.data?.tracking_number ||
+        order?.tracking_number ||
+        "";
 
-    try {
-      await base44.entities.MakerApplication.update(application.id, {
-        status: "rejected",
-        admin_notes: rejectReason || "Application did not meet requirements.",
-      });
+      if (newLabelUrl || newTrackingNumber) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === order.id
+              ? {
+                  ...o,
+                  shipping_label_url: newLabelUrl || o.shipping_label_url,
+                  tracking_number: newTrackingNumber,
+                  status: "processing",
+                }
+              : o
+          )
+        );
 
-      try {
-        await base44.functions.invoke("sendEmail", {
-          to: application.email,
-          subject: "Your Maker Application — EX3D Prints",
-          body: `<div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;"><h1 style="color:#f97316;">Application Update</h1><p>Hi ${application.full_name},</p><p>After reviewing your application, we're unable to approve it at this time${rejectReason ? ": " + rejectReason : "."}</p><p>You're welcome to reapply in the future.</p><p>Thank you,<br/>The EX3D Team</p></div>`,
+        if (newLabelUrl) {
+          window.open(newLabelUrl, "_blank", "noopener,noreferrer");
+        }
+
+        toast({
+          title: "Shipping label generated!",
         });
-      } catch (emailError) {
-        console.error("Rejection email failed", emailError);
+      } else {
+        toast({
+          title: result?.data?.error || "Failed to generate label",
+          variant: "destructive",
+        });
       }
-
-      toast({ title: "Application rejected" });
-      setRejectingApp(null);
-      setRejectReason("");
-      await loadMakers();
     } catch (error) {
+      console.error("Error generating label:", error);
       toast({
-        title: "Failed to reject",
+        title: "Failed to generate label",
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
     } finally {
-      setProcessingApp(null);
+      setGeneratingLabel(null);
     }
   };
 
-  const handleDeleteMaker = async (maker) => {
-    const confirmed = window.confirm(
-      `Are you sure you want to remove maker access from ${maker.full_name}? This will remove their maker role, maker_id, and all associated data.`
-    );
+  const handleDownloadLabel = (order) => {
+    const labelUrl = getLabelUrl(order);
 
-    if (!confirmed) return;
+    if (labelUrl) {
+      window.open(labelUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
 
-    setDeletingMaker(maker.id);
+    toast({
+      title: "No label URL found for this order",
+      description: "Regenerate the label to save a downloadable PDF URL.",
+      variant: "destructive",
+    });
+  };
+
+  const handleMarkShipped = async (order, trackingNumber) => {
+    setMarkingShipped(order.id);
 
     try {
-      const updatedRoles = (maker.business_roles || []).filter(
-        (role) => role !== "maker"
-      );
+      const tracking = trackingNumber || window.prompt("Enter tracking number (optional):");
 
-      await base44.entities.User.update(maker.id, {
-        business_roles: updatedRoles,
-        maker_id: null,
-        campus_location: null,
-        hours_printed_this_week: null,
-        max_hours_per_week: null,
-        weekly_capacity: null,
-        experience_level: null,
-        open_to_unowned_filaments: null,
-        account_status: null,
+      await base44.entities.ShippingKitOrder.update(order.id, {
+        status: "shipped",
+        tracking_number: tracking || order.tracking_number || "",
       });
 
-      const makerPrinters = getMakerPrinters(maker.maker_id);
-      for (const printer of makerPrinters) {
-        await base44.entities.Printer.delete(printer.id);
+      const user = users[order.user_id];
+      if (user?.email) {
+        await base44.integrations.Core.SendEmail({
+          to: user.email,
+          subject: "Your EX3D Shipping Kit Has Shipped! 📦",
+          body: `Hi ${user.full_name},\n\nGreat news — your EX3D shipping kit is on its way!${
+            tracking ? `\n\nTracking Number: ${tracking}` : ""
+          }\n\nYou should receive it within a few business days.\n\nThe EX3D Team`,
+        }).catch(() => {});
       }
 
-      const makerFilaments = getMakerFilaments(maker.maker_id);
-      for (const filament of makerFilaments) {
-        await base44.entities.Filament.delete(filament.id);
-      }
-
-      toast({ title: "Maker access removed successfully" });
-      await loadMakers();
-    } catch (error) {
-      console.error("Failed to delete maker:", error);
       toast({
-        title: "Failed to remove maker access",
+        title: "Order marked as shipped!",
+      });
+
+      await loadOrders();
+    } catch (error) {
+      console.error("Failed to mark shipped:", error);
+      toast({
+        title: "Failed to mark shipped",
         description: error?.message || "Unknown error",
         variant: "destructive",
       });
     } finally {
-      setDeletingMaker(null);
+      setMarkingShipped(null);
     }
   };
 
-  const calculateWeeklyPerformance = async () => {
-    try {
-      await base44.functions.invoke("calculateMakerPerformance");
-      toast({ title: "Performance calculated successfully!" });
-      await loadMakers();
-    } catch (error) {
-      toast({
-        title: "Failed to calculate performance",
-        description: error?.message || "Unknown error",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const getTierColor = (tier) => {
-    if (tier === "gold") return "bg-yellow-500 text-white";
-    if (tier === "silver") return "bg-gray-400 text-white";
-    return "bg-orange-700 text-white";
-  };
-
-  const getTierIcon = (tier) => {
-    if (tier === "gold") return <Trophy className="w-4 h-4" />;
-    if (tier === "silver") return <Award className="w-4 h-4" />;
-    return null;
-  };
+  const pendingCount = orders.filter(
+    (o) => o.status === "pending" || o.status === "processing"
+  ).length;
 
   return (
-    <div className="space-y-6">
-      <Tabs defaultValue="applications">
-        <TabsList className="grid w-full grid-cols-5 bg-slate-900 border-slate-700">
-          <TabsTrigger
-            value="applications"
-            className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
-          >
-            <ClipboardList className="w-4 h-4 mr-1" />
-            Applications
-            {applications.length > 0 && (
-              <Badge className="ml-1 bg-red-500 text-white text-xs px-1">
-                {applications.length}
-              </Badge>
-            )}
-          </TabsTrigger>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-bold text-white">Kit & Filament Orders</h2>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={loadOrders}
+          className="border-slate-600 text-slate-300"
+        >
+          Refresh
+        </Button>
+      </div>
 
-          <TabsTrigger
-            value="tools"
-            className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
-          >
-            🔧 Active Makers
-          </TabsTrigger>
+      {pendingCount > 0 && (
+        <div className="bg-yellow-900/30 border border-yellow-500/40 rounded-lg p-3 text-yellow-300 text-sm">
+          ⚠️ {pendingCount} shipping kit order{pendingCount > 1 ? "s" : ""} pending fulfillment
+        </div>
+      )}
 
-          <TabsTrigger
-            value="performance"
-            className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
-          >
-            🏅 Performance
-          </TabsTrigger>
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="w-8 h-8 animate-spin text-cyan-400" />
+        </div>
+      ) : (
+        <Tabs defaultValue="kits">
+          <TabsList className="bg-slate-800 border-slate-700">
+            <TabsTrigger
+              value="kits"
+              className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
+            >
+              <Package className="w-4 h-4 mr-1" />
+              Shipping Kits ({orders.length})
+            </TabsTrigger>
+            <TabsTrigger
+              value="filament"
+              className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
+            >
+              <FlaskConical className="w-4 h-4 mr-1" />
+              Filament Orders ({filamentOrders.length})
+            </TabsTrigger>
+          </TabsList>
 
-          <TabsTrigger
-            value="calibration"
-            className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
-          >
-            <FlaskConical className="w-4 h-4 mr-1" />
-            Calibrations
-          </TabsTrigger>
+          <TabsContent value="kits">
+            {orders.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <Package className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                <p>No shipping kit orders yet</p>
+              </div>
+            ) : (
+              <div className="space-y-4 mt-4">
+                {orders.map((order) => {
+                  const user = users[order.user_id];
+                  const addr = order.shipping_address?.street
+                    ? order.shipping_address
+                    : user?.address;
 
-          <TabsTrigger
-            value="kit_orders"
-            className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
-          >
-            <Package className="w-4 h-4 mr-1" />
-            Kit Orders
-          </TabsTrigger>
-        </TabsList>
+                  const labelUrl = getLabelUrl(order);
+                  const hasTracking = !!order.tracking_number;
 
-        <TabsContent value="applications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Pending Maker Applications ({applications.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <p>Loading...</p>
-              ) : applications.length === 0 ? (
-                <div className="text-center py-12 text-gray-500">
-                  <ClipboardList className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-                  <p>No pending applications</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {applications.map((app) => (
-                    <div key={app.id} className="p-4 border rounded-lg bg-white">
-                      <div className="flex justify-between items-start mb-3">
-                        <div>
-                          <h3 className="font-semibold text-lg">{app.full_name}</h3>
-
-                          <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                            <Mail className="w-4 h-4" />
-                            {app.email}
-                          </div>
-
-                          {app.phone && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                              <Phone className="w-4 h-4" />
-                              {app.phone}
-                            </div>
-                          )}
-
-                          {app.campus_location && (
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                              <MapPin className="w-4 h-4" />
-                              {app.campus_location.replace(/\|/g, ", ")}
-                            </div>
-                          )}
-                        </div>
-
-                        <p className="text-xs text-gray-400">
-                          {new Date(app.created_date).toLocaleDateString()}
-                        </p>
-                      </div>
-
-                      <div className="grid grid-cols-3 gap-3 text-sm mb-4 p-3 bg-gray-50 rounded">
-                        <div>
-                          <span className="text-gray-500">Experience:</span>
-                          <br />
-                          <span className="font-medium capitalize">
-                            {app.experience_level || "—"}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Weekly Hours:</span>
-                          <br />
-                          <span className="font-medium">
-                            {app.weekly_capacity || "—"}h
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-gray-500">Materials:</span>
-                          <br />
-                          <span className="font-medium">
-                            {(app.materials || []).map((m) => m.toUpperCase()).join(", ") || "—"}
-                          </span>
-                        </div>
-                      </div>
-
-                      {rejectingApp === app.id ? (
-                        <div className="space-y-2">
-                          <Textarea
-                            placeholder="Reason for rejection (optional, will be sent to applicant)"
-                            value={rejectReason}
-                            onChange={(e) => setRejectReason(e.target.value)}
-                            rows={2}
-                          />
-                          <div className="flex gap-2">
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleRejectApplication(app)}
-                              disabled={processingApp === app.id}
-                            >
-                              {processingApp === app.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                "Confirm Reject"
-                              )}
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => {
-                                setRejectingApp(null);
-                                setRejectReason("");
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700"
-                            onClick={() => handleApproveApplication(app)}
-                            disabled={processingApp === app.id}
-                          >
-                            {processingApp === app.id ? (
-                              <Loader2 className="w-4 h-4 animate-spin" />
-                            ) : (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                Approve
-                              </>
-                            )}
-                          </Button>
-
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => setRejectingApp(app.id)}
-                          >
-                            <XCircle className="w-4 h-4 mr-1" />
-                            Reject
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="tools">
-          <Card>
-            <CardHeader>
-              <CardTitle>Active Makers ({makers.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4 max-h-[600px] overflow-y-auto">
-                {loading ? (
-                  <p>Loading makers...</p>
-                ) : makers.length === 0 ? (
-                  <p className="text-gray-500">No active makers found</p>
-                ) : (
-                  makers.map((maker) => {
-                    const makerPrinters = getMakerPrinters(maker.maker_id);
-                    const makerFilaments = getMakerFilaments(maker.maker_id);
-
-                    return (
-                      <div
-                        key={maker.id}
-                        className="p-4 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div className="flex justify-between items-start mb-3">
+                  return (
+                    <Card key={order.id} className="bg-slate-800 border-slate-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between mb-3">
                           <div>
-                            <h3 className="font-semibold text-lg">{maker.full_name}</h3>
-
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                              <Mail className="w-4 h-4" />
-                              {maker.email}
-                            </div>
-
-                            {maker.phone && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                                <Phone className="w-4 h-4" />
-                                {maker.phone}
-                              </div>
-                            )}
-
-                            {maker.address?.street && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                                <MapPin className="w-4 h-4 text-blue-600" />
-                                {maker.address.street}, {maker.address.city}, {maker.address.state}{" "}
-                                {maker.address.zip}
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="flex gap-2">
-                            <Button size="sm" onClick={() => handleViewMaker(maker)}>
-                              View Details
-                            </Button>
-
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDeleteMaker(maker)}
-                              disabled={deletingMaker === maker.id}
-                            >
-                              {deletingMaker === maker.id ? (
-                                <Loader2 className="w-4 h-4 animate-spin" />
-                              ) : (
-                                <Trash2 className="w-4 h-4" />
-                              )}
-                            </Button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-4 mt-3 pt-3 border-t">
-                          <div>
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                              <Printer className="w-4 h-4" />
-                              Printers ({makerPrinters.length})
-                            </div>
-
-                            {makerPrinters.length > 0 ? (
-                              <div className="space-y-1">
-                                {makerPrinters.slice(0, 2).map((printer) => (
-                                  <div
-                                    key={printer.id}
-                                    className="text-xs text-gray-600 flex items-center gap-1"
-                                  >
-                                    <Badge variant="outline" className="text-xs">
-                                      {printer.brand} {printer.model}
-                                    </Badge>
-                                    {printer.multi_color_capable && (
-                                      <Badge className="bg-purple-100 text-purple-800 text-xs">
-                                        Multi-color
-                                      </Badge>
-                                    )}
-                                  </div>
-                                ))}
-                                {makerPrinters.length > 2 && (
-                                  <p className="text-xs text-gray-500">
-                                    +{makerPrinters.length - 2} more
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-500">No printers</p>
-                            )}
-                          </div>
-
-                          <div>
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                              <Package className="w-4 h-4" />
-                              Filaments ({makerFilaments.length})
-                              {maker.open_to_unowned_filaments && (
-                                <Badge className="bg-blue-100 text-blue-800 text-xs">
-                                  Open to ordering
-                                </Badge>
-                              )}
-                            </div>
-
-                            {makerFilaments.length > 0 ? (
-                              <div className="space-y-1">
-                                {makerFilaments.slice(0, 3).map((filament) => (
-                                  <div key={filament.id} className="text-xs text-gray-600">
-                                    {filament.material_type} - {filament.color}
-                                  </div>
-                                ))}
-                                {makerFilaments.length > 3 && (
-                                  <p className="text-xs text-gray-500">
-                                    +{makerFilaments.length - 3} more
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <p className="text-xs text-gray-500">No filaments</p>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="mt-3 pt-3 border-t">
-                          <div className="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                              <span className="text-gray-600">Weekly Hours:</span>
-                              <span className="font-medium ml-2">
-                                {maker.hours_printed_this_week || 0}h /{" "}
-                                {maker.max_hours_per_week || 40}h
-                              </span>
-                            </div>
-
-                            <div>
-                              <span className="text-gray-600">Status:</span>
-                              <Badge className="ml-2 bg-green-100 text-green-800">
-                                {maker.account_status}
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-semibold text-white">
+                                {user?.full_name || "Unknown Maker"}
+                              </p>
+                              <Badge
+                                className={
+                                  STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"
+                                }
+                              >
+                                {order.status}
                               </Badge>
                             </div>
 
-                            <div>
-                              <span className="text-gray-600">Performance Tier:</span>
-                              {performance[maker.maker_id] ? (
-                                <Badge className={`ml-2 ${getTierColor(performance[maker.maker_id].tier)}`}>
-                                  {performance[maker.maker_id].tier?.toUpperCase()}
-                                </Badge>
-                              ) : (
-                                <Badge className="ml-2 bg-gray-300 text-gray-700">
-                                  Not Rated
-                                </Badge>
-                              )}
+                            <div className="flex items-center gap-1 text-sm text-slate-400">
+                              <Mail className="w-3 h-3" />
+                              {user?.email || order.user_id}
                             </div>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                              Ordered: {new Date(order.created_date).toLocaleDateString()} · Paid: $
+                              {((order.cost || 0) / 100).toFixed(2)}
+                            </p>
                           </div>
 
-                          {performance[maker.maker_id] && (
-                            <div className="grid grid-cols-3 gap-4 text-xs text-gray-600 mt-2">
-                              <div>
-                                On-time: {performance[maker.maker_id].on_time_delivery_rate?.toFixed(1)}%
-                              </div>
-                              <div>
-                                Defects: {performance[maker.maker_id].defect_rate?.toFixed(1)}%
-                              </div>
-                              <div>
-                                Volume: {performance[maker.maker_id].total_volume_fulfilled} orders
-                              </div>
+                          <div className="text-right">
+                            {order.tracking_number && (
+                              <p className="text-xs text-cyan-400 mb-1">
+                                Tracking: {order.tracking_number}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {addr?.street && (
+                          <div className="flex items-start gap-2 mb-3 p-2 bg-slate-900 rounded text-sm text-slate-300">
+                            <MapPin className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
+                            <span>
+                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city},{" "}
+                              {addr?.state} {addr?.zip}
+                            </span>
+                          </div>
+                        )}
+
+                        {order.status !== "shipped" &&
+                          order.status !== "delivered" &&
+                          order.status !== "cancelled" && (
+                            <div className="flex gap-2 mt-2">
+                              {labelUrl ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-cyan-500 text-cyan-400 hover:bg-cyan-900/30"
+                                  onClick={() => handleDownloadLabel(order)}
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  Download Label PDF
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-slate-600 text-slate-300"
+                                  onClick={() => handleGenerateLabel(order)}
+                                  disabled={generatingLabel === order.id}
+                                >
+                                  {generatingLabel === order.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                  ) : (
+                                    <Download className="w-4 h-4 mr-1" />
+                                  )}
+                                  {hasTracking ? "Re-generate Label" : "Generate Label"}
+                                </Button>
+                              )}
+
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => handleMarkShipped(order, order.tracking_number)}
+                                disabled={markingShipped === order.id}
+                              >
+                                {markingShipped === order.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                Mark Shipped
+                              </Button>
                             </div>
                           )}
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="performance">
-          <div className="space-y-6">
-            <div className="flex justify-between items-center">
-              <h2 className="text-2xl font-bold text-white">
-                Maker Performance & Merit System
-              </h2>
-              <Button onClick={calculateWeeklyPerformance}>
-                <TrendingUp className="w-4 h-4 mr-2" />
-                Calculate Weekly Performance
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {["gold", "silver", "bronze"].map((tier) => {
-                const tierMakers = perfList.filter((p) => p.tier === tier);
-                return (
-                  <Card key={tier} className="bg-slate-800 border-slate-700">
-                    <CardContent className="pt-6">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm text-slate-400 capitalize">{tier} Tier</p>
-                          <p className="text-2xl font-bold text-white">
-                            {tierMakers.length} Makers
-                          </p>
-                        </div>
-                        {getTierIcon(tier)}
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            <Card className="bg-slate-800 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white">Performance Leaderboard</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-slate-300">
-                    <thead>
-                      <tr className="border-b border-slate-600">
-                        <th className="text-left py-2">Rank</th>
-                        <th className="text-left">Maker ID</th>
-                        <th className="text-center">Tier</th>
-                        <th className="text-center">On-Time %</th>
-                        <th className="text-center">Defect %</th>
-                        <th className="text-center">Avg Turnaround</th>
-                        <th className="text-center">Volume</th>
-                        <th className="text-center">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {[...perfList]
-                        .sort((a, b) => {
-                          const tierOrder = { gold: 3, silver: 2, bronze: 1 };
-                          if (tierOrder[a.tier] !== tierOrder[b.tier]) {
-                            return tierOrder[b.tier] - tierOrder[a.tier];
-                          }
-                          return (b.on_time_delivery_rate || 0) - (a.on_time_delivery_rate || 0);
-                        })
-                        .map((perf, index) => (
-                          <tr
-                            key={perf.id}
-                            className="border-b border-slate-700 hover:bg-slate-700/50"
-                          >
-                            <td className="py-3">#{index + 1}</td>
-                            <td>{perf.maker_id}</td>
-                            <td className="text-center">
-                              <Badge className={getTierColor(perf.tier)}>
-                                {perf.tier?.toUpperCase()}
-                              </Badge>
-                            </td>
-                            <td className="text-center">
-                              <span
-                                className={
-                                  perf.on_time_delivery_rate < 95
-                                    ? "text-red-400"
-                                    : "text-green-400"
-                                }
-                              >
-                                {perf.on_time_delivery_rate?.toFixed(1)}%
-                              </span>
-                            </td>
-                            <td className="text-center">
-                              <span
-                                className={
-                                  perf.defect_rate > 5 ? "text-red-400" : "text-green-400"
-                                }
-                              >
-                                {perf.defect_rate?.toFixed(1)}%
-                              </span>
-                            </td>
-                            <td className="text-center">
-                              {perf.average_turnaround_hours?.toFixed(1) || 0}h
-                            </td>
-                            <td className="text-center">{perf.total_volume_fulfilled}</td>
-                            <td className="text-center">
-                              {perf.flagged_for_review && (
-                                <Badge variant="destructive">Flagged</Badge>
-                              )}
-                              {perf.routing_priority_reduced && (
-                                <Badge variant="destructive">Low Priority</Badge>
-                              )}
-                            </td>
-                          </tr>
-                        ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {perfList.filter((p) => p.flagged_for_review).length > 0 && (
-              <Card className="border-red-700 bg-red-950/50">
-                <CardContent className="pt-6 flex items-start gap-3">
-                  <AlertCircle className="w-5 h-5 text-red-400 mt-0.5" />
-                  <div>
-                    <p className="font-semibold text-red-300">
-                      {perfList.filter((p) => p.flagged_for_review).length} Makers Flagged for Review
-                    </p>
-                    <p className="text-sm text-red-400">
-                      These makers have been below standard for 2+ consecutive weeks
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
             )}
-          </div>
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="calibration">
-          <CalibrationApprovalSection />
-        </TabsContent>
-
-        <TabsContent value="kit_orders">
-          <ShippingKitOrdersSection />
-        </TabsContent>
-      </Tabs>
-
-      <Dialog open={showMakerDialog} onOpenChange={setShowMakerDialog}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Maker Details</DialogTitle>
-            <DialogDescription>
-              {selectedMaker?.full_name} - {selectedMaker?.email}
-            </DialogDescription>
-          </DialogHeader>
-
-          {selectedMaker && (
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-semibold mb-2">Contact Information</h3>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Email:</strong> {selectedMaker.email}
-                  </p>
-                  {selectedMaker.phone && (
-                    <p>
-                      <strong>Phone:</strong> {selectedMaker.phone}
-                    </p>
-                  )}
-                  <p>
-                    <strong>Maker ID:</strong> {selectedMaker.maker_id}
-                  </p>
-                  {selectedMaker.address?.street && (
-                    <p>
-                      <strong>Address:</strong> {selectedMaker.address.street},{" "}
-                      {selectedMaker.address.city}, {selectedMaker.address.state}{" "}
-                      {selectedMaker.address.zip}
-                    </p>
-                  )}
-                </div>
+          <TabsContent value="filament">
+            {filamentOrders.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">
+                <FlaskConical className="w-12 h-12 mx-auto mb-3 text-slate-600" />
+                <p>No filament orders yet</p>
               </div>
+            ) : (
+              <div className="space-y-4 mt-4">
+                {filamentOrders.map((order) => {
+                  const user = users[order.user_id];
 
-              <div>
-                <h3 className="font-semibold mb-2">Capacity & Availability</h3>
-                <div className="space-y-2 text-sm">
-                  <p>
-                    <strong>Hours This Week:</strong>{" "}
-                    {selectedMaker.hours_printed_this_week || 0}h
-                  </p>
-                  <p>
-                    <strong>Max Hours/Week:</strong>{" "}
-                    {selectedMaker.max_hours_per_week || 40}h
-                  </p>
-                  <p>
-                    <strong>Weekly Capacity:</strong>{" "}
-                    {selectedMaker.weekly_capacity || "Not set"}
-                  </p>
-                  <p>
-                    <strong>Experience Level:</strong>{" "}
-                    {selectedMaker.experience_level || "Not set"}
-                  </p>
-                </div>
-              </div>
+                  return (
+                    <Card key={order.id} className="bg-slate-800 border-slate-700">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2 mb-1">
+                              <p className="font-semibold text-white">
+                                {user?.full_name || order.user_id}
+                              </p>
+                              <Badge
+                                className={
+                                  STATUS_COLORS[order.status] || "bg-yellow-100 text-yellow-800"
+                                }
+                              >
+                                {order.status || "pending"}
+                              </Badge>
+                            </div>
 
-              <div>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="font-semibold">Filament Inventory</h3>
-                  {selectedMaker.open_to_unowned_filaments ? (
-                    <Badge className="bg-blue-100 text-blue-800">
-                      Open to ordering unowned filaments
-                    </Badge>
-                  ) : (
-                    <Badge className="bg-gray-100 text-gray-800">
-                      Only uses owned filaments
-                    </Badge>
-                  )}
-                </div>
+                            <div className="flex items-center gap-1 text-sm text-slate-400">
+                              <Mail className="w-3 h-3" />
+                              {user?.email || "—"}
+                            </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  {getMakerFilaments(selectedMaker.maker_id).map((filament) => (
-                    <div key={filament.id} className="p-3 border rounded-lg">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <p className="font-medium">{filament.material_type}</p>
-                          <p className="text-sm text-gray-600">{filament.color}</p>
-                          <p className="text-sm text-gray-600">{filament.quantity_kg} kg</p>
+                            <p className="text-sm text-slate-300 mt-2 font-medium">
+                              {order.reward_name || "Filament Order"}
+                            </p>
+
+                            <p className="text-xs text-slate-500 mt-1">
+                              Ordered: {new Date(order.created_date).toLocaleDateString()}
+                            </p>
+                          </div>
+
+                          <Badge className="bg-teal-900/40 text-teal-300 border border-teal-700">
+                            Paid by Card
+                          </Badge>
                         </div>
-                        <Badge
-                          className={
-                            filament.in_stock
-                              ? "bg-green-100 text-green-900"
-                              : "bg-red-100 text-red-900"
-                          }
-                        >
-                          {filament.in_stock ? "In Stock" : "Out of Stock"}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {getMakerFilaments(selectedMaker.maker_id).length === 0 && (
-                  <p className="text-sm text-gray-500">No filaments in inventory</p>
-                )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-
-              <div>
-                <h3 className="font-semibold mb-3">Registered Printers</h3>
-                <div className="space-y-3">
-                  {getMakerPrinters(selectedMaker.maker_id).map((printer) => (
-                    <div key={printer.id} className="p-3 border rounded-lg">
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="font-medium">
-                            {printer.name || `${printer.brand} ${printer.model}`}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {printer.brand} - {printer.model}
-                          </p>
-                        </div>
-
-                        <Badge
-                          className={
-                            printer.status === "active"
-                              ? "bg-green-100 text-green-900"
-                              : printer.status === "printing"
-                                ? "bg-blue-100 text-blue-900"
-                                : printer.status === "maintenance"
-                                  ? "bg-yellow-100 text-yellow-900"
-                                  : "bg-gray-100 text-gray-900"
-                          }
-                        >
-                          {printer.status}
-                        </Badge>
-                      </div>
-
-                      {printer.print_volume && (
-                        <p className="text-sm text-gray-600">
-                          Build Volume: {printer.print_volume.length}×
-                          {printer.print_volume.width}×
-                          {printer.print_volume.height}mm
-                        </p>
-                      )}
-
-                      {printer.multi_color_capable && (
-                        <Badge className="bg-purple-100 text-purple-800 mt-2">
-                          Multi-color capable
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {getMakerPrinters(selectedMaker.maker_id).length === 0 && (
-                  <p className="text-sm text-gray-500">No printers registered</p>
-                )}
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+            )}
+          </TabsContent>
+        </Tabs>
+      )}
     </div>
   );
 }
