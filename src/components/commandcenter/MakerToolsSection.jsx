@@ -34,6 +34,30 @@ function getLabelUrl(order) {
   );
 }
 
+function getErrorMessage(error, result) {
+  if (result?.data?.error) return result.data.error;
+  if (result?.data?.details?.error) return result.data.details.error;
+  if (result?.error?.message) return result.error.message;
+  if (error?.response?.data?.error) return error.response.data.error;
+  if (error?.response?.data?.details?.error) return error.response.data.details.error;
+  if (error?.response?.data?.message) return error.response.data.message;
+  if (error?.message) return error.message;
+  return "Failed to generate label";
+}
+
+function getErrorDetails(error, result) {
+  if (result?.data?.details) {
+    return JSON.stringify(result.data.details);
+  }
+  if (error?.response?.data?.details) {
+    return JSON.stringify(error.response.data.details);
+  }
+  if (error?.response?.data) {
+    return JSON.stringify(error.response.data);
+  }
+  return "";
+}
+
 export default function ShippingKitOrdersSection() {
   const [orders, setOrders] = useState([]);
   const [filamentOrders, setFilamentOrders] = useState([]);
@@ -102,6 +126,7 @@ export default function ShippingKitOrdersSection() {
       }
 
       const result = await generateShippingKitLabel({ kitOrderId: order.id });
+      console.log("generateShippingKitLabel result:", result);
 
       const newLabelUrl =
         result?.data?.label_url ||
@@ -136,15 +161,17 @@ export default function ShippingKitOrdersSection() {
         });
       } else {
         toast({
-          title: result?.data?.error || "Failed to generate label",
+          title: getErrorMessage(null, result),
+          description: getErrorDetails(null, result) || "No additional details returned.",
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error generating label:", error);
+
       toast({
-        title: "Failed to generate label",
-        description: error?.message || "Unknown error",
+        title: getErrorMessage(error, null),
+        description: getErrorDetails(error, null) || "No additional details returned.",
         variant: "destructive",
       });
     } finally {
