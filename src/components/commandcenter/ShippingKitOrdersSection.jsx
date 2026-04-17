@@ -9,7 +9,7 @@ function cleanString(value) {
   return String(value).trim();
 }
 
-async function shippoRequest(path, options, apiKey) {
+async function shippoFetch(path, options, apiKey) {
   const res = await fetch(`${SHIPPO_BASE}${path}`, {
     ...options,
     headers: {
@@ -29,7 +29,7 @@ async function shippoRequest(path, options, apiKey) {
 }
 
 async function shippoPost(path, body, apiKey) {
-  return shippoRequest(
+  return shippoFetch(
     path,
     {
       method: 'POST',
@@ -40,7 +40,7 @@ async function shippoPost(path, body, apiKey) {
 }
 
 async function shippoGet(path, apiKey) {
-  return shippoRequest(
+  return shippoFetch(
     path,
     {
       method: 'GET'
@@ -86,8 +86,8 @@ Deno.serve(async (req) => {
       );
     }
 
-    const SHIPPO_KEY = Deno.env.get('SHIPPO_API_KEY');
-    if (!SHIPPO_KEY) {
+    const shippoKey = Deno.env.get('SHIPPO_API_KEY');
+    if (!shippoKey) {
       return Response.json({ error: 'Missing SHIPPO_API_KEY' }, { status: 500 });
     }
 
@@ -114,16 +114,6 @@ Deno.serve(async (req) => {
       phone: cleanString(addr.phone) || cleanString(makerUser.phone) || ''
     };
 
-    if (!sender.email || !sender.phone) {
-      return Response.json(
-        {
-          error: 'Sender info missing before Shippo request',
-          sender
-        },
-        { status: 400 }
-      );
-    }
-
     const shipmentPayload = {
       address_from: sender,
       address_to: recipient,
@@ -141,9 +131,7 @@ Deno.serve(async (req) => {
       async: false
     };
 
-    console.log('Shippo shipment payload:', JSON.stringify(shipmentPayload, null, 2));
-
-    const shipmentResult = await shippoPost('/shipments/', shipmentPayload, SHIPPO_KEY);
+    const shipmentResult = await shippoPost('/shipments/', shipmentPayload, shippoKey);
 
     if (!shipmentResult.ok) {
       return Response.json(
@@ -156,22 +144,18 @@ Deno.serve(async (req) => {
     }
 
     const shipment = shipmentResult.data;
-    console.log('Shippo shipment response:', JSON.stringify(shipment, null, 2));
 
     if (!shipment.rates || shipment.rates.length === 0) {
       return Response.json(
         {
           error: 'No shipping rates available',
-          details: shipment,
-          shippo_address_from: shipment.address_from || null,
-          shippo_address_return: shipment.address_return || null
+          details: shipment
         },
         { status: 500 }
       );
     }
 
     const uspsRates = shipment.rates.filter((r) => r.provider === 'USPS');
-
     const selectedRate =
       uspsRates.length > 0
         ? [...uspsRates].sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount))[0]
@@ -193,49 +177,37 @@ Deno.serve(async (req) => {
       async: false
     };
 
-    console.log('Shippo transaction payload:', JSON.stringify(transactionPayload, null, 2));
+    const transactionCreateResult = await shippoPost('/transactions/', transactionPayload, shippoKey);
 
-    const transactionResult = await shippoPost('/transactions/', transactionPayload, SHIPPO_KEY);
-
-    if (!transactionResult.ok) {
+    if (!transactionCreateResult.ok) {
       return Response.json(
         {
           error: 'Failed to purchase label',
-          details: transactionResult.data,
-          shippo_address_from: shipment.address_from || null,
-          shippo_address_return: shipment.address_return || null
+          details: transactionCreateResult.data
         },
         { status: 500 }
       );
     }
 
-    let transaction = transactionResult.data;
-    console.log('Shippo transaction create response:', JSON.stringify(transaction, null, 2));
+    let transaction = transactionCreateResult.data;
+    let labelUrl = transaction?.label_url || '';
+    const trackingNumber = transaction?.tracking_number || '';
+    const transactionId = transaction?.object_id || '';
 
-    const transactionId = transaction.object_id || '';
-    let labelUrl = transaction.label_url || '';
-    let trackingNumber = transaction.tracking_number || '';
-
-    // Recovery step: fetch the transaction again by object_id if label_url is missing
     if (transactionId && !labelUrl) {
-      const retrieveResult = await shippoGet(`/transactions/${transactionId}/`, SHIPPO_KEY);
+      const transactionGetResult = await shippoGet(`/transactions/${transactionId}/`, shippoKey);
 
-      console.log('Shippo transaction retrieve response:', JSON.stringify(retrieveResult.data, null, 2));
-
-      if (retrieveResult.ok) {
-        transaction = retrieveResult.data;
-        labelUrl = transaction.label_url || '';
-        trackingNumber = transaction.tracking_number || trackingNumber || '';
+      if (transactionGetResult.ok) {
+        transaction = transactionGetResult.data;
+        labelUrl = transaction?.label_url || '';
       }
     }
 
-    if (transaction.status !== 'SUCCESS') {
+    if (transaction?.status !== 'SUCCESS') {
       return Response.json(
         {
           error: 'Failed to purchase label',
-          details: transaction,
-          shippo_address_from: shipment.address_from || null,
-          shippo_address_return: shipment.address_return || null
+          details: transaction
         },
         { status: 500 }
       );
@@ -244,7 +216,6 @@ Deno.serve(async (req) => {
     await base44.asServiceRole.entities.ShippingKitOrder.update(kitOrderId, {
       shipping_label_url: labelUrl || '',
       tracking_number: trackingNumber || '',
-      shippo_transaction_id: transactionId || '',
       status: 'processing'
     });
 
@@ -252,16 +223,13 @@ Deno.serve(async (req) => {
       success: true,
       label_url: labelUrl || '',
       tracking_number: trackingNumber || '',
-      shippo_transaction_id: transactionId || '',
+      transaction_id: transactionId || '',
       carrier: selectedRate.provider,
       service: selectedRate.servicelevel?.name,
-      cost: selectedRate.amount,
-      warning: !labelUrl
-        ? 'Transaction succeeded, but no label_url was returned by Shippo.'
-        : ''
+      cost: selectedRate.amount
     });
   } catch (error) {
-    console.error('generate shipping label error:', error);
+    console.error('generateShippingKitLabel error:', error);
 
     return Response.json(
       {
