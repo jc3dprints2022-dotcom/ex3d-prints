@@ -16,6 +16,16 @@ const STATUS_COLORS = {
   cancelled: "bg-red-100 text-red-800"
 };
 
+function getLabelUrl(order) {
+  return (
+    order?.shipping_label_url ||
+    order?.label_url ||
+    order?.shippingLabelUrl ||
+    order?.labelUrl ||
+    ""
+  );
+}
+
 export default function ShippingKitOrdersSection() {
   const [orders, setOrders] = useState([]);
   const [filamentOrders, setFilamentOrders] = useState([]);
@@ -31,16 +41,19 @@ export default function ShippingKitOrdersSection() {
 
   const loadOrders = async () => {
     setLoading(true);
+
     const [kitOrders, redemptions] = await Promise.all([
       base44.entities.ShippingKitOrder.list("-created_date"),
       base44.entities.ExpRedemption.filter({ payment_type: "money" }).catch(() => [])
     ]);
 
+    console.log("Loaded ShippingKitOrder records:", kitOrders);
+
     setOrders(kitOrders);
     setFilamentOrders(redemptions);
 
     const allOrders = [...kitOrders, ...redemptions];
-    const uniqueUserIds = [...new Set(allOrders.map(o => o.user_id).filter(Boolean))];
+    const uniqueUserIds = [...new Set(allOrders.map((o) => o.user_id).filter(Boolean))];
     const userMap = {};
 
     await Promise.all(
@@ -57,42 +70,56 @@ export default function ShippingKitOrdersSection() {
   const handleGenerateLabel = async (order) => {
     setGeneratingLabel(order.id);
 
-    const user = users[order.user_id];
-    const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
+    try {
+      const user = users[order.user_id];
+      const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
 
-    if (!addr?.street) {
+      if (!addr?.street) {
+        toast({
+          title: "No shipping address found for this maker",
+          variant: "destructive"
+        });
+        setGeneratingLabel(null);
+        return;
+      }
+
+      const result = await generateShippingKitLabel({ kitOrderId: order.id });
+      console.log("generateShippingKitLabel result:", result);
+
+      const newLabelUrl =
+        result?.data?.label_url ||
+        result?.data?.shipping_label_url ||
+        "";
+
+      if (newLabelUrl) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === order.id
+              ? {
+                  ...o,
+                  shipping_label_url: newLabelUrl,
+                  tracking_number: result?.data?.tracking_number || o.tracking_number,
+                  status: "processing"
+                }
+              : o
+          )
+        );
+
+        window.open(newLabelUrl, "_blank", "noopener,noreferrer");
+
+        toast({
+          title: "Shipping label generated!"
+        });
+      } else {
+        toast({
+          title: result?.data?.error || "Failed to generate label",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error generating label:", error);
       toast({
-        title: "No shipping address found for this maker",
-        variant: "destructive"
-      });
-      setGeneratingLabel(null);
-      return;
-    }
-
-    const result = await generateShippingKitLabel({ kitOrderId: order.id });
-
-    if (result?.data?.label_url) {
-      setOrders((prev) =>
-        prev.map((o) =>
-          o.id === order.id
-            ? {
-                ...o,
-                shipping_label_url: result.data.label_url,
-                tracking_number: result.data.tracking_number || o.tracking_number,
-                status: "processing"
-              }
-            : o
-        )
-      );
-
-      window.open(result.data.label_url, "_blank");
-
-      toast({
-        title: "Shipping label generated!"
-      });
-    } else {
-      toast({
-        title: result?.data?.error || "Failed to generate label",
+        title: "Failed to generate label",
         variant: "destructive"
       });
     }
@@ -101,7 +128,9 @@ export default function ShippingKitOrdersSection() {
   };
 
   const handleDownloadLabel = (order) => {
-    if (!order.shipping_label_url) {
+    const labelUrl = getLabelUrl(order);
+
+    if (!labelUrl) {
       toast({
         title: "No label found for this order",
         variant: "destructive"
@@ -109,7 +138,7 @@ export default function ShippingKitOrdersSection() {
       return;
     }
 
-    window.open(order.shipping_label_url, "_blank", "noopener,noreferrer");
+    window.open(labelUrl, "_blank", "noopener,noreferrer");
   };
 
   const handleMarkShipped = async (order, trackingNumber) => {
@@ -132,7 +161,7 @@ export default function ShippingKitOrdersSection() {
     }
 
     toast({ title: "Order marked as shipped!" });
-    loadOrders();
+    await loadOrders();
     setMarkingShipped(null);
   };
 
@@ -195,6 +224,8 @@ export default function ShippingKitOrdersSection() {
                     ? order.shipping_address
                     : user?.address;
 
+                  const labelUrl = getLabelUrl(order);
+
                   return (
                     <Card key={order.id} className="bg-slate-800 border-slate-700">
                       <CardContent className="p-4">
@@ -204,11 +235,7 @@ export default function ShippingKitOrdersSection() {
                               <p className="font-semibold text-white">
                                 {user?.full_name || "Unknown Maker"}
                               </p>
-                              <Badge
-                                className={
-                                  STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"
-                                }
-                              >
+                              <Badge className={STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"}>
                                 {order.status}
                               </Badge>
                             </div>
@@ -221,6 +248,10 @@ export default function ShippingKitOrdersSection() {
                             <p className="text-xs text-slate-500 mt-1">
                               Ordered: {new Date(order.created_date).toLocaleDateString()} · Paid: $
                               {(order.cost / 100).toFixed(2)}
+                            </p>
+
+                            <p className="text-[11px] text-slate-500 mt-1 break-all">
+                              Label URL: {labelUrl || "none"}
                             </p>
                           </div>
 
@@ -237,8 +268,7 @@ export default function ShippingKitOrdersSection() {
                           <div className="flex items-start gap-2 mb-3 p-2 bg-slate-900 rounded text-sm text-slate-300">
                             <MapPin className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
                             <span>
-                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city},{" "}
-                              {addr?.state} {addr?.zip}
+                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city}, {addr?.state} {addr?.zip}
                             </span>
                           </div>
                         )}
@@ -247,7 +277,7 @@ export default function ShippingKitOrdersSection() {
                           order.status !== "delivered" &&
                           order.status !== "cancelled" && (
                             <div className="flex gap-2 mt-2">
-                              {order.shipping_label_url ? (
+                              {labelUrl ? (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -316,11 +346,7 @@ export default function ShippingKitOrdersSection() {
                               <p className="font-semibold text-white">
                                 {user?.full_name || order.user_id}
                               </p>
-                              <Badge
-                                className={
-                                  STATUS_COLORS[order.status] || "bg-yellow-100 text-yellow-800"
-                                }
-                              >
+                              <Badge className={STATUS_COLORS[order.status] || "bg-yellow-100 text-yellow-800"}>
                                 {order.status || "pending"}
                               </Badge>
                             </div>
