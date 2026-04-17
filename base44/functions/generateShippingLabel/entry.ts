@@ -11,12 +11,12 @@ function getShippoKey() {
 // Replace these with your real business details
 const DEFAULT_SENDER = {
   name: 'EX3D Prints',
-  street: '1 N Gurley St',
+  street: '3700 Willow Creek RD',
   city: 'Prescott',
   state: 'AZ',
   zip: '86301',
   country: 'US',
-  phone: '9285551234',
+  phone: '6108583200',
   email: 'jc3dprints2022@gmail.com',
 };
 
