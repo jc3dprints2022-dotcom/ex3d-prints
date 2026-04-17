@@ -35,51 +35,93 @@ export default function ShippingKitOrdersSection() {
       base44.entities.ShippingKitOrder.list("-created_date"),
       base44.entities.ExpRedemption.filter({ payment_type: "money" }).catch(() => [])
     ]);
+
     setOrders(kitOrders);
-    // Filament orders are ExpRedemptions with payment_type=money (card payment for filament)
     setFilamentOrders(redemptions);
 
-    // Load user info
     const allOrders = [...kitOrders, ...redemptions];
     const uniqueUserIds = [...new Set(allOrders.map(o => o.user_id).filter(Boolean))];
     const userMap = {};
-    await Promise.all(uniqueUserIds.map(async (uid) => {
-      const user = await base44.entities.User.get(uid).catch(() => null);
-      if (user) userMap[uid] = user;
-    }));
+
+    await Promise.all(
+      uniqueUserIds.map(async (uid) => {
+        const user = await base44.entities.User.get(uid).catch(() => null);
+        if (user) userMap[uid] = user;
+      })
+    );
+
     setUsers(userMap);
     setLoading(false);
   };
 
   const handleGenerateLabel = async (order) => {
     setGeneratingLabel(order.id);
+
     const user = users[order.user_id];
-    if (!user?.address?.street) {
-      toast({ title: "No shipping address found for this maker", variant: "destructive" });
+    const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
+
+    if (!addr?.street) {
+      toast({
+        title: "No shipping address found for this maker",
+        variant: "destructive"
+      });
       setGeneratingLabel(null);
       return;
     }
 
     const result = await generateShippingKitLabel({ kitOrderId: order.id });
+
     if (result?.data?.label_url) {
+      setOrders((prev) =>
+        prev.map((o) =>
+          o.id === order.id
+            ? {
+                ...o,
+                shipping_label_url: result.data.label_url,
+                tracking_number: result.data.tracking_number || o.tracking_number,
+                status: "processing"
+              }
+            : o
+        )
+      );
+
       window.open(result.data.label_url, "_blank");
-      await loadOrders();
-      toast({ title: "Shipping label generated!" });
+
+      toast({
+        title: "Shipping label generated!"
+      });
     } else {
-      toast({ title: result?.data?.error || "Failed to generate label", variant: "destructive" });
+      toast({
+        title: result?.data?.error || "Failed to generate label",
+        variant: "destructive"
+      });
     }
+
     setGeneratingLabel(null);
+  };
+
+  const handleDownloadLabel = (order) => {
+    if (!order.shipping_label_url) {
+      toast({
+        title: "No label found for this order",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    window.open(order.shipping_label_url, "_blank", "noopener,noreferrer");
   };
 
   const handleMarkShipped = async (order, trackingNumber) => {
     setMarkingShipped(order.id);
+
     const tracking = trackingNumber || prompt("Enter tracking number (optional):");
+
     await base44.entities.ShippingKitOrder.update(order.id, {
       status: "shipped",
       tracking_number: tracking || order.tracking_number || ""
     });
 
-    // Notify the maker
     const user = users[order.user_id];
     if (user?.email) {
       await base44.integrations.Core.SendEmail({
@@ -94,13 +136,20 @@ export default function ShippingKitOrdersSection() {
     setMarkingShipped(null);
   };
 
-  const pendingCount = orders.filter(o => o.status === "pending" || o.status === "processing").length;
+  const pendingCount = orders.filter(
+    (o) => o.status === "pending" || o.status === "processing"
+  ).length;
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-white">Kit & Filament Orders</h2>
-        <Button size="sm" variant="outline" onClick={loadOrders} className="border-slate-600 text-slate-300">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={loadOrders}
+          className="border-slate-600 text-slate-300"
+        >
           Refresh
         </Button>
       </div>
@@ -118,10 +167,16 @@ export default function ShippingKitOrdersSection() {
       ) : (
         <Tabs defaultValue="kits">
           <TabsList className="bg-slate-800 border-slate-700">
-            <TabsTrigger value="kits" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            <TabsTrigger
+              value="kits"
+              className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
+            >
               <Package className="w-4 h-4 mr-1" /> Shipping Kits ({orders.length})
             </TabsTrigger>
-            <TabsTrigger value="filament" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            <TabsTrigger
+              value="filament"
+              className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300"
+            >
               <FlaskConical className="w-4 h-4 mr-1" /> Filament Orders ({filamentOrders.length})
             </TabsTrigger>
           </TabsList>
@@ -134,70 +189,106 @@ export default function ShippingKitOrdersSection() {
               </div>
             ) : (
               <div className="space-y-4 mt-4">
-                {orders.map(order => {
+                {orders.map((order) => {
                   const user = users[order.user_id];
+                  const addr = order.shipping_address?.street
+                    ? order.shipping_address
+                    : user?.address;
+
                   return (
                     <Card key={order.id} className="bg-slate-800 border-slate-700">
                       <CardContent className="p-4">
                         <div className="flex items-start justify-between mb-3">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold text-white">{user?.full_name || "Unknown Maker"}</p>
-                              <Badge className={STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"}>
+                              <p className="font-semibold text-white">
+                                {user?.full_name || "Unknown Maker"}
+                              </p>
+                              <Badge
+                                className={
+                                  STATUS_COLORS[order.status] || "bg-gray-200 text-gray-800"
+                                }
+                              >
                                 {order.status}
                               </Badge>
                             </div>
+
                             <div className="flex items-center gap-1 text-sm text-slate-400">
                               <Mail className="w-3 h-3" />
                               {user?.email || order.user_id}
                             </div>
+
                             <p className="text-xs text-slate-500 mt-1">
-                              Ordered: {new Date(order.created_date).toLocaleDateString()} · Paid: ${(order.cost / 100).toFixed(2)}
+                              Ordered: {new Date(order.created_date).toLocaleDateString()} · Paid: $
+                              {(order.cost / 100).toFixed(2)}
                             </p>
                           </div>
+
                           <div className="text-right">
                             {order.tracking_number && (
-                              <p className="text-xs text-cyan-400 mb-1">Tracking: {order.tracking_number}</p>
+                              <p className="text-xs text-cyan-400 mb-1">
+                                Tracking: {order.tracking_number}
+                              </p>
                             )}
                           </div>
                         </div>
 
-                        {(order.shipping_address?.street || user?.address?.street) && (
+                        {addr?.street && (
                           <div className="flex items-start gap-2 mb-3 p-2 bg-slate-900 rounded text-sm text-slate-300">
                             <MapPin className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
                             <span>
-                              {(() => {
-                                const addr = order.shipping_address?.street ? order.shipping_address : user?.address;
-                                return `${addr?.name || user?.full_name || ""}, ${addr?.street}, ${addr?.city}, ${addr?.state} ${addr?.zip}`;
-                              })()}
+                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city},{" "}
+                              {addr?.state} {addr?.zip}
                             </span>
                           </div>
                         )}
 
-                        {order.shipping_label_url && (
-                          <div className="mb-3">
-                            <a href={order.shipping_label_url} target="_blank" rel="noopener noreferrer">
-                              <Button size="sm" variant="outline" className="border-cyan-500 text-cyan-400 hover:bg-cyan-900/30">
-                                <Download className="w-4 h-4 mr-1" /> Download Label
-                              </Button>
-                            </a>
-                          </div>
-                        )}
+                        {order.status !== "shipped" &&
+                          order.status !== "delivered" &&
+                          order.status !== "cancelled" && (
+                            <div className="flex gap-2 mt-2">
+                              {order.shipping_label_url ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-cyan-500 text-cyan-400 hover:bg-cyan-900/30"
+                                  onClick={() => handleDownloadLabel(order)}
+                                >
+                                  <Download className="w-4 h-4 mr-1" />
+                                  Download Label PDF
+                                </Button>
+                              ) : (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-slate-600 text-slate-300"
+                                  onClick={() => handleGenerateLabel(order)}
+                                  disabled={generatingLabel === order.id}
+                                >
+                                  {generatingLabel === order.id ? (
+                                    <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                  ) : (
+                                    <Download className="w-4 h-4 mr-1" />
+                                  )}
+                                  Generate Label
+                                </Button>
+                              )}
 
-                        {order.status !== "shipped" && order.status !== "delivered" && order.status !== "cancelled" && (
-                          <div className="flex gap-2 mt-2">
-                            <Button size="sm" variant="outline" className="border-slate-600 text-slate-300"
-                              onClick={() => handleGenerateLabel(order)} disabled={generatingLabel === order.id}>
-                              {generatingLabel === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <Download className="w-4 h-4 mr-1" />}
-                              {order.shipping_label_url ? "Re-generate Label" : "Generate Label"}
-                            </Button>
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700"
-                              onClick={() => handleMarkShipped(order, order.tracking_number)} disabled={markingShipped === order.id}>
-                              {markingShipped === order.id ? <Loader2 className="w-4 h-4 animate-spin mr-1" /> : <CheckCircle className="w-4 h-4 mr-1" />}
-                              Mark Shipped
-                            </Button>
-                          </div>
-                        )}
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700"
+                                onClick={() => handleMarkShipped(order, order.tracking_number)}
+                                disabled={markingShipped === order.id}
+                              >
+                                {markingShipped === order.id ? (
+                                  <Loader2 className="w-4 h-4 animate-spin mr-1" />
+                                ) : (
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                )}
+                                Mark Shipped
+                              </Button>
+                            </div>
+                          )}
                       </CardContent>
                     </Card>
                   );
@@ -214,7 +305,7 @@ export default function ShippingKitOrdersSection() {
               </div>
             ) : (
               <div className="space-y-4 mt-4">
-                {filamentOrders.map(order => {
+                {filamentOrders.map((order) => {
                   const user = users[order.user_id];
                   return (
                     <Card key={order.id} className="bg-slate-800 border-slate-700">
@@ -222,20 +313,35 @@ export default function ShippingKitOrdersSection() {
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold text-white">{user?.full_name || order.user_id}</p>
-                              <Badge className={STATUS_COLORS[order.status] || "bg-yellow-100 text-yellow-800"}>
+                              <p className="font-semibold text-white">
+                                {user?.full_name || order.user_id}
+                              </p>
+                              <Badge
+                                className={
+                                  STATUS_COLORS[order.status] || "bg-yellow-100 text-yellow-800"
+                                }
+                              >
                                 {order.status || "pending"}
                               </Badge>
                             </div>
+
                             <div className="flex items-center gap-1 text-sm text-slate-400">
-                              <Mail className="w-3 h-3" />{user?.email || "—"}
+                              <Mail className="w-3 h-3" />
+                              {user?.email || "—"}
                             </div>
-                            <p className="text-sm text-slate-300 mt-2 font-medium">{order.reward_name || "Filament Order"}</p>
+
+                            <p className="text-sm text-slate-300 mt-2 font-medium">
+                              {order.reward_name || "Filament Order"}
+                            </p>
+
                             <p className="text-xs text-slate-500 mt-1">
                               Ordered: {new Date(order.created_date).toLocaleDateString()}
                             </p>
                           </div>
-                          <Badge className="bg-teal-900/40 text-teal-300 border border-teal-700">Paid by Card</Badge>
+
+                          <Badge className="bg-teal-900/40 text-teal-300 border border-teal-700">
+                            Paid by Card
+                          </Badge>
                         </div>
                       </CardContent>
                     </Card>
