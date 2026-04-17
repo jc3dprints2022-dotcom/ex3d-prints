@@ -12,7 +12,7 @@ function getDefaultSenderEmail(): string {
 
 function getDefaultSenderPhone(): string {
   // Replace with your real business phone number
-  return Deno.env.get('SHIPPO_SENDER_PHONE') || '9285551234';
+  return Deno.env.get('SHIPPO_SENDER_PHONE') || '6108583200';
 }
 
 function gToLb(grams: number): number {
