@@ -37,24 +37,16 @@ function getLabelUrl(order) {
 function getErrorMessage(error, result) {
   if (result?.data?.error) return result.data.error;
   if (result?.data?.details?.error) return result.data.details.error;
-  if (result?.error?.message) return result.error.message;
   if (error?.response?.data?.error) return error.response.data.error;
-  if (error?.response?.data?.details?.error) return error.response.data.details.error;
   if (error?.response?.data?.message) return error.response.data.message;
   if (error?.message) return error.message;
   return "Failed to generate label";
 }
 
 function getErrorDetails(error, result) {
-  if (result?.data?.details) {
-    return JSON.stringify(result.data.details);
-  }
-  if (error?.response?.data?.details) {
-    return JSON.stringify(error.response.data.details);
-  }
-  if (error?.response?.data) {
-    return JSON.stringify(error.response.data);
-  }
+  if (result?.data?.details) return JSON.stringify(result.data.details);
+  if (error?.response?.data?.details) return JSON.stringify(error.response.data.details);
+  if (error?.response?.data) return JSON.stringify(error.response.data);
   return "";
 }
 
@@ -85,15 +77,12 @@ export default function ShippingKitOrdersSection() {
 
       const allOrders = [...(kitOrders || []), ...(redemptions || [])];
       const uniqueUserIds = [...new Set(allOrders.map((o) => o.user_id).filter(Boolean))];
-
       const userMap = {};
 
       await Promise.all(
         uniqueUserIds.map(async (uid) => {
           const user = await base44.entities.User.get(uid).catch(() => null);
-          if (user) {
-            userMap[uid] = user;
-          }
+          if (user) userMap[uid] = user;
         })
       );
 
@@ -168,7 +157,6 @@ export default function ShippingKitOrdersSection() {
       }
     } catch (error) {
       console.error("Error generating label:", error);
-
       toast({
         title: getErrorMessage(error, null),
         description: getErrorDetails(error, null) || "No additional details returned.",
@@ -216,10 +204,7 @@ export default function ShippingKitOrdersSection() {
         }).catch(() => {});
       }
 
-      toast({
-        title: "Order marked as shipped!",
-      });
-
+      toast({ title: "Order marked as shipped!" });
       await loadOrders();
     } catch (error) {
       console.error("Failed to mark shipped:", error);
@@ -339,8 +324,7 @@ export default function ShippingKitOrdersSection() {
                           <div className="flex items-start gap-2 mb-3 p-2 bg-slate-900 rounded text-sm text-slate-300">
                             <MapPin className="w-4 h-4 mt-0.5 text-slate-400 flex-shrink-0" />
                             <span>
-                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city},{" "}
-                              {addr?.state} {addr?.zip}
+                              {addr?.name || user?.full_name || ""}, {addr?.street}, {addr?.city}, {addr?.state} {addr?.zip}
                             </span>
                           </div>
                         )}
