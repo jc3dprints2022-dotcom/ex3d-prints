@@ -13,6 +13,15 @@ import {
 const DROP_PRICE = 5;
 const DEFAULT_COLORS = ["White", "Black", "Gray", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink"];
 
+// Hardcoded image map by product ID.
+// base44 Cart entities have a fixed schema and silently drop unknown fields like image_url,
+// so we resolve images here directly rather than relying on stored entity data or product fetches.
+// Add new product IDs and image URLs here as the catalog grows.
+const PRODUCT_IMAGE_MAP = {
+  "693b06e655e441e07049d328": "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png",
+  "69dbf08433850e148542d876": "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png",
+};
+
 // ─── Anonymous cart helpers ────────────────────────────────────────────────────
 // The landing page writes to localStorage when no user is signed in.
 // These helpers keep that in sync and are exported so the landing page can import them.
@@ -249,7 +258,8 @@ export default function Cart() {
               const product = products[item.product_id];
               const isCustomRequest = product?.is_custom_request;
               // Resolve image: prefer product lookup, fall back to image stored on item itself
-              const imageUrl = item.image_url || product?.images?.[0] || item.images?.[0] || null;
+              // Map lookup is most reliable since base44 schema drops unknown fields; product fetch is fallback for non-rocket items
+              const imageUrl = PRODUCT_IMAGE_MAP[item.product_id] || product?.images?.[0] || item.images?.[0] || null;
 
               return (
                 <Card key={item.id}>
