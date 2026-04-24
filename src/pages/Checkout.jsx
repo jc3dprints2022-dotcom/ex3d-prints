@@ -8,6 +8,11 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, ShoppingBag, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
+const PRODUCT_IMAGE_MAP = {
+  "693b06e655e441e07049d328": "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png",
+  "69dbf08433850e148542d876": "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png",
+};
+
 // Read anonymous cart from localStorage (written by the landing page for guest users)
 function anonymousCartGet() {
   try { return JSON.parse(localStorage.getItem("anonymousCart") || "[]"); }
@@ -61,21 +66,7 @@ export default function Checkout() {
         const addresses = currentUser.saved_addresses || [];
         setSavedAddresses(addresses);
 
-        // If the user just came back from a login redirect, restore the address they typed
-        const pendingAddress = sessionStorage.getItem("checkout_pending_address");
-        const pendingCoupon = sessionStorage.getItem("checkout_pending_coupon");
-        const pendingReferral = sessionStorage.getItem("checkout_pending_referral");
-        if (pendingAddress) {
-          try {
-            setShippingAddress(JSON.parse(pendingAddress));
-            if (pendingCoupon) setCouponCode(pendingCoupon);
-            if (pendingReferral) setReferralCode(pendingReferral);
-          } catch {}
-          sessionStorage.removeItem("checkout_pending_address");
-          sessionStorage.removeItem("checkout_pending_coupon");
-          sessionStorage.removeItem("checkout_pending_referral");
-          await loadCartFromDB(currentUser.id, null);
-        } else if (addresses.length > 0) {
+        if (addresses.length > 0) {
           const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
           setShippingAddress(defaultAddr);
           setSelectedAddressId(defaultAddr.id || "");
@@ -216,17 +207,6 @@ export default function Checkout() {
       return;
     }
 
-    // Guest users must sign in before the backend can process the order.
-    // We save their filled-in address to sessionStorage so it's restored after redirect.
-    if (!user) {
-      sessionStorage.setItem("checkout_pending_address", JSON.stringify(shippingAddress));
-      sessionStorage.setItem("checkout_pending_coupon", couponCode);
-      sessionStorage.setItem("checkout_pending_referral", referralCode);
-      toast({ title: "Almost there!", description: "Sign in to complete your order. Your cart is saved." });
-      await base44.auth.redirectToLogin(window.location.href);
-      return;
-    }
-
     setProcessing(true);
     try {
       const shippingFee = getShippingFee();
@@ -326,7 +306,7 @@ export default function Checkout() {
               <CardContent>
                 <div className="space-y-4">
                   {cartItems.map((item) => {
-                    const imageUrl = item.images?.[0] || null;
+                    const imageUrl = PRODUCT_IMAGE_MAP[item.product_id] || item.images?.[0] || null;
                     return (
                       <div key={item.id} className="flex gap-3 pb-4 border-b last:border-b-0 items-start">
                         {imageUrl && (
@@ -508,13 +488,11 @@ export default function Checkout() {
                 >
                   {processing
                     ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
-                    : user ? "Place Order" : "Sign In and Place Order"}
+                    : "Place Order"}
                 </Button>
 
                 <p className="text-xs text-gray-500 text-center">
-                  {user
-                    ? "You'll enter payment info on the next screen."
-                    : "You'll be asked to sign in, then returned here to complete your order. Your cart and address are saved."}
+                  You'll enter your payment info on the next screen.
                 </p>
 
                 <div className="pt-2 border-t">
