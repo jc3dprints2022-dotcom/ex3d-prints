@@ -118,12 +118,12 @@ export default function SaturnV() {
 
   const BundlePriceDisplay = ({ size = "base" }) => {
     const sizes = {
-      base: { old: "text-xl", new: "text-3xl", save: "text-sm" },
-      large: { old: "text-2xl", new: "text-5xl", save: "text-base" },
+      base: { old: "text-lg sm:text-xl", new: "text-2xl sm:text-3xl", save: "text-xs sm:text-sm" },
+      large: { old: "text-xl sm:text-2xl", new: "text-4xl sm:text-5xl", save: "text-sm sm:text-base" },
     };
     const s = sizes[size];
     return (
-      <div className="flex items-baseline justify-center gap-4 flex-wrap">
+      <div className="flex items-baseline justify-center gap-2 sm:gap-4 flex-wrap px-4">
         <span className={`${s.old} text-gray-500 line-through font-medium`}>${SEPARATE_TOTAL}</span>
         <span className={`${s.new} font-bold text-orange-400`}>${BUNDLE_PRICE}</span>
         <span className={`${s.save} text-orange-300 font-semibold`}>Save ${BUNDLE_SAVINGS} with the bundle</span>
@@ -164,7 +164,7 @@ export default function SaturnV() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0f] text-white">
+    <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
       <Toaster />
 
       {/* HERO */}
@@ -187,25 +187,25 @@ export default function SaturnV() {
             Ships in {SHIPPING_DAYS} · Printed locally · Quality guaranteed
           </p>
 
-          {/* Hero rocket photos, large, portrait orientation */}
-          <div className="flex justify-center items-end gap-6 sm:gap-10 mb-8 w-full">
-            <div className="flex flex-col items-center flex-shrink-0">
+          {/* Hero rocket photos, responsive, fills available width on mobile */}
+          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-8 w-full px-2">
+            <div className="flex flex-col items-center min-w-0 flex-1 max-w-[260px] sm:max-w-[300px] md:max-w-[340px]">
               <button
                 onClick={() => setLightboxImage(SATURN_V_IMAGE)}
-                className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 w-[180px] sm:w-[260px] md:w-[320px] h-[320px] sm:h-[460px] md:h-[560px] flex items-center justify-center bg-black hover:border-orange-500/40 transition-all"
+                className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-orange-900/20 w-full aspect-[2/3] flex items-center justify-center bg-black hover:border-orange-500/40 transition-all"
               >
                 <img src={SATURN_V_IMAGE} alt="Saturn V printed model" className="w-full h-full object-contain" />
               </button>
-              <p className="text-sm text-gray-300 mt-3 font-medium">Saturn V · 56cm</p>
+              <p className="text-xs sm:text-sm text-gray-300 mt-3 font-medium">Saturn V · 56cm</p>
             </div>
-            <div className="flex flex-col items-center flex-shrink-0">
+            <div className="flex flex-col items-center min-w-0 flex-1 max-w-[260px] sm:max-w-[300px] md:max-w-[340px]">
               <button
                 onClick={() => setLightboxImage(SLS_IMAGE)}
-                className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 w-[180px] sm:w-[260px] md:w-[320px] h-[320px] sm:h-[460px] md:h-[560px] flex items-center justify-center bg-black hover:border-blue-500/40 transition-all"
+                className="rounded-2xl overflow-hidden border border-gray-700 shadow-2xl shadow-blue-900/20 w-full aspect-[2/3] flex items-center justify-center bg-black hover:border-blue-500/40 transition-all"
               >
                 <img src={SLS_IMAGE} alt="SLS printed model" className="w-full h-full object-contain" />
               </button>
-              <p className="text-sm text-gray-300 mt-3 font-medium">SLS · 50cm</p>
+              <p className="text-xs sm:text-sm text-gray-300 mt-3 font-medium">SLS · 50cm</p>
             </div>
           </div>
 
