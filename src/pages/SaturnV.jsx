@@ -27,36 +27,68 @@ export default function SaturnV() {
   const { toast }               = useToast();
 
   // ── ADD TO CART ─────────────────────────────────────────────────────────────
-  // CRITICAL FIX: removed login-wall redirect. Guest users proceed directly to
-  // cart/checkout — losing them to a login screen kills cold-traffic conversion.
+  // Logged-in users: items saved to DB cart.
+  // Guest users: items saved to localStorage("anonymousCart") so Cart.jsx can
+  // display them. Cart.jsx merges localStorage → DB cart on next login.
   const addToCart = async (type) => {
     setAdding(type);
     try {
       const user = await base44.auth.me().catch(() => null);
 
+      const itemsToAdd = [];
       if (type === "saturn" || type === "bundle") {
-        const price = SATURN_V_PRICE;
-        if (user) {
-          const ex = await base44.entities.Cart.filter({ user_id: user.id, product_id: SATURN_V_ID });
-          if (ex.length > 0) {
-            await base44.entities.Cart.update(ex[0].id, { unit_price: price, total_price: price * ex[0].quantity });
-          } else {
-            await base44.entities.Cart.create({ user_id: user.id, product_id: SATURN_V_ID, product_name: "SATURN V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: price, total_price: price });
-          }
-        }
+        itemsToAdd.push({
+          product_id: SATURN_V_ID,
+          product_name: "SATURN V",
+          quantity: 1,
+          selected_material: "PLA",
+          selected_color: "Shown Colors",
+          unit_price: SATURN_V_PRICE,
+          total_price: SATURN_V_PRICE,
+        });
       }
-
       if (type === "sls" || type === "bundle") {
         const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
-        const slsName  = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
-        if (user) {
-          const ex = await base44.entities.Cart.filter({ user_id: user.id, product_id: SLS_ID });
+        itemsToAdd.push({
+          product_id: SLS_ID,
+          product_name: type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)",
+          quantity: 1,
+          selected_material: "PLA",
+          selected_color: "Shown Colors",
+          unit_price: slsPrice,
+          total_price: slsPrice,
+        });
+      }
+
+      if (user) {
+        // Logged-in: persist to DB
+        for (const newItem of itemsToAdd) {
+          const ex = await base44.entities.Cart.filter({ user_id: user.id, product_id: newItem.product_id });
           if (ex.length > 0) {
-            await base44.entities.Cart.update(ex[0].id, { unit_price: slsPrice, total_price: slsPrice * ex[0].quantity, product_name: slsName });
+            await base44.entities.Cart.update(ex[0].id, {
+              unit_price: newItem.unit_price,
+              total_price: newItem.unit_price * ex[0].quantity,
+              product_name: newItem.product_name,
+            });
           } else {
-            await base44.entities.Cart.create({ user_id: user.id, product_id: SLS_ID, product_name: slsName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: slsPrice, total_price: slsPrice });
+            await base44.entities.Cart.create({ user_id: user.id, ...newItem });
           }
         }
+      } else {
+        // Guest: persist to localStorage so Cart page shows the items
+        const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+        for (const newItem of itemsToAdd) {
+          const idx = cart.findIndex(i => i.product_id === newItem.product_id);
+          if (idx >= 0) {
+            // Update price/name in case switching between bundle and solo
+            cart[idx].unit_price   = newItem.unit_price;
+            cart[idx].total_price  = newItem.unit_price * cart[idx].quantity;
+            cart[idx].product_name = newItem.product_name;
+          } else {
+            cart.push({ ...newItem, id: `anon_${newItem.product_id}_${Date.now()}` });
+          }
+        }
+        localStorage.setItem("anonymousCart", JSON.stringify(cart));
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
