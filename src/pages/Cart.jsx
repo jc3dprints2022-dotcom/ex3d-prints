@@ -249,7 +249,7 @@ export default function Cart() {
               const product = products[item.product_id];
               const isCustomRequest = product?.is_custom_request;
               // Resolve image: prefer product lookup, fall back to image stored on item itself
-              const imageUrl = product?.images?.[0] || item.images?.[0] || null;
+              const imageUrl = item.image_url || product?.images?.[0] || item.images?.[0] || null;
 
               return (
                 <Card key={item.id}>
