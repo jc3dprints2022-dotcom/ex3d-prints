@@ -3,118 +3,103 @@ import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, ShoppingBag, MapPin, CreditCard, Tag, Users } from "lucide-react";
+import { Loader2, ShoppingBag, MapPin } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const CAMPUS_LOCATIONS = [
-  { value: "erau_prescott", label: "ERAU Prescott" },
-];
+// Read anonymous cart from localStorage (written by the landing page for guest users)
+function anonymousCartGet() {
+  try { return JSON.parse(localStorage.getItem("anonymousCart") || "[]"); }
+  catch { return []; }
+}
 
 export default function Checkout() {
-  const [user, setUser] = useState(null);
-  const [cartItems, setCartItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState(false);
-  const [couponCode, setCouponCode] = useState("");
+  const [user, setUser]               = useState(null);
+  const [cartItems, setCartItems]     = useState([]);
+  const [loading, setLoading]         = useState(true);
+  const [processing, setProcessing]   = useState(false);
+  const [couponCode, setCouponCode]   = useState("");
   const [referralCode, setReferralCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
   const [shippingAddress, setShippingAddress] = useState({
-    name: "",
-    phone: "",
-    street: "",
-    city: "",
-    state: "",
-    zip: ""
+    name: "", phone: "", street: "", city: "", state: "", zip: "",
   });
-  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [savedAddresses, setSavedAddresses]   = useState([]);
   const [selectedAddressId, setSelectedAddressId] = useState("");
-  const [isLocalDelivery] = useState(false);
   const [calculatingShipping, setCalculatingShipping] = useState(false);
   const [shippingCost, setShippingCost] = useState(null);
   const { toast } = useToast();
 
   useEffect(() => {
-    (async () => {
-      await initializeCheckout();
-    })();
+    (async () => { await initializeCheckout(); })();
   }, []);
 
-  // Fire begin_checkout when cart items are loaded
   useEffect(() => {
     if (cartItems.length === 0) return;
-    if (typeof window.axon !== 'function') return;
+    if (typeof window.axon !== "function") return;
     const subtotal = cartItems.reduce((sum, i) => sum + (i.total_price || 0), 0);
-    window.axon('track', 'begin_checkout', {
-      currency: 'USD',
+    window.axon("track", "begin_checkout", {
+      currency: "USD",
       value: subtotal,
       items: cartItems.map(i => ({
         item_id: i.product_id,
         item_name: i.product_name,
         price: i.unit_price,
-        quantity: i.quantity
-      }))
+        quantity: i.quantity,
+      })),
     });
   }, [cartItems]);
 
   const initializeCheckout = async () => {
     try {
-      const currentUser = await base44.auth.me();
-      if (!currentUser) {
-        toast({ title: "Please sign in to checkout", variant: "destructive" });
-        await base44.auth.redirectToLogin(window.location.href);
-        return;
-      }
+      // Try to get logged-in user — but don't redirect if they're a guest
+      const currentUser = await base44.auth.me().catch(() => null);
       setUser(currentUser);
-      
-      // Load saved addresses
-      const addresses = currentUser.saved_addresses || [];
-      setSavedAddresses(addresses);
-      
-      // Pre-fill with default address or user info
-      if (addresses.length > 0) {
-        const defaultAddr = addresses.find(addr => addr.is_default) || addresses[0];
-        setShippingAddress(defaultAddr);
-        setSelectedAddressId(defaultAddr.id || "");
+
+      if (currentUser) {
+        // Logged-in flow: load from DB, pre-fill address from profile
+        const addresses = currentUser.saved_addresses || [];
+        setSavedAddresses(addresses);
+
+        if (addresses.length > 0) {
+          const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
+          setShippingAddress(defaultAddr);
+          setSelectedAddressId(defaultAddr.id || "");
+          await loadCartFromDB(currentUser.id, defaultAddr);
+        } else {
+          setShippingAddress({
+            name: currentUser.full_name || "",
+            phone: currentUser.phone || "",
+            street: currentUser.address?.street || "",
+            city: currentUser.address?.city || "",
+            state: currentUser.address?.state || "",
+            zip: currentUser.address?.zip || "",
+          });
+          await loadCartFromDB(currentUser.id, null);
+        }
       } else {
-        setShippingAddress({
-          name: currentUser.full_name || "",
-          phone: currentUser.phone || "",
-          street: currentUser.address?.street || "",
-          city: currentUser.address?.city || "",
-          state: currentUser.address?.state || "",
-          zip: currentUser.address?.zip || ""
-        });
+        // Guest flow: load from localStorage, no address pre-fill
+        loadCartFromLocalStorage();
       }
-      
-      await loadCart(currentUser.id, addresses.length > 0 ? (addresses.find(a => a.is_default) || addresses[0]) : null);
     } catch (error) {
-      console.error("Auth error:", error);
-      toast({ title: "Sign-in required", description: "Please log in again." });
-      await base44.auth.redirectToLogin(window.location.href);
+      console.error("Checkout init error:", error);
+      // If something unexpected fails, still try localStorage
+      loadCartFromLocalStorage();
     } finally {
       setLoading(false);
     }
   };
 
-  const loadCart = async (userId, prefilledAddr = null) => {
+  // Logged-in user: load cart items from DB and enrich with product data
+  const loadCartFromDB = async (userId, prefilledAddr = null) => {
     try {
       const cart = await base44.entities.Cart.filter({ user_id: userId });
-      console.log('=== Checkout: Cart Items Loaded ===', cart);
-
       const enrichedItems = [];
+
       for (const item of cart) {
         try {
-          console.log('Processing cart item:', item);
-          
-          // Check if this is a custom request
           if (item.custom_request_id) {
-            console.log('Loading custom request:', item.custom_request_id);
             const customRequest = await base44.entities.CustomPrintRequest.get(item.custom_request_id);
-            console.log('Custom request loaded:', customRequest);
-            
             enrichedItems.push({
               ...item,
               product_name: customRequest.title,
@@ -124,14 +109,10 @@ export default function Checkout() {
               dimensions: customRequest.dimensions,
               images: customRequest.images || [],
               multi_color: false,
-              is_custom_request: true
+              is_custom_request: true,
             });
           } else {
-            // Regular product
-            console.log('Loading regular product:', item.product_id);
             const product = await base44.entities.Product.get(item.product_id);
-            console.log('Product loaded:', product);
-            
             enrichedItems.push({
               ...item,
               product_name: product.name,
@@ -139,177 +120,149 @@ export default function Checkout() {
               print_time_hours: product.print_time_hours,
               weight_grams: product.weight_grams,
               dimensions: product.dimensions,
-              images: product.images,
+              images: product.images || item.images || [],
               multi_color: product.multi_color,
               designer_id: product.designer_id,
-              is_custom_request: false
+              is_custom_request: false,
             });
           }
         } catch (err) {
-          console.error("Failed to load item:", item.product_id, err);
-          // Use fallback data from cart item
+          console.error("Failed to load product for cart item:", err);
           enrichedItems.push({
             ...item,
-            product_name: item.product_name || 'Unknown Product',
+            product_name: item.product_name || "Unknown Product",
             print_files: [],
-            images: [],
+            images: item.images || [],
             multi_color: false,
-            is_custom_request: !!item.custom_request_id // Determine if it was intended to be a custom request
+            is_custom_request: !!item.custom_request_id,
           });
         }
       }
-      
-      console.log('=== Enriched Items ===', enrichedItems);
+
       setCartItems(enrichedItems);
 
-      // Auto-calculate shipping immediately once we have items + address
+      // Auto-calculate shipping if we already have an address
       if (prefilledAddr?.street && prefilledAddr?.city && prefilledAddr?.state && prefilledAddr?.zip) {
-        const addrForCalc = prefilledAddr;
-        setCalculatingShipping(true);
-        try {
-          const res = await base44.functions.invoke('getEstimatedShipping', {
-            shippingAddress: addrForCalc,
-            items: enrichedItems.map(i => ({ weight_grams: i.weight_grams, dimensions: i.dimensions, quantity: i.quantity }))
-          });
-          if (res.data?.shipping_cost !== undefined) {
-            setShippingCost(res.data.shipping_cost);
-          }
-        } catch (_) {
-          setShippingCost(5.99);
-        }
-        setCalculatingShipping(false);
+        await calculateShippingCost(prefilledAddr, enrichedItems);
       }
     } catch (error) {
-      console.error("Failed to load cart:", error);
+      console.error("Failed to load cart from DB:", error);
       toast({ title: "Cart load failed", description: error.message, variant: "destructive" });
     }
   };
 
-  const calculateShippingCost = async (addr) => {
-    if (!addr.street || !addr.city || !addr.state || !addr.zip) return;
+  // Guest: load cart from localStorage — images are stored directly on the item
+  const loadCartFromLocalStorage = () => {
+    const items = anonymousCartGet();
+    setCartItems(items);
+  };
+
+  const calculateShippingCost = async (addr, items = cartItems) => {
+    if (!addr?.street || !addr?.city || !addr?.state || !addr?.zip) return;
     setCalculatingShipping(true);
     try {
-      const res = await base44.functions.invoke('getEstimatedShipping', {
+      const res = await base44.functions.invoke("getEstimatedShipping", {
         shippingAddress: addr,
-        items: cartItems.map(i => ({ weight_grams: i.weight_grams, dimensions: i.dimensions, quantity: i.quantity }))
+        items: items.map(i => ({
+          weight_grams: i.weight_grams,
+          dimensions: i.dimensions,
+          quantity: i.quantity,
+        })),
       });
-      if (res.data?.shipping_cost !== undefined) {
-        setShippingCost(res.data.shipping_cost);
-      }
-    } catch (_) {
-      setShippingCost(5.99);
+      if (res.data?.shipping_cost !== undefined) setShippingCost(res.data.shipping_cost);
+    } catch {
+      setShippingCost(5.99); // safe fallback
     }
     setCalculatingShipping(false);
   };
 
-  const calculateSubtotal = () =>
-    cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
-
-  const getShippingFee = () => {
-    if (shippingCost !== null) return shippingCost;
-    return calculateSubtotal() < 35 ? 5.99 : 0;
-  };
-
+  const calculateSubtotal = () => cartItems.reduce((sum, i) => sum + (i.total_price || 0), 0);
+  const getShippingFee = () => shippingCost !== null ? shippingCost : (calculateSubtotal() < 35 ? 5.99 : 0);
   const calculateTotal = () => calculateSubtotal() + getShippingFee();
+  const formatPrice = (price) => `$${Number(price).toFixed(2)}`;
 
-  const formatPrice = (price) => `$${price.toFixed(2)}`;
+  const handleAddressChange = (field, value) => {
+    const updated = { ...shippingAddress, [field]: value };
+    setShippingAddress(updated);
+    // Recalculate shipping when zip/state/city complete
+    if (updated.street && updated.city && updated.state && updated.zip) {
+      calculateShippingCost(updated);
+    }
+  };
 
   const handleCheckout = async (e) => {
     e.preventDefault();
-    
+
     if (cartItems.length === 0) {
       toast({ title: "Your cart is empty", variant: "destructive" });
       return;
     }
-
-    if (!isLocalDelivery && (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip)) {
+    if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
       toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
       return;
     }
 
     setProcessing(true);
-    
     try {
-      console.log('=== Starting Checkout ===');
-      console.log('Cart items:', cartItems);
-      console.log('Coupon code:', couponCode);
-      console.log('Referral code:', referralCode);
-
-      
       const shippingFee = getShippingFee();
-      const finalCartItems = [...cartItems];
-      
-      // Validate cart items have required fields
-      const invalidItems = finalCartItems.filter(item => 
-        !item.product_id || 
-        !item.product_name || 
-        item.unit_price === undefined || 
-        item.quantity === undefined ||
-        item.unit_price === null ||
-        item.quantity === null
+
+      const invalidItems = cartItems.filter(item =>
+        !item.product_id || !item.product_name ||
+        item.unit_price === undefined || item.unit_price === null ||
+        item.quantity === undefined || item.quantity === null
       );
-      
       if (invalidItems.length > 0) {
-        console.error('Invalid cart items detected:', invalidItems);
-        throw new Error('Some cart items are missing required data. Please refresh your cart.');
+        throw new Error("Some cart items are missing required data. Please refresh your cart.");
       }
-      
+
       const checkoutData = {
-        cartItems: finalCartItems.map(item => ({
+        cartItems: cartItems.map(item => ({
           ...item,
-          // Ensure custom request items have proper identification
-          custom_request_id: item.custom_request_id || (item.is_custom_request ? item.product_id : undefined)
+          custom_request_id: item.custom_request_id || (item.is_custom_request ? item.product_id : undefined),
         })),
         successUrl: `${window.location.origin}/PaymentSuccess?session_id={CHECKOUT_SESSION_ID}`,
         cancelUrl: `${window.location.origin}/Checkout?payment=cancelled`,
-        couponCode: couponCode.trim().toUpperCase() === 'JC3DTESTFREEDOM' ? 'JC3DTESTFREEDOM' : (couponCode.trim() || undefined),
+        couponCode: couponCode.trim().toUpperCase() === "JC3DTESTFREEDOM"
+          ? "JC3DTESTFREEDOM"
+          : (couponCode.trim() || undefined),
         referralCode: referralCode.trim().toUpperCase() || undefined,
         isPriority: false,
-        campusLocation: "erau_prescott",
-        shippingAddress: isLocalDelivery ? null : shippingAddress,
-        shippingFee: isLocalDelivery ? 0 : shippingFee,
-        isLocalDelivery: isLocalDelivery
+        shippingAddress,
+        shippingFee,
+        isLocalDelivery: false,
+        // For guests, pass their email if they entered it in the address field
+        guestEmail: user ? undefined : (shippingAddress.email || undefined),
       };
-      
-      console.log('Calling createCheckoutSession with:', checkoutData);
-      
-      const response = await base44.functions.invoke('createCheckoutSession', checkoutData);
 
-      console.log('Response from createCheckoutSession:', response);
+      const response = await base44.functions.invoke("createCheckoutSession", checkoutData);
 
-      if (response.data && response.data.url) {
-        console.log('Redirecting to Stripe:', response.data.url);
-        // Save cart data for Axon purchase event on success page
-        // Use localStorage (not sessionStorage) so it survives the Stripe redirect to a different origin
-        localStorage.setItem('axon_pending_purchase', JSON.stringify({
-          items: finalCartItems.map(i => ({ item_id: i.product_id, item_name: i.product_name, price: i.unit_price, quantity: i.quantity })),
+      if (response.data?.url) {
+        localStorage.setItem("axon_pending_purchase", JSON.stringify({
+          items: cartItems.map(i => ({
+            item_id: i.product_id,
+            item_name: i.product_name,
+            price: i.unit_price,
+            quantity: i.quantity,
+          })),
           value: calculateSubtotal(),
           shipping: shippingFee,
-          tax: 0
+          tax: 0,
         }));
+        // Clear anonymous cart once checkout begins
+        if (!user) localStorage.removeItem("anonymousCart");
         window.location.href = response.data.url;
-      } else if (response.data && response.data.error) {
-        console.error('Error from serverless function:', response.data.error);
+      } else if (response.data?.error) {
         throw new Error(response.data.error);
       } else {
-        console.error('No URL received:', response.data);
-        throw new Error('No checkout URL received from payment service.');
+        throw new Error("No checkout URL received from payment service.");
       }
-      
     } catch (error) {
-      console.error("=== Checkout Error ===");
-      console.error("Error:", error);
-
-      const errorMessage = error.response?.data?.details || 
-                           error.response?.data?.error || 
-                           error.message || 
-                           "An unexpected error occurred. Please try again.";
-
-      toast({
-        title: "Checkout failed",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      const errorMessage =
+        error.response?.data?.details ||
+        error.response?.data?.error ||
+        error.message ||
+        "An unexpected error occurred.";
+      toast({ title: "Checkout failed", description: errorMessage, variant: "destructive" });
       setProcessing(false);
     }
   };
@@ -339,45 +292,50 @@ export default function Checkout() {
       <form onSubmit={handleCheckout}>
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-8">
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+
+            {/* Order summary */}
             <Card>
               <CardHeader>
                 <CardTitle>Order Summary</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex gap-2 sm:gap-4 pb-3 sm:pb-4 border-b last:border-b-0"
-                    >
-                      {item.images?.[0] && (
-                        <img
-                          src={item.images[0]}
-                          alt={item.product_name}
-                          className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded flex-shrink-0"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900 line-clamp-2">{item.product_name}</h3>
-                        {item.is_custom_request && (
-                          <span className="inline-block mt-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
-                            Custom Quote
-                          </span>
+                  {cartItems.map((item) => {
+                    const imageUrl = item.images?.[0] || null;
+                    return (
+                      <div key={item.id} className="flex gap-3 pb-4 border-b last:border-b-0 items-start">
+                        {imageUrl && (
+                          <img
+                            src={imageUrl}
+                            alt={item.product_name}
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded flex-shrink-0 bg-gray-100"
+                          />
                         )}
-                        <div className="text-xs sm:text-sm text-gray-600 space-y-1 mt-1">
-                          <p className="truncate">{item.selected_material} • {item.selected_color}</p>
-                          <p>Qty: {item.quantity}</p>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm sm:text-base text-gray-900 leading-tight">
+                            {item.product_name}
+                          </h3>
+                          {item.is_custom_request && (
+                            <span className="inline-block mt-1 px-2 py-0.5 bg-blue-100 text-blue-800 text-xs font-semibold rounded">
+                              Custom Quote
+                            </span>
+                          )}
+                          <div className="text-xs text-gray-500 mt-1 space-y-0.5">
+                            <p>{item.selected_material} · {item.selected_color}</p>
+                            <p>Qty: {item.quantity}</p>
+                          </div>
                         </div>
+                        <p className="font-semibold text-sm sm:text-base text-gray-900 flex-shrink-0 whitespace-nowrap">
+                          {formatPrice(item.total_price)}
+                        </p>
                       </div>
-                      <div className="text-right font-semibold text-sm sm:text-base text-gray-900 flex-shrink-0">
-                        {formatPrice(item.total_price)}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </CardContent>
             </Card>
 
+            {/* Delivery address */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -386,33 +344,22 @@ export default function Checkout() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-
-                {false && (
-                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-sm text-orange-800 font-medium">🏠 Local Delivery Selected</p>
-                    </div>
-                )}
+                {/* Saved addresses (logged-in users only) */}
                 {savedAddresses.length > 0 && (
                   <div>
                     <Label className="mb-2">Saved Addresses</Label>
-                    <Select 
-                      value={selectedAddressId} 
+                    <Select
+                      value={selectedAddressId}
                       onValueChange={(value) => {
                         if (value === "new") {
                           setSelectedAddressId("");
-                          setShippingAddress({
-                            name: user?.full_name || "",
-                            phone: user?.phone || "",
-                            street: "",
-                            city: "",
-                            state: "",
-                            zip: ""
-                            });
+                          setShippingAddress({ name: user?.full_name || "", phone: user?.phone || "", street: "", city: "", state: "", zip: "" });
                         } else {
                           const addr = savedAddresses.find(a => a.id === value);
                           if (addr) {
                             setShippingAddress(addr);
                             setSelectedAddressId(value);
+                            calculateShippingCost(addr);
                           }
                         }
                       }}
@@ -424,7 +371,7 @@ export default function Checkout() {
                         <SelectItem value="new">+ Enter New Address</SelectItem>
                         {savedAddresses.map((addr) => (
                           <SelectItem key={addr.id} value={addr.id}>
-                            {addr.name} - {addr.street}, {addr.city}
+                            {addr.name} — {addr.street}, {addr.city}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -432,254 +379,127 @@ export default function Checkout() {
                   </div>
                 )}
 
-                {(
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                      <div>
-                        <Label htmlFor="name" className="text-sm">Full Name *</Label>
-                        <Input
-                          id="name"
-                          value={shippingAddress.name}
-                          onChange={(e) => setShippingAddress({...shippingAddress, name: e.target.value})}
-                          required
-                          className="text-sm"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="phone" className="text-sm">Phone *</Label>
-                        <Input
-                          id="phone"
-                          value={shippingAddress.phone}
-                          onChange={(e) => setShippingAddress({...shippingAddress, phone: e.target.value})}
-                          required
-                          className="text-sm"
-                        />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div>
+                    <Label htmlFor="name" className="text-sm">Full Name *</Label>
+                    <Input id="name" value={shippingAddress.name}
+                      onChange={(e) => handleAddressChange("name", e.target.value)} required className="text-sm" />
+                  </div>
+                  <div>
+                    <Label htmlFor="phone" className="text-sm">Phone *</Label>
+                    <Input id="phone" value={shippingAddress.phone}
+                      onChange={(e) => handleAddressChange("phone", e.target.value)} required className="text-sm" />
+                  </div>
+                </div>
 
-                    <div>
-                      <Label htmlFor="street" className="text-sm">Street Address *</Label>
-                      <Input
-                        id="street"
-                        value={shippingAddress.street}
-                        onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
-                        required
-                        className="text-sm"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
-                      <div className="col-span-2 sm:col-span-1">
-                        <Label htmlFor="city" className="text-sm">City *</Label>
-                        <Input
-                          id="city"
-                          value={shippingAddress.city}
-                          onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
-                          required
-                          className="text-sm"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="state" className="text-sm">State *</Label>
-                        <Input
-                          id="state"
-                          value={shippingAddress.state}
-                          onChange={(e) => setShippingAddress({...shippingAddress, state: e.target.value})}
-                          required
-                          className="text-sm"
-                        />
-                      </div>
-                      <div>
-                        <Label htmlFor="zip" className="text-sm">ZIP *</Label>
-                        <Input
-                          id="zip"
-                          value={shippingAddress.zip}
-                          onChange={(e) => setShippingAddress({...shippingAddress, zip: e.target.value})}
-                          onBlur={() => {
-                            const addr = {...shippingAddress, zip: shippingAddress.zip};
-                            if (addr.street && addr.city && addr.state && addr.zip) {
-                              calculateShippingCost(addr);
-                            }
-                          }}
-                          required
-                          className="text-sm"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <p className="text-sm text-blue-700">
-                        <span className="font-medium">Standard Delivery:</span> Est. 3-5 business days
-                      </p>
-                      {calculatingShipping && (
-                        <div className="flex items-center gap-2 mt-2 text-xs text-blue-600">
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                          Calculating real shipping cost...
-                        </div>
-                      )}
-                      {shippingCost !== null && !calculatingShipping && (
-                        <p className="text-xs text-green-700 font-semibold mt-1">
-                          ✓ Shipping rate calculated: ${shippingCost.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-
-                    <div className="flex items-center space-x-2 pt-2">
-                      <input
-                        type="checkbox"
-                        id="saveAddress"
-                        onChange={async (e) => {
-                          if (e.target.checked && user) {
-                            try {
-                              const newAddress = {
-                                ...shippingAddress,
-                                id: `addr_${Date.now()}`,
-                                is_default: savedAddresses.length === 0
-                              };
-                              const updatedAddresses = [...savedAddresses, newAddress];
-                              await base44.auth.updateMe({ saved_addresses: updatedAddresses });
-                              setSavedAddresses(updatedAddresses);
-                              toast({ title: "Address saved!" });
-                            } catch (error) {
-                              toast({ title: "Failed to save address", variant: "destructive" });
-                            }
-                          }
-                        }}
-                        className="w-4 h-4 text-teal-600 rounded"
-                      />
-                      <Label htmlFor="saveAddress" className="text-sm cursor-pointer">
-                        Save this address for future orders
-                      </Label>
-                    </div>
-                  </>
+                {/* Email field shown for guests only (Stripe needs it) */}
+                {!user && (
+                  <div>
+                    <Label htmlFor="email" className="text-sm">Email * (for order confirmation)</Label>
+                    <Input id="email" type="email" value={shippingAddress.email || ""}
+                      onChange={(e) => handleAddressChange("email", e.target.value)} required className="text-sm" />
+                  </div>
                 )}
+
+                <div>
+                  <Label htmlFor="street" className="text-sm">Street Address *</Label>
+                  <Input id="street" value={shippingAddress.street}
+                    onChange={(e) => handleAddressChange("street", e.target.value)} required className="text-sm" />
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
+                  <div className="col-span-2 sm:col-span-1">
+                    <Label htmlFor="city" className="text-sm">City *</Label>
+                    <Input id="city" value={shippingAddress.city}
+                      onChange={(e) => handleAddressChange("city", e.target.value)} required className="text-sm" />
+                  </div>
+                  <div>
+                    <Label htmlFor="state" className="text-sm">State *</Label>
+                    <Input id="state" value={shippingAddress.state} maxLength={2} placeholder="AZ"
+                      onChange={(e) => handleAddressChange("state", e.target.value)} required className="text-sm" />
+                  </div>
+                  <div>
+                    <Label htmlFor="zip" className="text-sm">ZIP *</Label>
+                    <Input id="zip" value={shippingAddress.zip}
+                      onChange={(e) => handleAddressChange("zip", e.target.value)} required className="text-sm" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Promo / referral */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Promo Code</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label htmlFor="coupon" className="text-sm">Coupon Code</Label>
+                  <Input id="coupon" value={couponCode} placeholder="Enter code"
+                    onChange={(e) => setCouponCode(e.target.value)} className="text-sm" />
+                </div>
+                <div>
+                  <Label htmlFor="referral" className="text-sm">Referral Code (optional)</Label>
+                  <Input id="referral" value={referralCode} placeholder="Enter code"
+                    onChange={(e) => setReferralCode(e.target.value)} className="text-sm" />
+                </div>
               </CardContent>
             </Card>
           </div>
 
-          <div>
+          {/* Price summary + place order */}
+          <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
-                <CardTitle>Price Summary</CardTitle>
+                <CardTitle>Order Total</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Coupon Code Input */}
-                <div className="border rounded-lg p-4 bg-gray-50">
-                  <Label htmlFor="coupon" className="flex items-center gap-2 mb-2">
-                    <Tag className="w-4 h-4" />
-                    Coupon Code
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="coupon"
-                      placeholder="Enter code"
-                      value={couponCode}
-                      onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                      className="flex-1"
-                    />
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Subtotal</span>
+                    <span>{formatPrice(calculateSubtotal())}</span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    {couponCode 
-                      ? "Discount will be validated and applied at checkout" 
-                      : "Or enter any valid code on the Stripe checkout page"
-                    }
-                  </p>
+                  <div className="flex justify-between text-gray-600">
+                    <span>Shipping</span>
+                    <span>
+                      {calculatingShipping
+                        ? <Loader2 className="w-4 h-4 animate-spin inline" />
+                        : formatPrice(getShippingFee())}
+                    </span>
+                  </div>
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between text-lg font-bold">
+                      <span>Total</span>
+                      <span className="text-teal-600">{formatPrice(calculateTotal())}</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Referral Code Input */}
-                <div className="border rounded-lg p-4 bg-purple-50">
-                  <Label htmlFor="referral" className="flex items-center gap-2 mb-2">
-                    <Users className="w-4 h-4 text-purple-600" />
-                    <span className="text-purple-900">Referral Code (Optional)</span>
-                  </Label>
-                  <div className="flex gap-2">
-                    <Input
-                      id="referral"
-                      placeholder="Enter referral code"
-                      value={referralCode}
-                      onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-                      className="flex-1 border-purple-300"
-                    />
-                  </div>
-                  <p className="text-xs text-purple-600 mt-2">
-                    Both you and your friend will earn <strong>250 EXP</strong> when you complete this purchase!
-                  </p>
-                </div>
-
-                <div className="flex justify-between text-gray-600">
-                  <span>Subtotal</span>
-                  <span>{formatPrice(calculateSubtotal())}</span>
-                </div>
-                <div className="flex justify-between text-gray-600">
-                  <span>Shipping{calculatingShipping ? ' (calculating...)' : ''}</span>
-                  <span className={calculatingShipping ? 'text-gray-400' : 'text-green-600 font-medium'}>
-                    {calculatingShipping ? '...' : `$${getShippingFee().toFixed(2)}`}
-                  </span>
-                </div>
-                {couponCode && (
-                  <div className="flex justify-between text-green-600 text-sm">
-                    <span>Coupon: {couponCode}</span>
-                    <span>Will be applied</span>
-                  </div>
-                )}
-                {referralCode && (
-                  <div className="flex justify-between text-purple-600 text-sm">
-                    <span>Referral: {referralCode}</span>
-                    <span>+250 EXP on completion</span>
-                  </div>
-                )}
-                <div className="border-t pt-3 flex justify-between text-lg font-bold">
-                  <span>Total</span>
-                  <span className="text-teal-600">
-                    {formatPrice(calculateTotal())}
-                  </span>
-                </div>
-                
                 <Button
                   type="submit"
-                  disabled={processing}
-                  className="w-full bg-teal-600 hover:bg-teal-700 mt-4"
+                  className="w-full bg-teal-600 hover:bg-teal-700"
+                  size="lg"
+                  disabled={processing || calculatingShipping}
                 >
-                  {processing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Proceed to Payment
-                    </>
-                  )}
+                  {processing
+                    ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
+                    : "Place Order"}
                 </Button>
-                <p className="text-xs text-gray-500 text-center mt-2">
-                  Secure payment powered by Stripe
+
+                <p className="text-xs text-gray-500 text-center">
+                  You'll enter payment info on the next screen. No account required.
                 </p>
-                <p className="text-xs text-teal-600 text-center font-semibold">
-                  🌟 Earn 5 EXP for every dollar you spend!
-                </p>
+
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-gray-500 text-center">
+                    🌱 We encourage makers to use recycled filament — committed to 100% recycled materials by 2030.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </div>
         </div>
       </form>
-
-      {/* Sustainability Commitment Footer */}
-      <div className="mt-12 border-t pt-8">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="inline-block p-6 bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl border-2 border-green-200">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-2xl">♻️</span>
-              </div>
-              <h3 className="text-xl font-bold text-green-900">Our Sustainability Promise</h3>
-            </div>
-            <p className="text-gray-700 leading-relaxed">
-              We encourage all our makers to use recycled filament whenever possible. We're committed to making <strong>100% of our products</strong> printed with recycled materials by <strong>2030</strong>. Together, we're reducing plastic waste and building a greener future.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
