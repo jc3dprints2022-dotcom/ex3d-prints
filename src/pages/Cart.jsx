@@ -7,19 +7,15 @@ import { Loader2, ShoppingCart, Trash2, Plus, Minus, ArrowRight, Package } from 
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
 const DROP_PRICE = 5;
 const DEFAULT_COLORS = ["White", "Black", "Gray", "Red", "Blue", "Green", "Yellow", "Orange", "Purple", "Pink"];
 
 // ─── Anonymous cart helpers ────────────────────────────────────────────────────
-// The landing page calls addToCart without a logged-in user. These helpers
-// persist the cart in localStorage so the Cart page can display those items.
+// The landing page writes to localStorage when no user is signed in.
+// These helpers keep that in sync and are exported so the landing page can import them.
 
 export function anonymousCartGet() {
   try { return JSON.parse(localStorage.getItem("anonymousCart") || "[]"); }
@@ -32,10 +28,10 @@ export function anonymousCartSave(items) {
 
 export function anonymousCartAdd(item) {
   const cart = anonymousCartGet();
-  const existing = cart.findIndex(i => i.product_id === item.product_id);
-  if (existing >= 0) {
-    cart[existing].quantity  = (cart[existing].quantity || 1) + 1;
-    cart[existing].total_price = cart[existing].unit_price * cart[existing].quantity;
+  const existingIdx = cart.findIndex(i => i.product_id === item.product_id);
+  if (existingIdx >= 0) {
+    cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
+    cart[existingIdx].total_price = cart[existingIdx].unit_price * cart[existingIdx].quantity;
   } else {
     cart.push({ ...item, id: `anon_${item.product_id}_${Date.now()}` });
   }
@@ -51,9 +47,7 @@ export function anonymousCartRemove(itemId) {
 
 export function anonymousCartUpdate(itemId, quantity) {
   const cart = anonymousCartGet().map(i =>
-    i.id === itemId
-      ? { ...i, quantity, total_price: i.unit_price * quantity }
-      : i
+    i.id === itemId ? { ...i, quantity, total_price: i.unit_price * quantity } : i
   );
   anonymousCartSave(cart);
   return cart;
@@ -74,7 +68,7 @@ export default function Cart() {
     try {
       const currentUser = await base44.auth.me();
       setUser(currentUser);
-      // If a guest was shopping before logging in, merge their anonymous cart
+      // Merge any anonymous cart items saved before sign-in
       await mergeAnonymousCartIfNeeded(currentUser.id);
       await loadCart(currentUser.id);
     } catch {
@@ -84,7 +78,7 @@ export default function Cart() {
     setLoading(false);
   };
 
-  // Merge any items stored in localStorage into the logged-in user's DB cart
+  // When a guest signs in, merge their localStorage cart into their DB cart
   const mergeAnonymousCartIfNeeded = async (userId) => {
     const anonItems = anonymousCartGet();
     if (anonItems.length === 0) return;
@@ -122,7 +116,7 @@ export default function Cart() {
             const cr = await base44.entities.CustomPrintRequest.get(item.custom_request_id);
             productsData[item.product_id] = {
               id: cr.id, name: cr.title, description: cr.description,
-              images: cr.images || [], is_custom_request: true, custom_request_data: cr,
+              images: cr.images || [], is_custom_request: true,
             };
           } else {
             const product = await base44.entities.Product.get(item.product_id);
@@ -132,13 +126,14 @@ export default function Cart() {
           productsData[item.product_id] = {
             id: item.product_id,
             name: item.product_name || "Unknown Product",
-            images: [],
+            // Fall back to image stored directly on the cart item (set by landing page)
+            images: item.images || [],
             is_custom_request: !!item.custom_request_id,
           };
         }
       }
       setProducts(productsData);
-    } catch (error) {
+    } catch {
       toast({ title: "Failed to load cart", variant: "destructive" });
     }
   };
@@ -146,12 +141,14 @@ export default function Cart() {
   const loadAnonymousCart = () => {
     const items = anonymousCartGet();
     setCartItems(items);
+    // For anonymous items, the image URL is stored directly on the cart item
+    // (written there by the landing page's addToCart). No separate product fetch needed.
     const productsData = {};
     items.forEach(item => {
-      productsData[item.product_id] = item.product || {
+      productsData[item.product_id] = {
         id: item.product_id,
         name: item.product_name || "Unknown Product",
-        images: [],
+        images: item.images || [],
         is_custom_request: false,
       };
     });
@@ -207,9 +204,9 @@ export default function Cart() {
   const calculateTotal = () =>
     cartItems.reduce((sum, item) => sum + (item.total_price || 0), 0);
 
+  // Guest users go straight to checkout. The Checkout page will ask for
+  // email/sign-in only at payment time, not before.
   const handleProceedToCheckout = () => {
-    // Allow guest checkout — don't force login here.
-    // The Checkout page will handle sign-in if the payment provider requires it.
     window.location.href = createPageUrl("Checkout");
   };
 
@@ -246,24 +243,25 @@ export default function Cart() {
         <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Cart Items */}
+          {/* Cart items */}
           <div className="lg:col-span-2 space-y-4">
             {cartItems.map((item) => {
               const product = products[item.product_id];
               const isCustomRequest = product?.is_custom_request;
+              // Resolve image: prefer product lookup, fall back to image stored on item itself
+              const imageUrl = product?.images?.[0] || item.images?.[0] || null;
 
               return (
                 <Card key={item.id}>
                   <CardContent className="p-4 sm:p-6">
-                    {/* ── Two-row layout: image + details stacked on mobile, side-by-side on sm+ ── */}
                     <div className="flex gap-4">
                       {/* Product image */}
                       <div className="flex-shrink-0 w-20 h-20 sm:w-28 sm:h-28">
-                        {product?.images?.[0] ? (
+                        {imageUrl ? (
                           <img
-                            src={product.images[0]}
-                            alt={item.product_name || product.name}
-                            className="w-full h-full object-cover rounded-lg"
+                            src={imageUrl}
+                            alt={item.product_name || product?.name}
+                            className="w-full h-full object-contain rounded-lg bg-gray-100"
                           />
                         ) : (
                           <div className="w-full h-full bg-gray-200 rounded-lg flex items-center justify-center">
@@ -274,12 +272,11 @@ export default function Cart() {
 
                       {/* Details */}
                       <div className="flex-1 min-w-0">
-                        {/* Title row — price pinned to the right, title truncates */}
+                        {/* Title row — price pinned right, title truncates */}
                         <div className="flex items-start justify-between gap-2 mb-1">
-                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2">
+                          <h3 className="text-sm sm:text-base font-semibold text-gray-900 leading-tight line-clamp-2 min-w-0">
                             {item.product_name || product?.name || (isCustomRequest ? "Custom Print Request" : "Unknown Product")}
                           </h3>
-                          {/* Price — never pushed off-screen */}
                           <div className="flex-shrink-0 text-right ml-2">
                             <p className="text-base sm:text-lg font-bold text-gray-900 whitespace-nowrap">
                               ${(item.total_price ?? 0).toFixed(2)}
@@ -341,9 +338,7 @@ export default function Cart() {
                           ) : (
                             <div className="flex items-center gap-2">
                               <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-7 w-7"
+                                variant="outline" size="icon" className="h-7 w-7"
                                 onClick={() => handleUpdateQuantity(item, item.quantity - 1)}
                                 disabled={item.quantity <= 1}
                               >
@@ -351,9 +346,7 @@ export default function Cart() {
                               </Button>
                               <span className="text-sm font-semibold w-6 text-center">{item.quantity}</span>
                               <Button
-                                variant="outline"
-                                size="icon"
-                                className="h-7 w-7"
+                                variant="outline" size="icon" className="h-7 w-7"
                                 onClick={() => handleUpdateQuantity(item, item.quantity + 1)}
                               >
                                 <Plus className="w-3 h-3" />
@@ -361,9 +354,7 @@ export default function Cart() {
                             </div>
                           )}
                           <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50"
+                            variant="ghost" size="icon" className="h-7 w-7 text-red-400 hover:text-red-600 hover:bg-red-50"
                             onClick={() => handleRemoveItem(item)}
                           >
                             <Trash2 className="w-4 h-4" />
@@ -377,7 +368,7 @@ export default function Cart() {
             })}
           </div>
 
-          {/* Order Summary */}
+          {/* Order summary */}
           <div className="lg:col-span-1">
             <Card className="sticky top-4">
               <CardHeader>
@@ -401,11 +392,7 @@ export default function Cart() {
                   </div>
                 </div>
 
-                <Button
-                  onClick={handleProceedToCheckout}
-                  className="w-full bg-teal-600 hover:bg-teal-700"
-                  size="lg"
-                >
+                <Button onClick={handleProceedToCheckout} className="w-full bg-teal-600 hover:bg-teal-700" size="lg">
                   Proceed to Checkout
                   <ArrowRight className="w-5 h-5 ml-2" />
                 </Button>
