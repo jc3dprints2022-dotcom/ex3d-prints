@@ -99,9 +99,8 @@ export default function SaturnV() {
       // Saves to EmailSubscriber entity in base44.
       // If this entity doesn't exist yet, create it in your base44 dashboard
       // with fields: email (string), source (string), created_date (date).
-      await base44.entities.EmailSubscriber.create({
+      await base44.entities.User.create({
         email: email.trim().toLowerCase(),
-        source: "landing_page_discount",
       });
     } catch (err) {
       // Non-fatal — still show the code even if save fails
