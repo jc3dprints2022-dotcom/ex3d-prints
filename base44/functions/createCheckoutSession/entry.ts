@@ -4,22 +4,41 @@ import Stripe from 'npm:stripe@14.11.0';
 Deno.serve(async (req) => {
     try {
         console.log('=== Create Checkout Session Started ===');
-        
+
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        
-        if (!user) {
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+
+        // Auth is now optional — guests can checkout without an account.
+        // We use .catch(() => null) so a missing/expired token doesn't throw.
+        const user = await base44.auth.me().catch(() => null);
 
         const body = await req.json();
-        const { cartItems, successUrl, cancelUrl, couponCode, referralCode, isPriority, campusLocation, shippingFee, shippingAddress, isLocalDelivery } = body;
-        
-        console.log('📦 Full request body:', JSON.stringify(body, null, 2));
+        const {
+            cartItems,
+            successUrl,
+            cancelUrl,
+            couponCode,
+            referralCode,
+            isPriority,
+            campusLocation,
+            shippingFee,
+            shippingAddress,
+            isLocalDelivery,
+            guestEmail, // passed by Checkout.jsx when user is not signed in
+        } = body;
+
+        // Determine the email to use for this order
+        const orderEmail = user?.email || guestEmail;
+
+        // Require either a logged-in user or a guest email
+        if (!user && !guestEmail) {
+            return Response.json(
+                { error: 'Please provide an email address to complete your order.' },
+                { status: 400 }
+            );
+        }
+
+        console.log('📦 Order for:', user ? `user ${user.id}` : `guest ${guestEmail}`);
         console.log('📦 isPriority received:', isPriority);
-        console.log('📦 isPriority type:', typeof isPriority);
-        console.log('📦 isPriority === true:', isPriority === true);
-        console.log('📦 isPriority === "true":', isPriority === 'true');
 
         if (!cartItems || cartItems.length === 0) {
             return Response.json({ error: 'Cart is empty' }, { status: 400 });
@@ -35,47 +54,43 @@ Deno.serve(async (req) => {
             return Response.json({ error: 'Payment system not configured' }, { status: 500 });
         }
 
-        const stripe = new Stripe(stripeKey, {
-            apiVersion: '2023-10-16',
-        });
+        const stripe = new Stripe(stripeKey, { apiVersion: '2023-10-16' });
 
-        // Validate referral code if provided
+        // Referral code validation — only for logged-in users (guests don't have accounts)
         let referralValidation = null;
-        if (referralCode && referralCode.trim()) {
+        if (user && referralCode && referralCode.trim()) {
             try {
                 const allUsers = await base44.asServiceRole.entities.User.list();
                 const referrer = allUsers.find(u => u.referral_code === referralCode.trim().toUpperCase());
-                
+
                 if (referrer && referrer.id !== user.id) {
                     referralValidation = {
                         valid: true,
                         referrer_id: referrer.id,
-                        referrer_name: referrer.full_name
+                        referrer_name: referrer.full_name,
                     };
                     console.log('Valid referral code:', referralCode, 'Referrer:', referrer.full_name);
                 } else if (referrer && referrer.id === user.id) {
-                    console.log('User tried to use their own referral code');
-                    return Response.json({ 
+                    return Response.json({
                         error: 'Cannot use your own referral code',
-                        details: 'You cannot refer yourself'
+                        details: 'You cannot refer yourself',
                     }, { status: 400 });
                 } else {
-                    console.log('Invalid referral code:', referralCode);
-                    return Response.json({ 
+                    return Response.json({
                         error: 'Invalid referral code',
-                        details: 'The referral code you entered is not valid'
+                        details: 'The referral code you entered is not valid',
                     }, { status: 400 });
                 }
             } catch (error) {
                 console.error('Error validating referral code:', error);
-                return Response.json({ 
+                return Response.json({
                     error: 'Failed to validate referral code',
-                    details: error.message
+                    details: error.message,
                 }, { status: 500 });
             }
         }
 
-        // Fetch products from database to get Stripe product IDs
+        // Fetch products from database to get Stripe product IDs (service role works for guests too)
         const productIds = [...new Set(cartItems.filter(item => !item.is_priority_fee).map(item => item.product_id))];
         const products = await Promise.all(
             productIds.map(id => base44.asServiceRole.entities.Product.get(id).catch(() => null))
@@ -83,16 +98,12 @@ Deno.serve(async (req) => {
         const productMap = {};
         products.filter(p => p).forEach(p => productMap[p.id] = p);
 
-        // Create line items from cart (including priority if it's in the cart)
+        // Build Stripe line items
         const lineItems = cartItems.map(item => {
-            // Skip priority fee items - they're handled separately below
-            if (item.is_priority_fee) {
-                return null;
-            }
+            if (item.is_priority_fee) return null;
 
             const product = productMap[item.product_id];
-            
-            // Use Stripe product ID if available, otherwise create dynamic product
+
             if (product?.stripe_product_id) {
                 return {
                     price_data: {
@@ -119,10 +130,9 @@ Deno.serve(async (req) => {
 
         console.log('📦 Line items before priority:', lineItems.length);
 
-        // Add priority fee if selected OR if it's in the cart items
+        // Priority fee
         const hasPriorityInCart = cartItems.some(item => item.is_priority_fee);
         if (isPriority === true || isPriority === 'true' || hasPriorityInCart) {
-            console.log('✅ Adding priority fee to line items');
             lineItems.push({
                 price_data: {
                     currency: 'usd',
@@ -130,18 +140,14 @@ Deno.serve(async (req) => {
                         name: '⚡ Priority Overnight Delivery',
                         description: 'Your order will be completed by the next day',
                     },
-                    unit_amount: 400, // $4.00
+                    unit_amount: 400,
                 },
                 quantity: 1,
             });
-            console.log('✅ Priority fee added. Total line items:', lineItems.length);
-        } else {
-            console.log('❌ Priority NOT added. isPriority value:', isPriority);
         }
 
-        // Add shipping fee if provided
+        // Shipping fee
         if (shippingFee && shippingFee > 0) {
-            console.log('✅ Adding shipping fee:', shippingFee);
             lineItems.push({
                 price_data: {
                     currency: 'usd',
@@ -155,60 +161,58 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Create or retrieve Stripe customer
+        // Stripe customer — only create/retrieve for logged-in users.
+        // Guests use customer_email on the session instead.
         let stripeCustomerId = null;
-        try {
-            // Check if user already has a Stripe customer ID stored
-            if (user.stripe_customer_id) {
-                stripeCustomerId = user.stripe_customer_id;
-                console.log('Using existing Stripe customer:', stripeCustomerId);
-            } else {
-                // Create new Stripe customer
-                const customer = await stripe.customers.create({
-                    email: user.email,
-                    name: user.full_name,
-                    metadata: {
-                        user_id: user.id
-                    }
-                });
-                stripeCustomerId = customer.id;
-                
-                // Save customer ID to user record
-                await base44.asServiceRole.entities.User.update(user.id, {
-                    stripe_customer_id: stripeCustomerId
-                });
-                
-                console.log('Created new Stripe customer:', stripeCustomerId);
+        if (user) {
+            try {
+                if (user.stripe_customer_id) {
+                    stripeCustomerId = user.stripe_customer_id;
+                    console.log('Using existing Stripe customer:', stripeCustomerId);
+                } else {
+                    const customer = await stripe.customers.create({
+                        email: user.email,
+                        name: user.full_name,
+                        metadata: { user_id: user.id },
+                    });
+                    stripeCustomerId = customer.id;
+                    await base44.asServiceRole.entities.User.update(user.id, {
+                        stripe_customer_id: stripeCustomerId,
+                    });
+                    console.log('Created new Stripe customer:', stripeCustomerId);
+                }
+            } catch (customerError) {
+                console.error('Failed to create Stripe customer:', customerError);
+                // Non-fatal — fall back to customer_email below
             }
-        } catch (customerError) {
-            console.error('Failed to create Stripe customer:', customerError);
-            // Continue without customer - will fall back to customer_email
         }
 
-        // Prepare session data with referral metadata
-        const sessionData: Stripe.Checkout.SessionCreateParams = {
+        const sessionData = {
             payment_method_types: ['card'],
             line_items: lineItems,
             mode: 'payment',
             success_url: successUrl,
             cancel_url: cancelUrl,
-            customer: stripeCustomerId || undefined,
-            customer_email: stripeCustomerId ? undefined : user.email, // Only use email if no customer
+            // For logged-in users with a Stripe customer, attach the customer.
+            // For guests (or users where customer creation failed), pass the email directly.
+            ...(stripeCustomerId
+                ? { customer: stripeCustomerId }
+                : { customer_email: orderEmail }),
             metadata: {
-                user_id: user.id,
+                user_id: user?.id || 'guest',
+                guest_email: user ? '' : (guestEmail || ''),
                 referrer_id: referralValidation?.referrer_id || '',
                 has_referral: referralValidation?.valid ? 'true' : 'false',
                 is_priority: isPriority ? 'true' : 'false',
                 campus_location: campusLocation || '',
                 shipping_address: JSON.stringify(shippingAddress || {}),
                 is_local_delivery: isLocalDelivery ? 'true' : 'false',
-                shipping_fee: shippingFee ? String(shippingFee) : '0'
+                shipping_fee: shippingFee ? String(shippingFee) : '0',
             },
         };
 
-        // Check for test code first
+        // Coupon / promo codes
         if (couponCode && couponCode.trim().toUpperCase() === 'JC3DTESTFREEDOM') {
-            // Create a 100% off coupon
             try {
                 const testCoupon = await stripe.coupons.create({
                     percent_off: 100,
@@ -219,68 +223,49 @@ Deno.serve(async (req) => {
                     coupon: testCoupon.id,
                     code: 'JC3DTESTFREEDOM_' + Date.now(),
                 });
-                sessionData.discounts = [{
-                    promotion_code: testPromoCode.id
-                }];
-                console.log('Applied test code JC3DTESTFREEDOM - order is FREE');
+                sessionData.discounts = [{ promotion_code: testPromoCode.id }];
+                console.log('Applied test code — order is FREE');
             } catch (testError) {
                 console.error('Failed to create test code:', testError);
             }
         } else if (couponCode && couponCode.trim()) {
-            // If a specific coupon code is provided, validate and apply it
             try {
                 const promotionCodes = await stripe.promotionCodes.list({
                     code: couponCode.trim(),
                     active: true,
-                    limit: 1
+                    limit: 1,
                 });
-
                 if (promotionCodes.data.length > 0) {
-                    sessionData.discounts = [{
-                        promotion_code: promotionCodes.data[0].id
-                    }];
+                    sessionData.discounts = [{ promotion_code: promotionCodes.data[0].id }];
                     console.log('Applied coupon code:', couponCode);
                 } else {
-                    console.log('Coupon code not found or inactive:', couponCode);
-                    return Response.json({ 
+                    return Response.json({
                         error: 'Invalid coupon code',
-                        details: 'The coupon code you entered is not valid or has expired'
+                        details: 'The coupon code you entered is not valid or has expired',
                     }, { status: 400 });
                 }
             } catch (couponError) {
                 console.error('Error applying coupon:', couponError);
-                return Response.json({ 
+                return Response.json({
                     error: 'Invalid coupon code',
-                    details: 'Unable to apply the coupon code'
+                    details: 'Unable to apply the coupon code',
                 }, { status: 400 });
             }
         } else {
             sessionData.allow_promotion_codes = true;
         }
 
-        // Create Stripe checkout session
-        console.log('📦 Creating session with line items count:', lineItems.length);
-        console.log('📦 Full session data:', JSON.stringify(sessionData, null, 2));
-        
+        console.log('📦 Creating session with', lineItems.length, 'line items');
         const session = await stripe.checkout.sessions.create(sessionData);
-
         console.log('✅ Checkout session created:', session.id);
-        console.log('✅ Session line items count:', session.line_items?.data?.length || 'unknown');
-        if (referralValidation?.valid) {
-            console.log('✅ Referral code attached to session');
-        }
 
-        return Response.json({ 
-            sessionId: session.id,
-            url: session.url
-        });
+        return Response.json({ sessionId: session.id, url: session.url });
 
     } catch (error) {
         console.error('❌ Checkout session creation error:', error);
-        console.error('Error stack:', error.stack);
-        return Response.json({ 
+        return Response.json({
             error: 'Failed to create checkout session',
-            details: error.message 
+            details: error.message,
         }, { status: 500 });
     }
 });
