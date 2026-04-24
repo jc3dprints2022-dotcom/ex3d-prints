@@ -61,7 +61,21 @@ export default function Checkout() {
         const addresses = currentUser.saved_addresses || [];
         setSavedAddresses(addresses);
 
-        if (addresses.length > 0) {
+        // If the user just came back from a login redirect, restore the address they typed
+        const pendingAddress = sessionStorage.getItem("checkout_pending_address");
+        const pendingCoupon = sessionStorage.getItem("checkout_pending_coupon");
+        const pendingReferral = sessionStorage.getItem("checkout_pending_referral");
+        if (pendingAddress) {
+          try {
+            setShippingAddress(JSON.parse(pendingAddress));
+            if (pendingCoupon) setCouponCode(pendingCoupon);
+            if (pendingReferral) setReferralCode(pendingReferral);
+          } catch {}
+          sessionStorage.removeItem("checkout_pending_address");
+          sessionStorage.removeItem("checkout_pending_coupon");
+          sessionStorage.removeItem("checkout_pending_referral");
+          await loadCartFromDB(currentUser.id, null);
+        } else if (addresses.length > 0) {
           const defaultAddr = addresses.find(a => a.is_default) || addresses[0];
           setShippingAddress(defaultAddr);
           setSelectedAddressId(defaultAddr.id || "");
@@ -199,6 +213,17 @@ export default function Checkout() {
     }
     if (!shippingAddress.name || !shippingAddress.street || !shippingAddress.city || !shippingAddress.state || !shippingAddress.zip) {
       toast({ title: "Delivery address required", description: "Please fill in all address fields.", variant: "destructive" });
+      return;
+    }
+
+    // Guest users must sign in before the backend can process the order.
+    // We save their filled-in address to sessionStorage so it's restored after redirect.
+    if (!user) {
+      sessionStorage.setItem("checkout_pending_address", JSON.stringify(shippingAddress));
+      sessionStorage.setItem("checkout_pending_coupon", couponCode);
+      sessionStorage.setItem("checkout_pending_referral", referralCode);
+      toast({ title: "Almost there!", description: "Sign in to complete your order. Your cart is saved." });
+      await base44.auth.redirectToLogin(window.location.href);
       return;
     }
 
@@ -483,11 +508,13 @@ export default function Checkout() {
                 >
                   {processing
                     ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processing...</>
-                    : "Place Order"}
+                    : user ? "Place Order" : "Sign In and Place Order"}
                 </Button>
 
                 <p className="text-xs text-gray-500 text-center">
-                  You'll enter payment info on the next screen. No account required.
+                  {user
+                    ? "You'll enter payment info on the next screen."
+                    : "You'll be asked to sign in, then returned here to complete your order. Your cart and address are saved."}
                 </p>
 
                 <div className="pt-2 border-t">
