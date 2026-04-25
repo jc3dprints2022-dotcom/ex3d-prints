@@ -36,7 +36,7 @@ const SHIPPING_DAYS = "2-4 days";
 const MAKER_COUNT   = 19;
 const MAKER_STATES  = 11;
 
-export default function RocketCollection() {
+export default function SaturnV() {
   const [adding, setAdding]                 = useState(null);
   const [openFaq, setOpenFaq]               = useState(null);
   const [lightboxImage, setLightboxImage]   = useState(null);
@@ -155,11 +155,11 @@ export default function RocketCollection() {
   );
 
   const faqs = [
-    { q: "How long until it arrives?",       a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
-    { q: "How hard is assembly?",             a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
-    { q: "What if something arrives damaged?",a: "Email us. We send replacement parts free. No return shipping needed." },
-    { q: "Who designed these?",               a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
-    { q: "What's your return policy?",        a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right, no questions." },
+    { q: "How long until it arrives?",        a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
+    { q: "How hard is assembly?",              a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
+    { q: "What if something arrives damaged?", a: "Email us. We send replacement parts free. No return shipping needed." },
+    { q: "Who designed these?",                a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
+    { q: "What's your return policy?",         a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right, no questions." },
   ];
 
   return (
@@ -228,9 +228,9 @@ export default function RocketCollection() {
           <h2 className="text-2xl font-black text-white text-center mb-2">Buy Each Separately</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",    price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
-              { type: "sls",      image: productCardImages.sls,       name: "SLS",          price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "NASA's next Moon rocket, Artemis program." },
-              { type: "starship", image: productCardImages.starship,  name: "Starship V2",  price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
+              { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",   price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
+              { type: "sls",      image: productCardImages.sls,       name: "SLS",         price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "NASA's next Moon rocket, Artemis program." },
+              { type: "starship", image: productCardImages.starship,  name: "Starship V2", price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
             ].map(({ type, image, name, price, color, spec, desc }) => (
               <div key={type} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
                 <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
@@ -359,109 +359,6 @@ export default function RocketCollection() {
       {lightboxImage && (
         <div onClick={() => setLightboxImage(null)} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out">
           <img src={lightboxImage} alt="Enlarged" className="max-w-full max-h-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
-          <button onClick={() => setLightboxImage(null)} className="absolute top-6 right-6 text-white text-3xl hover:text-orange-400">✕</button>
-        </div>
-      )}
-    </div>
-  );
-}           <div className="space-y-6">
-              <p className="text-green-400 font-semibold">You're in! Here's your discount code:</p>
-              <div className="flex items-center justify-center gap-3 flex-wrap">
-                <div className="bg-gray-900 border-2 border-orange-500/60 rounded-2xl px-8 py-4">
-                  <p className="text-3xl font-bold tracking-widest text-orange-400 font-mono">{EMAIL_DISCOUNT_CODE}</p>
-                </div>
-                <button
-                  onClick={handleCopyCode}
-                  className="px-6 py-4 rounded-2xl bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm font-semibold transition-all hover:scale-105"
-                >
-                  {codeCopied ? "Copied!" : "Copy Code"}
-                </button>
-              </div>
-              <p className="text-gray-500 text-sm">
-                Enter this code at checkout for 10% off. Apply it to the Saturn V, SLS, or the bundle.
-              </p>
-              <button
-                onClick={() => document.getElementById("choose-setup")?.scrollIntoView({ behavior: "smooth" })}
-                className="inline-block text-orange-400 hover:text-orange-300 text-sm font-semibold underline"
-              >
-                Shop now and use your code
-              </button>
-            </div>
-          )}
-
-          <p className="text-xs text-gray-600 mt-6">No spam. Unsubscribe any time.</p>
-        </div>
-      </section>
-
-      {/* ── FOUNDER ── */}
-      <section className="py-20 px-6 border-t border-gray-800">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-10 items-center">
-          <div className="w-44 h-44 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
-            <img src={FOUNDER_IMAGE} alt="Jacob, EX3D Prints" className="w-full h-full object-cover" />
-          </div>
-          <div>
-            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-3">Why EX3D Prints Exists</p>
-            <p className="text-gray-300 leading-relaxed text-base mb-4">
-              I'm Jacob, an aerospace engineering student who helps build real rocket engines. I wanted high-quality models of the greatest rockets ever made, and everything I could find was either a cheap plastic toy or a $300 collector's piece.
-            </p>
-            <p className="text-gray-300 leading-relaxed text-base mb-4">
-              So I teamed up with <span className="text-white font-semibold">kmobrain (AstroDesign 3D)</span> and built a network of {MAKER_COUNT} independent makers across {MAKER_STATES} states to print his designs on demand. High-quality models, printed by real people, shipped fast.
-            </p>
-            <p className="text-gray-400 text-sm italic">Every order supports a maker. Every rocket is quality-checked before it ships.</p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── FAQ ── */}
-      <section className="py-20 px-6 border-t border-gray-800">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Before You Buy</p>
-          <h2 className="text-3xl font-bold text-center mb-12">Questions, Answered</h2>
-          <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full text-left px-6 py-4 flex justify-between items-center hover:bg-gray-900/70 transition-colors"
-                >
-                  <span className="font-semibold text-white pr-4">{faq.q}</span>
-                  <span className={`text-orange-400 text-2xl flex-shrink-0 transition-transform ${openFaq === i ? "rotate-45" : ""}`}>+</span>
-                </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-5 text-gray-300 leading-relaxed text-sm border-t border-gray-800 pt-4">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FINAL CTA ── */}
-      <section className="py-24 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
-        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">Ready?</p>
-        <h2 className="text-4xl font-bold mb-4">Bring Apollo and Artemis Together</h2>
-        <p className="text-gray-400 mb-4 max-w-md mx-auto">
-          Own both of the most iconic Moon rockets. Printed locally, shipped fast, quality guaranteed.
-        </p>
-        <p className="text-xs text-gray-500 mb-10">Ships in {SHIPPING_DAYS} · Free replacement parts if anything's wrong</p>
-        <div className="flex flex-col items-center gap-8">
-          <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get the Bundle for ${BUNDLE_PRICE}
-          </Btn>
-          <BundlePriceDisplay size="large" />
-        </div>
-        <p className="text-gray-700 text-xs mt-16">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
-      </section>
-
-      {/* ── LIGHTBOX ── */}
-      {lightboxImage && (
-        <div
-          onClick={() => setLightboxImage(null)}
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out"
-        >
-          <img src={lightboxImage} alt="Enlarged view" className="max-w-full max-h-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
           <button onClick={() => setLightboxImage(null)} className="absolute top-6 right-6 text-white text-3xl hover:text-orange-400">✕</button>
         </div>
       )}
