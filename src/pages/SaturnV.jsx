@@ -143,7 +143,7 @@ export default function SaturnV() {
       disabled={adding !== null}
       className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-6" : "text-base px-8 py-4"}`}
     >
-      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle — $${GIANTS_BUNDLE_PRICE}`}
+      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle $${GIANTS_BUNDLE_PRICE}`}
     </button>
   );
 
@@ -184,11 +184,6 @@ export default function SaturnV() {
             </span>
           </h1>
 
-          <p className="text-[10px] tracking-[0.3em] text-orange-400 uppercase mb-2">Best Value · The Heavy-Lift Bundle</p>
-          <p className="text-base sm:text-lg text-gray-400 mb-2 max-w-xl mx-auto leading-relaxed">
-            Saturn V, SLS &amp; Starship V2 — <strong className="text-gray-200">assembly kits</strong> you build yourself. Press-fit parts, no tools needed, ~45 min build.
-          </p>
-
           {/* Trust bar — right under headline, before images */}
           <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs text-gray-500 mb-8 flex-wrap">
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Ships in {SHIPPING_DAYS}</span>
@@ -196,6 +191,8 @@ export default function SaturnV() {
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Free replacement parts</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> {MAKER_COUNT} vetted makers</span>
           </div>
+
+          <p className="text-[10px] tracking-[0.3em] text-orange-400 uppercase mb-2">Best Value · The Heavy-Lift Bundle</p>
 
           {/* Three hero rockets — object-cover fills the frame */}
           <div className="flex justify-center items-end gap-2 sm:gap-4 md:gap-6 mb-8 w-full">
@@ -234,8 +231,7 @@ export default function SaturnV() {
       {/* ── INDIVIDUAL ROCKETS (escape hatch — smaller, lower emphasis) ── */}
       <section className="py-12 px-5 border-t border-white/5">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-white text-center mb-2">Or buy each separately</h2>
-          <p className="text-gray-400 text-sm text-center mb-6">Same quality, same local printing — just one rocket.</p>
+          <h2 className="text-2xl font-black text-white text-center mb-2">Buy Each Seperatly</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
               { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",    price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
@@ -253,14 +249,6 @@ export default function SaturnV() {
                 <SingleBtn type={type}>Add to Cart</SingleBtn>
               </div>
             ))}
-          </div>
-          {/* Nudge back to bundle */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-300 font-semibold mb-3">Get all three and save ${GIANTS_BUNDLE_SAVINGS} →</p>
-            <BundleBtn size="base" />
-          </div>
-        </div>
-      </section>
 
       {/* ── EMAIL CAPTURE ── */}
       <section className="py-14 px-5 border-t border-white/5 bg-white/[0.02]">
