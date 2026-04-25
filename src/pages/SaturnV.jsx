@@ -5,36 +5,36 @@ import { Toaster } from "@/components/ui/toaster";
 
 // ── PRODUCT IDs ───────────────────────────────────────────────────────────────
 const SATURN_V_ID = "693b06e655e441e07049d328";
-const SLS_ID      = "69dbf08433850e148542d876";
+const SLS_ID = "69dbf08433850e148542d876";
 // Starship ID is looked up dynamically by name at runtime (see useEffect below)
 
 // ── PRICING ───────────────────────────────────────────────────────────────────
-const SATURN_V_PRICE  = 39;
-const SLS_PRICE       = 30;
-const STARSHIP_PRICE  = 20;
+const SATURN_V_PRICE = 39;
+const SLS_PRICE = 30;
+const STARSHIP_PRICE = 20;
 
 // Moon Missions bundle: Saturn V + SLS
-const MOON_BUNDLE_PRICE     = 60;
-const MOON_BUNDLE_SEPARATE  = SATURN_V_PRICE + SLS_PRICE; // $69
-const MOON_BUNDLE_SAVINGS   = MOON_BUNDLE_SEPARATE - MOON_BUNDLE_PRICE; // $9
+const MOON_BUNDLE_PRICE = 60;
+const MOON_BUNDLE_SEPARATE = SATURN_V_PRICE + SLS_PRICE; // $69
+const MOON_BUNDLE_SAVINGS = MOON_BUNDLE_SEPARATE - MOON_BUNDLE_PRICE; // $9
 const MOON_BUNDLE_SLS_PRICE = MOON_BUNDLE_PRICE - SATURN_V_PRICE; // $21
 
 // Heavy-Lift Bundle: Saturn V + SLS + Starship V2
-const GIANTS_BUNDLE_PRICE    = 75;
+const GIANTS_BUNDLE_PRICE = 75;
 const GIANTS_BUNDLE_SEPARATE = SATURN_V_PRICE + SLS_PRICE + STARSHIP_PRICE; // $89
-const GIANTS_BUNDLE_SAVINGS  = GIANTS_BUNDLE_SEPARATE - GIANTS_BUNDLE_PRICE; // $14
-const GIANTS_SATURN_PRICE    = SATURN_V_PRICE; // $39
-const GIANTS_SLS_PRICE       = 16;
-const GIANTS_STARSHIP_PRICE  = GIANTS_BUNDLE_PRICE - GIANTS_SATURN_PRICE - GIANTS_SLS_PRICE; // $20
+const GIANTS_BUNDLE_SAVINGS = GIANTS_BUNDLE_SEPARATE - GIANTS_BUNDLE_PRICE; // $14
+const GIANTS_SATURN_PRICE = SATURN_V_PRICE; // $39
+const GIANTS_SLS_PRICE = 16;
+const GIANTS_STARSHIP_PRICE = GIANTS_BUNDLE_PRICE - GIANTS_SATURN_PRICE - GIANTS_SLS_PRICE; // $20
 
 // ── DISCOUNT CODE ─────────────────────────────────────────────────────────────
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
 
 // ── IMAGES ───────────────────────────────────────────────────────────────────
 // TODO: upload new photos and paste URLs here to replace the placeholders
-const SATURN_V_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
-const SLS_HERO      = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
-const STARSHIP_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
+const SATURN_V_HERO = ""; // Image 15 (full Saturn V portrait)
+const SLS_HERO = ""; // Image 4 or 5 (full SLS portrait)
+const STARSHIP_HERO = ""; // Full Starship V2 stack portrait
 
 const SATURN_V_GALLERY = [
   // TODO: paste URLs after uploading
@@ -50,45 +50,45 @@ const SLS_GALLERY = [
 ];
 
 const CORE_STAGE_SCHEMATIC = ""; // schematics_cs.webp
-const SRB_SCHEMATIC        = ""; // schematics_srb.webp
+const SRB_SCHEMATIC = ""; // schematics_srb.webp
 
 const SATURN_V_IMAGE = SATURN_V_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
-const SLS_IMAGE      = SLS_HERO      || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
+const SLS_IMAGE = SLS_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
 // ── STATS ────────────────────────────────────────────────────────────────────
 const SHIPPING_DAYS = "2-4 days";
-const MAKER_COUNT   = 19;
-const MAKER_STATES  = 11;
+const MAKER_COUNT = 19;
+const MAKER_STATES = 11;
 
 export default function SaturnV() {
-  const [adding, setAdding]               = useState(null);
-  const [openFaq, setOpenFaq]             = useState(null);
+  const [adding, setAdding] = useState(null);
+  const [openFaq, setOpenFaq] = useState(null);
   const [lightboxImage, setLightboxImage] = useState(null);
-  const [email, setEmail]                 = useState("");
+  const [email, setEmail] = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [emailLoading, setEmailLoading]   = useState(false);
-  const [codeCopied, setCodeCopied]       = useState(false);
-  const [starshipId, setStarshipId]       = useState(null);
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [codeCopied, setCodeCopied] = useState(false);
+  const [starshipId, setStarshipId] = useState(null);
   const [starshipImage, setStarshipImage] = useState(STARSHIP_HERO || SATURN_V_IMAGE);
   const { toast } = useToast();
 
   // Look up Starship product ID by name since the ID isn't hardcoded
   useEffect(() => {
-    base44.entities.Product.filter({ status: "active" })
-      .then((products) => {
-        const starship = products.find((p) =>
-          p.name?.toLowerCase().includes("starship")
-        );
-        if (starship) {
-          setStarshipId(starship.id);
-          if (starship.images?.[0] && !STARSHIP_HERO) {
-            setStarshipImage(starship.images[0]);
-          }
+    base44.entities.Product.filter({ status: "active" }).
+    then((products) => {
+      const starship = products.find((p) =>
+      p.name?.toLowerCase().includes("starship")
+      );
+      if (starship) {
+        setStarshipId(starship.id);
+        if (starship.images?.[0] && !STARSHIP_HERO) {
+          setStarshipImage(starship.images[0]);
         }
-      })
-      .catch(console.error);
+      }
+    }).
+    catch(console.error);
   }, []);
 
   // ── Add to cart ─────────────────────────────────────────────────────────────
@@ -96,7 +96,7 @@ export default function SaturnV() {
     setAdding(type);
     try {
       const user = await base44.auth.me().catch(() => null);
-      if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+      if (!user) {base44.auth.redirectToLogin(window.location.href);return;}
 
       const upsert = async (productId, productName, price, imageUrl) => {
         if (!productId) return;
@@ -105,7 +105,7 @@ export default function SaturnV() {
           await base44.entities.Cart.update(existing[0].id, {
             unit_price: price,
             total_price: price * existing[0].quantity,
-            product_name: productName,
+            product_name: productName
           });
         } else {
           await base44.entities.Cart.create({
@@ -117,13 +117,13 @@ export default function SaturnV() {
             selected_color: "Shown Colors",
             unit_price: price,
             total_price: price,
-            image_url: imageUrl,
+            image_url: imageUrl
           });
         }
       };
 
-      if (type === "saturn")   await upsert(SATURN_V_ID, "Saturn V", SATURN_V_PRICE, SATURN_V_IMAGE);
-      if (type === "sls")      await upsert(SLS_ID, "SLS (Artemis)", SLS_PRICE, SLS_IMAGE);
+      if (type === "saturn") await upsert(SATURN_V_ID, "Saturn V", SATURN_V_PRICE, SATURN_V_IMAGE);
+      if (type === "sls") await upsert(SLS_ID, "SLS (Artemis)", SLS_PRICE, SLS_IMAGE);
       if (type === "starship") await upsert(starshipId, "Starship V2", STARSHIP_PRICE, starshipImage);
 
       if (type === "moon_bundle") {
@@ -147,7 +147,7 @@ export default function SaturnV() {
       }
 
       const isBundle = type === "moon_bundle" || type === "giants_bundle";
-      setTimeout(() => { window.location.href = "/Cart"; }, isBundle ? 600 : 0);
+      setTimeout(() => {window.location.href = "/Cart";}, isBundle ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
     }
@@ -177,47 +177,47 @@ export default function SaturnV() {
     });
   };
 
-  const Btn = ({ type, children, className = "" }) => (
-    <button
-      onClick={() => addToCart(type)}
-      disabled={adding !== null}
-      className={`font-bold rounded-full transition-all duration-200 hover:scale-105 disabled:opacity-70 shadow-lg ${className}`}
-    >
+  const Btn = ({ type, children, className = "" }) =>
+  <button
+    onClick={() => addToCart(type)}
+    disabled={adding !== null}
+    className={`font-bold rounded-full transition-all duration-200 hover:scale-105 disabled:opacity-70 shadow-lg ${className}`}>
+    
       {adding === type ? "Adding..." : children}
-    </button>
-  );
+    </button>;
 
-  const GalleryThumb = ({ src, alt }) => (
-    <button
-      onClick={() => setLightboxImage(src)}
-      className="rounded-xl overflow-hidden border border-gray-800 w-28 h-28 sm:w-36 sm:h-36 bg-gray-900 flex items-center justify-center hover:border-orange-500/60 transition-all hover:scale-105"
-    >
+
+  const GalleryThumb = ({ src, alt }) =>
+  <button
+    onClick={() => setLightboxImage(src)}
+    className="rounded-xl overflow-hidden border border-gray-800 w-28 h-28 sm:w-36 sm:h-36 bg-gray-900 flex items-center justify-center hover:border-orange-500/60 transition-all hover:scale-105">
+    
       <img src={src} alt={alt} className="w-full h-full object-cover" />
-    </button>
-  );
+    </button>;
+
 
   const faqs = [
-    {
-      q: "How long until my rocket arrives?",
-      a: `Most orders ship within ${SHIPPING_DAYS}. Your rocket is printed by a maker near you across our network of ${MAKER_COUNT} makers in ${MAKER_STATES} states, shipped domestically, not from overseas.`,
-    },
-    {
-      q: "How hard is the assembly?",
-      a: "The kits press-fit together. Most parts snap into place, and a small amount of super glue is recommended for a few joints. No painting required. Typical build time is 30 to 60 minutes.",
-    },
-    {
-      q: "What if a part arrives damaged?",
-      a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge.",
-    },
-    {
-      q: "Who designs these rockets?",
-      a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network.",
-    },
-    {
-      q: "Can I return it?",
-      a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right.",
-    },
-  ];
+  {
+    q: "How long until my rocket arrives?",
+    a: `Most orders ship within ${SHIPPING_DAYS}. Your rocket is printed by a maker near you across our network of ${MAKER_COUNT} makers in ${MAKER_STATES} states, shipped domestically, not from overseas.`
+  },
+  {
+    q: "How hard is the assembly?",
+    a: "The kits press-fit together. Most parts snap into place, and a small amount of super glue is recommended for a few joints. No painting required. Typical build time is 30 to 60 minutes."
+  },
+  {
+    q: "What if a part arrives damaged?",
+    a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge."
+  },
+  {
+    q: "Who designs these rockets?",
+    a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network."
+  },
+  {
+    q: "Can I return it?",
+    a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right."
+  }];
+
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
@@ -246,20 +246,20 @@ export default function SaturnV() {
           {/* Three rockets, all same height */}
           <div className="flex justify-center items-end gap-2 sm:gap-4 md:gap-6 mb-6 w-full px-2">
             {[
-              { src: SATURN_V_IMAGE,  alt: "Saturn V",   label: "Saturn V · 56cm",  shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
-              { src: SLS_IMAGE,       alt: "SLS",        label: "SLS · 50cm",       shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
-              { src: starshipImage,   alt: "Starship V2",label: "Starship V2",      shadow: "shadow-cyan-900/20",   hover: "hover:border-cyan-500/40"   },
-            ].map(({ src, alt, label, shadow, hover }) => (
-              <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
+            { src: SATURN_V_IMAGE, alt: "Saturn V", label: "Saturn V · 56cm", shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
+            { src: SLS_IMAGE, alt: "SLS", label: "SLS · 50cm", shadow: "shadow-blue-900/20", hover: "hover:border-blue-500/40" },
+            { src: starshipImage, alt: "Starship V2", label: "Starship V2 · 26cm", shadow: "shadow-cyan-900/20", hover: "hover:border-cyan-500/40" }].
+            map(({ src, alt, label, shadow, hover }) =>
+            <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
                 <button
-                  onClick={() => setLightboxImage(src)}
-                  className={`rounded-2xl overflow-hidden border border-gray-700 shadow-2xl ${shadow} w-full h-[220px] sm:h-[320px] md:h-[420px] flex items-center justify-center bg-black ${hover} transition-all`}
-                >
-                  <img src={src} alt={alt} className="w-full h-full object-contain" />
+                onClick={() => setLightboxImage(src)}
+                className={`rounded-2xl overflow-hidden border border-gray-700 shadow-2xl ${shadow} w-full h-[220px] sm:h-[320px] md:h-[420px] flex items-center justify-center bg-black ${hover} transition-all`}>
+                
+                  <img src="https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg" alt={alt} className="w-full h-full object-contain" />
                 </button>
                 <p className="text-xs sm:text-sm text-gray-300 mt-2 font-medium">{label}</p>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Primary CTA */}
@@ -277,34 +277,34 @@ export default function SaturnV() {
       </section>
 
       {/* DETAIL GALLERY - only renders when URLs are provided */}
-      {(SATURN_V_GALLERY.filter(Boolean).length > 0 || SLS_GALLERY.filter(Boolean).length > 0) && (
-        <section className="py-16 px-6 bg-[#0f0f1a] border-t border-gray-800">
+      {(SATURN_V_GALLERY.filter(Boolean).length > 0 || SLS_GALLERY.filter(Boolean).length > 0) &&
+      <section className="py-16 px-6 bg-[#0f0f1a] border-t border-gray-800">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Every Detail</p>
             <h2 className="text-3xl font-bold text-center mb-12">Up Close</h2>
-            {SATURN_V_GALLERY.filter(Boolean).length > 0 && (
-              <div className="mb-12">
+            {SATURN_V_GALLERY.filter(Boolean).length > 0 &&
+          <div className="mb-12">
                 <h3 className="text-lg font-bold text-orange-400 mb-4 text-center">Saturn V</h3>
                 <div className="flex justify-center gap-4 flex-wrap">
-                  {SATURN_V_GALLERY.filter(Boolean).map((src, i) => (
-                    <GalleryThumb key={i} src={src} alt={`Saturn V detail ${i + 1}`} />
-                  ))}
+                  {SATURN_V_GALLERY.filter(Boolean).map((src, i) =>
+              <GalleryThumb key={i} src={src} alt={`Saturn V detail ${i + 1}`} />
+              )}
                 </div>
               </div>
-            )}
-            {SLS_GALLERY.filter(Boolean).length > 0 && (
-              <div>
+          }
+            {SLS_GALLERY.filter(Boolean).length > 0 &&
+          <div>
                 <h3 className="text-lg font-bold text-blue-400 mb-4 text-center">SLS</h3>
                 <div className="flex justify-center gap-4 flex-wrap">
-                  {SLS_GALLERY.filter(Boolean).map((src, i) => (
-                    <GalleryThumb key={i} src={src} alt={`SLS detail ${i + 1}`} />
-                  ))}
+                  {SLS_GALLERY.filter(Boolean).map((src, i) =>
+              <GalleryThumb key={i} src={src} alt={`SLS detail ${i + 1}`} />
+              )}
                 </div>
               </div>
-            )}
+          }
           </div>
         </section>
-      )}
+      }
 
       {/* PRODUCT CARDS */}
       <section id="choose-setup" className="py-16 px-6 border-t border-gray-800">
@@ -315,11 +315,11 @@ export default function SaturnV() {
           {/* Individual rockets - equal height image boxes */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
             {[
-              { type: "saturn",   image: SATURN_V_IMAGE, name: "Saturn V",   price: SATURN_V_PRICE, color: "text-orange-400", spec: "56cm · 1:200",    desc: "The rocket that took humanity to the Moon." },
-              { type: "sls",      image: SLS_IMAGE,      name: "SLS",        price: SLS_PRICE,      color: "text-blue-400",   spec: "50cm · 1:200",    desc: "Taking humanity back to the Moon." },
-              { type: "starship", image: starshipImage,  name: "Starship V2",price: STARSHIP_PRICE, color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
-            ].map(({ type, image, name, price, color, spec, desc }) => (
-              <div key={type} className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
+            { type: "saturn", image: SATURN_V_IMAGE, name: "Saturn V", price: SATURN_V_PRICE, color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
+            { type: "sls", image: SLS_IMAGE, name: "SLS", price: SLS_PRICE, color: "text-blue-400", spec: "50cm · 1:200", desc: "Taking humanity back to the Moon." },
+            { type: "starship", image: starshipImage, name: "Starship V2", price: STARSHIP_PRICE, color: "text-cyan-400", spec: "26cm · 1:200", desc: "The most powerful rocket ever built." }].
+            map(({ type, image, name, price, color, spec, desc }) =>
+            <div key={type} className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
                 {/* Fixed height image box so all cards are equal */}
                 <div className="rounded-xl overflow-hidden mb-4 bg-black h-52 flex items-center justify-center flex-shrink-0">
                   <img src={image} alt={name} className="w-full h-full object-contain" />
@@ -332,7 +332,7 @@ export default function SaturnV() {
                   Add to Cart
                 </Btn>
               </div>
-            ))}
+            )}
           </div>
 
           {/* Two bundles */}
@@ -363,11 +363,11 @@ export default function SaturnV() {
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900/80 border-2 border-orange-500/70 rounded-2xl p-5 flex flex-col relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value</div>
               <div className="flex gap-2 mb-4 h-36 flex-shrink-0">
-                {[SATURN_V_IMAGE, SLS_IMAGE, starshipImage].map((src, i) => (
-                  <div key={i} className="flex-1 rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                    <img src={src} alt={`rocket ${i}`} className="w-full h-full object-contain" />
+                {[SATURN_V_IMAGE, SLS_IMAGE, starshipImage].map((src, i) =>
+                <div key={i} className="flex-1 rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                    <img src="https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg" alt={`rocket ${i}`} className="w-full h-full object-contain" />
                   </div>
-                ))}
+                )}
               </div>
               <h3 className="text-base font-bold mb-1">Heavy-Lift Bundle</h3>
               <div className="flex items-baseline gap-2 mb-1">
@@ -389,8 +389,8 @@ export default function SaturnV() {
       </section>
 
       {/* SCHEMATICS - only renders when URLs are provided */}
-      {(CORE_STAGE_SCHEMATIC || SRB_SCHEMATIC) && (
-        <section className="py-16 px-6 border-t border-gray-800">
+      {(CORE_STAGE_SCHEMATIC || SRB_SCHEMATIC) &&
+      <section className="py-16 px-6 border-t border-gray-800">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs tracking-[0.4em] text-orange-400 uppercase text-center mb-4">Engineering</p>
             <h2 className="text-3xl font-bold text-center mb-4">Designed Part by Part</h2>
@@ -398,26 +398,26 @@ export default function SaturnV() {
               Every section is modeled from reference data and labeled so you know exactly what you're building.
             </p>
             <div className="grid md:grid-cols-2 gap-8">
-              {CORE_STAGE_SCHEMATIC && (
-                <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
+              {CORE_STAGE_SCHEMATIC &&
+            <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
                   <button onClick={() => setLightboxImage(CORE_STAGE_SCHEMATIC)} className="w-full hover:opacity-90 transition-opacity">
                     <img src={CORE_STAGE_SCHEMATIC} alt="SLS Core Stage schematic" className="w-full h-auto" />
                   </button>
                   <p className="text-gray-700 font-semibold mt-4">SLS Core Stage · Labeled diagram</p>
                 </div>
-              )}
-              {SRB_SCHEMATIC && (
-                <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
+            }
+              {SRB_SCHEMATIC &&
+            <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
                   <button onClick={() => setLightboxImage(SRB_SCHEMATIC)} className="w-full hover:opacity-90 transition-opacity">
                     <img src={SRB_SCHEMATIC} alt="Solid Rocket Booster schematic" className="w-full h-auto" />
                   </button>
                   <p className="text-gray-700 font-semibold mt-4">Solid Rocket Booster · Labeled diagram</p>
                 </div>
-              )}
+            }
             </div>
           </div>
         </section>
-      )}
+      }
 
       {/* EMAIL CAPTURE */}
       <section className="py-16 px-6 border-t border-gray-800 bg-[#0f0f1a]">
@@ -428,47 +428,47 @@ export default function SaturnV() {
             Join the list for early access to new rocket drops and a discount code right now.
           </p>
 
-          {!emailSubmitted ? (
-            <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
+          {!emailSubmitted ?
+          <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="your@email.com"
-                required
-                className="flex-1 px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm"
-              />
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="your@email.com"
+              required
+              className="flex-1 px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
+            
               <button
-                type="submit"
-                disabled={emailLoading}
-                className="px-8 py-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-sm transition-all hover:scale-105 disabled:opacity-70 whitespace-nowrap"
-              >
+              type="submit"
+              disabled={emailLoading}
+              className="px-8 py-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-sm transition-all hover:scale-105 disabled:opacity-70 whitespace-nowrap">
+              
                 {emailLoading ? "Saving..." : "Get My Code"}
               </button>
-            </form>
-          ) : (
-            <div className="space-y-5">
+            </form> :
+
+          <div className="space-y-5">
               <p className="text-green-400 font-semibold">You're in! Here's your code:</p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <div className="bg-gray-900 border-2 border-orange-500/60 rounded-2xl px-8 py-4">
                   <p className="text-3xl font-bold tracking-widest text-orange-400 font-mono">{EMAIL_DISCOUNT_CODE}</p>
                 </div>
                 <button
-                  onClick={handleCopyCode}
-                  className="px-6 py-4 rounded-2xl bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm font-semibold transition-all hover:scale-105"
-                >
+                onClick={handleCopyCode}
+                className="px-6 py-4 rounded-2xl bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm font-semibold transition-all hover:scale-105">
+                
                   {codeCopied ? "Copied!" : "Copy Code"}
                 </button>
               </div>
               <p className="text-gray-500 text-sm">10% off anything at checkout. Apply it to any rocket or bundle.</p>
               <button
-                onClick={() => document.getElementById("choose-setup")?.scrollIntoView({ behavior: "smooth" })}
-                className="inline-block text-orange-400 hover:text-orange-300 text-sm font-semibold underline"
-              >
+              onClick={() => document.getElementById("choose-setup")?.scrollIntoView({ behavior: "smooth" })}
+              className="inline-block text-orange-400 hover:text-orange-300 text-sm font-semibold underline">
+              
                 Shop now
               </button>
             </div>
-          )}
+          }
         </div>
       </section>
 
@@ -496,22 +496,22 @@ export default function SaturnV() {
           <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Before You Buy</p>
           <h2 className="text-3xl font-bold text-center mb-10">Questions, Answered</h2>
           <div className="space-y-3">
-            {faqs.map((faq, i) => (
-              <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+            {faqs.map((faq, i) =>
+            <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
                 <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full text-left px-6 py-4 flex justify-between items-center hover:bg-gray-900/70 transition-colors"
-                >
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="w-full text-left px-6 py-4 flex justify-between items-center hover:bg-gray-900/70 transition-colors">
+                
                   <span className="font-semibold text-white pr-4">{faq.q}</span>
                   <span className={`text-orange-400 text-2xl flex-shrink-0 transition-transform ${openFaq === i ? "rotate-45" : ""}`}>+</span>
                 </button>
-                {openFaq === i && (
-                  <div className="px-6 pb-5 text-gray-300 leading-relaxed text-sm border-t border-gray-800 pt-4">
+                {openFaq === i &&
+              <div className="px-6 pb-5 text-gray-300 leading-relaxed text-sm border-t border-gray-800 pt-4">
                     {faq.a}
                   </div>
-                )}
+              }
               </div>
-            ))}
+            )}
           </div>
         </div>
       </section>
@@ -539,25 +539,25 @@ export default function SaturnV() {
       </section>
 
       {/* LIGHTBOX */}
-      {lightboxImage && (
-        <div
-          onClick={() => setLightboxImage(null)}
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out"
-        >
+      {lightboxImage &&
+      <div
+        onClick={() => setLightboxImage(null)}
+        className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out">
+        
           <img
-            src={lightboxImage}
-            alt="Enlarged view"
-            className="max-w-full max-h-full object-contain rounded-lg"
-            onClick={(e) => e.stopPropagation()}
-          />
+          src={lightboxImage}
+          alt="Enlarged view"
+          className="max-w-full max-h-full object-contain rounded-lg"
+          onClick={(e) => e.stopPropagation()} />
+        
           <button
-            onClick={() => setLightboxImage(null)}
-            className="absolute top-6 right-6 text-white text-3xl hover:text-orange-400"
-          >
+          onClick={() => setLightboxImage(null)}
+          className="absolute top-6 right-6 text-white text-3xl hover:text-orange-400">
+          
             X
           </button>
         </div>
-      )}
-    </div>
-  );
+      }
+    </div>);
+
 }
