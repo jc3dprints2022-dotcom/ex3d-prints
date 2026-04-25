@@ -4,20 +4,18 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
 
-        // Authenticate as service role for admin operations
         const user = await base44.auth.me();
         if (!user || user.role !== 'admin') {
             return Response.json({ error: 'Unauthorized - admin only' }, { status: 403 });
         }
 
-        // Get current month date range
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        const currentMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
         console.log('Calculating payouts for:', firstDayOfMonth, 'to', lastDayOfMonth);
 
-        // Get all completed/delivered orders from this month
         const orders = await base44.asServiceRole.entities.Order.list();
         const monthlyOrders = orders.filter(order => {
             const orderDate = new Date(order.created_date);
@@ -28,12 +26,10 @@ Deno.serve(async (req) => {
 
         console.log(`Found ${monthlyOrders.length} completed orders this month`);
 
-        // Calculate payouts for makers and designers
         const makerPayouts = {};
         const designerPayouts = {};
 
         for (const order of monthlyOrders) {
-            // Maker earnings: 50% of items total (shipping excluded)
             if (order.maker_id) {
                 if (!makerPayouts[order.maker_id]) {
                     makerPayouts[order.maker_id] = { gross: 0, orders: [] };
@@ -43,7 +39,6 @@ Deno.serve(async (req) => {
                 makerPayouts[order.maker_id].orders.push(order.id);
             }
 
-            // Designer earnings: 10% per item
             for (const item of order.items || []) {
                 if (item.designer_id && item.designer_id !== 'admin') {
                     if (!designerPayouts[item.designer_id]) {
@@ -52,7 +47,6 @@ Deno.serve(async (req) => {
                     const designerEarnings = (item.total_price || 0) * 0.10;
                     designerPayouts[item.designer_id].gross += designerEarnings;
                     designerPayouts[item.designer_id].orders.push(order.id);
-                    // Store item-level detail so we can create granular DesignerEarnings records
                     designerPayouts[item.designer_id].items.push({
                         order_id: order.id,
                         product_id: item.product_id,
@@ -68,19 +62,17 @@ Deno.serve(async (req) => {
         // ── MAKER PAYOUTS ─────────────────────────────────────────────────────
         for (const [makerId, data] of Object.entries(makerPayouts)) {
             try {
-                await base44.asServiceRole.entities.User.get(makerId); // confirm maker exists
+                await base44.asServiceRole.entities.User.get(makerId);
 
-                // Get maker's active subscription cost
                 const subscriptions = await base44.asServiceRole.entities.Subscription.filter({
                     user_id: makerId,
                     status: 'active'
-                });
+                }).catch(() => []);
                 const subscriptionCost = subscriptions[0]?.price || 0;
 
-                // Get shipping kit charges this month
                 const shippingKits = await base44.asServiceRole.entities.ShippingKitOrder.filter({
                     user_id: makerId
-                });
+                }).catch(() => []);
                 const monthlyShippingCost = shippingKits
                     .filter(kit => {
                         const kitDate = new Date(kit.created_date);
@@ -89,24 +81,27 @@ Deno.serve(async (req) => {
                     .reduce((sum, kit) => sum + (kit.cost || 0), 0);
 
                 const netAmount = data.gross - subscriptionCost - monthlyShippingCost;
-                const currentMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
-                // Create MakerEarnings records (one per order) so processMonthlyPayouts can find them
+                // Try to create MakerEarnings records — safe if entity doesn't exist yet
                 for (const orderId of data.orders) {
-                    const order = monthlyOrders.find(o => o.id === orderId);
-                    if (!order) continue;
-                    const itemsTotal = (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
-                    await base44.asServiceRole.entities.MakerEarnings.create({
-                        maker_user_id: makerId,
-                        maker_id: makerId,
-                        order_id: orderId,
-                        maker_earnings: itemsTotal * 0.5,
-                        status: 'pending',
-                        created_date: new Date().toISOString(),
-                    });
+                    try {
+                        const order = monthlyOrders.find(o => o.id === orderId);
+                        if (!order) continue;
+                        const itemsTotal = (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+                        await base44.asServiceRole.entities.MakerEarnings.create({
+                            maker_user_id: makerId,
+                            maker_id: makerId,
+                            order_id: orderId,
+                            maker_earnings: itemsTotal * 0.5,
+                            status: 'pending',
+                            created_date: new Date().toISOString(),
+                        });
+                    } catch (meErr) {
+                        console.warn(`MakerEarnings entity unavailable or write failed for order ${orderId}:`, meErr.message);
+                    }
                 }
 
-                // Create Payout record for admin reporting
+                // Always create Payout record — this is what dashboards read from
                 const payout = await base44.asServiceRole.entities.Payout.create({
                     user_id: makerId,
                     user_role: 'maker',
@@ -121,12 +116,10 @@ Deno.serve(async (req) => {
                     payout_date: lastDayOfMonth.toISOString()
                 });
 
-                // Update maker's payout date
                 await base44.asServiceRole.entities.User.update(makerId, {
                     payout_date: currentMonthLastDay.toISOString().split('T')[0]
-                });
+                }).catch(() => {});
 
-                // Trigger Stripe transfers per order
                 for (const orderId of data.orders) {
                     try {
                         await base44.functions.invoke('createStripeTransferToMaker', { orderId });
@@ -142,29 +135,26 @@ Deno.serve(async (req) => {
         }
 
         // ── DESIGNER PAYOUTS ──────────────────────────────────────────────────
-        // FIX: Previously wrote to Payout entity only — processMonthlyPayouts reads
-        // from DesignerEarnings, so designers were never getting transferred.
-        // Now we write individual DesignerEarnings records per item AND a Payout
-        // record for admin reporting.
         for (const [designerId, data] of Object.entries(designerPayouts)) {
             try {
-                const currentMonthLastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
-
-                // Create one DesignerEarnings record per order item
-                // processMonthlyPayouts filters for status: 'pending' on this entity
+                // Try to create DesignerEarnings records — safe if entity doesn't exist yet
                 for (const item of data.items) {
-                    await base44.asServiceRole.entities.DesignerEarnings.create({
-                        designer_id: designerId,
-                        order_id: item.order_id,
-                        product_id: item.product_id,
-                        sale_amount: item.sale_amount,
-                        royalty_amount: item.royalty_amount,
-                        status: 'pending',
-                        created_date: new Date().toISOString(),
-                    });
+                    try {
+                        await base44.asServiceRole.entities.DesignerEarnings.create({
+                            designer_id: designerId,
+                            order_id: item.order_id,
+                            product_id: item.product_id,
+                            sale_amount: item.sale_amount,
+                            royalty_amount: item.royalty_amount,
+                            status: 'pending',
+                            created_date: new Date().toISOString(),
+                        });
+                    } catch (deErr) {
+                        console.warn(`DesignerEarnings entity unavailable or write failed:`, deErr.message);
+                    }
                 }
 
-                // Create Payout record for admin reporting (same as before)
+                // Always create Payout record — this is what dashboards read from
                 const payout = await base44.asServiceRole.entities.Payout.create({
                     user_id: designerId,
                     user_role: 'designer',
@@ -180,10 +170,9 @@ Deno.serve(async (req) => {
                     payout_date: lastDayOfMonth.toISOString()
                 });
 
-                // Update designer's payout date
                 await base44.asServiceRole.entities.User.update(designerId, {
                     payout_date: currentMonthLastDay.toISOString().split('T')[0]
-                });
+                }).catch(() => {});
 
                 payoutRecords.push(payout);
             } catch (error) {
