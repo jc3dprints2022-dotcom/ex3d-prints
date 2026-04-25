@@ -178,9 +178,9 @@ export default function SaturnV() {
           <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-4">EX3D Prints · Rocket Collection</p>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] mb-4 tracking-tight">
-            The Greatest Rockets<br />
+            The Most Iconic Rockets<br />
             <span style={{ background: "linear-gradient(90deg, #fb923c, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              Ever Built. On Your Desk.
+              Ever Built
             </span>
           </h1>
 
