@@ -46,7 +46,60 @@ export default function SaturnV() {
     setAdding(type);
     try {
       const user = await base44.auth.me().catch(() => null);
-      if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
+      if (!user) {
+  const addAnonItem = (productId, productName, price, imageUrl) => {
+    const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+
+    const existingIdx = cart.findIndex(i => i.product_id === productId);
+
+    if (existingIdx >= 0) {
+      cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
+      cart[existingIdx].unit_price = price;
+      cart[existingIdx].total_price = price * cart[existingIdx].quantity;
+      cart[existingIdx].product_name = productName;
+    } else {
+      cart.push({
+        id: `anon_${productId}_${Date.now()}`,
+        product_id: productId,
+        product_name: productName,
+        quantity: 1,
+        selected_material: "PLA",
+        selected_color: "Shown Colors",
+        unit_price: price,
+        total_price: price,
+        images: [imageUrl],
+      });
+    }
+
+    localStorage.setItem("anonymousCart", JSON.stringify(cart));
+  };
+
+  if (type === "saturn" || type === "bundle") {
+    addAnonItem(SATURN_V_ID, "SATURN V", SATURN_V_PRICE, SATURN_V_IMAGE);
+  }
+
+  if (type === "sls" || type === "bundle") {
+    const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
+    const slsName = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
+
+    addAnonItem(SLS_ID, slsName, slsPrice, SLS_IMAGE);
+  }
+
+  window.dispatchEvent(new Event("cartUpdated"));
+
+  if (type === "bundle") {
+    toast({
+      title: "Bundle added! 🚀",
+      description: `Saturn V plus SLS for $${BUNDLE_PRICE}`,
+    });
+  }
+
+  setTimeout(() => {
+    window.location.href = "/Cart";
+  }, type === "bundle" ? 600 : 0);
+
+  return;
+}
 
       if (type === "saturn" || type === "bundle") {
         const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: SATURN_V_ID });
