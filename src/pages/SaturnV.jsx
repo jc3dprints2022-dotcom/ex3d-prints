@@ -158,11 +158,11 @@ export default function SaturnV() {
   );
 
   const faqs = [
-    { q: "How long until it arrives?",       a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you — not shipped from overseas.` },
-    { q: "How hard is assembly?",             a: "Parts press-fit together. A little super glue on a few joints makes it rock-solid. No painting. About 30–60 min." },
+    { q: "How long until it arrives?",       a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
+    { q: "How hard is assembly?",             a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
     { q: "What if something arrives damaged?",a: "Email us. We send replacement parts free. No return shipping needed." },
-    { q: "Who designed these?",               a: "kmobrain (AstroDesign 3D) — one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
-    { q: "What's your return policy?",        a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right — no questions." },
+    { q: "Who designed these?",               a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
+    { q: "What's your return policy?",        a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right, no questions." },
   ];
 
   return (
