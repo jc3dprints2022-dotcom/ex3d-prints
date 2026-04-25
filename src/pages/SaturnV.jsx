@@ -249,12 +249,6 @@ export default function SaturnV() {
                 <SingleBtn type={type}>Add to Cart</SingleBtn>
               </div>
             ))}
-          </div>
-          {/* Nudge back to bundle */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-300 font-semibold mb-3">Get all three and save ${GIANTS_BUNDLE_SAVINGS} →</p>
-            <BundleBtn size="base" />
-          </div>
         </div>
       </section>
 
