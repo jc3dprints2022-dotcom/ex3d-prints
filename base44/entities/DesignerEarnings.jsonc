@@ -1,0 +1,50 @@
+{
+  "name": "DesignerEarnings",
+  "type": "object",
+  "properties": {
+    "designer_id": {
+      "type": "string",
+      "description": "Designer user ID"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Order ID"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product ID"
+    },
+    "product_name": {
+      "type": "string"
+    },
+    "order_amount": {
+      "type": "number",
+      "description": "Product subtotal for this item"
+    },
+    "royalty_amount": {
+      "type": "number",
+      "description": "10% royalty owed to designer"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "transfer_failed"
+      ],
+      "default": "pending"
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stripe_transfer_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "designer_id",
+    "order_id",
+    "royalty_amount"
+  ]
+}

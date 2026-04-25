@@ -1,0 +1,47 @@
+{
+  "name": "MakerEarnings",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string",
+      "description": "Maker's maker_id field (not user id)"
+    },
+    "maker_user_id": {
+      "type": "string",
+      "description": "Maker's user ID"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Order ID"
+    },
+    "product_amount": {
+      "type": "number",
+      "description": "Product subtotal (excl. shipping)"
+    },
+    "maker_earnings": {
+      "type": "number",
+      "description": "50% of product amount"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid",
+        "transfer_failed"
+      ],
+      "default": "pending"
+    },
+    "paid_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "stripe_transfer_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "maker_id",
+    "order_id",
+    "maker_earnings"
+  ]
+}

@@ -293,6 +293,14 @@ Deno.serve(async (req) => {
         // If order contains custom requests, DON'T update their status - keep them available for re-purchase
         // Custom requests now stay as "accepted" for 30 days from acceptance date
 
+        // Record designer royalties + maker earnings
+        try {
+            await base44.functions.invoke('recordOrderEarnings', { orderId: newOrder.id });
+            console.log('✅ Earnings recorded');
+        } catch (earningsError) {
+            console.error('⚠️ Failed to record earnings:', earningsError);
+        }
+
         // Assign to maker(s) based on total print time
         try {
             console.log('Assigning order to maker...');

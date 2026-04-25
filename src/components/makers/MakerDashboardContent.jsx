@@ -21,6 +21,7 @@ import { createPageUrl } from "@/utils";
 import AnnouncementBanner from "../shared/AnnouncementBanner";
 import CalibrationGate from "../makers/CalibrationGate";
 import MakerOnboarding from "../makers/MakerOnboarding";
+import MakerEarningsTab from "../makers/MakerEarningsTab";
 
 export default function MakerDashboardContent({ user: propUser, onUpdate }) {
   const [user, setUser] = useState(propUser);
@@ -460,6 +461,10 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
             <Package className="w-4 h-4 mr-2" />
             Order Supplies
           </TabsTrigger>
+          <TabsTrigger value="earnings">
+            <DollarSign className="w-4 h-4 mr-2" />
+            Earnings
+          </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="w-4 h-4 mr-2" />
             Settings
@@ -720,6 +725,10 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
         <TabsContent value="exp">
           <MakerExpRedeemTab user={user} onUpdate={loadDashboard} />
+        </TabsContent>
+
+        <TabsContent value="earnings">
+          <MakerEarningsTab user={user} />
         </TabsContent>
 
         <TabsContent value="settings">

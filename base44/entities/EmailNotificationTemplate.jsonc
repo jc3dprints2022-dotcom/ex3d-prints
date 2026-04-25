@@ -1,0 +1,43 @@
+{
+  "name": "EmailNotificationTemplate",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique template key, e.g. order_assigned_maker"
+    },
+    "name": {
+      "type": "string",
+      "description": "Human-readable name"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Email subject line (supports {{variables}})"
+    },
+    "body": {
+      "type": "string",
+      "description": "HTML email body (supports {{variables}})"
+    },
+    "enabled": {
+      "type": "boolean",
+      "default": true
+    },
+    "trigger": {
+      "type": "string",
+      "description": "What event triggers this email"
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Available template variables"
+    }
+  },
+  "required": [
+    "key",
+    "name",
+    "subject",
+    "body"
+  ]
+}

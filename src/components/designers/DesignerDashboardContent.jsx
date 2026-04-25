@@ -5,7 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings } from "lucide-react";
+import { Package, DollarSign, TrendingUp, Eye, ShoppingCart, PlusCircle, Loader2, Pencil, Trash2, Settings, CreditCard } from "lucide-react";
+import DesignerEarningsTab from "./DesignerEarningsTab";
 import DesignerProductForm from "./DesignerProductForm";
 import DesignerSettingsTab from "./DesignerSettingsTab";
 import {
@@ -98,12 +99,19 @@ export default function DesignerDashboardContent({ user, onUpdate }) {
             <Package className="w-4 h-4 mr-2" />
             My Designs
           </TabsTrigger>
+          <TabsTrigger value="earnings">
+            <CreditCard className="w-4 h-4 mr-2" />
+            Earnings
+          </TabsTrigger>
           <TabsTrigger value="settings">
             <Settings className="w-4 h-4 mr-2" />
             Settings
           </TabsTrigger>
         </TabsList>
 
+        <TabsContent value="earnings" className="mt-6">
+          <DesignerEarningsTab user={user} />
+        </TabsContent>
         <TabsContent value="settings" className="mt-6">
           <DesignerSettingsTab user={user} onUpdate={onUpdate} />
         </TabsContent>

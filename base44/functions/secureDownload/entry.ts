@@ -74,12 +74,20 @@ Deno.serve(async (req) => {
     });
 
     const safeName = product.name.replace(/[^a-z0-9]/gi, '_').toLowerCase();
-    const filename = `ex3d_order_${token.purpose.replace('order_', '')}_${safeName}.stl`;
+    const ext = fileUrl.split('?')[0].split('.').pop().toLowerCase();
+    const is3mf = ext === '3mf';
+    const contentType = is3mf
+      ? 'application/vnd.ms-package.3dmanufacturing-3dmodel+xml'
+      : 'model/stl';
+    const filename = `ex3d_order_${token.purpose.replace('order_', '')}_${safeName}.${is3mf ? '3mf' : 'stl'}`;
 
-    return new Response(watermarkedContent.buffer, {
+    // For 3MF files: serve binary without text watermarking (binary format would corrupt it)
+    const responseBody = is3mf ? fileContent : watermarkedContent.buffer;
+
+    return new Response(responseBody, {
       status: 200,
       headers: {
-        'Content-Type': 'model/stl',
+        'Content-Type': contentType,
         'Content-Disposition': `attachment; filename="${filename}"; filename*=UTF-8''${encodeURIComponent(filename)}`,
         'X-Content-Type-Options': 'nosniff',
         'Cache-Control': 'no-store',
