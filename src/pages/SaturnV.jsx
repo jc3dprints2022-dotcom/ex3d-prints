@@ -19,7 +19,7 @@ const MOON_BUNDLE_SEPARATE  = SATURN_V_PRICE + SLS_PRICE; // $69
 const MOON_BUNDLE_SAVINGS   = MOON_BUNDLE_SEPARATE - MOON_BUNDLE_PRICE; // $9
 const MOON_BUNDLE_SLS_PRICE = MOON_BUNDLE_PRICE - SATURN_V_PRICE; // $21
 
-// Largest Rockets bundle: Saturn V + SLS + Starship V2
+// Heavy-Lift Bundle: Saturn V + SLS + Starship V2
 const GIANTS_BUNDLE_PRICE    = 75;
 const GIANTS_BUNDLE_SEPARATE = SATURN_V_PRICE + SLS_PRICE + STARSHIP_PRICE; // $89
 const GIANTS_BUNDLE_SAVINGS  = GIANTS_BUNDLE_SEPARATE - GIANTS_BUNDLE_PRICE; // $14
@@ -132,9 +132,9 @@ export default function SaturnV() {
       }
 
       if (type === "giants_bundle") {
-        await upsert(SATURN_V_ID, "Saturn V (Largest Rockets Bundle)", GIANTS_SATURN_PRICE, SATURN_V_IMAGE);
-        await upsert(SLS_ID, "SLS (Largest Rockets Bundle)", GIANTS_SLS_PRICE, SLS_IMAGE);
-        await upsert(starshipId, "Starship V2 (Largest Rockets Bundle)", GIANTS_STARSHIP_PRICE, starshipImage);
+        await upsert(SATURN_V_ID, "Saturn V (Heavy-Lift Bundle)", GIANTS_SATURN_PRICE, SATURN_V_IMAGE);
+        await upsert(SLS_ID, "SLS (Heavy-Lift Bundle)", GIANTS_SLS_PRICE, SLS_IMAGE);
+        await upsert(starshipId, "Starship V2 (Heavy-Lift Bundle)", GIANTS_STARSHIP_PRICE, starshipImage);
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
@@ -143,7 +143,7 @@ export default function SaturnV() {
         toast({ title: "Moon Missions added!", description: `Saturn V + SLS for $${MOON_BUNDLE_PRICE}` });
       }
       if (type === "giants_bundle") {
-        toast({ title: "Largest Rockets Bundle added!", description: `All three for $${GIANTS_BUNDLE_PRICE}` });
+        toast({ title: "Heavy-Lift Bundle added!", description: `All three for $${GIANTS_BUNDLE_PRICE}` });
       }
 
       const isBundle = type === "moon_bundle" || type === "giants_bundle";
@@ -248,7 +248,7 @@ export default function SaturnV() {
             {[
               { src: SATURN_V_IMAGE,  alt: "Saturn V",   label: "Saturn V · 56cm",  shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
               { src: SLS_IMAGE,       alt: "SLS",        label: "SLS · 50cm",       shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
-              { src: starshipImage,   alt: "Starship V2",label: "Starship V2",      shadow: "shadow-cyan-900/20",   hover: "hover:border-cyan-500/40"   },
+              { src: starshipImage,   alt: "Starship V2",label: "Starship V2 · 26cm",      shadow: "shadow-cyan-900/20",   hover: "hover:border-cyan-500/40"   },
             ].map(({ src, alt, label, shadow, hover }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
                 <button
@@ -265,7 +265,7 @@ export default function SaturnV() {
           {/* Primary CTA */}
           <div className="flex flex-col items-center gap-3">
             <Btn type="giants_bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
-              Get the Largest Rockets Bundle for ${GIANTS_BUNDLE_PRICE}
+              Get the Heavy-Lift Bundle for ${GIANTS_BUNDLE_PRICE}
             </Btn>
             <div className="flex items-baseline justify-center gap-2 sm:gap-4 flex-wrap px-4">
               <span className="text-gray-500 line-through text-base">${GIANTS_BUNDLE_SEPARATE}</span>
@@ -317,7 +317,7 @@ export default function SaturnV() {
             {[
               { type: "saturn",   image: SATURN_V_IMAGE, name: "Saturn V",   price: SATURN_V_PRICE, color: "text-orange-400", spec: "56cm · 1:200",    desc: "The rocket that took humanity to the Moon." },
               { type: "sls",      image: SLS_IMAGE,      name: "SLS",        price: SLS_PRICE,      color: "text-blue-400",   spec: "50cm · 1:200",    desc: "Taking humanity back to the Moon." },
-              { type: "starship", image: starshipImage,  name: "Starship V2",price: STARSHIP_PRICE, color: "text-cyan-400",   spec: "Full stack · 1:200", desc: "The most powerful rocket ever built." },
+              { type: "starship", image: starshipImage,  name: "Starship V2",price: STARSHIP_PRICE, color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
             ].map(({ type, image, name, price, color, spec, desc }) => (
               <div key={type} className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
                 {/* Fixed height image box so all cards are equal */}
@@ -359,7 +359,7 @@ export default function SaturnV() {
               </Btn>
             </div>
 
-            {/* Largest Rockets Bundle */}
+            {/* Heavy-Lift Bundle */}
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900/80 border-2 border-orange-500/70 rounded-2xl p-5 flex flex-col relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value</div>
               <div className="flex gap-2 mb-4 h-36 flex-shrink-0">
@@ -369,15 +369,15 @@ export default function SaturnV() {
                   </div>
                 ))}
               </div>
-              <h3 className="text-base font-bold mb-1">Largest Rockets Ever Built</h3>
+              <h3 className="text-base font-bold mb-1">Heavy-Lift Bundle</h3>
               <div className="flex items-baseline gap-2 mb-1">
                 <p className="text-gray-500 line-through text-sm">${GIANTS_BUNDLE_SEPARATE}</p>
                 <p className="text-orange-400 font-bold text-xl">${GIANTS_BUNDLE_PRICE}</p>
               </div>
               <p className="text-orange-300 text-xs font-semibold mb-2">Save ${GIANTS_BUNDLE_SAVINGS}</p>
-              <p className="text-gray-400 text-sm flex-1 mb-4">Saturn V, SLS, and Starship V2. The three largest rockets ever built, all at 1:200 scale.</p>
+              <p className="text-gray-400 text-sm flex-1 mb-4">Saturn V, SLS, and Starship V2. Saturn V, SLS, and Starship V2. The three most powerful rockets ever built, all at 1:200 scale.</p>
               <Btn type="giants_bundle" className="w-full py-2.5 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm font-bold">
-                Get All Three for ${GIANTS_BUNDLE_PRICE}
+                Get the Heavy-Lift Bundle for ${GIANTS_BUNDLE_PRICE}
               </Btn>
             </div>
           </div>
@@ -519,13 +519,13 @@ export default function SaturnV() {
       {/* FINAL CTA */}
       <section className="py-20 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
         <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">Ready?</p>
-        <h2 className="text-4xl font-bold mb-4">The Largest Rockets Ever Built.</h2>
+        <h2 className="text-4xl font-bold mb-4">The Heavy-Lift Bundle.</h2>
         <p className="text-gray-400 mb-8 max-w-md mx-auto">
-          Saturn V, SLS, and Starship V2. All at 1:200 scale. Printed by a maker near you, shipped in {SHIPPING_DAYS}.
+          Saturn V, SLS, and Starship V2. All at 1:200 scale. Printed by a maker near you and shipped in {SHIPPING_DAYS}.
         </p>
         <div className="flex flex-col items-center gap-4">
           <Btn type="giants_bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get All Three for ${GIANTS_BUNDLE_PRICE}
+            Get the Heavy-Lift Bundle for ${GIANTS_BUNDLE_PRICE}
           </Btn>
           <div className="flex items-baseline justify-center gap-3 flex-wrap">
             <span className="text-gray-500 line-through">${GIANTS_BUNDLE_SEPARATE}</span>
