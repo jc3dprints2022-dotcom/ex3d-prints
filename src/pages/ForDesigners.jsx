@@ -17,50 +17,71 @@ export default function ForDesigners() {
 
   const loadDesignerEarnings = async () => {
     try {
-      // Use actual payout records for accuracy
-      const payouts = await base44.entities.Payout.filter({ user_role: 'designer', status: 'completed' });
-      const paid = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
-      setTotalEarnings(paid);
-    } catch (error) {
-      // Fallback to order estimates
+      // FIX: Payout records are created as 'pending' and never updated to 'completed'
+      // so we fetch all designer payouts and include both 'paid' and 'pending' statuses
+      // Priority: use DesignerEarnings entity which processMonthlyPayouts actually marks 'paid'
       try {
-        const allOrders = await base44.entities.Order.list();
-        const completedOrders = allOrders.filter(o =>
-          ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-        );
-        let total = 0;
-        completedOrders.forEach(order => {
-          order.items?.forEach(item => {
-            if (item.designer_id) total += item.total_price * 0.10;
-          });
-        });
-        setTotalEarnings(total);
-      } catch (e) {
-        console.error("Failed to load designer earnings:", e);
-        setTotalEarnings(0);
+        const designerEarnings = await base44.entities.DesignerEarnings.list();
+        const paid = designerEarnings
+          .filter(e => e.status === 'paid')
+          .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+
+        // Also add pending so the number reflects total owed, not just transferred
+        const pending = designerEarnings
+          .filter(e => e.status === 'pending')
+          .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+
+        setTotalEarnings(paid + pending);
+        setLoading(false);
+        return;
+      } catch (_) {
+        // DesignerEarnings entity may not exist yet, fall through
       }
+
+      // Fallback: sum all Payout records regardless of status
+      const payouts = await base44.entities.Payout.filter({ user_role: 'designer' });
+      if (payouts.length > 0) {
+        const total = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
+        setTotalEarnings(total);
+        setLoading(false);
+        return;
+      }
+
+      // Final fallback: calculate from order history
+      const allOrders = await base44.entities.Order.list();
+      const completedOrders = allOrders.filter(o =>
+        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+      );
+      let total = 0;
+      completedOrders.forEach(order => {
+        order.items?.forEach(item => {
+          if (item.designer_id && item.designer_id !== 'admin') {
+            total += (item.total_price || 0) * 0.10;
+          }
+        });
+      });
+      setTotalEarnings(total);
+    } catch (error) {
+      console.error("Failed to load designer earnings:", error);
+      setTotalEarnings(0);
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen">
-      {/* New Code Based on Maker's Hero Section */}  
       <section className="relative z-0 py-20 bg-gradient-to-br from-slate-100 via-white to-red-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left: Text Content */}
             <div>
               <h1 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6 leading-tight">
                 Turn Your Ideas Into
                 <span className="text-red-500"> Real Money</span>
               </h1>
-              
               <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-                Join our designer community earning royalties from their 3D CAD models. 
+                Join our designer community earning royalties from their 3D CAD models.
                 No upfront work needed, we bring the customers to you.
               </p>
-
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <div className="bg-white p-4 rounded-lg shadow-md">
                   <TrendingUp className="w-8 h-8 text-blue-600 mb-2" />
@@ -73,7 +94,6 @@ export default function ForDesigners() {
                   <p className="text-sm text-slate-600">Royalty Payouts</p>
                 </div>
               </div>
-
               <Button size="lg" className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-orange-600 hover:to-red-700 h-14 px-8">
                 <Link to={createPageUrl("DesignerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
                   Start Earning Today
@@ -81,16 +101,17 @@ export default function ForDesigners() {
               </Button>
             </div>
 
-            {/* Right: Paid to Designers Card with Red Background */}
             <div className="flex items-center justify-center">
-              <Card 
-                className="text-white shadow-2xl w-full max-w-sm text-center bg-red-500"
-              >
+              <Card className="text-white shadow-2xl w-full max-w-sm text-center bg-red-500">
                 <CardContent className="p-8">
-                  <DollarSign className="w-12 h-12 mx-auto mb-4"/>
+                  <DollarSign className="w-12 h-12 mx-auto mb-4" />
                   <p className="text-lg font-medium">Total Designer Revenue</p>
-                  {loading ? <Loader2 className="w-10 h-10 mx-auto mt-2 animate-spin"/> : (
-                    <p className="text-5xl font-bold mt-2">${totalEarnings.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+                  {loading ? (
+                    <Loader2 className="w-10 h-10 mx-auto mt-2 animate-spin" />
+                  ) : (
+                    <p className="text-5xl font-bold mt-2">
+                      ${(totalEarnings || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -101,7 +122,6 @@ export default function ForDesigners() {
 
       <DesignersRequirementsSection />
 
-      {/* Why Choose Us Section */}
       <section className="py-20 bg-slate-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -112,7 +132,6 @@ export default function ForDesigners() {
               Join our successful designers building profitable businesses
             </p>
           </div>
-
           <div className="grid md:grid-cols-3 gap-8">
             <Card className="text-center border-none shadow-lg">
               <CardContent className="p-8">
@@ -125,7 +144,6 @@ export default function ForDesigners() {
                 </p>
               </CardContent>
             </Card>
-
             <Card className="text-center border-none shadow-lg">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -137,7 +155,6 @@ export default function ForDesigners() {
                 </p>
               </CardContent>
             </Card>
-
             <Card className="text-center border-none shadow-lg">
               <CardContent className="p-8">
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -153,7 +170,6 @@ export default function ForDesigners() {
         </div>
       </section>
 
-      {/* CTA Section with Orange Background and Orange Button Text */}
       <section className="py-20 bg-red-500 text-white">
         <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
@@ -162,7 +178,6 @@ export default function ForDesigners() {
           <p className="text-xl mb-8">
             Join our designer community and start earning money doing what you love.
           </p>
-
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button asChild size="lg" className="bg-white border-white text-red-500 hover:bg-slate-300">
               <Link to={createPageUrl("DesignerSignup")} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
