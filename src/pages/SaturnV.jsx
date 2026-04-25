@@ -32,7 +32,7 @@ const starshipImage  = STARSHIP_HERO; // plain constant — never overwritten by
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
-const SHIPPING_DAYS = "2-4 days per item";
+const SHIPPING_DAYS = "2-4 days";
 const MAKER_COUNT   = 19;
 const MAKER_STATES  = 11;
 
@@ -223,7 +223,7 @@ export default function SaturnV() {
               <span className="line-through mr-2">${GIANTS_BUNDLE_SEPARATE}</span>
               <span className="text-orange-400 font-bold">Save ${GIANTS_BUNDLE_SAVINGS}</span>
               <span className="text-gray-600 mx-2">·</span>
-              <span className="text-gray-500">or get singles below</span>
+              <span className="text-gray-300 font-semibold">↓ or buy each separately</span>
             </p>
           </div>
 
@@ -242,8 +242,8 @@ export default function SaturnV() {
             { stat: "Free",              sub: "replacement parts"   },
           ].map(({ stat, sub }) => (
             <div key={sub} className="px-6">
-              <p className="text-2xl font-black text-orange-400">{stat}</p>
-              <p className="text-xs text-gray-600 mt-0.5">{sub}</p>
+              <p className="text-2xl font-black text-white">{stat}</p>
+              <p className="text-xs text-gray-400 mt-0.5">{sub}</p>
             </div>
           ))}
         </div>
@@ -323,39 +323,6 @@ export default function SaturnV() {
         </div>
       </section>
 
-      {/* ── HOW IT WORKS ── */}
-      <section className="py-14 px-5 border-t border-white/5">
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-center mb-8">Printed locally. Shipped fast.</h2>
-          <div className="grid sm:grid-cols-3 gap-4">
-            {[
-              { n: "01", title: "You order",              desc: "Pick your rockets. No account required to check out." },
-              { n: "02", title: "Local maker prints it",  desc: `Routed to the nearest of our ${MAKER_COUNT} vetted makers across ${MAKER_STATES} states. Printed on demand.` },
-              { n: "03", title: "At your door in days",   desc: `Quality-checked, packed, shipped in ${SHIPPING_DAYS}.` },
-            ].map(s => (
-              <div key={s.n} className="bg-white/[0.02] border border-white/5 rounded-2xl p-5">
-                <p className="text-4xl font-black text-orange-500/20 mb-2 leading-none">{s.n}</p>
-                <h3 className="font-bold text-sm mb-1">{s.title}</h3>
-                <p className="text-gray-500 text-xs leading-relaxed">{s.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── FOUNDER ── */}
-      <section className="py-14 px-5 border-t border-white/5">
-        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-8 items-center">
-          <img src={FOUNDER_IMAGE} alt="Jacob" className="w-24 h-24 rounded-full object-cover flex-shrink-0 mx-auto sm:mx-0" style={{ border: "2px solid rgba(251,146,60,0.3)" }} />
-          <div>
-            <p className="text-[10px] tracking-widest text-orange-400 uppercase mb-2">Why this exists</p>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              I'm Jacob — aerospace engineering student, I help build real rocket engines. I couldn't find a high-quality model of a Saturn V that wasn't either a cheap toy or a $300 collector piece, so I partnered with <strong className="text-white">kmobrain (AstroDesign 3D)</strong> and built a network of {MAKER_COUNT} local makers to print his designs on demand. Quality models, made by real people, at a real price.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* ── EMAIL CAPTURE ── */}
       <section className="py-14 px-5 border-t border-white/5 bg-white/[0.02]">
         <div className="max-w-lg mx-auto text-center">
@@ -393,6 +360,19 @@ export default function SaturnV() {
               </button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* ── FOUNDER ── */}
+      <section className="py-14 px-5 border-t border-white/5">
+        <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-8 items-center">
+          <img src={FOUNDER_IMAGE} alt="Jacob" className="w-24 h-24 rounded-full object-cover flex-shrink-0 mx-auto sm:mx-0" style={{ border: "2px solid rgba(251,146,60,0.3)" }} />
+          <div>
+            <p className="text-[10px] tracking-widest text-orange-400 uppercase mb-2">Why this exists</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              I'm Jacob — aerospace engineering student, I help build real rocket engines. I couldn't find a high-quality model of a Saturn V that wasn't either a cheap toy or a $300 collector piece, so I partnered with <strong className="text-white">kmobrain (AstroDesign 3D)</strong> and built a network of {MAKER_COUNT} local makers to print his designs on demand. Quality models, made by real people, at a real price.
+            </p>
+          </div>
         </div>
       </section>
 
