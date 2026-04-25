@@ -143,7 +143,7 @@ export default function SaturnV() {
       disabled={adding !== null}
       className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-6" : "text-base px-8 py-4"}`}
     >
-      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle — $${GIANTS_BUNDLE_PRICE}`}
+      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle`}
     </button>
   );
 
