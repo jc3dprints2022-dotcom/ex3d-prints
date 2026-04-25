@@ -27,6 +27,7 @@ export default function DesignerDashboard() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
+  const [stats, setStats] = useState({ total: 0, orders: 0, monthlyRevenue: 0, totalRevenue: 0 });
   const [activeTab, setActiveTab] = useState('products');
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -72,7 +73,50 @@ export default function DesignerDashboard() {
       const allProducts = await base44.entities.Product.list();
       const myProducts = allProducts.filter(p => p.designer_id === currentUser.designer_id);
       setProducts(myProducts);
-      
+
+      // Calculate stats
+      const [allOrders, designerEarningsAll] = await Promise.all([
+        base44.entities.Order.list().catch(() => []),
+        base44.entities.DesignerEarnings.list().catch(() => [])
+      ]);
+
+      const completedOrders = allOrders.filter(o =>
+        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+      );
+      const myProductIds = new Set(myProducts.map(p => p.id));
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      let totalOrders = 0;
+      let totalRevenue = 0;
+      let monthlyRevenue = 0;
+
+      completedOrders.forEach(order => {
+        (order.items || []).forEach(item => {
+          if (!myProductIds.has(item.product_id)) return;
+          totalOrders += item.quantity || 1;
+          totalRevenue += (item.total_price || 0) * 0.10;
+          if (new Date(order.created_date) >= firstDayOfMonth) {
+            monthlyRevenue += (item.total_price || 0) * 0.10;
+          }
+        });
+      });
+
+      if (totalRevenue === 0 && designerEarningsAll?.length > 0) {
+        const myEarnings = designerEarningsAll.filter(e => e.designer_id === currentUser.designer_id);
+        totalRevenue = myEarnings.reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+        monthlyRevenue = myEarnings
+          .filter(e => new Date(e.created_date) >= firstDayOfMonth)
+          .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+      }
+
+      if (totalRevenue === 0) {
+        totalOrders = myProducts.reduce((sum, p) => sum + (p.sales_count || 0), 0);
+        totalRevenue = myProducts.reduce((sum, p) => sum + ((p.sales_count || 0) * (p.price || 0) * 0.10), 0);
+      }
+
+      setStats({ total: myProducts.length, orders: totalOrders, monthlyRevenue, totalRevenue });
+
       // Initialize info form data
       setInfoFormData({
         email: currentUser.email || '',
@@ -124,58 +168,6 @@ export default function DesignerDashboard() {
       </div>
     );
   }
-
-// Calculate stats from actual completed orders, not sales_count
-  // sales_count on Product entity may not be kept in sync
-  const [allOrders, designerEarningsAll] = await Promise.all([
-    base44.entities.Order.list().catch(() => []),
-    base44.entities.DesignerEarnings.list().catch(() => [])
-  ]).catch(() => [[], []]);
-
-  const completedOrders = (allOrders || []).filter(o =>
-    ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-  );
-
-  const myProductIds = new Set(products.map(p => p.id));
-  const now = new Date();
-  const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-
-  let totalOrders = 0;
-  let totalRevenue = 0;
-  let monthlyRevenue = 0;
-
-  completedOrders.forEach(order => {
-    (order.items || []).forEach(item => {
-      if (!myProductIds.has(item.product_id)) return;
-      totalOrders += item.quantity || 1;
-      totalRevenue += (item.total_price || 0) * 0.10;
-      if (new Date(order.created_date) >= firstDayOfMonth) {
-        monthlyRevenue += (item.total_price || 0) * 0.10;
-      }
-    });
-  });
-
-  // Fallback: if no orders found, use DesignerEarnings if available
-  if (totalRevenue === 0 && designerEarningsAll?.length > 0) {
-    const myEarnings = designerEarningsAll.filter(e => e.designer_id === user?.designer_id);
-    totalRevenue = myEarnings.reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
-    monthlyRevenue = myEarnings
-      .filter(e => new Date(e.created_date) >= firstDayOfMonth)
-      .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
-  }
-
-  // Final fallback: sales_count on products
-  if (totalRevenue === 0) {
-    totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
-    totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * (p.price || 0) * 0.10), 0);
-  }
-
-  const stats = {
-    total: products.length,
-    orders: totalOrders,
-    monthlyRevenue: monthlyRevenue,
-    totalRevenue: totalRevenue,
-  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
