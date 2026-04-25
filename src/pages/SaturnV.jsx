@@ -60,7 +60,7 @@ export default function SaturnV() {
   const [emailLoading, setEmailLoading]     = useState(false);
   const [codeCopied, setCodeCopied]         = useState(false);
   const [starshipId, setStarshipId]         = useState(null);
-  const [starshipImage, setStarshipImage]   = useState(STARSHIP_HERO);
+  const starshipImage = STARSHIP_HERO; // hardcoded, never overwritten by DB
   const { toast } = useToast();
 
   // Look up Starship product ID by name
@@ -70,7 +70,6 @@ export default function SaturnV() {
         const starship = products.find((p) => p.name?.toLowerCase().includes("starship"));
         if (starship) {
           setStarshipId(starship.id);
-          if (starship.images?.[0] && !STARSHIP_HERO) setStarshipImage(starship.images[0]);
         }
       })
       .catch(console.error);
