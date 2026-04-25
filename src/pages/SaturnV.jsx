@@ -32,9 +32,9 @@ const EMAIL_DISCOUNT_CODE = "WELCOME10";
 
 // ── IMAGES ───────────────────────────────────────────────────────────────────
 // TODO: upload new photos and paste URLs here to replace the placeholders
-const SATURN_V_HERO = ""; // Image 15 (full Saturn V portrait)
-const SLS_HERO      = ""; // Image 4 or 5 (full SLS portrait)
-const STARSHIP_HERO = ""; // Full Starship V2 stack portrait
+const SATURN_V_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
+const SLS_HERO      = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
+const STARSHIP_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
 
 const SATURN_V_GALLERY = [
   // TODO: paste URLs after uploading
