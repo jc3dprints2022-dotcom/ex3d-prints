@@ -61,16 +61,30 @@ export default function SaturnV() {
   const [codeCopied, setCodeCopied]         = useState(false);
   const [starshipId, setStarshipId]         = useState(null);
   const starshipImage = STARSHIP_HERO; // hardcoded, never overwritten by DB
+  // DB product images used only in the individual product cards
+  const [productCardImages, setProductCardImages] = useState({
+    saturn: SATURN_V_IMAGE,
+    sls: SLS_IMAGE,
+    starship: STARSHIP_HERO,
+  });
   const { toast } = useToast();
 
-  // Look up Starship product ID by name
+  // Fetch product IDs and DB images for the individual product cards
   useEffect(() => {
     base44.entities.Product.filter({ status: "active" })
       .then((products) => {
         const starship = products.find((p) => p.name?.toLowerCase().includes("starship"));
-        if (starship) {
-          setStarshipId(starship.id);
-        }
+        const saturn   = products.find((p) => p.id === SATURN_V_ID);
+        const sls      = products.find((p) => p.id === SLS_ID);
+
+        if (starship) setStarshipId(starship.id);
+
+        // Use DB images for product cards only — hero/uploaded images stay unchanged
+        setProductCardImages({
+          saturn:   saturn?.images?.[0]   || SATURN_V_IMAGE,
+          sls:      sls?.images?.[0]      || SLS_IMAGE,
+          starship: starship?.images?.[0] || STARSHIP_HERO,
+        });
       })
       .catch(console.error);
   }, []);
@@ -305,9 +319,9 @@ export default function SaturnV() {
           {/* Individual rockets — object-contain here so full rocket shows in card */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
             {[
-              { type: "saturn",   image: SATURN_V_IMAGE, name: "Saturn V",    price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
-              { type: "sls",      image: SLS_IMAGE,      name: "SLS",          price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "Taking humanity back to the Moon." },
-              { type: "starship", image: starshipImage,  name: "Starship V2",  price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
+              { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",    price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
+              { type: "sls",      image: productCardImages.sls,       name: "SLS",          price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "Taking humanity back to the Moon." },
+              { type: "starship", image: productCardImages.starship,  name: "Starship V2",  price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
             ].map(({ type, image, name, price, color, spec, desc }) => (
               <div key={type} className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
                 <div className="rounded-xl overflow-hidden mb-4 bg-black h-52 flex items-center justify-center flex-shrink-0">
