@@ -175,7 +175,7 @@ export default function RocketCollection() {
           <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-4">EX3D Prints · Rocket Collection</p>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] mb-4 tracking-tight">
-            The Most Iconic<br />
+            Own The Most Iconic<br />
             <span style={{ background: "linear-gradient(90deg, #fb923c, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Rockets Ever Built.
             </span>
