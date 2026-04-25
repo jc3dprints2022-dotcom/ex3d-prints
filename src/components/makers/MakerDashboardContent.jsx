@@ -96,26 +96,43 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       }).catch(() => []);
       setFilaments(allFilaments);
 
-      const activeOrders = myOrders.filter(o => ['pending', 'accepted', 'printing'].includes(o.status)).length;
-      // Completed = done printing (shipped/dropped_off/delivered)
-      const completedOrders = myOrders.filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status)).length;
+      const COMPLETED_STATUSES = ['done_printing', 'shipped', 'dropped_off', 'delivered', 'completed'];
+      const ACTIVE_STATUSES = ['pending', 'accepted', 'printing'];
 
-      // Earnings = maker_payout_amount if set, else (total_amount - shipping_cost) / 2
+      const activeOrders = myOrders.filter(o => ACTIVE_STATUSES.includes(o.status)).length;
+      const completedOrders = myOrders.filter(o => COMPLETED_STATUSES.includes(o.status)).length;
+
+      // Earnings calculation — runs on ALL maker orders (not filtered by isProductionOrder)
+      // so that orders without print_files/selected_material still count toward earnings
+      const allMyOrders = allOrders.filter(order =>
+        order.maker_id === currentUser.maker_id ||
+        (order.assigned_to_makers?.includes(currentUser.maker_id) && !order.maker_id)
+      );
+
       const getOrderEarnings = (o) => {
-        if (o.maker_payout_amount != null) return o.maker_payout_amount;
-        const listingTotal = (o.total_amount || 0) - (o.shipping_cost || 0);
+        if (o.maker_payout_amount != null && o.maker_payout_amount > 0) return o.maker_payout_amount;
+        const itemsTotal = (o.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
+        // Fall back to total_amount minus shipping if no items breakdown
+        const listingTotal = itemsTotal > 0
+          ? itemsTotal
+          : (o.total_amount || 0) - (o.shipping_cost || 0);
         return listingTotal * 0.5;
       };
-      const calcEarnings = (orderList) => orderList
-        .filter(o => ['done_printing', 'shipped', 'dropped_off', 'delivered'].includes(o.status))
-        .reduce((sum, o) => sum + getOrderEarnings(o), 0);
 
-      const totalEarnings = calcEarnings(myOrders);
+      const calcEarnings = (orderList) =>
+        orderList
+          .filter(o => COMPLETED_STATUSES.includes(o.status))
+          .reduce((sum, o) => sum + getOrderEarnings(o), 0);
+
+      const totalEarnings = calcEarnings(allMyOrders);
 
       const now = new Date();
       const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
       const monthlyEarnings = calcEarnings(
-        myOrders.filter(o => new Date(o.updated_date || o.created_date) >= firstDayOfMonth)
+        allMyOrders.filter(o => {
+          const d = new Date(o.updated_date || o.created_date);
+          return d >= firstDayOfMonth;
+        })
       );
 
       setStats({
