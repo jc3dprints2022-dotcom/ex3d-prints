@@ -125,15 +125,51 @@ export default function DesignerDashboard() {
     );
   }
 
-  // Calculate stats
-  const totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
-  const totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * p.price * 0.10), 0);
-  
-  // Calculate monthly revenue
+// Calculate stats from actual completed orders, not sales_count
+  // sales_count on Product entity may not be kept in sync
+  const [allOrders, designerEarningsAll] = await Promise.all([
+    base44.entities.Order.list().catch(() => []),
+    base44.entities.DesignerEarnings.list().catch(() => [])
+  ]).catch(() => [[], []]);
+
+  const completedOrders = (allOrders || []).filter(o =>
+    ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
+  );
+
+  const myProductIds = new Set(products.map(p => p.id));
   const now = new Date();
   const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-  const monthlyRevenue = 0; // Would need order history to calculate accurately
-  
+
+  let totalOrders = 0;
+  let totalRevenue = 0;
+  let monthlyRevenue = 0;
+
+  completedOrders.forEach(order => {
+    (order.items || []).forEach(item => {
+      if (!myProductIds.has(item.product_id)) return;
+      totalOrders += item.quantity || 1;
+      totalRevenue += (item.total_price || 0) * 0.10;
+      if (new Date(order.created_date) >= firstDayOfMonth) {
+        monthlyRevenue += (item.total_price || 0) * 0.10;
+      }
+    });
+  });
+
+  // Fallback: if no orders found, use DesignerEarnings if available
+  if (totalRevenue === 0 && designerEarningsAll?.length > 0) {
+    const myEarnings = designerEarningsAll.filter(e => e.designer_id === user?.designer_id);
+    totalRevenue = myEarnings.reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+    monthlyRevenue = myEarnings
+      .filter(e => new Date(e.created_date) >= firstDayOfMonth)
+      .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
+  }
+
+  // Final fallback: sales_count on products
+  if (totalRevenue === 0) {
+    totalOrders = products.reduce((sum, p) => sum + (p.sales_count || 0), 0);
+    totalRevenue = products.reduce((sum, p) => sum + ((p.sales_count || 0) * (p.price || 0) * 0.10), 0);
+  }
+
   const stats = {
     total: products.length,
     orders: totalOrders,
