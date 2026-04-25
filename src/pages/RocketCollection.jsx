@@ -3,61 +3,50 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
-
 const SATURN_V_ID = "693b06e655e441e07049d328";
 const SATURN_V_PRICE = 39;
 const SLS_ID = "69dbf08433850e148542d876";
 const SLS_PRICE = 30;
 const BUNDLE_PRICE = 60;
 const BUNDLE_SLS_PRICE = BUNDLE_PRICE - SATURN_V_PRICE;
-const SEPARATE_TOTAL = SATURN_V_PRICE + SLS_PRICE; // $69
-const BUNDLE_SAVINGS = SEPARATE_TOTAL - BUNDLE_PRICE; // $9
-
+const SEPARATE_TOTAL = SATURN_V_PRICE + SLS_PRICE;
+const BUNDLE_SAVINGS = SEPARATE_TOTAL - BUNDLE_PRICE;
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
-
 
 const SATURN_V_HERO = "";
 const SLS_HERO      = "";
 
-
 const SATURN_V_GALLERY = [];
 const SLS_GALLERY = [];
-
 
 const CORE_STAGE_SCHEMATIC = "";
 const SRB_SCHEMATIC        = "";
 
-
 const SATURN_V_IMAGE = SATURN_V_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
 const SLS_IMAGE      = SLS_HERO      || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
 
-
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
-
 
 const SHIPPING_DAYS  = "2-4 days";
 const MAKER_STATES   = 11;
 const MAKER_COUNT    = 19;
 
-
 export default function SaturnV() {
-  const [adding, setAdding]           = useState(null);
-  const [openFaq, setOpenFaq]         = useState(null);
-  const [lightboxImage, setLightboxImage] = useState(null);
-  const [email, setEmail]             = useState("");
+  const [adding, setAdding]                 = useState(null);
+  const [openFaq, setOpenFaq]               = useState(null);
+  const [lightboxImage, setLightboxImage]   = useState(null);
+  const [email, setEmail]                   = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [emailLoading, setEmailLoading]     = useState(false);
-  const [codeCopied, setCodeCopied]   = useState(false);
+  const [codeCopied, setCodeCopied]         = useState(false);
   const { toast } = useToast();
-
 
   const addToCart = async (type) => {
     setAdding(type);
     try {
       const user = await base44.auth.me().catch(() => null);
       if (!user) { base44.auth.redirectToLogin(window.location.href); return; }
-
 
       if (type === "saturn" || type === "bundle") {
         const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: SATURN_V_ID });
@@ -67,7 +56,6 @@ export default function SaturnV() {
           await base44.entities.Cart.create({ user_id: user.id, product_id: SATURN_V_ID, product_name: "SATURN V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE, image_url: SATURN_V_IMAGE });
         }
       }
-
 
       if (type === "sls" || type === "bundle") {
         const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
@@ -80,7 +68,6 @@ export default function SaturnV() {
         }
       }
 
-
       window.dispatchEvent(new Event("cartUpdated"));
       if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V plus SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
@@ -89,7 +76,6 @@ export default function SaturnV() {
     }
     setAdding(null);
   };
-
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault();
@@ -107,14 +93,12 @@ export default function SaturnV() {
     setEmailLoading(false);
   };
 
-
   const handleCopyCode = () => {
     navigator.clipboard?.writeText(EMAIL_DISCOUNT_CODE).then(() => {
       setCodeCopied(true);
       setTimeout(() => setCodeCopied(false), 2500);
     });
   };
-
 
   const Btn = ({ type, children, className = "" }) => (
     <button
@@ -125,7 +109,6 @@ export default function SaturnV() {
       {adding === type ? "Adding..." : children}
     </button>
   );
-
 
   const BundlePriceDisplay = ({ size = "base" }) => {
     const s = size === "large"
@@ -140,7 +123,6 @@ export default function SaturnV() {
     );
   };
 
-
   const GalleryThumb = ({ src, alt }) => (
     <button
       onClick={() => setLightboxImage(src)}
@@ -149,7 +131,6 @@ export default function SaturnV() {
       <img src={src} alt={alt} className="w-full h-full object-cover" />
     </button>
   );
-
 
   const faqs = [
     {
@@ -174,35 +155,31 @@ export default function SaturnV() {
     },
   ];
 
-
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white overflow-x-hidden">
       <Toaster />
 
-
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center overflow-hidden py-20">
+      <section className="relative flex flex-col items-center justify-center px-6 text-center overflow-hidden py-8">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1a2e_0%,_#0a0a0f_70%)]" />
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
 
-
-        <div className="relative z-10 max-w-5xl mx-auto pt-12 sm:pt-16">
-          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-5">EX3D Prints · Rocket Collection</p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-5">
+        <div className="relative z-10 max-w-5xl mx-auto pt-4 sm:pt-6">
+          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-3">EX3D Prints · Rocket Collection</p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-3">
             Own the Most Iconic<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
               Rockets Ever Built
             </span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-300 mb-4 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-2xl mx-auto leading-relaxed">
             Precision-printed Saturn V and SLS model kits. Designed by aerospace nerds, printed by {MAKER_COUNT} makers across {MAKER_STATES} states.
           </p>
-          <p className="text-sm text-orange-400 font-semibold mb-10 tracking-wide">
+          <p className="text-sm text-orange-400 font-semibold mb-6 tracking-wide">
             Ships in {SHIPPING_DAYS} · Printed locally · Quality guaranteed
           </p>
 
-
-          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-8 w-full px-2">
+          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-5 w-full px-2">
             {[
               { src: SATURN_V_IMAGE, alt: "Saturn V printed model", label: "Saturn V · 22 inch", shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
               { src: SLS_IMAGE,      alt: "SLS printed model",      label: "SLS · 19 inch",      shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
@@ -214,35 +191,32 @@ export default function SaturnV() {
                 >
                   <img src={src} alt={alt} className="w-full h-full object-contain" />
                 </button>
-                <p className="text-xs sm:text-sm text-gray-300 mt-3 font-medium">{label}</p>
+                <p className="text-xs sm:text-sm text-gray-300 mt-2 font-medium">{label}</p>
               </div>
             ))}
           </div>
 
+          <p className="text-xs text-gray-500 mb-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
 
-          <p className="text-xs text-gray-500 mb-10 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
-
-
-          <div className="flex flex-col items-center gap-6">
+          <div className="flex flex-col items-center gap-4">
             <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
               Get the Bundle for ${BUNDLE_PRICE}
             </Btn>
-            <div className="pt-2 pb-4">
+            <div className="pt-1 pb-2">
               <BundlePriceDisplay size="base" />
             </div>
           </div>
         </div>
       </section>
 
-
       {/* ── DETAIL GALLERY ── */}
       {(SATURN_V_GALLERY.filter(Boolean).length > 0 || SLS_GALLERY.filter(Boolean).length > 0) && (
-        <section className="py-20 px-6 bg-[#0f0f1a] border-t border-gray-800">
+        <section className="py-10 px-6 bg-[#0f0f1a] border-t border-gray-800">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Every Detail</p>
-            <h2 className="text-3xl font-bold text-center mb-12">Up Close</h2>
+            <h2 className="text-3xl font-bold text-center mb-8">Up Close</h2>
             {SATURN_V_GALLERY.filter(Boolean).length > 0 && (
-              <div className="mb-12">
+              <div className="mb-8">
                 <h3 className="text-lg font-bold text-orange-400 mb-4 text-center">Saturn V</h3>
                 <div className="flex justify-center gap-4 flex-wrap">
                   {SATURN_V_GALLERY.filter(Boolean).map((src, i) => <GalleryThumb key={i} src={src} alt={`Saturn V detail ${i + 1}`} />)}
@@ -257,17 +231,16 @@ export default function SaturnV() {
                 </div>
               </div>
             )}
-            <p className="text-xs text-gray-500 text-center mt-8">Click any image to enlarge</p>
+            <p className="text-xs text-gray-500 text-center mt-6">Click any image to enlarge</p>
           </div>
         </section>
       )}
 
-
       {/* ── PRODUCT CARDS ── */}
-      <section id="choose-setup" className="py-20 px-6 border-t border-gray-800">
+      <section id="choose-setup" className="py-10 px-6 border-t border-gray-800">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Choose Your Setup</p>
-          <h2 className="text-3xl font-bold text-center mb-12">Pick What's Right for You</h2>
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Choose Your Setup</p>
+          <h2 className="text-3xl font-bold text-center mb-8">Pick What's Right for You</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Saturn V */}
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 flex flex-col">
@@ -287,7 +260,6 @@ export default function SaturnV() {
               </Btn>
             </div>
 
-
             {/* SLS */}
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 flex flex-col">
               <div className="rounded-xl overflow-hidden mb-4 bg-black h-56 flex items-center justify-center">
@@ -305,7 +277,6 @@ export default function SaturnV() {
                 Add to Cart
               </Btn>
             </div>
-
 
             {/* Bundle */}
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900 border-2 border-orange-500/60 rounded-2xl p-6 flex flex-col relative">
@@ -330,18 +301,17 @@ export default function SaturnV() {
               </Btn>
             </div>
           </div>
-          <p className="text-xs text-gray-500 text-center mt-8 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
+          <p className="text-xs text-gray-500 text-center mt-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
         </div>
       </section>
 
-
       {/* ── SCHEMATICS ── */}
       {(CORE_STAGE_SCHEMATIC || SRB_SCHEMATIC) && (
-        <section className="py-20 px-6 border-t border-gray-800">
+        <section className="py-10 px-6 border-t border-gray-800">
           <div className="max-w-5xl mx-auto">
             <p className="text-xs tracking-[0.4em] text-orange-400 uppercase text-center mb-4">Engineering</p>
             <h2 className="text-3xl font-bold text-center mb-4">Designed Part by Part</h2>
-            <p className="text-gray-400 text-center max-w-2xl mx-auto mb-12 leading-relaxed">
+            <p className="text-gray-400 text-center max-w-2xl mx-auto mb-8 leading-relaxed">
               Every section is modeled from reference data and labeled so you know exactly what you're building.
             </p>
             <div className="grid md:grid-cols-2 gap-8">
@@ -366,16 +336,14 @@ export default function SaturnV() {
         </section>
       )}
 
-
       {/* ── EMAIL CAPTURE ── */}
-      <section className="py-20 px-6 border-t border-gray-800 bg-[#0f0f1a]">
+      <section className="py-10 px-6 border-t border-gray-800 bg-[#0f0f1a]">
         <div className="max-w-lg mx-auto text-center">
-          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">For Space Nerds Only</p>
-          <h2 className="text-3xl font-bold mb-4">Get 10% Off Your First Order</h2>
-          <p className="text-gray-400 mb-8 leading-relaxed">
+          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">For Space Nerds Only</p>
+          <h2 className="text-3xl font-bold mb-3">Get 10% Off Your First Order</h2>
+          <p className="text-gray-400 mb-6 leading-relaxed">
             Join the list and get early access to new rocket designs, exclusive drops, and a discount code right now.
           </p>
-
 
           {!emailSubmitted ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
@@ -396,7 +364,7 @@ export default function SaturnV() {
               </button>
             </form>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-5">
               <p className="text-green-400 font-semibold">You're in! Here's your discount code:</p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <div className="bg-gray-900 border-2 border-orange-500/60 rounded-2xl px-8 py-4">
@@ -421,37 +389,30 @@ export default function SaturnV() {
             </div>
           )}
 
-
-          <p className="text-xs text-gray-600 mt-6">No spam. Unsubscribe any time.</p>
+          <p className="text-xs text-gray-600 mt-5">No spam. Unsubscribe any time.</p>
         </div>
       </section>
 
-
       {/* ── FOUNDER ── */}
-      <section className="py-20 px-6 border-t border-gray-800">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-10 items-center">
-          <div className="w-44 h-44 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
+      <section className="py-10 px-6 border-t border-gray-800">
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-8 items-center">
+          <div className="w-36 h-36 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
             <img src={FOUNDER_IMAGE} alt="Jacob, EX3D Prints" className="w-full h-full object-cover" />
           </div>
           <div>
-            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-3">Why EX3D Prints Exists</p>
-            <p className="text-gray-300 leading-relaxed text-base mb-4">
-              I'm Jacob, an aerospace engineering student who helps build real rocket engines. I wanted high-quality models of the greatest rockets ever made, and everything I could find was either a cheap plastic toy or a $300 collector's piece.
+            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-2">Why EX3D Prints Exists</p>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              I'm Jacob — aerospace engineering student, I help build real rocket engines. I couldn't find a high-quality model of a Saturn V that wasn't either a cheap toy or a $300 collector piece, so I partnered with <strong className="text-white">kmobrain (AstroDesign 3D)</strong> and built a network of {MAKER_COUNT} local makers to print his designs on demand. Quality models, made by real people, at a real price.
             </p>
-            <p className="text-gray-300 leading-relaxed text-base mb-4">
-              So I teamed up with <span className="text-white font-semibold">kmobrain (AstroDesign 3D)</span> and built a network of {MAKER_COUNT} independent makers across {MAKER_STATES} states to print his designs on demand. High-quality models, printed by real people, shipped fast.
-            </p>
-            <p className="text-gray-400 text-sm italic">Every order supports a maker. Every rocket is quality-checked before it ships.</p>
           </div>
         </div>
       </section>
 
-
       {/* ── FAQ ── */}
-      <section className="py-20 px-6 border-t border-gray-800">
+      <section className="py-10 px-6 border-t border-gray-800">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Before You Buy</p>
-          <h2 className="text-3xl font-bold text-center mb-12">Questions, Answered</h2>
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Before You Buy</p>
+          <h2 className="text-3xl font-bold text-center mb-8">Questions, Answered</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
@@ -473,24 +434,22 @@ export default function SaturnV() {
         </div>
       </section>
 
-
       {/* ── FINAL CTA ── */}
-      <section className="py-24 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
-        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">Ready?</p>
-        <h2 className="text-4xl font-bold mb-4">Bring Apollo and Artemis Together</h2>
-        <p className="text-gray-400 mb-4 max-w-md mx-auto">
+      <section className="py-12 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
+        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Ready?</p>
+        <h2 className="text-4xl font-bold mb-3">Bring Apollo and Artemis Together</h2>
+        <p className="text-gray-400 mb-3 max-w-md mx-auto">
           Own both of the most iconic Moon rockets. Printed locally, shipped fast, quality guaranteed.
         </p>
-        <p className="text-xs text-gray-500 mb-10">Ships in {SHIPPING_DAYS} · Free replacement parts if anything's wrong</p>
-        <div className="flex flex-col items-center gap-8">
+        <p className="text-xs text-gray-500 mb-8">Ships in {SHIPPING_DAYS} · Free replacement parts if anything's wrong</p>
+        <div className="flex flex-col items-center gap-6">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
             Get the Bundle for ${BUNDLE_PRICE}
           </Btn>
           <BundlePriceDisplay size="large" />
         </div>
-        <p className="text-gray-700 text-xs mt-16">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
+        <p className="text-gray-700 text-xs mt-10">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
-
 
       {/* ── LIGHTBOX ── */}
       {lightboxImage && (
@@ -505,4 +464,3 @@ export default function SaturnV() {
     </div>
   );
 }
-
