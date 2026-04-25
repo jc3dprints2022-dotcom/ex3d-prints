@@ -248,7 +248,7 @@ export default function SaturnV() {
             {[
               { src: SATURN_V_IMAGE,  alt: "Saturn V",   label: "Saturn V · 56cm",  shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
               { src: SLS_IMAGE,       alt: "SLS",        label: "SLS · 50cm",       shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
-              { src: starshipImage,   alt: "Starship V2",label: "Starship V2 · 26cm",      shadow: "shadow-cyan-900/20",   hover: "hover:border-cyan-500/40"   },
+              { src: starshipImage,   alt: "Starship V2",label: "Starship V2",      shadow: "shadow-cyan-900/20",   hover: "hover:border-cyan-500/40"   },
             ].map(({ src, alt, label, shadow, hover }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
                 <button
