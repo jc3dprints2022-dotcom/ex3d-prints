@@ -32,7 +32,7 @@ const starshipImage  = STARSHIP_HERO; // plain constant — never overwritten by
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
-const SHIPPING_DAYS = "2-4 days";
+const SHIPPING_DAYS = "2-4 days per item";
 const MAKER_COUNT   = 19;
 const MAKER_STATES  = 11;
 
