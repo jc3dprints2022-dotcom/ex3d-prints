@@ -342,19 +342,6 @@ export default function SaturnV() {
         <p className="text-gray-800 text-xs mt-14">© 2025 EX3D Prints · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
 
-      {/* ── STICKY MOBILE CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden px-4 pb-4 pt-3"
-        style={{ background: "linear-gradient(to top, #080810 60%, transparent)" }}>
-        <button
-          onClick={() => addToCart("giants_bundle")}
-          disabled={adding !== null}
-          className="w-full py-4 rounded-full font-black text-base text-white transition-all disabled:opacity-60"
-          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}
-        >
-          {adding === "giants_bundle" ? "Adding…" : `Bundle — $${GIANTS_BUNDLE_PRICE} · Save $${GIANTS_BUNDLE_SAVINGS}`}
-        </button>
-      </div>
-
       {/* ── LIGHTBOX ── */}
       {lightboxImage && (
         <div onClick={() => setLightboxImage(null)} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out">
