@@ -249,6 +249,8 @@ export default function SaturnV() {
                 <SingleBtn type={type}>Add to Cart</SingleBtn>
               </div>
             ))}
+          </div>
+        </div>
       </section>
 
       {/* ── EMAIL CAPTURE ── */}
