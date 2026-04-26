@@ -194,7 +194,7 @@ export default function RocketCollection() {
                   onClick={() => setLightboxImage(src)}
                   className={`rounded-2xl overflow-hidden border border-gray-700 shadow-2xl ${shadow} w-full aspect-[2/3] bg-black ${hover} transition-all`}
                 >
-                  <img src={src} alt={alt} className="w-full h-full object-cover" />
+                  <img src={src} alt={alt} className="w-full h-full object-contain" />
                 </button>
                 <p className="text-xs sm:text-sm text-gray-300 mt-2 font-medium">{label}</p>
               </div>
@@ -385,20 +385,7 @@ export default function RocketCollection() {
         <p className="text-gray-700 text-xs mt-12">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
 
-      {/* ── STICKY MOBILE CTA ── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden px-4 pb-4 pt-3"
-        style={{ background: "linear-gradient(to top, #0a0a0f 60%, transparent)" }}>
-        <button
-          onClick={() => addToCart("bundle")}
-          disabled={adding !== null}
-          className="w-full py-4 rounded-full font-black text-base text-white transition-all disabled:opacity-60"
-          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}
-        >
-          {adding === "bundle" ? "Adding…" : `Bundle — $${BUNDLE_PRICE} · Save $${BUNDLE_SAVINGS}`}
-        </button>
-      </div>
-
-      {/* ── LIGHTBOX ── */}
+            {/* ── LIGHTBOX ── */}
       {lightboxImage && (
         <div onClick={() => setLightboxImage(null)} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out">
           <img src={lightboxImage} alt="Enlarged view" className="max-w-full max-h-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
