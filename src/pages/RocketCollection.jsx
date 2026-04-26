@@ -228,7 +228,7 @@ export default function RocketCollection() {
             {[
               { src: SATURN_V_GALLERY[0], alt: "Saturn V",   label: "Saturn V · 56cm", border: "border-orange-500/30" },
               { src: SLS_GALLERY[0],      alt: "SLS",         label: "SLS · 50cm",     border: "border-blue-500/30"   },
-              { src: STARSHIP_IMAGE,      alt: "Starship V2", label: "Starship V2",     border: "border-cyan-500/30"   },
+            
             ].map(({ src, alt, label, border }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[260px] sm:max-w-[300px] md:max-w-[340px]">
                 <button onClick={() => setLightboxImage(src)}
