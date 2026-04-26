@@ -3,36 +3,34 @@ import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
 
+// ── PRODUCT IDs ───────────────────────────────────────────────────────────────
 const SATURN_V_ID = "693b06e655e441e07049d328";
-const SATURN_V_PRICE = 39;
-const SLS_ID = "69dbf08433850e148542d876";
-const SLS_PRICE = 30;
-const BUNDLE_PRICE = 60;
-const BUNDLE_SLS_PRICE = BUNDLE_PRICE - SATURN_V_PRICE;
-const SEPARATE_TOTAL = SATURN_V_PRICE + SLS_PRICE;
-const BUNDLE_SAVINGS = SEPARATE_TOTAL - BUNDLE_PRICE;
+const SLS_ID      = "69dbf08433850e148542d876";
+
+// ── PRICING ───────────────────────────────────────────────────────────────────
+const SATURN_V_PRICE  = 39;
+const SLS_PRICE       = 30;
+const BUNDLE_PRICE    = 60;
+const BUNDLE_SLS_PRICE  = BUNDLE_PRICE - SATURN_V_PRICE;
+const SEPARATE_TOTAL  = SATURN_V_PRICE + SLS_PRICE; // $69
+const BUNDLE_SAVINGS  = SEPARATE_TOTAL - BUNDLE_PRICE; // $9
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
 
-const SATURN_V_HERO = "";
-const SLS_HERO      = "";
-
-const SATURN_V_GALLERY = [];
-const SLS_GALLERY = [];
-
-const CORE_STAGE_SCHEMATIC = "";
-const SRB_SCHEMATIC        = "";
+// ── IMAGES ───────────────────────────────────────────────────────────────────
+const SATURN_V_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
+const SLS_HERO      = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
 
 const SATURN_V_IMAGE = SATURN_V_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
 const SLS_IMAGE      = SLS_HERO      || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
-const SHIPPING_DAYS  = "2-4 days";
-const MAKER_STATES   = 11;
-const MAKER_COUNT    = 19;
+const SHIPPING_DAYS = "2-4 days";
+const MAKER_STATES  = 11;
+const MAKER_COUNT   = 19;
 
-export default function SaturnV() {
+export default function RocketCollection() {
   const [adding, setAdding]                 = useState(null);
   const [openFaq, setOpenFaq]               = useState(null);
   const [lightboxImage, setLightboxImage]   = useState(null);
@@ -46,70 +44,55 @@ export default function SaturnV() {
     setAdding(type);
     try {
       const user = await base44.auth.me().catch(() => null);
-      if (!user) {
-        const addAnonItem = (productId, productName, price, imageUrl) => {
-          const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
-          const existingIdx = cart.findIndex(i => i.product_id === productId);
-          if (existingIdx >= 0) {
-            cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
-            cart[existingIdx].unit_price = price;
-            cart[existingIdx].total_price = price * cart[existingIdx].quantity;
-            cart[existingIdx].product_name = productName;
-          } else {
-            cart.push({
-              id: `anon_${productId}_${Date.now()}`,
-              product_id: productId,
-              product_name: productName,
-              quantity: 1,
-              selected_material: "PLA",
-              selected_color: "Shown Colors",
-              unit_price: price,
-              total_price: price,
-              images: [imageUrl],
-            });
-          }
-          localStorage.setItem("anonymousCart", JSON.stringify(cart));
-        };
-
-        if (type === "saturn" || type === "bundle") {
-          addAnonItem(SATURN_V_ID, "SATURN V", SATURN_V_PRICE, SATURN_V_IMAGE);
-        }
-        if (type === "sls" || type === "bundle") {
-          const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
-          const slsName = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
-          addAnonItem(SLS_ID, slsName, slsPrice, SLS_IMAGE);
-        }
-
-        window.dispatchEvent(new Event("cartUpdated"));
-        if (type === "bundle") {
-          toast({ title: "Bundle added! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
-        }
-        setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
-        return;
-      }
 
       if (type === "saturn" || type === "bundle") {
-        const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: SATURN_V_ID });
+        const existing = await base44.entities.Cart.filter({ user_id: user?.id, product_id: SATURN_V_ID });
         if (existing.length > 0) {
-          await base44.entities.Cart.update(existing[0].id, { unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE * existing[0].quantity });
+          await base44.entities.Cart.update(existing[0].id, {
+            unit_price: SATURN_V_PRICE,
+            total_price: SATURN_V_PRICE * existing[0].quantity,
+          });
         } else {
-          await base44.entities.Cart.create({ user_id: user.id, product_id: SATURN_V_ID, product_name: "SATURN V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE, images: [SATURN_V_IMAGE] });
+          if (user) {
+            await base44.entities.Cart.create({
+              user_id: user.id, product_id: SATURN_V_ID, product_name: "Saturn V",
+              quantity: 1, selected_material: "PLA", selected_color: "Shown Colors",
+              unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE,
+              images: [SATURN_V_IMAGE],
+            });
+          } else {
+            const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+            cart.push({ id: `anon_${SATURN_V_ID}_${Date.now()}`, product_id: SATURN_V_ID, product_name: "Saturn V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE, images: [SATURN_V_IMAGE] });
+            localStorage.setItem("anonymousCart", JSON.stringify(cart));
+          }
         }
       }
 
       if (type === "sls" || type === "bundle") {
         const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
         const slsName  = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
-        const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: SLS_ID });
+        const existing = await base44.entities.Cart.filter({ user_id: user?.id, product_id: SLS_ID });
         if (existing.length > 0) {
-          await base44.entities.Cart.update(existing[0].id, { unit_price: slsPrice, total_price: slsPrice * existing[0].quantity, product_name: slsName });
+          await base44.entities.Cart.update(existing[0].id, {
+            unit_price: slsPrice, total_price: slsPrice * existing[0].quantity, product_name: slsName,
+          });
         } else {
-          await base44.entities.Cart.create({ user_id: user.id, product_id: SLS_ID, product_name: slsName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: slsPrice, total_price: slsPrice, images: [SLS_IMAGE] });
+          if (user) {
+            await base44.entities.Cart.create({
+              user_id: user.id, product_id: SLS_ID, product_name: slsName,
+              quantity: 1, selected_material: "PLA", selected_color: "Shown Colors",
+              unit_price: slsPrice, total_price: slsPrice, images: [SLS_IMAGE],
+            });
+          } else {
+            const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+            cart.push({ id: `anon_${SLS_ID}_${Date.now()}`, product_id: SLS_ID, product_name: slsName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: slsPrice, total_price: slsPrice, images: [SLS_IMAGE] });
+            localStorage.setItem("anonymousCart", JSON.stringify(cart));
+          }
         }
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
-      if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
+      if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V plus SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
@@ -150,36 +133,18 @@ export default function SaturnV() {
     </button>
   );
 
-  // ── CHANGED: BundlePriceDisplay now shows anchoring context ──
   const BundlePriceDisplay = ({ size = "base" }) => {
     const s = size === "large"
       ? { old: "text-xl sm:text-2xl", new: "text-4xl sm:text-5xl", save: "text-sm sm:text-base" }
       : { old: "text-lg sm:text-xl", new: "text-2xl sm:text-3xl", save: "text-xs sm:text-sm" };
     return (
       <div className="flex items-baseline justify-center gap-2 sm:gap-4 flex-wrap px-4">
-        <span className={`${s.old} text-gray-500 line-through font-medium`}>${SEPARATE_TOTAL} separately</span>
+        <span className={`${s.old} text-gray-500 line-through font-medium`}>${SEPARATE_TOTAL}</span>
         <span className={`${s.new} font-bold text-orange-400`}>${BUNDLE_PRICE}</span>
-        <span className={`${s.save} text-orange-300 font-semibold`}>Save ${BUNDLE_SAVINGS}</span>
+        <span className={`${s.save} text-orange-300 font-semibold`}>Save ${BUNDLE_SAVINGS} with the bundle</span>
       </div>
     );
   };
-
-  const GalleryThumb = ({ src, alt }) => (
-    <button
-      onClick={() => setLightboxImage(src)}
-      className="rounded-xl overflow-hidden border border-gray-800 w-28 h-28 sm:w-36 sm:h-36 bg-gray-900 flex items-center justify-center hover:border-orange-500/60 transition-all hover:scale-105"
-    >
-      <img src={src} alt={alt} className="w-full h-full object-cover" />
-    </button>
-  );
-
-  // ── CHANGED: Guarantee badge — reusable, used in 3 places ──
-  const GuaranteeBadge = () => (
-    <div className="inline-flex items-center gap-1.5 text-xs text-green-400 font-medium">
-      <span>🛡️</span>
-      <span>Free replacement parts if anything arrives wrong — no questions</span>
-    </div>
-  );
 
   const faqs = [
     {
@@ -192,13 +157,16 @@ export default function SaturnV() {
     },
     {
       q: "What if a part is missing or arrives damaged?",
-      a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge. No return shipping, no forms.",
+      a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge.",
     },
     {
       q: "Who designs these rockets?",
-      a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. His Saturn V has been downloaded over 14,700 times. EX3D Prints licenses the designs and handles printing and fulfillment.",
+      a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network.",
     },
-    
+    {
+      q: "Can I return it?",
+      a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right.",
+    },
   ];
 
   return (
@@ -206,34 +174,26 @@ export default function SaturnV() {
       <Toaster />
 
       {/* ── HERO ── */}
-      <section className="relative flex flex-col items-center justify-center px-6 text-center overflow-hidden py-8">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 text-center overflow-hidden py-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_#1a1a2e_0%,_#0a0a0f_70%)]" />
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
 
-        <div className="relative z-10 max-w-5xl mx-auto pt-4 sm:pt-6">
-          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-3">EX3D Prints · Moon Mission Bundle</p>
-
-          {/* ── CHANGED: Headline tightened to be benefit-first ── */}
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-3">
-            Own Both Moon Rockets.<br />
+        <div className="relative z-10 max-w-5xl mx-auto pt-12 sm:pt-16">
+          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-5">EX3D Prints · Rocket Collection</p>
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-5">
+            Own the Most Iconic<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
-              Apollo to Artemis. $60.
+              Rockets Ever Built
             </span>
           </h1>
-
-          <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-2xl mx-auto leading-relaxed">
-            Saturn V and SLS at 1:200 scale — designed from real reference data, printed by a local maker near you, ships in {SHIPPING_DAYS}.
+          <p className="text-lg sm:text-xl text-gray-300 mb-4 max-w-2xl mx-auto leading-relaxed">
+            Precision-printed Saturn V and SLS model kits. Designed by aerospace nerds, printed by {MAKER_COUNT} makers across {MAKER_STATES} states.
+          </p>
+          <p className="text-sm text-orange-400 font-semibold mb-10 tracking-wide">
+            Ships in {SHIPPING_DAYS} · Printed locally · Quality guaranteed
           </p>
 
-          {/* ── CHANGED: Trust badges moved up into hero ── */}
-          <div className="flex items-center justify-center gap-3 sm:gap-5 text-xs text-gray-500 mb-6 flex-wrap">
-            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Ships in {SHIPPING_DAYS}</span>
-            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Printed locally in the US</span>
-            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Free replacement parts</span>
-            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> No login required</span>
-          </div>
-
-          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-5 w-full px-2">
+          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-8 w-full px-2">
             {[
               { src: SATURN_V_IMAGE, alt: "Saturn V printed model", label: "Saturn V · 56cm", shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
               { src: SLS_IMAGE,      alt: "SLS printed model",      label: "SLS · 50cm",      shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
@@ -245,60 +205,29 @@ export default function SaturnV() {
                 >
                   <img src={src} alt={alt} className="w-full h-full object-contain" />
                 </button>
-                <p className="text-xs sm:text-sm text-gray-300 mt-2 font-medium">{label}</p>
+                <p className="text-xs sm:text-sm text-gray-300 mt-3 font-medium">{label}</p>
               </div>
             ))}
           </div>
 
-          <p className="text-xs text-gray-500 mb-5 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
+          <p className="text-xs text-gray-500 mb-10 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
 
-          <div className="flex flex-col items-center gap-2">
-            {/* ── CHANGED: Price anchor above button, not below ── */}
-            <p className="text-sm text-gray-500">
-              <span className="line-through">${SEPARATE_TOTAL} if bought separately</span>
-              <span className="text-orange-400 font-bold ml-2">→ Bundle saves ${BUNDLE_SAVINGS}</span>
-            </p>
-            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-5 mt-1">
-              Get Both Rockets — ${BUNDLE_PRICE}
+          <div className="flex flex-col items-center gap-6">
+            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
+              Get the Bundle for ${BUNDLE_PRICE}
             </Btn>
-            {/* ── CHANGED: Guarantee directly under the buy button ── */}
-            <GuaranteeBadge />
+            <div className="pt-2 pb-4">
+              <BundlePriceDisplay size="base" />
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── DETAIL GALLERY ── */}
-      {(SATURN_V_GALLERY.filter(Boolean).length > 0 || SLS_GALLERY.filter(Boolean).length > 0) && (
-        <section className="py-10 px-6 bg-[#0f0f1a] border-t border-gray-800">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Every Detail</p>
-            <h2 className="text-3xl font-bold text-center mb-8">Up Close</h2>
-            {SATURN_V_GALLERY.filter(Boolean).length > 0 && (
-              <div className="mb-8">
-                <h3 className="text-lg font-bold text-orange-400 mb-4 text-center">Saturn V</h3>
-                <div className="flex justify-center gap-4 flex-wrap">
-                  {SATURN_V_GALLERY.filter(Boolean).map((src, i) => <GalleryThumb key={i} src={src} alt={`Saturn V detail ${i + 1}`} />)}
-                </div>
-              </div>
-            )}
-            {SLS_GALLERY.filter(Boolean).length > 0 && (
-              <div>
-                <h3 className="text-lg font-bold text-blue-400 mb-4 text-center">SLS</h3>
-                <div className="flex justify-center gap-4 flex-wrap">
-                  {SLS_GALLERY.filter(Boolean).map((src, i) => <GalleryThumb key={i} src={src} alt={`SLS detail ${i + 1}`} />)}
-                </div>
-              </div>
-            )}
-            <p className="text-xs text-gray-500 text-center mt-6">Click any image to enlarge</p>
-          </div>
-        </section>
-      )}
-
       {/* ── PRODUCT CARDS ── */}
-      <section id="choose-setup" className="py-10 px-6 border-t border-gray-800">
+      <section id="choose-setup" className="py-20 px-6 border-t border-gray-800">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Choose Your Setup</p>
-          <h2 className="text-3xl font-bold text-center mb-8">Pick What's Right for You</h2>
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Choose Your Setup</p>
+          <h2 className="text-3xl font-bold text-center mb-12">Pick What's Right for You</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Saturn V */}
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-6 flex flex-col">
@@ -336,9 +265,9 @@ export default function SaturnV() {
               </Btn>
             </div>
 
-            {/* Bundle — CHANGED: value stack inside card ── */}
+            {/* Bundle */}
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900 border-2 border-orange-500/60 rounded-2xl p-6 flex flex-col relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value — Save ${BUNDLE_SAVINGS}</div>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value</div>
               <div className="flex gap-2 mb-4 h-56">
                 <div className="flex-1 rounded-xl overflow-hidden bg-black flex items-center justify-center">
                   <img src={SATURN_V_IMAGE} alt="Saturn V" className="w-full h-full object-contain" />
@@ -347,64 +276,30 @@ export default function SaturnV() {
                   <img src={SLS_IMAGE} alt="SLS" className="w-full h-full object-contain" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold mb-1">Moon Mission Bundle</h3>
+              <h3 className="text-xl font-bold mb-1">Bundle</h3>
               <div className="flex items-baseline gap-3 mb-1">
                 <p className="text-gray-500 line-through">${SEPARATE_TOTAL}</p>
                 <p className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</p>
               </div>
-              <p className="text-orange-300 text-sm font-semibold mb-2">Both rockets. One order. Saves ${BUNDLE_SAVINGS}.</p>
-              <p className="text-gray-400 text-sm flex-1 mb-1">Apollo to Artemis — the complete story of American lunar spaceflight on your shelf.</p>
-              <Btn type="bundle" className="mt-3 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">
-                Get Both Rockets — ${BUNDLE_PRICE}
+              <p className="text-orange-300 text-sm font-semibold mb-3">Save ${BUNDLE_SAVINGS}</p>
+              <p className="text-gray-400 text-sm flex-1">Both Moon rockets together. Apollo to Artemis.</p>
+              <Btn type="bundle" className="mt-4 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">
+                Get the Bundle
               </Btn>
-              {/* ── CHANGED: Guarantee in bundle card ── */}
-              <p className="text-[10px] text-green-400 text-center mt-2">🛡️ Free replacement parts if anything's wrong</p>
             </div>
           </div>
-          <p className="text-xs text-gray-500 text-center mt-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
+          <p className="text-xs text-gray-500 text-center mt-8 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
         </div>
       </section>
 
-      {/* ── SCHEMATICS ── */}
-      {(CORE_STAGE_SCHEMATIC || SRB_SCHEMATIC) && (
-        <section className="py-10 px-6 border-t border-gray-800">
-          <div className="max-w-5xl mx-auto">
-            <p className="text-xs tracking-[0.4em] text-orange-400 uppercase text-center mb-4">Engineering</p>
-            <h2 className="text-3xl font-bold text-center mb-4">Designed Part by Part</h2>
-            <p className="text-gray-400 text-center max-w-2xl mx-auto mb-8 leading-relaxed">
-              Every section is modeled from reference data and labeled so you know exactly what you're building.
-            </p>
-            <div className="grid md:grid-cols-2 gap-8">
-              {CORE_STAGE_SCHEMATIC && (
-                <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
-                  <button onClick={() => setLightboxImage(CORE_STAGE_SCHEMATIC)} className="w-full hover:opacity-90 transition-opacity">
-                    <img src={CORE_STAGE_SCHEMATIC} alt="SLS Core Stage schematic" className="w-full h-auto" />
-                  </button>
-                  <p className="text-gray-700 font-semibold mt-4">SLS Core Stage · Labeled diagram</p>
-                </div>
-              )}
-              {SRB_SCHEMATIC && (
-                <div className="bg-white rounded-2xl p-6 flex flex-col items-center">
-                  <button onClick={() => setLightboxImage(SRB_SCHEMATIC)} className="w-full hover:opacity-90 transition-opacity">
-                    <img src={SRB_SCHEMATIC} alt="Solid Rocket Booster schematic" className="w-full h-auto" />
-                  </button>
-                  <p className="text-gray-700 font-semibold mt-4">Solid Rocket Booster · Labeled diagram</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       {/* ── EMAIL CAPTURE ── */}
-      <section className="py-10 px-6 border-t border-gray-800 bg-[#0f0f1a]">
+      <section className="py-20 px-6 border-t border-gray-800 bg-[#0f0f1a]">
         <div className="max-w-lg mx-auto text-center">
-          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">For Space Nerds Only</p>
-          <h2 className="text-3xl font-bold mb-3">Get 10% Off Your First Order</h2>
-          <p className="text-gray-400 mb-6 leading-relaxed">
+          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">For Space Nerds Only</p>
+          <h2 className="text-3xl font-bold mb-4">Get 10% Off Your First Order</h2>
+          <p className="text-gray-400 mb-8 leading-relaxed">
             Join the list and get early access to new rocket designs, exclusive drops, and a discount code right now.
           </p>
-
           {!emailSubmitted ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
@@ -424,7 +319,7 @@ export default function SaturnV() {
               </button>
             </form>
           ) : (
-            <div className="space-y-5">
+            <div className="space-y-6">
               <p className="text-green-400 font-semibold">You're in! Here's your discount code:</p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <div className="bg-gray-900 border-2 border-orange-500/60 rounded-2xl px-8 py-4">
@@ -448,31 +343,34 @@ export default function SaturnV() {
               </button>
             </div>
           )}
-
-          <p className="text-xs text-gray-600 mt-5">No spam. Unsubscribe any time.</p>
+          <p className="text-xs text-gray-600 mt-6">No spam. Unsubscribe any time.</p>
         </div>
       </section>
 
       {/* ── FOUNDER ── */}
-      <section className="py-10 px-6 border-t border-gray-800">
-        <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-8 items-center">
-          <div className="w-36 h-36 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
+      <section className="py-20 px-6 border-t border-gray-800">
+        <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-10 items-center">
+          <div className="w-44 h-44 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
             <img src={FOUNDER_IMAGE} alt="Jacob, EX3D Prints" className="w-full h-full object-cover" />
           </div>
           <div>
-            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-2">Why EX3D Prints Exists</p>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              I'm Jacob — aerospace engineering student, I help build real rocket engines. I couldn't find a high-quality model of a Saturn V that wasn't either a cheap toy or a $300 collector piece, so I partnered with <strong className="text-white">kmobrain (AstroDesign 3D)</strong> and built a network of {MAKER_COUNT} local makers to print his designs on demand. Quality models, made by real people, at a real price.
+            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-3">Why EX3D Prints Exists</p>
+            <p className="text-gray-300 leading-relaxed text-base mb-4">
+              I'm Jacob, an aerospace engineering student who helps build real rocket engines. I wanted high-quality models of the greatest rockets ever made, and everything I could find was either a cheap plastic toy or a $300 collector's piece.
             </p>
+            <p className="text-gray-300 leading-relaxed text-base mb-4">
+              So I teamed up with <span className="text-white font-semibold">kmobrain (AstroDesign 3D)</span> and built a network of {MAKER_COUNT} independent makers across {MAKER_STATES} states to print his designs on demand. High-quality models, printed by real people, shipped fast.
+            </p>
+            <p className="text-gray-400 text-sm italic">Every order supports a maker. Every rocket is quality-checked before it ships.</p>
           </div>
         </div>
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-10 px-6 border-t border-gray-800">
+      <section className="py-20 px-6 border-t border-gray-800">
         <div className="max-w-2xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Before You Buy</p>
-          <h2 className="text-3xl font-bold text-center mb-8">Questions, Answered</h2>
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Before You Buy</p>
+          <h2 className="text-3xl font-bold text-center mb-12">Questions, Answered</h2>
           <div className="space-y-3">
             {faqs.map((faq, i) => (
               <div key={i} className="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
@@ -495,25 +393,20 @@ export default function SaturnV() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-12 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
-        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Ready?</p>
-        <h2 className="text-4xl font-bold mb-3">Bring Apollo and Artemis Together</h2>
-        <p className="text-gray-400 mb-3 max-w-md mx-auto">
-          Both Moon rockets. Printed near you. Ships in {SHIPPING_DAYS}. Free replacement parts if anything's wrong.
+      <section className="py-24 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
+        <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-4">Ready?</p>
+        <h2 className="text-4xl font-bold mb-4">Bring Apollo and Artemis Together</h2>
+        <p className="text-gray-400 mb-4 max-w-md mx-auto">
+          Own both of the most iconic Moon rockets. Printed locally, shipped fast, quality guaranteed.
         </p>
-        {/* ── CHANGED: Price anchor above final CTA button too ── */}
-        <p className="text-sm text-gray-600 mb-6">
-          <span className="line-through mr-2">${SEPARATE_TOTAL} if bought separately</span>
-          <span className="text-orange-400 font-semibold">Bundle saves ${BUNDLE_SAVINGS}</span>
-        </p>
-        <div className="flex flex-col items-center gap-3">
+        <p className="text-xs text-gray-500 mb-10">Ships in {SHIPPING_DAYS} · Free replacement parts if anything's wrong</p>
+        <div className="flex flex-col items-center gap-8">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get Both Rockets — ${BUNDLE_PRICE}
+            Get the Bundle for ${BUNDLE_PRICE}
           </Btn>
-          {/* ── CHANGED: Guarantee at final CTA too ── */}
-          <GuaranteeBadge />
+          <BundlePriceDisplay size="large" />
         </div>
-        <p className="text-gray-700 text-xs mt-10">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
+        <p className="text-gray-700 text-xs mt-16">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
 
       {/* ── LIGHTBOX ── */}

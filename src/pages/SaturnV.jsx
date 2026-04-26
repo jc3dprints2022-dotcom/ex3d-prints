@@ -21,16 +21,14 @@ const GIANTS_STARSHIP_PRICE  = GIANTS_BUNDLE_PRICE - GIANTS_SATURN_PRICE - GIANT
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
 
-// ── IMAGES ────────────────────────────────────────────────────────────────────
-// Vertical photos — used in bundle card only
-const SATURN_V_HERO  = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
-const SLS_HERO       = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
-const STARSHIP_HERO  = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
+// ── IMAGES ───────────────────────────────────────────────────────────────────
+const SATURN_V_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
+const SLS_HERO      = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
+const STARSHIP_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
 
-// Product images — used in hero section and individual cards
-const SATURN_V_IMAGE = "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
-const SLS_IMAGE      = "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
-const STARSHIP_IMAGE = STARSHIP_HERO; // use same until a product-style image is available
+const SATURN_V_IMAGE = SATURN_V_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
+const SLS_IMAGE      = SLS_HERO      || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
+const starshipImage  = STARSHIP_HERO;
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
@@ -38,17 +36,17 @@ const SHIPPING_DAYS = "2-4 days";
 const MAKER_COUNT   = 19;
 const MAKER_STATES  = 11;
 
-export default function SaturnVHeavyLift() {
-  const [adding, setAdding]                       = useState(null);
-  const [openFaq, setOpenFaq]                     = useState(null);
-  const [lightboxImage, setLightboxImage]         = useState(null);
-  const [email, setEmail]                         = useState("");
-  const [emailSubmitted, setEmailSubmitted]       = useState(false);
-  const [emailLoading, setEmailLoading]           = useState(false);
-  const [codeCopied, setCodeCopied]               = useState(false);
-  const [starshipId, setStarshipId]               = useState(null);
+export default function SaturnV() {
+  const [adding, setAdding]                 = useState(null);
+  const [openFaq, setOpenFaq]               = useState(null);
+  const [lightboxImage, setLightboxImage]   = useState(null);
+  const [email, setEmail]                   = useState("");
+  const [emailSubmitted, setEmailSubmitted] = useState(false);
+  const [emailLoading, setEmailLoading]     = useState(false);
+  const [codeCopied, setCodeCopied]         = useState(false);
+  const [starshipId, setStarshipId]         = useState(null);
   const [productCardImages, setProductCardImages] = useState({
-    saturn: SATURN_V_IMAGE, sls: SLS_IMAGE, starship: STARSHIP_IMAGE,
+    saturn: SATURN_V_IMAGE, sls: SLS_IMAGE, starship: STARSHIP_HERO,
   });
   const { toast } = useToast();
 
@@ -62,7 +60,7 @@ export default function SaturnVHeavyLift() {
         setProductCardImages({
           saturn:   saturn?.images?.[0]   || SATURN_V_IMAGE,
           sls:      sls?.images?.[0]      || SLS_IMAGE,
-          starship: starship?.images?.[0] || STARSHIP_IMAGE,
+          starship: starship?.images?.[0] || STARSHIP_HERO,
         });
       })
       .catch(console.error);
@@ -74,13 +72,13 @@ export default function SaturnVHeavyLift() {
       const user = await base44.auth.me().catch(() => null);
 
       const itemsToAdd = [];
-      if (type === "saturn")   itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V",     price: SATURN_V_PRICE,      image: SATURN_V_IMAGE });
-      if (type === "sls")      itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Artemis)", price: SLS_PRICE,           image: SLS_IMAGE });
-      if (type === "starship") itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2",   price: STARSHIP_PRICE,      image: STARSHIP_IMAGE });
+      if (type === "saturn")   itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V",       price: SATURN_V_PRICE,       image: SATURN_V_IMAGE });
+      if (type === "sls")      itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Artemis)",   price: SLS_PRICE,            image: SLS_IMAGE });
+      if (type === "starship") itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2",     price: STARSHIP_PRICE,       image: starshipImage });
       if (type === "giants_bundle") {
         itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V (Heavy-Lift Bundle)",    price: GIANTS_SATURN_PRICE,   image: SATURN_V_IMAGE });
         itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Heavy-Lift Bundle)",          price: GIANTS_SLS_PRICE,      image: SLS_IMAGE });
-        itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2 (Heavy-Lift Bundle)", price: GIANTS_STARSHIP_PRICE, image: STARSHIP_IMAGE });
+        itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2 (Heavy-Lift Bundle)", price: GIANTS_STARSHIP_PRICE, image: starshipImage });
       }
 
       if (user) {
@@ -115,7 +113,8 @@ export default function SaturnVHeavyLift() {
 
       window.dispatchEvent(new Event("cartUpdated"));
       if (type === "giants_bundle") toast({ title: "Bundle added! 🚀", description: `All three rockets for $${GIANTS_BUNDLE_PRICE}` });
-      setTimeout(() => { window.location.href = "/Cart"; }, type === "giants_bundle" ? 500 : 0);
+      const isBundle = type === "giants_bundle";
+      setTimeout(() => { window.location.href = "/Cart"; }, isBundle ? 500 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
     }
@@ -139,9 +138,9 @@ export default function SaturnVHeavyLift() {
     <button
       onClick={() => addToCart("giants_bundle")}
       disabled={adding !== null}
-      className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-5" : "text-base px-8 py-4"}`}
+      className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-6" : "text-base px-8 py-4"}`}
     >
-      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle — $${GIANTS_BUNDLE_PRICE}`}
+      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle $${GIANTS_BUNDLE_PRICE}`}
     </button>
   );
 
@@ -156,7 +155,7 @@ export default function SaturnVHeavyLift() {
   );
 
   const faqs = [
-    { q: "How long until it arrives?",        a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you — not shipped from overseas.` },
+    { q: "How long until it arrives?",        a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
     { q: "How hard is assembly?",              a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
     { q: "What if something arrives damaged?", a: "Email us. We send replacement parts free. No return shipping needed." },
     { q: "Who designed these?",                a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
@@ -168,21 +167,21 @@ export default function SaturnVHeavyLift() {
       <Toaster />
 
       {/* ── HERO ── */}
-      <section className="relative flex flex-col items-center justify-center px-5 text-center overflow-hidden pt-6 pb-6">
+      <section className="relative flex flex-col items-center justify-center px-5 text-center overflow-hidden pt-10 pb-16">
         <div className="absolute inset-0" style={{ background: "radial-gradient(ellipse at 50% 0%, #1e1035 0%, #080810 65%)" }} />
         <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "55px 55px" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto w-full">
-          <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-3">EX3D Prints · Rocket Collection</p>
+          <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-4">EX3D Prints · Rocket Collection</p>
 
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] mb-3 tracking-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] mb-4 tracking-tight">
             Own The Most Iconic<br />
             <span style={{ background: "linear-gradient(90deg, #fb923c, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
               Rockets Ever Built.
             </span>
           </h1>
 
-          <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs text-gray-500 mb-5 flex-wrap">
+          <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs text-gray-500 mb-8 flex-wrap">
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Ships in {SHIPPING_DAYS}</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Printed locally in the US</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Free replacement parts</span>
@@ -191,33 +190,32 @@ export default function SaturnVHeavyLift() {
 
           <p className="text-[10px] tracking-[0.3em] text-orange-400 uppercase mb-2">Best Value · The Heavy-Lift Bundle</p>
 
-          {/* Hero images — product images, object-contain */}
-          <div className="flex justify-center items-end gap-2 sm:gap-4 md:gap-6 mb-4 w-full">
+          <div className="flex justify-center items-end gap-2 sm:gap-4 md:gap-6 mb-8 w-full">
             {[
               { src: SATURN_V_IMAGE, alt: "Saturn V",   label: "Saturn V · 56cm",  shadow: "#fb923c18", border: "rgba(251,146,60,0.3)" },
               { src: SLS_IMAGE,      alt: "SLS",         label: "SLS · 50cm",       shadow: "#60a5fa18", border: "rgba(96,165,250,0.3)"  },
-              { src: STARSHIP_IMAGE, alt: "Starship V2", label: "Starship V2",       shadow: "#22d3ee18", border: "rgba(34,211,238,0.3)"  },
+              { src: starshipImage,  alt: "Starship V2", label: "Starship V2",       shadow: "#22d3ee18", border: "rgba(34,211,238,0.3)"  },
             ].map(({ src, alt, label, shadow, border }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
                 <button
                   onClick={() => setLightboxImage(src)}
-                  className="rounded-2xl overflow-hidden w-full h-[160px] sm:h-[260px] md:h-[360px] transition-transform hover:scale-[1.02] bg-black"
+                  className="rounded-2xl overflow-hidden w-full h-[220px] sm:h-[320px] md:h-[420px] transition-transform hover:scale-[1.02]"
                   style={{ border: `1px solid ${border}`, boxShadow: `0 24px 60px ${shadow}` }}
                 >
-                  <img src={src} alt={alt} className="w-full h-full object-contain" />
+                  <img src={src} alt={alt} className="w-full h-full object-cover" />
                 </button>
-                <p className="text-xs sm:text-sm text-gray-500 mt-1">{label}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">{label}</p>
               </div>
             ))}
           </div>
 
-          <div className="flex flex-col items-center gap-2 mb-2">
+          <div className="flex flex-col items-center gap-3 mb-4">
             <BundleBtn size="lg" />
             <p className="text-sm">
               <span className="text-gray-500 line-through mr-2">${GIANTS_BUNDLE_SEPARATE}</span>
               <span className="text-orange-400 font-bold">Save ${GIANTS_BUNDLE_SAVINGS}</span>
             </p>
-            <p className="text-gray-600 text-xs mt-0.5">↓ or buy each separately below</p>
+            <p className="text-gray-300 text-sm font-semibold mt-1">↓ or buy each separately below</p>
           </div>
 
           <p className="text-[10px] text-gray-700 italic">Designs by kmobrain (AstroDesign 3D)</p>
@@ -225,89 +223,36 @@ export default function SaturnVHeavyLift() {
       </section>
 
       {/* ── INDIVIDUAL ROCKETS ── */}
-      <section className="py-8 px-5">
+      <section className="py-12 px-5 border-t border-white/5">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-white text-center mb-1">Buy Each Separately</h2>
-          <p className="text-gray-600 text-xs text-center mb-6">Or save ${GIANTS_BUNDLE_SAVINGS} with the bundle above</p>
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-
-            {/* Saturn V */}
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
-              <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
-                <img src={productCardImages.saturn} alt="Saturn V" className="w-full h-full object-contain" />
-              </div>
-              <h3 className="font-bold text-sm mb-0.5">Saturn V</h3>
-              <p className="text-orange-400 font-black text-lg mb-1">${SATURN_V_PRICE}</p>
-              <p className="text-xs text-gray-600 mb-1">56cm · 1:200 · PLA</p>
-              <p className="text-xs text-gray-500 flex-1 mb-3">The rocket that took humanity to the Moon.</p>
-              <SingleBtn type="saturn">Add to Cart</SingleBtn>
-            </div>
-
-            {/* SLS */}
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
-              <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
-                <img src={productCardImages.sls} alt="SLS" className="w-full h-full object-contain" />
-              </div>
-              <h3 className="font-bold text-sm mb-0.5">SLS</h3>
-              <p className="text-blue-400 font-black text-lg mb-1">${SLS_PRICE}</p>
-              <p className="text-xs text-gray-600 mb-1">50cm · 1:200 · PLA</p>
-              <p className="text-xs text-gray-500 flex-1 mb-3">NASA's next Moon rocket, Artemis program.</p>
-              <SingleBtn type="sls">Add to Cart</SingleBtn>
-            </div>
-
-            {/* Starship */}
-            <div className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
-              <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
-                <img src={productCardImages.starship} alt="Starship V2" className="w-full h-full object-contain" />
-              </div>
-              <h3 className="font-bold text-sm mb-0.5">Starship V2</h3>
-              <p className="text-cyan-400 font-black text-lg mb-1">${STARSHIP_PRICE}</p>
-              <p className="text-xs text-gray-600 mb-1">26cm · 1:200 · PLA</p>
-              <p className="text-xs text-gray-500 flex-1 mb-3">The most powerful rocket ever built.</p>
-              <SingleBtn type="starship">Add to Cart</SingleBtn>
-            </div>
-
-            {/* Bundle card — vertical hero images, object-cover */}
-            <div className="bg-white/[0.03] border-2 rounded-2xl p-4 flex flex-col relative" style={{ borderColor: "rgba(251,146,60,0.4)" }}>
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-full tracking-wide">BEST VALUE</div>
-              <div className="grid grid-cols-3 gap-1 mb-3 h-44">
-                <div className="rounded-lg overflow-hidden bg-black">
-                  <img src={SATURN_V_HERO} alt="Saturn V" className="w-full h-full object-cover" />
+          <h2 className="text-2xl font-black text-white text-center mb-2">Buy Each Separately</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",   price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
+              { type: "sls",      image: productCardImages.sls,       name: "SLS",         price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "NASA's next Moon rocket, Artemis program." },
+              { type: "starship", image: productCardImages.starship,  name: "Starship V2", price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
+            ].map(({ type, image, name, price, color, spec, desc }) => (
+              <div key={type} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
+                <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
+                  <img src={image} alt={name} className="w-full h-full object-contain" />
                 </div>
-                <div className="rounded-lg overflow-hidden bg-black">
-                  <img src={SLS_HERO} alt="SLS" className="w-full h-full object-cover" />
-                </div>
-                <div className="rounded-lg overflow-hidden bg-black">
-                  <img src={STARSHIP_HERO} alt="Starship" className="w-full h-full object-cover" />
-                </div>
+                <h3 className="font-bold text-sm mb-0.5">{name}</h3>
+                <p className={`${color} font-black text-lg mb-1`}>${price}</p>
+                <p className="text-xs text-gray-600 mb-1">{spec} · PLA · Press-fit</p>
+                <p className="text-xs text-gray-500 flex-1 mb-3">{desc}</p>
+                <SingleBtn type={type}>Add to Cart</SingleBtn>
               </div>
-              <h3 className="font-bold text-sm mb-0.5">Heavy-Lift Bundle</h3>
-              <div className="flex items-baseline gap-2 mb-0.5">
-                <span className="text-gray-600 line-through text-sm">${GIANTS_BUNDLE_SEPARATE}</span>
-                <span className="text-orange-400 font-black text-lg">${GIANTS_BUNDLE_PRICE}</span>
-              </div>
-              <p className="text-orange-300 text-xs font-semibold mb-1">Save ${GIANTS_BUNDLE_SAVINGS}</p>
-              <p className="text-xs text-gray-500 flex-1 mb-3">All three rockets. The full fleet.</p>
-              <button
-                onClick={() => addToCart("giants_bundle")}
-                disabled={adding !== null}
-                className="w-full py-2.5 rounded-full font-black text-sm text-white transition-all disabled:opacity-50 hover:scale-105"
-                style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)" }}
-              >
-                {adding === "giants_bundle" ? "Adding…" : `Get All Three — $${GIANTS_BUNDLE_PRICE}`}
-              </button>
-            </div>
-
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── EMAIL CAPTURE ── */}
-      <section className="py-8 px-5 bg-white/[0.02]">
+      <section className="py-14 px-5 border-t border-white/5 bg-white/[0.02]">
         <div className="max-w-lg mx-auto text-center">
           <p className="text-[10px] tracking-[0.4em] text-orange-400 uppercase mb-3">Space Nerds Only</p>
           <h2 className="text-2xl font-black mb-2">Get 10% Off Your First Order</h2>
-          <p className="text-gray-500 text-sm mb-5">Join the list. Get a discount code instantly.</p>
+          <p className="text-gray-500 text-sm mb-6">Join the list. Get a discount code instantly.</p>
           {!emailSubmitted ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
               <input
@@ -332,7 +277,7 @@ export default function SaturnVHeavyLift() {
                   {codeCopied ? "Copied!" : "Copy"}
                 </button>
               </div>
-              <p className="text-gray-600 text-xs">10% off any rocket or bundle. Enter at checkout.</p>
+              <p className="text-gray-600 text-xs">10% off any rocket or bundle. Enter it at checkout.</p>
               <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 className="text-orange-400 hover:text-orange-300 text-sm font-semibold underline">
                 Shop now ↑
@@ -343,7 +288,7 @@ export default function SaturnVHeavyLift() {
       </section>
 
       {/* ── FOUNDER ── */}
-      <section className="py-8 px-5">
+      <section className="py-14 px-5 border-t border-white/5">
         <div className="max-w-2xl mx-auto flex flex-col sm:flex-row gap-8 items-center">
           <img src={FOUNDER_IMAGE} alt="Jacob" className="w-24 h-24 rounded-full object-cover flex-shrink-0 mx-auto sm:mx-0" style={{ border: "2px solid rgba(251,146,60,0.3)" }} />
           <div>
@@ -356,9 +301,9 @@ export default function SaturnVHeavyLift() {
       </section>
 
       {/* ── FAQ ── */}
-      <section className="py-8 px-5">
+      <section className="py-14 px-5 border-t border-white/5">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-black text-center mb-6">Questions</h2>
+          <h2 className="text-2xl font-black text-center mb-8">Questions</h2>
           <div className="space-y-2">
             {faqs.map((faq, i) => (
               <div key={i} className="bg-white/[0.02] border border-white/5 rounded-xl overflow-hidden">
@@ -377,25 +322,38 @@ export default function SaturnVHeavyLift() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-10 px-5 text-center" style={{ background: "linear-gradient(to top, #1a0800, transparent)" }}>
+      <section className="py-20 px-5 text-center border-t border-white/5" style={{ background: "linear-gradient(to top, #1a0800, transparent)" }}>
         <h2 className="text-4xl sm:text-5xl font-black mb-3 leading-tight">
           Three Rockets.<br />
           <span style={{ background: "linear-gradient(90deg, #fb923c, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
             One Bundle. ${GIANTS_BUNDLE_PRICE}.
           </span>
         </h2>
-        <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+        <p className="text-gray-500 text-sm mb-8 max-w-sm mx-auto">
           Saturn V, SLS, and Starship V2. Printed by a maker near you, shipped in {SHIPPING_DAYS}.
         </p>
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-3">
           <BundleBtn size="lg" />
           <p className="text-sm text-gray-600">
             <span className="line-through mr-2">${GIANTS_BUNDLE_SEPARATE}</span>
             <span className="text-orange-400 font-bold">Save ${GIANTS_BUNDLE_SAVINGS}</span>
           </p>
         </div>
-        <p className="text-gray-800 text-xs mt-10">© 2025 EX3D Prints · Designs by kmobrain (AstroDesign 3D)</p>
+        <p className="text-gray-800 text-xs mt-14">© 2025 EX3D Prints · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
+
+      {/* ── STICKY MOBILE CTA ── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden px-4 pb-4 pt-3"
+        style={{ background: "linear-gradient(to top, #080810 60%, transparent)" }}>
+        <button
+          onClick={() => addToCart("giants_bundle")}
+          disabled={adding !== null}
+          className="w-full py-4 rounded-full font-black text-base text-white transition-all disabled:opacity-60"
+          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}
+        >
+          {adding === "giants_bundle" ? "Adding…" : `Bundle — $${GIANTS_BUNDLE_PRICE} · Save $${GIANTS_BUNDLE_SAVINGS}`}
+        </button>
+      </div>
 
       {/* ── LIGHTBOX ── */}
       {lightboxImage && (

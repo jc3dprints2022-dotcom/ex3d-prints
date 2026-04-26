@@ -54,38 +54,41 @@ export default function FilamentManager({ makerId }) {
   };
 
   const handleAddFilaments = async () => {
-  if (selectedColors.length === 0) {
-    toast({ title: "Please select at least one color", variant: "destructive" });
-    return;
-  }
+    if (selectedColors.length === 0) {
+      toast({ title: "Please select at least one color", variant: "destructive" });
+      return;
+    }
 
-  if (!makerId) {
-    toast({ title: "Maker ID missing — please refresh and try again", variant: "destructive" });
-    return;
-  }
+    setAdding(true);
+    try {
+      // Create multiple filaments - one for each selected color
+      const createPromises = selectedColors.map(color =>
+        base44.entities.Filament.create({
+          maker_id: makerId,
+          material_type: selectedMaterial,
+          color: color,
+          quantity_kg: quantityPerFilament,
+          in_stock: true
+        })
+      );
 
-  setAdding(true);
-  try {
-    const createPromises = selectedColors.map(color =>
-      base44.entities.Filament.create({
-        maker_id: makerId,           // ← this was missing, causing the failure
-        material: selectedMaterial,
-        color: color,
-        quantity: quantityPerFilament,
-        is_available: true,
-      })
-    );
-    await Promise.all(createPromises);
-    toast({ title: `Added ${selectedColors.length} filament${selectedColors.length > 1 ? "s" : ""}!` });
-    setSelectedColors([]);
-    setQuantityPerFilament(1);
-    await loadFilaments();
-  } catch (error) {
-    console.error("Filament create error:", error);
-    toast({ title: "Failed to add filament", description: error.message, variant: "destructive" });
-  }
-  setAdding(false);
-};
+      await Promise.all(createPromises);
+      
+      toast({ 
+        title: "Filaments added!", 
+        description: `Added ${selectedColors.length} filament(s) successfully` 
+      });
+      
+      // Reset form
+      setSelectedColors([]);
+      setQuantityPerFilament(1);
+      
+      loadFilaments();
+    } catch (error) {
+      toast({ title: "Failed to add filaments", variant: "destructive" });
+    }
+    setAdding(false);
+  };
 
   const handleDelete = async (filamentId) => {
     try {
