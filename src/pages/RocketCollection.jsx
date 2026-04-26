@@ -206,7 +206,7 @@ export default function RocketCollection() {
     { q: "How hard is the assembly?",                   a: "The kits press-fit together. Most parts snap into place, with a small amount of super glue recommended for a few sections. No painting required. Typical build time is 30 to 60 minutes." },
     { q: "What if a part is missing or arrives damaged?", a: "Every kit is quality-checked by the maker before it ships. If anything is wrong when it arrives, email us and we'll send replacement parts free of charge." },
     { q: "Who designs these rockets?",                  a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network." },
-    { q: "Is this a good gift?", a: `Absolutely. Both models are made to order and ship within 2-4 days in protective packaging, ready to build. Order today and it arrives by ${shipByDate}.` },
+    { q: "Is this a good gift?", a: `Absolutely. Both models are made to order and ship within 2-4 days in protective packaging, ready to build. Order today and it ships by ${shipByDate}.` },
   ];
 
   return (
@@ -397,7 +397,7 @@ export default function RocketCollection() {
             {[
               { title: "Verified Makers", desc: `${MAKER_COUNT} vetted makers across ${MAKER_STATES} states. Your model is printed by the one closest to you, inspected before it ships.` },
               { title: "Original Designs", desc: "Exclusively licensed from kmobrain (AstroDesign 3D), the most accurate rocket modeler in 3D printing. Not available anywhere else." },
-              { title: "Collector-Grade Detail", desc: "Not a toy. Not a $300 collector piece. Accurate proportions, engine cluster detail, and hand-finished surfaces at a price that makes sense." },
+              { title: "Collector-Grade Detail", desc: "Not a toy. Not a $300 collector piece. Accurate proportions, engine cluster detail, high quality at a price that makes sense." },
             ].map(({ title, desc }) => (
               <div key={title} className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 text-center">
                 <h3 className="text-base font-bold text-white mb-2">{title}</h3>
