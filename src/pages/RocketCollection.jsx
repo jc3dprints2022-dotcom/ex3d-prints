@@ -272,19 +272,7 @@ export default function RocketCollection() {
 
           <p className="text-xs text-gray-600 mb-5 italic">Designs by kmobrain (AstroDesign 3D) · Printed by EX3D's maker network</p>
 
-          {/* Primary CTA */}
-          <div className="flex flex-col items-center gap-3">
-            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
-              Get the Moon Missions Collection, ${BUNDLE_PRICE}
-            </Btn>
-            <div className="flex items-baseline justify-center gap-3 flex-wrap">
-              <span className="text-gray-500 line-through text-lg">${SEPARATE_TOTAL}</span>
-              <span className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</span>
-              <span className="text-orange-300 text-sm font-semibold">Save ${BUNDLE_SAVINGS}</span>
-            </div>
-            {/* Social proof near buy button */}
-            <p className="text-xs text-gray-500 mt-1">Made to order · Free replacement parts if anything is wrong</p>
-          </div>
+          
         </div>
       </section>
 
