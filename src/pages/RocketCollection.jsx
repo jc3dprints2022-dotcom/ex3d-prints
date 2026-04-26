@@ -198,10 +198,7 @@ export default function SaturnV() {
       q: "Who designs these rockets?",
       a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. His Saturn V has been downloaded over 14,700 times. EX3D Prints licenses the designs and handles printing and fulfillment.",
     },
-    {
-      q: "Can I return it?",
-      a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right — every time.",
-    },
+    
   ];
 
   return (
