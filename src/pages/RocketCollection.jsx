@@ -407,7 +407,6 @@ export default function RocketCollection() {
                 <span className="text-orange-400 mt-0.5 flex-shrink-0">&#10003;</span>
                 <span className="text-gray-300 text-sm">{item}</span>
               </div>
-              <PaymentMethods />
             ))}
           </div>
         </div>
