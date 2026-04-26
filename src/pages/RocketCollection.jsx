@@ -16,7 +16,7 @@ const SEPARATE_TOTAL   = SATURN_V_PRICE + SLS_PRICE;
 const BUNDLE_SAVINGS   = SEPARATE_TOTAL - BUNDLE_PRICE;
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
-const WEEKLY_LIMIT        = 40;
+const WEEKLY_LIMIT        = 20;
 
 // Images
 const SATURN_V_GALLERY = [
@@ -113,15 +113,10 @@ function PaymentMethods() {
   );
 }
 
-// Update these each week as a fallback for logged-out / incognito visitors.
-// When logged in, real live counts override these automatically.
-const FALLBACK_ORDERS_THIS_WEEK = 7;
-const FALLBACK_STATES_THIS_WEEK = 6;
-
 // Live weekly slots hook
 function useWeeklySlotsLeft() {
   const [slotsLeft, setSlotsLeft] = useState(null);
-  const [statesReached, setStatesReached] = useState(FALLBACK_STATES_THIS_WEEK);
+  const [statesReached, setStatesReached] = useState(MAKER_STATES);
 
   useEffect(() => {
     const getWeekStart = () => {
@@ -141,6 +136,7 @@ function useWeeklySlotsLeft() {
         );
         setSlotsLeft(Math.max(0, WEEKLY_LIMIT - weekOrders.length));
 
+        // Count unique states from shipping addresses this week
         const states = new Set(
           weekOrders
             .map((o) => o.shipping_address?.state)
@@ -148,11 +144,7 @@ function useWeeklySlotsLeft() {
         );
         if (states.size > 0) setStatesReached(states.size);
       })
-      .catch(() => {
-        // Auth failed (incognito / logged out) - use manually-set fallback numbers
-        setSlotsLeft(Math.max(0, WEEKLY_LIMIT - FALLBACK_ORDERS_THIS_WEEK));
-        setStatesReached(FALLBACK_STATES_THIS_WEEK);
-      });
+      .catch(() => setSlotsLeft(33));
   }, []);
 
   return { slotsLeft, statesReached };
@@ -245,7 +237,7 @@ export default function RocketCollection() {
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
-      if (type === "bundle") toast({ title: "Collection reserved! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
+      if (type === "bundle") toast({ title: "Added to Cart! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
@@ -286,7 +278,7 @@ export default function RocketCollection() {
     return (
       <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide ${urgent ? "bg-red-500/15 border border-red-500/30 text-red-400" : "bg-orange-500/10 border border-orange-500/20 text-orange-400"}`}>
         <span className={`w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0 ${urgent ? "bg-red-400" : "bg-orange-400"}`} />
-        {slotsLeft === 0 ? "Fully booked this week, back Monday" : `Only ${slotsLeft} of ${WEEKLY_LIMIT} weekly slots left`}
+        {slotsLeft === 0 ? "Fully booked this week, back Monday" : `Only ${slotsLeft} weekly slots left`}
       </div>
     );
   };
@@ -296,7 +288,7 @@ export default function RocketCollection() {
     { q: "How hard is the assembly?",                    a: "The kits press-fit together. Most parts snap into place, with a small amount of super glue recommended for a few sections. No painting required. Typical build time is 30 to 60 minutes." },
     { q: "What if a part is missing or arrives damaged?",a: "Every kit is quality-checked by the maker before it ships. If anything is wrong when it arrives, email us and we will send replacement parts free of charge." },
     { q: "Who designs these rockets?",                   a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network." },
-    { q: "Can I return it?",                             a: "Because each kit is printed to order we do not accept returns for change of mind. If anything is wrong with what you received, we will make it right." },
+    
   ];
 
   return (
@@ -364,43 +356,12 @@ export default function RocketCollection() {
             ))}
           </div>
 
-          <p className="text-xs text-gray-600 mb-5 italic">Designs by kmobrain (AstroDesign 3D) · Printed by EX3D's maker network</p>
+          
 
-          <div className="flex flex-col items-center gap-3">
-            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
-              Get the Collection for ${BUNDLE_PRICE}
-            </Btn>
-            <div className="flex items-baseline gap-2 flex-wrap justify-center">
-              <span className="text-gray-500 line-through text-lg">${SEPARATE_TOTAL}</span>
-              <span className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</span>
-              <span className="text-orange-300 text-sm font-semibold">Save ${BUNDLE_SAVINGS}</span>
-            </div>
-            <PaymentMethods />
-          </div>
+          
         </div>
       </section>
 
-      {/* SHIPPED TO SPACE FANS */}
-      <section className="py-6 px-6 border-t border-gray-800 bg-[#0d0d18]">
-        <div className="max-w-3xl mx-auto">
-          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <div>
-              <p className="text-orange-400 font-bold text-base mb-1">
-                Shipped to space fans in {statesReached} states this week
-              </p>
-              <p className="text-gray-400 text-sm">
-                {MAKER_COUNT} verified makers. Printed near you. Ships by {shipByDate}.
-              </p>
-            </div>
-            <div className="flex-shrink-0 flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-              <span className="text-orange-300 text-xs font-bold whitespace-nowrap">
-                {slotsLeft !== null ? `${slotsLeft} slots left` : "Limited weekly slots"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* WHAT'S INCLUDED */}
       <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
@@ -508,9 +469,7 @@ export default function RocketCollection() {
               </Btn>
             </div>
           </div>
-          <p className="text-xs text-gray-600 text-center mt-6 italic">
-            Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network
-          </p>
+          
         </div>
       </section>
 
@@ -530,6 +489,28 @@ export default function RocketCollection() {
                 <p className="text-orange-400/70 text-xs">{rocket}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+{/* SHIPPED TO SPACE FANS */}
+      <section className="py-6 px-6 border-t border-gray-800 bg-[#0d0d18]">
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+              <p className="text-orange-400 font-bold text-base mb-1">
+                Shipped to space fans in {statesReached} states this week
+              </p>
+              <p className="text-gray-400 text-sm">
+                {MAKER_COUNT} verified makers. Printed near you. Ships by {shipByDate}.
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <span className="text-orange-300 text-xs font-bold whitespace-nowrap">
+                {slotsLeft !== null ? `${slotsLeft} slots left` : "Limited weekly slots"}
+              </span>
+            </div>
           </div>
         </div>
       </section>
@@ -585,14 +566,7 @@ export default function RocketCollection() {
       {/* EMAIL CAPTURE + STARSHIP TEASER */}
       <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
         <div className="max-w-lg mx-auto text-center">
-          <div className="mb-8 p-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <p className="text-xs tracking-[0.3em] text-cyan-400 uppercase font-bold">Coming Soon</p>
-            </div>
-            <h3 className="text-lg font-bold text-white mb-1">Starship V2 is Coming</h3>
-            <p className="text-gray-400 text-sm">The most powerful rocket ever built. Be first in line when it drops.</p>
-          </div>
+          
 
           <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Join the Launch Club</p>
           <h2 className="text-2xl font-bold mb-2">10% Off + First Access to Every Drop</h2>
@@ -689,7 +663,7 @@ export default function RocketCollection() {
         <p className="text-gray-600 text-xs mb-8">Free replacement parts if anything is wrong. Quality guaranteed.</p>
         <div className="flex flex-col items-center gap-4">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get the Moon Missions Collection, ${BUNDLE_PRICE}
+            Get the Moon Missions Collection ${BUNDLE_PRICE}
           </Btn>
           <div className="flex items-baseline gap-3 flex-wrap justify-center">
             <span className="text-gray-500 line-through text-xl">${SEPARATE_TOTAL}</span>
@@ -697,9 +671,9 @@ export default function RocketCollection() {
             <span className="text-orange-300 text-sm font-semibold">Save ${BUNDLE_SAVINGS}</span>
           </div>
           <PaymentMethods />
-          <p className="text-xs text-gray-600">Or grab individual models above</p>
+          
         </div>
-        <p className="text-gray-700 text-xs mt-12">2025 EX3D Prints · Designs by kmobrain (AstroDesign 3D)</p>
+        
       </section>
 
       {/* LIGHTBOX */}
