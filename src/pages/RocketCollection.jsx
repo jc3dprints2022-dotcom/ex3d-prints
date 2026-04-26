@@ -307,7 +307,7 @@ export default function RocketCollection() {
       {/* INDIVIDUAL ARTIFACTS */}
       <section id="choose-setup" className="py-10 px-6 border-t border-gray-800">
         <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Or Add One to Your Collection</h2>
+          <h2 className="text-2xl font-bold text-center mb-8">Start Your Collection</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
             {/* Saturn V */}
