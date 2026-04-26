@@ -237,7 +237,7 @@ export default function RocketCollection() {
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
-      if (type === "bundle") toast({ title: "Collection reserved! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
+      if (type === "bundle") toast({ title: "Added to Cart! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
@@ -669,7 +669,7 @@ export default function RocketCollection() {
         <p className="text-gray-600 text-xs mb-8">Free replacement parts if anything is wrong. Quality guaranteed.</p>
         <div className="flex flex-col items-center gap-4">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get the Moon Missions Collection, ${BUNDLE_PRICE}
+            Get the Moon Missions Collection ${BUNDLE_PRICE}
           </Btn>
           <div className="flex items-baseline gap-3 flex-wrap justify-center">
             <span className="text-gray-500 line-through text-xl">${SEPARATE_TOTAL}</span>
