@@ -225,7 +225,7 @@ export default function SaturnV() {
     { q: "How long until it arrives?",         a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
     { q: "How hard is assembly?",              a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30 to 60 minutes." },
     { q: "What if something arrives damaged?", a: "Email us. We send replacement parts free. No return shipping needed." },
-    { q: "Who designed these?",                a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
+    { q: "Who designs these rockets?",                a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
   ];
 
   return (
