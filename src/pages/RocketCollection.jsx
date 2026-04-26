@@ -288,7 +288,7 @@ export default function RocketCollection() {
     { q: "How hard is the assembly?",                    a: "The kits press-fit together. Most parts snap into place, with a small amount of super glue recommended for a few sections. No painting required. Typical build time is 30 to 60 minutes." },
     { q: "What if a part is missing or arrives damaged?",a: "Every kit is quality-checked by the maker before it ships. If anything is wrong when it arrives, email us and we will send replacement parts free of charge." },
     { q: "Who designs these rockets?",                   a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network." },
-    { q: "Can I return it?",                             a: "Because each kit is printed to order we do not accept returns for change of mind. If anything is wrong with what you received, we will make it right." },
+    
   ];
 
   return (
