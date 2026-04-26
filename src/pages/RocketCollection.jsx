@@ -466,7 +466,7 @@ export default function RocketCollection() {
           <p className="text-xs tracking-[0.4em] text-teal-400 uppercase mb-3">The Perfect Gift</p>
           <h2 className="text-2xl font-bold mb-3">For the Space Nerd in Your Life</h2>
           <p className="text-gray-400 text-sm mb-6 leading-relaxed max-w-lg mx-auto">
-            The person who stops to watch launches. Who has a poster of the Saturn V but not the model. Who knows what SLS stands for without googling it. This is the gift that makes sense.
+            The person who drops everything to watch a launch. Who has a poster of the Saturn V but not the model. This is the gift that makes sense.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-xs mb-6">
             {["Father's Day", "Graduation", "Birthday", "Christmas", "Just Because"].map((occasion) => (
@@ -474,7 +474,7 @@ export default function RocketCollection() {
             ))}
           </div>
           <p className="text-gray-400 text-sm mb-5">
-            Order today and it arrives by <span className="text-white font-semibold">{shipByDate}</span>. Ships in protective packaging, ready to gift.
+            Order today and it ships by <span className="text-white font-semibold">{shipByDate}</span>. Ships in protective packaging, ready to gift.
           </p>
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white px-10 py-4">
             Get the Moon Missions Collection, ${BUNDLE_PRICE}
