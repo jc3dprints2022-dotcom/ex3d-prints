@@ -68,10 +68,10 @@ export default function FilamentManager({ makerId }) {
   try {
     const createPromises = selectedColors.map(color =>
       base44.entities.Filament.create({
-        maker_id: makerId,           // ← this was missing, causing the failure
-        material: selectedMaterial,
+        maker_id: makerId,
+        material_type: selectedMaterial,   // ← was "material", schema wants "material_type"
         color: color,
-        quantity: quantityPerFilament,
+        quantity_kg: quantityPerFilament,  // ← was "quantity", schema wants "quantity_kg"
         is_available: true,
       })
     );
