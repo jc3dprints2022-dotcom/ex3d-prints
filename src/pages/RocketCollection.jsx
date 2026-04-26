@@ -278,7 +278,7 @@ export default function RocketCollection() {
     return (
       <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide ${urgent ? "bg-red-500/15 border border-red-500/30 text-red-400" : "bg-orange-500/10 border border-orange-500/20 text-orange-400"}`}>
         <span className={`w-1.5 h-1.5 rounded-full animate-pulse flex-shrink-0 ${urgent ? "bg-red-400" : "bg-orange-400"}`} />
-        {slotsLeft === 0 ? "Fully booked this week, back Monday" : `Only ${slotsLeft} of ${WEEKLY_LIMIT} weekly slots left`}
+        {slotsLeft === 0 ? "Fully booked this week, back Monday" : `Only ${slotsLeft} weekly slots left`}
       </div>
     );
   };
