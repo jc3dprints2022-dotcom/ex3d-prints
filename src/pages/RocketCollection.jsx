@@ -566,14 +566,6 @@ export default function RocketCollection() {
       {/* EMAIL CAPTURE + STARSHIP TEASER */}
       <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
         <div className="max-w-lg mx-auto text-center">
-          <div className="mb-8 p-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse" />
-              <p className="text-xs tracking-[0.3em] text-cyan-400 uppercase font-bold">Coming Soon</p>
-            </div>
-            <h3 className="text-lg font-bold text-white mb-1">Starship V2 is Coming</h3>
-            <p className="text-gray-400 text-sm">The most powerful rocket ever built. Be first in line when it drops.</p>
-          </div>
 
           <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Join the Launch Club</p>
           <h2 className="text-2xl font-bold mb-2">10% Off + First Access to Every Drop</h2>
