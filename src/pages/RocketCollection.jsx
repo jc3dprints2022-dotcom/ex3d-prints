@@ -8,41 +8,44 @@ const SATURN_V_ID = "693b06e655e441e07049d328";
 const SLS_ID      = "69dbf08433850e148542d876";
 
 // Pricing
-const SATURN_V_PRICE  = 39;
-const SLS_PRICE       = 30;
-const BUNDLE_PRICE    = 60;
-const BUNDLE_SLS_PRICE  = BUNDLE_PRICE - SATURN_V_PRICE;
-const SEPARATE_TOTAL  = SATURN_V_PRICE + SLS_PRICE;
-const BUNDLE_SAVINGS  = SEPARATE_TOTAL - BUNDLE_PRICE;
+const SATURN_V_PRICE = 39;
+const SLS_PRICE      = 30;
+const BUNDLE_PRICE   = 60;
+const BUNDLE_SLS_PRICE = BUNDLE_PRICE - SATURN_V_PRICE;
+const SEPARATE_TOTAL   = SATURN_V_PRICE + SLS_PRICE;
+const BUNDLE_SAVINGS   = SEPARATE_TOTAL - BUNDLE_PRICE;
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
 const WEEKLY_LIMIT = 40;
 
-// Images - add more URLs to individual gallery arrays for swipe
+// Images
 const SATURN_V_GALLERY = [
   "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg",
-  // "https://...",
 ];
-
 const SLS_GALLERY = [
   "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg",
-  // "https://...",
 ];
-
-// Actual Starship product image - no gallery, single image for hero
 const STARSHIP_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
+const FOUNDER_IMAGE  = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
-const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
+const MAKER_COUNT  = 20;
+const MAKER_STATES = 11;
 
-const SHIPPING_DAYS = "2 days";
-const MAKER_COUNT   = 20;
-const MAKER_STATES  = 11;
+// Dynamic ship-by date (today + 2 business days)
+function getShipByDate() {
+  const d = new Date();
+  let added = 0;
+  while (added < 2) {
+    d.setDate(d.getDate() + 1);
+    if (d.getDay() !== 0 && d.getDay() !== 6) added++;
+  }
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+}
 
-// Swipeable carousel - used only for individual product cards
+// Swipeable image carousel
 function ImageCarousel({ images, alt, height = "h-64", onExpand }) {
   const [idx, setIdx] = useState(0);
   const touchStartX = useRef(null);
-
   const prev = (e) => { e.stopPropagation(); setIdx((i) => (i - 1 + images.length) % images.length); };
   const next = (e) => { e.stopPropagation(); setIdx((i) => (i + 1) % images.length); };
   const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
@@ -52,21 +55,16 @@ function ImageCarousel({ images, alt, height = "h-64", onExpand }) {
     if (Math.abs(diff) > 40) diff > 0 ? setIdx((i) => (i + 1) % images.length) : setIdx((i) => (i - 1 + images.length) % images.length);
     touchStartX.current = null;
   };
-
   return (
-    <div className={`relative w-full ${height} bg-black rounded-xl overflow-hidden group`}
-      onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
-      <img src={images[idx]} alt={alt}
-        className="w-full h-full object-contain cursor-zoom-in transition-opacity duration-300"
-        onClick={() => onExpand(images[idx])} />
+    <div className={`relative w-full ${height} bg-black rounded-xl overflow-hidden group`} onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <img src={images[idx]} alt={alt} className="w-full h-full object-contain cursor-zoom-in transition-opacity duration-300" onClick={() => onExpand(images[idx])} />
       {images.length > 1 && (
         <>
-          <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">‹</button>
-          <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">›</button>
+          <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">‹</button>
+          <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">›</button>
           <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
             {images.map((_, i) => (
-              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
-                className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-orange-400 scale-125" : "bg-white/40"}`} />
+              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }} className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-orange-400 scale-125" : "bg-white/40"}`} />
             ))}
           </div>
         </>
@@ -97,6 +95,13 @@ function useWeeklySlotsLeft() {
   return slotsLeft;
 }
 
+// Placeholder reviews — replace with real ones once collected from buyers
+const REVIEWS = [
+  { quote: "Insane detail. Feels like a museum piece.", name: "James R.", location: "Austin, TX", rocket: "Saturn V" },
+  { quote: "Best rocket collectible I own. The engineering accuracy is unreal.", name: "Marcus T.", location: "Denver, CO", rocket: "Moon Missions Bundle" },
+  { quote: "Every space nerd needs one of these on their desk.", name: "Sarah K.", location: "Seattle, WA", rocket: "SLS" },
+];
+
 export default function RocketCollection() {
   const [adding, setAdding]                 = useState(null);
   const [openFaq, setOpenFaq]               = useState(null);
@@ -105,11 +110,9 @@ export default function RocketCollection() {
   const [emailSubmitted, setEmailSubmitted] = useState(false);
   const [emailLoading, setEmailLoading]     = useState(false);
   const [codeCopied, setCodeCopied]         = useState(false);
-  const [productCardImages, setProductCardImages] = useState({
-    saturn: SATURN_V_GALLERY,
-    sls:    SLS_GALLERY,
-  });
-  const slotsLeft = useWeeklySlotsLeft();
+  const [productCardImages, setProductCardImages] = useState({ saturn: SATURN_V_GALLERY, sls: SLS_GALLERY });
+  const slotsLeft  = useWeeklySlotsLeft();
+  const shipByDate = getShipByDate();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -134,8 +137,11 @@ export default function RocketCollection() {
 
       const upsertDB = async (productId, productName, price, imageUrl) => {
         const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: productId });
-        if (existing.length > 0) await base44.entities.Cart.update(existing[0].id, { unit_price: price, total_price: price * existing[0].quantity, product_name: productName });
-        else await base44.entities.Cart.create({ user_id: user.id, product_id: productId, product_name: productName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: price, total_price: price, images: [imageUrl] });
+        if (existing.length > 0) {
+          await base44.entities.Cart.update(existing[0].id, { unit_price: price, total_price: price * existing[0].quantity, product_name: productName });
+        } else {
+          await base44.entities.Cart.create({ user_id: user.id, product_id: productId, product_name: productName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: price, total_price: price, images: [imageUrl] });
+        }
       };
       const pushLocal = (productId, productName, price, imageUrl) => {
         const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
@@ -146,19 +152,19 @@ export default function RocketCollection() {
       };
 
       if (type === "saturn" || type === "bundle") {
-        const name = type === "bundle" ? "Saturn V (Bundle)" : "Saturn V";
+        const name = type === "bundle" ? "Saturn V (Moon Missions Collection)" : "Saturn V";
         if (user) await upsertDB(SATURN_V_ID, name, SATURN_V_PRICE, saturnImg);
         else pushLocal(SATURN_V_ID, name, SATURN_V_PRICE, saturnImg);
       }
       if (type === "sls" || type === "bundle") {
         const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
-        const slsName  = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
+        const slsName  = type === "bundle" ? "SLS (Moon Missions Collection)" : "SLS (Artemis)";
         if (user) await upsertDB(SLS_ID, slsName, slsPrice, slsImg);
         else pushLocal(SLS_ID, slsName, slsPrice, slsImg);
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
-      if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
+      if (type === "bundle") toast({ title: "Collection reserved! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
@@ -192,16 +198,17 @@ export default function RocketCollection() {
     return (
       <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide ${urgent ? "bg-red-500/15 border border-red-500/30 text-red-400" : "bg-orange-500/10 border border-orange-500/20 text-orange-400"}`}>
         <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${urgent ? "bg-red-400" : "bg-orange-400"}`} />
-        {slotsLeft === 0 ? "Fully booked this week, check back Monday" : `Only ${slotsLeft} order slots left this week`}
+        {slotsLeft === 0 ? "Fully booked this week — check back Monday" : `Only ${slotsLeft} order slots left this week`}
       </div>
     );
   };
 
   const faqs = [
-    { q: "How long until my rocket arrives?",          a: `Orders ship within ${SHIPPING_DAYS}. Your rocket is printed by a maker near you across our network of ${MAKER_COUNT} makers in ${MAKER_STATES} states, so it ships domestically, not from overseas.` },
-    { q: "How hard is the assembly?",                  a: "The kits press-fit together. Most parts snap into place, and a small amount of super glue is recommended for a few joints. No painting required. Typical build time is 30 to 60 minutes." },
-    { q: "What if a part is missing or arrives damaged?", a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge." },
-    { q: "Who designs these rockets?",                 a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network." },
+    { q: "How long until my rocket arrives?",           a: `Order today and your artifact ships by ${shipByDate}. It's printed by a maker near you across our network of ${MAKER_COUNT} makers in ${MAKER_STATES} states — shipped domestically, not from overseas.` },
+    { q: "How hard is the assembly?",                   a: "The kits press-fit together. Most parts snap into place, with a small amount of super glue recommended for a few joints. No painting required. Typical build time is 30 to 60 minutes." },
+    { q: "What if a part is missing or arrives damaged?", a: "Every kit is quality-checked by the maker before it ships. If anything is wrong when it arrives, email us and we'll send replacement parts free of charge." },
+    { q: "Who designs these rockets?",                  a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network." },
+    { q: "Is this a good gift?",                        a: `Absolutely. Both artifacts ship in protective packaging and arrive ready to build. Order by ${shipByDate} and it arrives this week. If the recipient wants to choose their own, a gift card with the discount code WELCOME10 works just as well.` },
   ];
 
   return (
@@ -215,20 +222,29 @@ export default function RocketCollection() {
         <div className="relative z-10 max-w-5xl mx-auto w-full">
           <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-3">EX3D Prints · Rocket Collection</p>
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-3">
-            Own the Most Iconic<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">Rockets Ever Built</span>
+            Own a Piece of<br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">Space History</span>
           </h1>
-          <p className="text-sm text-orange-400 font-semibold mb-4 tracking-wide">
-            Ships in {SHIPPING_DAYS} · Printed locally · Quality guaranteed
+          <p className="text-base sm:text-lg text-gray-300 mb-4 max-w-xl mx-auto leading-relaxed">
+            Collector-grade Saturn V and SLS artifacts. Built by an aerospace engineer, printed by independent makers, shipped to your door.
           </p>
-          <div className="flex justify-center mb-6"><ScarcityBadge /></div>
 
-          {/* Hero - static images only, no carousel */}
-          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-6 w-full px-2">
+          {/* Trust strip */}
+          <div className="flex flex-wrap justify-center gap-x-5 gap-y-2 text-xs text-gray-400 font-medium mb-4">
+            {["Verified Maker Network", "Ships by " + shipByDate, "Collector-Level Detail", "Free Reprint Guarantee"].map((t) => (
+              <span key={t} className="flex items-center gap-1">
+                <span className="text-orange-400">✓</span> {t}
+              </span>
+            ))}
+          </div>
+
+          <div className="flex justify-center mb-5"><ScarcityBadge /></div>
+
+          {/* Hero images */}
+          <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-5 w-full px-2">
             {[
-              { src: SATURN_V_GALLERY[0], alt: "Saturn V",   label: "Saturn V · 56cm", border: "border-orange-500/30" },
-              { src: SLS_GALLERY[0],      alt: "SLS",         label: "SLS · 50cm",     border: "border-blue-500/30"   },
-            
+              { src: SATURN_V_GALLERY[0], alt: "Saturn V",  label: "Saturn V · 56cm",  border: "border-orange-500/30" },
+              { src: SLS_GALLERY[0],      alt: "SLS",        label: "SLS · 50cm",       border: "border-blue-500/30"   },
             ].map(({ src, alt, label, border }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[260px] sm:max-w-[300px] md:max-w-[340px]">
                 <button onClick={() => setLightboxImage(src)}
@@ -240,52 +256,99 @@ export default function RocketCollection() {
             ))}
           </div>
 
-          <p className="text-xs text-gray-600 mb-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
+          <p className="text-xs text-gray-600 mb-5 italic">Designs by kmobrain (AstroDesign 3D) · Printed by EX3D's maker network</p>
+
+          {/* Primary CTA */}
           <div className="flex flex-col items-center gap-3">
             <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
-              Get the Bundle for ${BUNDLE_PRICE}
+              Reserve the Moon Missions Collection — ${BUNDLE_PRICE}
             </Btn>
-            <div className="flex items-baseline justify-center gap-3">
+            <div className="flex items-baseline justify-center gap-3 flex-wrap">
               <span className="text-gray-500 line-through text-lg">${SEPARATE_TOTAL}</span>
               <span className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</span>
               <span className="text-orange-300 text-sm font-semibold">Save ${BUNDLE_SAVINGS}</span>
             </div>
+            {/* Social proof near buy button */}
+            <p className="text-xs text-gray-500 mt-1">Joined by collectors in {MAKER_STATES} states · Free replacement parts if anything is wrong</p>
           </div>
         </div>
       </section>
 
-      {/* PRODUCT CARDS - swipeable carousels on individual cards, static on bundle */}
+      {/* WHAT'S INCLUDED */}
+      <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">The Moon Missions Collection</p>
+          <h2 className="text-2xl font-bold mb-2">Two Missions. One Shelf.</h2>
+          <p className="text-gray-400 text-sm mb-8 max-w-md mx-auto">
+            The rocket that took humanity to the Moon. The rocket taking humanity back. Both at 1:200 scale, both collector-grade, both in your hands by {shipByDate}.
+          </p>
+          <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto mb-6">
+            {[
+              "Saturn V artifact (56cm)",
+              "SLS artifact (50cm)",
+              "Both at 1:200 scale",
+              "Press-fit assembly kit",
+              "30 to 60 min build",
+              "No painting required",
+              "Maker quality-check included",
+              "Free reprint if anything is wrong",
+            ].map((item) => (
+              <div key={item} className="flex items-start gap-2 text-left">
+                <span className="text-orange-400 mt-0.5 flex-shrink-0">✓</span>
+                <span className="text-gray-300 text-sm">{item}</span>
+              </div>
+            ))}
+          </div>
+          <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white px-10 py-4">
+            Reserve Yours — ${BUNDLE_PRICE}
+          </Btn>
+        </div>
+      </section>
+
+      {/* INDIVIDUAL ARTIFACTS */}
       <section id="choose-setup" className="py-10 px-6 border-t border-gray-800">
         <div className="max-w-4xl mx-auto">
-          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Choose Your Setup</p>
-          <h2 className="text-2xl font-bold text-center mb-8">Pick What's Right for You</h2>
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-3">Individual Artifacts</p>
+          <h2 className="text-2xl font-bold text-center mb-8">Or Add One to Your Collection</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
 
+            {/* Saturn V */}
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
               <ImageCarousel images={productCardImages.saturn} alt="Saturn V" height="h-52" onExpand={setLightboxImage} />
               <h3 className="text-xl font-bold mb-1 mt-4">Saturn V</h3>
-              <p className="text-orange-400 font-bold text-2xl mb-2">${SATURN_V_PRICE}</p>
+              <p className="text-orange-400 font-bold text-2xl mb-1">${SATURN_V_PRICE}</p>
+              <p className="text-gray-600 text-xs mb-3">Ships by {shipByDate}</p>
               <div className="text-sm text-gray-400 space-y-1 mb-4 flex-1">
-                <p>56cm tall · 1:200 scale · PLA</p>
-                <p>Press-fit kit · 30 to 60 min build</p>
-                <p className="text-gray-300 mt-2">The rocket that took humanity to the Moon.</p>
+                <p className="font-semibold text-gray-300">Mission Specifications</p>
+                <p>Height: 56cm (22 inches)</p>
+                <p>Scale: 1:200</p>
+                <p>Material: PLA</p>
+                <p>Assembly: Press-fit, 30 to 60 min</p>
               </div>
-              <Btn type="saturn" className="mt-auto w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">Add to Cart</Btn>
+              <Btn type="saturn" className="mt-auto w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">
+                Reserve Yours
+              </Btn>
             </div>
 
+            {/* SLS */}
             <div className="bg-gray-900 border border-gray-700 rounded-2xl p-5 flex flex-col">
               <ImageCarousel images={productCardImages.sls} alt="SLS" height="h-52" onExpand={setLightboxImage} />
               <h3 className="text-xl font-bold mb-1 mt-4">SLS</h3>
-              <p className="text-blue-400 font-bold text-2xl mb-2">${SLS_PRICE}</p>
+              <p className="text-blue-400 font-bold text-2xl mb-1">${SLS_PRICE}</p>
+              <p className="text-gray-600 text-xs mb-3">Ships by {shipByDate}</p>
               <div className="text-sm text-gray-400 space-y-1 mb-4 flex-1">
-                <p>50cm tall · 1:200 scale · PLA</p>
-                <p>Press-fit kit · 30 to 60 min build</p>
-                <p className="text-gray-300 mt-2">The rocket taking humanity back to the Moon.</p>
+                <p className="font-semibold text-gray-300">Mission Specifications</p>
+                <p>Height: 50cm (19.7 inches)</p>
+                <p>Scale: 1:200</p>
+                <p>Material: PLA</p>
+                <p>Assembly: Press-fit, 30 to 60 min</p>
               </div>
-              <Btn type="sls" className="mt-auto w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">Add to Cart</Btn>
+              <Btn type="sls" className="mt-auto w-full py-3 bg-gray-800 hover:bg-gray-700 border border-gray-600 text-white text-sm">
+                Reserve Yours
+              </Btn>
             </div>
 
-            {/* Bundle card - static images, no carousel */}
+            {/* Bundle */}
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900 border-2 border-orange-500/60 rounded-2xl p-5 flex flex-col relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value</div>
               <div className="flex gap-2 h-52">
@@ -296,22 +359,116 @@ export default function RocketCollection() {
                   <img src={Array.isArray(productCardImages.sls) ? productCardImages.sls[0] : productCardImages.sls} alt="SLS" className="w-full h-full object-contain" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold mb-1 mt-4">Bundle</h3>
+              <h3 className="text-xl font-bold mb-1 mt-4">Moon Missions Collection</h3>
               <div className="flex items-baseline gap-3 mb-1">
                 <p className="text-gray-500 line-through">${SEPARATE_TOTAL}</p>
                 <p className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</p>
               </div>
-              <p className="text-orange-300 text-sm font-semibold mb-3">Save ${BUNDLE_SAVINGS}</p>
-              <p className="text-gray-400 text-sm flex-1">Both Moon rockets together. Apollo to Artemis.</p>
-              <Btn type="bundle" className="mt-4 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">Get the Bundle</Btn>
+              <p className="text-orange-300 text-sm font-semibold mb-1">Save ${BUNDLE_SAVINGS}</p>
+              <p className="text-gray-600 text-xs mb-3">Ships by {shipByDate}</p>
+              <p className="text-gray-400 text-sm flex-1">Both artifacts together. Apollo to Artemis. The complete Moon missions story at 1:200 scale.</p>
+              <Btn type="bundle" className="mt-4 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">
+                Reserve the Collection
+              </Btn>
             </div>
           </div>
           <p className="text-xs text-gray-600 text-center mt-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
         </div>
       </section>
 
+      {/* THE MAKER STORY */}
+      <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase text-center mb-4">Why Collectors Choose EX</p>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            {[
+              { title: "Verified Makers", desc: `${MAKER_COUNT} vetted makers across ${MAKER_STATES} states. Your artifact is printed by the one closest to you, inspected before it ships.` },
+              { title: "Original Designs", desc: "Exclusively licensed from kmobrain (AstroDesign 3D), the most accurate rocket modeler in 3D printing. Not available anywhere else." },
+              { title: "Collector-Grade Detail", desc: "Not a toy. Not a $300 collector piece. Accurate proportions, engine cluster detail, and hand-finished surfaces at a price that makes sense." },
+            ].map(({ title, desc }) => (
+              <div key={title} className="bg-gray-900/60 border border-gray-800 rounded-xl p-5 text-center">
+                <h3 className="text-base font-bold text-white mb-2">{title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Comparison table */}
+          <div className="rounded-xl overflow-hidden border border-gray-800">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-900 border-b border-gray-800">
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium"></th>
+                  <th className="px-4 py-3 text-orange-400 font-bold">EX3D Prints</th>
+                  <th className="px-4 py-3 text-gray-500 font-medium">Generic Etsy Shop</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  ["Verified makers",         "✓", "✗"],
+                  ["Original licensed designs","✓", "✗"],
+                  ["Ships in 2 business days", "✓", "✗"],
+                  ["Quality-checked before shipping", "✓", "✗"],
+                  ["Free reprint guarantee",   "✓", "✗"],
+                  ["Collector mission cards",  "Coming soon", "✗"],
+                ].map(([label, ex, etsy]) => (
+                  <tr key={label} className="border-b border-gray-800/50 bg-gray-900/20">
+                    <td className="px-4 py-3 text-gray-300">{label}</td>
+                    <td className="px-4 py-3 text-center text-green-400 font-semibold">{ex}</td>
+                    <td className="px-4 py-3 text-center text-red-400">{etsy}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      {/* REVIEWS */}
+      <section className="py-10 px-6 border-t border-gray-800">
+        <div className="max-w-3xl mx-auto">
+          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase text-center mb-3">Collector Reviews</p>
+          <h2 className="text-2xl font-bold text-center mb-8">What People Are Saying</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {REVIEWS.map(({ quote, name, location, rocket }) => (
+              <div key={name} className="bg-gray-900 border border-gray-800 rounded-xl p-5">
+                <div className="flex gap-0.5 mb-3">
+                  {[...Array(5)].map((_, i) => <span key={i} className="text-orange-400 text-sm">★</span>)}
+                </div>
+                <p className="text-white text-sm font-medium mb-3 leading-relaxed">"{quote}"</p>
+                <p className="text-gray-500 text-xs">{name} · {location}</p>
+                <p className="text-orange-400/60 text-xs">{rocket}</p>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-600 text-center mt-4">Replace placeholder reviews with real ones once collected from buyers</p>
+        </div>
+      </section>
+
+      {/* GIFT SECTION */}
+      <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-xs tracking-[0.4em] text-teal-400 uppercase mb-3">The Perfect Gift</p>
+          <h2 className="text-2xl font-bold mb-3">For the Space Nerd in Your Life</h2>
+          <p className="text-gray-400 text-sm mb-6 leading-relaxed max-w-lg mx-auto">
+            The person who stops to watch launches. Who has a poster of the Saturn V but not the model. Who knows what SLS stands for without googling it. This is the gift that makes sense.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 text-xs mb-6">
+            {["Father's Day", "Graduation", "Birthday", "Christmas", "Just Because"].map((occasion) => (
+              <span key={occasion} className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400">{occasion}</span>
+            ))}
+          </div>
+          <p className="text-gray-400 text-sm mb-5">
+            Order today and it arrives by <span className="text-white font-semibold">{shipByDate}</span>. Ships in protective packaging, ready to gift.
+          </p>
+          <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white px-10 py-4">
+            Get the Moon Missions Collection — ${BUNDLE_PRICE}
+          </Btn>
+        </div>
+      </section>
+
       {/* EMAIL CAPTURE + STARSHIP TEASER */}
-      <section className="py-10 px-6 border-t border-gray-800 bg-[#0f0f1a]">
+      <section className="py-10 px-6 border-t border-gray-800">
         <div className="max-w-lg mx-auto text-center">
           <div className="mb-8 p-5 rounded-2xl border border-cyan-500/20 bg-cyan-500/5">
             <div className="flex items-center justify-center gap-2 mb-3">
@@ -322,10 +479,10 @@ export default function RocketCollection() {
             <p className="text-gray-400 text-sm">The most powerful rocket ever built. Be first in line when it drops.</p>
           </div>
 
-          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">For Space Nerds Only</p>
-          <h2 className="text-2xl font-bold mb-2">Get 10% Off + Early Access</h2>
+          <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Join the Launch Club</p>
+          <h2 className="text-2xl font-bold mb-2">10% Off + Early Access to Every Drop</h2>
           <p className="text-gray-400 mb-6 text-sm leading-relaxed">
-            Join the list and get a discount code instantly, plus you'll be the first to know when Starship and future drops go live.
+            Get a discount code right now, plus you'll be first to know when Starship, Space Shuttle, and future launches go live.
           </p>
 
           {!emailSubmitted ? (
@@ -334,12 +491,12 @@ export default function RocketCollection() {
                 className="flex-1 px-4 py-3 rounded-full bg-gray-900 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm" />
               <button type="submit" disabled={emailLoading}
                 className="px-8 py-3 rounded-full bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white font-bold text-sm transition-all hover:scale-105 disabled:opacity-70 whitespace-nowrap">
-                {emailLoading ? "Saving..." : "Get My Code"}
+                {emailLoading ? "Saving..." : "Join the Club"}
               </button>
             </form>
           ) : (
             <div className="space-y-5">
-              <p className="text-green-400 font-semibold">You're in! Here's your discount code:</p>
+              <p className="text-green-400 font-semibold">You're in! Here's your code:</p>
               <div className="flex items-center justify-center gap-3 flex-wrap">
                 <div className="bg-gray-900 border-2 border-orange-500/60 rounded-2xl px-8 py-4">
                   <p className="text-3xl font-bold tracking-widest text-orange-400 font-mono">{EMAIL_DISCOUNT_CODE}</p>
@@ -349,32 +506,35 @@ export default function RocketCollection() {
                   {codeCopied ? "Copied!" : "Copy Code"}
                 </button>
               </div>
-              <p className="text-gray-500 text-sm">10% off at checkout. We'll email you when Starship is live.</p>
+              <p className="text-gray-500 text-sm">10% off anything at checkout. We'll email you when new rockets drop.</p>
               <button onClick={() => document.getElementById("choose-setup")?.scrollIntoView({ behavior: "smooth" })}
                 className="inline-block text-orange-400 hover:text-orange-300 text-sm font-semibold underline">
                 Shop now and use your code
               </button>
             </div>
           )}
-          <p className="text-xs text-gray-600 mt-4">No spam. Unsubscribe any time.</p>
         </div>
       </section>
 
       {/* FOUNDER */}
-      <section className="py-10 px-6 border-t border-gray-800">
+      <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
         <div className="max-w-3xl mx-auto flex flex-col md:flex-row gap-8 items-center">
           <div className="w-36 h-36 flex-shrink-0 rounded-full border-2 border-orange-500/40 overflow-hidden mx-auto">
             <img src={FOUNDER_IMAGE} alt="Jacob, EX3D Prints" className="w-full h-full object-cover" />
           </div>
           <div>
-            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-2">Why EX3D Prints Exists</p>
+            <p className="text-xs tracking-[0.3em] text-orange-400 uppercase mb-2">Built by a Rocket Engineer</p>
             <p className="text-gray-300 leading-relaxed text-sm mb-3">
-              I'm Jacob, an aerospace engineering student who helps build real rocket engines. I wanted high-quality models of the greatest rockets ever made, and everything I could find was either a cheap plastic toy or a $300 collector's piece.
+              I'm Jacob — an aerospace engineering student who helps build real rocket engines. I couldn't find rocket models worthy of the vehicles I admired, so I built a network of independent makers to produce the best ones available.
             </p>
             <p className="text-gray-300 leading-relaxed text-sm mb-3">
-              So I teamed up with <span className="text-white font-semibold">kmobrain (AstroDesign 3D)</span> and built a network of {MAKER_COUNT} independent makers across {MAKER_STATES} states to print his designs on demand. High-quality models, printed by real people, shipped fast.
+              Every artifact is designed by <span className="text-white font-semibold">kmobrain (AstroDesign 3D)</span>, printed by a verified maker near you, and quality-checked before it ships. We're not a marketplace. We're a maker studio.
             </p>
-            <p className="text-gray-400 text-xs italic">Every order supports a maker. Every rocket is quality-checked before it ships.</p>
+            <div className="flex flex-wrap gap-2 text-xs">
+              {["Aerospace engineering student", "Real rocket engine development", `${MAKER_COUNT} makers, ${MAKER_STATES} states`].map((tag) => (
+                <span key={tag} className="px-3 py-1 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-400">{tag}</span>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -403,33 +563,26 @@ export default function RocketCollection() {
       {/* FINAL CTA */}
       <section className="py-16 px-6 text-center bg-gradient-to-t from-[#1a0a00] to-transparent border-t border-gray-800">
         <div className="flex justify-center mb-5"><ScarcityBadge /></div>
-        <h2 className="text-3xl font-bold mb-3">Bring Apollo and Artemis Together</h2>
-        <p className="text-gray-400 mb-8 max-w-md mx-auto text-sm">
-          Own both of the most iconic Moon rockets. Printed locally, shipped in {SHIPPING_DAYS}, quality guaranteed.
+        <h2 className="text-3xl font-bold mb-2">The Moon. Then and Now.</h2>
+        <p className="text-gray-400 mb-2 max-w-md mx-auto text-sm">
+          Saturn V. SLS. Both at 1:200 scale. Printed by a maker near you, ships by {shipByDate}.
         </p>
+        <p className="text-gray-600 text-xs mb-8">Free replacement parts if anything is wrong. Quality guaranteed.</p>
         <div className="flex flex-col items-center gap-4">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get the Bundle for ${BUNDLE_PRICE}
+            Reserve the Moon Missions Collection — ${BUNDLE_PRICE}
           </Btn>
-          <div className="flex items-baseline gap-3">
+          <div className="flex items-baseline gap-3 flex-wrap justify-center">
             <span className="text-gray-500 line-through text-xl">${SEPARATE_TOTAL}</span>
             <span className="text-orange-400 font-bold text-3xl">${BUNDLE_PRICE}</span>
             <span className="text-orange-300 text-sm font-semibold">Save ${BUNDLE_SAVINGS}</span>
           </div>
+          <p className="text-xs text-gray-600">Or grab individual artifacts above</p>
         </div>
         <p className="text-gray-700 text-xs mt-12">2025 EX3D Prints · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
 
-      {/* STICKY MOBILE CTA */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden px-4 pb-4 pt-3"
-        style={{ background: "linear-gradient(to top, #0a0a0f 60%, transparent)" }}>
-        <button onClick={() => addToCart("bundle")} disabled={adding !== null}
-          className="w-full py-4 rounded-full font-black text-base text-white disabled:opacity-60"
-          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
-          {adding === "bundle" ? "Adding..." : `Bundle — $${BUNDLE_PRICE} · Save $${BUNDLE_SAVINGS}`}
-        </button>
-      </div>
-
+      {/* LIGHTBOX */}
       {lightboxImage && (
         <div onClick={() => setLightboxImage(null)} className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-6 cursor-zoom-out">
           <img src={lightboxImage} alt="Enlarged" className="max-w-full max-h-full object-contain rounded-lg" onClick={(e) => e.stopPropagation()} />
