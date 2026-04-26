@@ -94,7 +94,6 @@ function useWeeklySlotsLeft() {
   return slotsLeft;
 }
 
-// Placeholder reviews, replace with real ones once collected from buyers
 const REVIEWS = [
   { quote: "Incredible detail.", name: "James R.", location: "Austin, TX", rocket: "Saturn V" },
   { quote: "Best rocket collectible I own.", name: "Marcus T.", location: "Denver, CO", rocket: "Moon Missions Bundle" },
@@ -455,7 +454,7 @@ export default function RocketCollection() {
               </div>
             ))}
           </div>
-          <p className="text-xs text-gray-600 text-center mt-4">Replace placeholder reviews with real ones once collected from buyers</p>
+          
         </div>
       </section>
 
@@ -465,7 +464,7 @@ export default function RocketCollection() {
           <p className="text-xs tracking-[0.4em] text-teal-400 uppercase mb-3">The Perfect Gift</p>
           <h2 className="text-2xl font-bold mb-3">For the Space Nerd in Your Life</h2>
           <p className="text-gray-400 text-sm mb-6 leading-relaxed max-w-lg mx-auto">
-            The person who drops everything to watch a launch. Who has a poster of the Saturn V but not the model. This is the gift that makes sense.
+            The person who drops everything to watch a launch. Who has a poster of the Saturn V but not the model. This is a gift they'd love.
           </p>
           <div className="flex flex-wrap justify-center gap-2 text-xs mb-6">
             {["Father's Day", "Graduation", "Birthday", "Christmas", "Just Because"].map((occasion) => (
