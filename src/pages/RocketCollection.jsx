@@ -47,66 +47,53 @@ export default function SaturnV() {
     try {
       const user = await base44.auth.me().catch(() => null);
       if (!user) {
-  const addAnonItem = (productId, productName, price, imageUrl) => {
-    const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+        const addAnonItem = (productId, productName, price, imageUrl) => {
+          const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
+          const existingIdx = cart.findIndex(i => i.product_id === productId);
+          if (existingIdx >= 0) {
+            cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
+            cart[existingIdx].unit_price = price;
+            cart[existingIdx].total_price = price * cart[existingIdx].quantity;
+            cart[existingIdx].product_name = productName;
+          } else {
+            cart.push({
+              id: `anon_${productId}_${Date.now()}`,
+              product_id: productId,
+              product_name: productName,
+              quantity: 1,
+              selected_material: "PLA",
+              selected_color: "Shown Colors",
+              unit_price: price,
+              total_price: price,
+              images: [imageUrl],
+            });
+          }
+          localStorage.setItem("anonymousCart", JSON.stringify(cart));
+        };
 
-    const existingIdx = cart.findIndex(i => i.product_id === productId);
+        if (type === "saturn" || type === "bundle") {
+          addAnonItem(SATURN_V_ID, "SATURN V", SATURN_V_PRICE, SATURN_V_IMAGE);
+        }
+        if (type === "sls" || type === "bundle") {
+          const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
+          const slsName = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
+          addAnonItem(SLS_ID, slsName, slsPrice, SLS_IMAGE);
+        }
 
-    if (existingIdx >= 0) {
-      cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
-      cart[existingIdx].unit_price = price;
-      cart[existingIdx].total_price = price * cart[existingIdx].quantity;
-      cart[existingIdx].product_name = productName;
-    } else {
-      cart.push({
-        id: `anon_${productId}_${Date.now()}`,
-        product_id: productId,
-        product_name: productName,
-        quantity: 1,
-        selected_material: "PLA",
-        selected_color: "Shown Colors",
-        unit_price: price,
-        total_price: price,
-        images: [imageUrl],
-      });
-    }
-
-    localStorage.setItem("anonymousCart", JSON.stringify(cart));
-  };
-
-  if (type === "saturn" || type === "bundle") {
-    addAnonItem(SATURN_V_ID, "SATURN V", SATURN_V_PRICE, SATURN_V_IMAGE);
-  }
-
-  if (type === "sls" || type === "bundle") {
-    const slsPrice = type === "bundle" ? BUNDLE_SLS_PRICE : SLS_PRICE;
-    const slsName = type === "bundle" ? "SLS (Artemis) Bundle" : "SLS (Artemis)";
-
-    addAnonItem(SLS_ID, slsName, slsPrice, SLS_IMAGE);
-  }
-
-  window.dispatchEvent(new Event("cartUpdated"));
-
-  if (type === "bundle") {
-    toast({
-      title: "Bundle added! 🚀",
-      description: `Saturn V plus SLS for $${BUNDLE_PRICE}`,
-    });
-  }
-
-  setTimeout(() => {
-    window.location.href = "/Cart";
-  }, type === "bundle" ? 600 : 0);
-
-  return;
-}
+        window.dispatchEvent(new Event("cartUpdated"));
+        if (type === "bundle") {
+          toast({ title: "Bundle added! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
+        }
+        setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
+        return;
+      }
 
       if (type === "saturn" || type === "bundle") {
         const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: SATURN_V_ID });
         if (existing.length > 0) {
           await base44.entities.Cart.update(existing[0].id, { unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE * existing[0].quantity });
         } else {
-          await base44.entities.Cart.create({ user_id: user.id, product_id: SATURN_V_ID, product_name: "SATURN V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE, image_url: SATURN_V_IMAGE });
+          await base44.entities.Cart.create({ user_id: user.id, product_id: SATURN_V_ID, product_name: "SATURN V", quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: SATURN_V_PRICE, total_price: SATURN_V_PRICE, images: [SATURN_V_IMAGE] });
         }
       }
 
@@ -117,12 +104,12 @@ export default function SaturnV() {
         if (existing.length > 0) {
           await base44.entities.Cart.update(existing[0].id, { unit_price: slsPrice, total_price: slsPrice * existing[0].quantity, product_name: slsName });
         } else {
-          await base44.entities.Cart.create({ user_id: user.id, product_id: SLS_ID, product_name: slsName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: slsPrice, total_price: slsPrice, image_url: SLS_IMAGE });
+          await base44.entities.Cart.create({ user_id: user.id, product_id: SLS_ID, product_name: slsName, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: slsPrice, total_price: slsPrice, images: [SLS_IMAGE] });
         }
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
-      if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V plus SLS for $${BUNDLE_PRICE}` });
+      if (type === "bundle") toast({ title: "Bundle added! 🚀", description: `Saturn V + SLS for $${BUNDLE_PRICE}` });
       setTimeout(() => { window.location.href = "/Cart"; }, type === "bundle" ? 600 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
@@ -163,15 +150,16 @@ export default function SaturnV() {
     </button>
   );
 
+  // ── CHANGED: BundlePriceDisplay now shows anchoring context ──
   const BundlePriceDisplay = ({ size = "base" }) => {
     const s = size === "large"
       ? { old: "text-xl sm:text-2xl", new: "text-4xl sm:text-5xl", save: "text-sm sm:text-base" }
       : { old: "text-lg sm:text-xl", new: "text-2xl sm:text-3xl", save: "text-xs sm:text-sm" };
     return (
       <div className="flex items-baseline justify-center gap-2 sm:gap-4 flex-wrap px-4">
-        <span className={`${s.old} text-gray-500 line-through font-medium`}>${SEPARATE_TOTAL}</span>
+        <span className={`${s.old} text-gray-500 line-through font-medium`}>${SEPARATE_TOTAL} separately</span>
         <span className={`${s.new} font-bold text-orange-400`}>${BUNDLE_PRICE}</span>
-        <span className={`${s.save} text-orange-300 font-semibold`}>Save ${BUNDLE_SAVINGS} with the bundle</span>
+        <span className={`${s.save} text-orange-300 font-semibold`}>Save ${BUNDLE_SAVINGS}</span>
       </div>
     );
   };
@@ -185,6 +173,14 @@ export default function SaturnV() {
     </button>
   );
 
+  // ── CHANGED: Guarantee badge — reusable, used in 3 places ──
+  const GuaranteeBadge = () => (
+    <div className="inline-flex items-center gap-1.5 text-xs text-green-400 font-medium">
+      <span>🛡️</span>
+      <span>Free replacement parts if anything arrives wrong — no questions</span>
+    </div>
+  );
+
   const faqs = [
     {
       q: "How long until my rocket arrives?",
@@ -196,15 +192,15 @@ export default function SaturnV() {
     },
     {
       q: "What if a part is missing or arrives damaged?",
-      a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge.",
+      a: "Every kit is quality-checked before it ships. If anything is wrong, email us and we will send replacement parts free of charge. No return shipping, no forms.",
     },
     {
       q: "Who designs these rockets?",
-      a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D Prints licenses the designs and handles printing and fulfillment through our maker network.",
+      a: "The designs are by kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. His Saturn V has been downloaded over 14,700 times. EX3D Prints licenses the designs and handles printing and fulfillment.",
     },
     {
       q: "Can I return it?",
-      a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right.",
+      a: "Because each kit is printed to order we don't accept returns for change of mind. If anything is wrong with what you received we will make it right — every time.",
     },
   ];
 
@@ -218,24 +214,32 @@ export default function SaturnV() {
         <div className="absolute inset-0 opacity-20" style={{ backgroundImage: `radial-gradient(circle, white 1px, transparent 1px)`, backgroundSize: "60px 60px" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto pt-4 sm:pt-6">
-          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-3">EX3D Prints · Rocket Collection</p>
+          <p className="text-xs tracking-[0.4em] text-gray-400 uppercase mb-3">EX3D Prints · Moon Mission Bundle</p>
+
+          {/* ── CHANGED: Headline tightened to be benefit-first ── */}
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight mb-3">
-            Own the Most Iconic<br />
+            Own Both Moon Rockets.<br />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-300">
-              Rockets Ever Built
+              Apollo to Artemis. $60.
             </span>
           </h1>
+
           <p className="text-lg sm:text-xl text-gray-300 mb-3 max-w-2xl mx-auto leading-relaxed">
-            Precision-printed Saturn V and SLS model kits. Designed by aerospace nerds, printed by {MAKER_COUNT} makers across {MAKER_STATES} states.
+            Saturn V and SLS at 1:200 scale — designed from real reference data, printed by a local maker near you, ships in {SHIPPING_DAYS}.
           </p>
-          <p className="text-sm text-orange-400 font-semibold mb-6 tracking-wide">
-            Ships in {SHIPPING_DAYS} · Printed locally · Quality guaranteed
-          </p>
+
+          {/* ── CHANGED: Trust badges moved up into hero ── */}
+          <div className="flex items-center justify-center gap-3 sm:gap-5 text-xs text-gray-500 mb-6 flex-wrap">
+            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Ships in {SHIPPING_DAYS}</span>
+            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Printed locally in the US</span>
+            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Free replacement parts</span>
+            <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> No login required</span>
+          </div>
 
           <div className="flex justify-center items-end gap-3 sm:gap-6 md:gap-10 mb-5 w-full px-2">
             {[
-              { src: SATURN_V_IMAGE, alt: "Saturn V printed model", label: "Saturn V · 22 inch", shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
-              { src: SLS_IMAGE,      alt: "SLS printed model",      label: "SLS · 19 inch",      shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
+              { src: SATURN_V_IMAGE, alt: "Saturn V printed model", label: "Saturn V · 56cm", shadow: "shadow-orange-900/20", hover: "hover:border-orange-500/40" },
+              { src: SLS_IMAGE,      alt: "SLS printed model",      label: "SLS · 50cm",      shadow: "shadow-blue-900/20",   hover: "hover:border-blue-500/40"   },
             ].map(({ src, alt, label, shadow, hover }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[260px] sm:max-w-[300px] md:max-w-[340px]">
                 <button
@@ -249,15 +253,19 @@ export default function SaturnV() {
             ))}
           </div>
 
-          <p className="text-xs text-gray-500 mb-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
+          <p className="text-xs text-gray-500 mb-5 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
 
-          <div className="flex flex-col items-center gap-4">
-            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-lg px-12 py-5">
-              Get the Bundle for ${BUNDLE_PRICE}
+          <div className="flex flex-col items-center gap-2">
+            {/* ── CHANGED: Price anchor above button, not below ── */}
+            <p className="text-sm text-gray-500">
+              <span className="line-through">${SEPARATE_TOTAL} if bought separately</span>
+              <span className="text-orange-400 font-bold ml-2">→ Bundle saves ${BUNDLE_SAVINGS}</span>
+            </p>
+            <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-5 mt-1">
+              Get Both Rockets — ${BUNDLE_PRICE}
             </Btn>
-            <div className="pt-1 pb-2">
-              <BundlePriceDisplay size="base" />
-            </div>
+            {/* ── CHANGED: Guarantee directly under the buy button ── */}
+            <GuaranteeBadge />
           </div>
         </div>
       </section>
@@ -331,9 +339,9 @@ export default function SaturnV() {
               </Btn>
             </div>
 
-            {/* Bundle */}
+            {/* Bundle — CHANGED: value stack inside card ── */}
             <div className="bg-gradient-to-b from-orange-900/30 to-gray-900 border-2 border-orange-500/60 rounded-2xl p-6 flex flex-col relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value</div>
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-full">Best Value — Save ${BUNDLE_SAVINGS}</div>
               <div className="flex gap-2 mb-4 h-56">
                 <div className="flex-1 rounded-xl overflow-hidden bg-black flex items-center justify-center">
                   <img src={SATURN_V_IMAGE} alt="Saturn V" className="w-full h-full object-contain" />
@@ -342,16 +350,18 @@ export default function SaturnV() {
                   <img src={SLS_IMAGE} alt="SLS" className="w-full h-full object-contain" />
                 </div>
               </div>
-              <h3 className="text-xl font-bold mb-1">Bundle</h3>
+              <h3 className="text-xl font-bold mb-1">Moon Mission Bundle</h3>
               <div className="flex items-baseline gap-3 mb-1">
                 <p className="text-gray-500 line-through">${SEPARATE_TOTAL}</p>
                 <p className="text-orange-400 font-bold text-2xl">${BUNDLE_PRICE}</p>
               </div>
-              <p className="text-orange-300 text-sm font-semibold mb-3">Save ${BUNDLE_SAVINGS}</p>
-              <p className="text-gray-400 text-sm flex-1">Both Moon rockets together. Apollo to Artemis.</p>
-              <Btn type="bundle" className="mt-4 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">
-                Get the Bundle
+              <p className="text-orange-300 text-sm font-semibold mb-2">Both rockets. One order. Saves ${BUNDLE_SAVINGS}.</p>
+              <p className="text-gray-400 text-sm flex-1 mb-1">Apollo to Artemis — the complete story of American lunar spaceflight on your shelf.</p>
+              <Btn type="bundle" className="mt-3 w-full py-3 bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-sm">
+                Get Both Rockets — ${BUNDLE_PRICE}
               </Btn>
+              {/* ── CHANGED: Guarantee in bundle card ── */}
+              <p className="text-[10px] text-green-400 text-center mt-2">🛡️ Free replacement parts if anything's wrong</p>
             </div>
           </div>
           <p className="text-xs text-gray-500 text-center mt-6 italic">Designs by kmobrain (AstroDesign 3D) · Printed and shipped by EX3D's maker network</p>
@@ -492,14 +502,19 @@ export default function SaturnV() {
         <p className="text-xs tracking-[0.4em] text-orange-400 uppercase mb-3">Ready?</p>
         <h2 className="text-4xl font-bold mb-3">Bring Apollo and Artemis Together</h2>
         <p className="text-gray-400 mb-3 max-w-md mx-auto">
-          Own both of the most iconic Moon rockets. Printed locally, shipped fast, quality guaranteed.
+          Both Moon rockets. Printed near you. Ships in {SHIPPING_DAYS}. Free replacement parts if anything's wrong.
         </p>
-        <p className="text-xs text-gray-500 mb-8">Ships in {SHIPPING_DAYS} · Free replacement parts if anything's wrong</p>
-        <div className="flex flex-col items-center gap-6">
+        {/* ── CHANGED: Price anchor above final CTA button too ── */}
+        <p className="text-sm text-gray-600 mb-6">
+          <span className="line-through mr-2">${SEPARATE_TOTAL} if bought separately</span>
+          <span className="text-orange-400 font-semibold">Bundle saves ${BUNDLE_SAVINGS}</span>
+        </p>
+        <div className="flex flex-col items-center gap-3">
           <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white text-xl px-14 py-6 shadow-xl shadow-orange-900/50">
-            Get the Bundle for ${BUNDLE_PRICE}
+            Get Both Rockets — ${BUNDLE_PRICE}
           </Btn>
-          <BundlePriceDisplay size="large" />
+          {/* ── CHANGED: Guarantee at final CTA too ── */}
+          <GuaranteeBadge />
         </div>
         <p className="text-gray-700 text-xs mt-10">© 2025 EX3D Prints · Jacob L. · Designs by kmobrain (AstroDesign 3D)</p>
       </section>
