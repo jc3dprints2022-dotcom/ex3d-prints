@@ -97,7 +97,7 @@ function useWeeklySlotsLeft() {
 
 // Placeholder reviews, replace with real ones once collected from buyers
 const REVIEWS = [
-  { quote: "Incredible detail. You can see every engine bell on the F-1 cluster.", name: "James R.", location: "Austin, TX", rocket: "Saturn V" },
+  { quote: "Incredible detail.", name: "James R.", location: "Austin, TX", rocket: "Saturn V" },
   { quote: "Best rocket collectible I own.", name: "Marcus T.", location: "Denver, CO", rocket: "Moon Missions Bundle" },
   { quote: "Every space fan needs one of these in their collection.", name: "Sarah K.", location: "Seattle, WA", rocket: "SLS" },
 ];
