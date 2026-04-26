@@ -301,9 +301,6 @@ export default function RocketCollection() {
               </div>
             ))}
           </div>
-          <Btn type="bundle" className="bg-gradient-to-r from-orange-500 to-orange-400 hover:from-orange-400 hover:to-yellow-400 text-white px-10 py-4">
-            Get Yours, ${BUNDLE_PRICE}
-          </Btn>
         </div>
       </section>
 
