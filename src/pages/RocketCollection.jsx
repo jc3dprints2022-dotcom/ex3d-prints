@@ -362,27 +362,6 @@ export default function RocketCollection() {
         </div>
       </section>
 
-      {/* SHIPPED TO SPACE FANS */}
-      <section className="py-6 px-6 border-t border-gray-800 bg-[#0d0d18]">
-        <div className="max-w-3xl mx-auto">
-          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-            <div>
-              <p className="text-orange-400 font-bold text-base mb-1">
-                Shipped to space fans in {statesReached} states this week
-              </p>
-              <p className="text-gray-400 text-sm">
-                {MAKER_COUNT} verified makers. Printed near you. Ships by {shipByDate}.
-              </p>
-            </div>
-            <div className="flex-shrink-0 flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
-              <span className="text-orange-300 text-xs font-bold whitespace-nowrap">
-                {slotsLeft !== null ? `${slotsLeft} slots left` : "Limited weekly slots"}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* WHAT'S INCLUDED */}
       <section className="py-10 px-6 border-t border-gray-800 bg-[#0d0d18]">
@@ -510,6 +489,28 @@ export default function RocketCollection() {
                 <p className="text-orange-400/70 text-xs">{rocket}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+{/* SHIPPED TO SPACE FANS */}
+      <section className="py-6 px-6 border-t border-gray-800 bg-[#0d0d18]">
+        <div className="max-w-3xl mx-auto">
+          <div className="rounded-2xl border border-orange-500/20 bg-orange-500/5 px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+            <div>
+              <p className="text-orange-400 font-bold text-base mb-1">
+                Shipped to space fans in {statesReached} states this week
+              </p>
+              <p className="text-gray-400 text-sm">
+                {MAKER_COUNT} verified makers. Printed near you. Ships by {shipByDate}.
+              </p>
+            </div>
+            <div className="flex-shrink-0 flex items-center gap-2 bg-orange-500/10 border border-orange-500/30 rounded-full px-4 py-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse" />
+              <span className="text-orange-300 text-xs font-bold whitespace-nowrap">
+                {slotsLeft !== null ? `${slotsLeft} slots left` : "Limited weekly slots"}
+              </span>
+            </div>
           </div>
         </div>
       </section>
