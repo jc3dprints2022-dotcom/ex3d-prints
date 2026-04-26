@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/toaster";
@@ -20,15 +20,26 @@ const GIANTS_SLS_PRICE       = 16;
 const GIANTS_STARSHIP_PRICE  = GIANTS_BUNDLE_PRICE - GIANTS_SATURN_PRICE - GIANTS_SLS_PRICE;
 
 const EMAIL_DISCOUNT_CODE = "WELCOME10";
+const WEEKLY_LIMIT = 40;
 
-// ── IMAGES ───────────────────────────────────────────────────────────────────
-const SATURN_V_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg";
-const SLS_HERO      = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg";
-const STARSHIP_HERO = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg";
+// ── IMAGES — add more URLs to each array for the swipe gallery ────────────────
+const SATURN_V_GALLERY = [
+  "https://media.base44.com/images/public/68f40a023bb378f79ed78369/fb3c7d07a_671660729_1599137397983813_1991239647601769069_n.jpg",
+  // Add additional Saturn V photo URLs here:
+  // "https://...",
+];
 
-const SATURN_V_IMAGE = SATURN_V_HERO || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/public/68f40a023bb378f79ed78369/712440286_MULTIPART.png";
-const SLS_IMAGE      = SLS_HERO      || "https://base44.app/api/apps/68f40a023bb378f79ed78369/files/mp/public/68f40a023bb378f79ed78369/da37e7640_SLS1-12025.png";
-const starshipImage  = STARSHIP_HERO;
+const SLS_GALLERY = [
+  "https://media.base44.com/images/public/68f40a023bb378f79ed78369/eeee32efc_1.jpg",
+  // Add additional SLS photo URLs here:
+  // "https://...",
+];
+
+const STARSHIP_GALLERY = [
+  "https://media.base44.com/images/public/68f40a023bb378f79ed78369/f6e9232fa_7.jpg",
+  // Add additional Starship photo URLs here:
+  // "https://...",
+];
 
 const FOUNDER_IMAGE = "https://media.base44.com/images/public/68f40a023bb378f79ed78369/428ab4b45_Founder.jpg";
 
@@ -36,18 +47,88 @@ const SHIPPING_DAYS = "2-4 days";
 const MAKER_COUNT   = 19;
 const MAKER_STATES  = 11;
 
+// ── Swipeable image carousel ──────────────────────────────────────────────────
+function ImageCarousel({ images, alt, height = "h-64", onExpand }) {
+  const [idx, setIdx] = useState(0);
+  const touchStartX = useRef(null);
+
+  const prev = (e) => { e.stopPropagation(); setIdx((i) => (i - 1 + images.length) % images.length); };
+  const next = (e) => { e.stopPropagation(); setIdx((i) => (i + 1) % images.length); };
+
+  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd   = (e) => {
+    if (touchStartX.current === null) return;
+    const diff = touchStartX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) diff > 0 ? setIdx((i) => (i + 1) % images.length) : setIdx((i) => (i - 1 + images.length) % images.length);
+    touchStartX.current = null;
+  };
+
+  return (
+    <div className={`relative w-full ${height} bg-black rounded-xl overflow-hidden group`}
+      onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      <img src={images[idx]} alt={alt}
+        className="w-full h-full object-contain cursor-zoom-in transition-opacity duration-300"
+        onClick={() => onExpand(images[idx])} />
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">‹</button>
+          <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-black/60 text-white text-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black/80">›</button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? "bg-orange-400 scale-125" : "bg-white/40"}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Weekly scarcity counter ───────────────────────────────────────────────────
+function useWeeklySlotsLeft() {
+  const [slotsLeft, setSlotsLeft] = useState(null);
+
+  useEffect(() => {
+    const getWeekStart = () => {
+      const now = new Date();
+      const day = now.getDay();
+      const diff = now.getDate() - day + (day === 0 ? -6 : 1);
+      const monday = new Date(now);
+      monday.setDate(diff);
+      monday.setHours(0, 0, 0, 0);
+      return monday;
+    };
+
+    base44.entities.Order.filter({})
+      .then((orders) => {
+        const weekStart = getWeekStart();
+        const weekOrders = orders.filter(
+          (o) => o.created_date && new Date(o.created_date) >= weekStart
+        );
+        setSlotsLeft(Math.max(0, WEEKLY_LIMIT - weekOrders.length));
+      })
+      .catch(() => setSlotsLeft(33));
+  }, []);
+
+  return slotsLeft;
+}
+
 export default function SaturnV() {
-  const [adding, setAdding]                 = useState(null);
-  const [openFaq, setOpenFaq]               = useState(null);
-  const [lightboxImage, setLightboxImage]   = useState(null);
-  const [email, setEmail]                   = useState("");
+  const [adding, setAdding]               = useState(null);
+  const [openFaq, setOpenFaq]             = useState(null);
+  const [lightboxImage, setLightboxImage] = useState(null);
+  const [email, setEmail]                 = useState("");
   const [emailSubmitted, setEmailSubmitted] = useState(false);
-  const [emailLoading, setEmailLoading]     = useState(false);
-  const [codeCopied, setCodeCopied]         = useState(false);
-  const [starshipId, setStarshipId]         = useState(null);
+  const [emailLoading, setEmailLoading]   = useState(false);
+  const [codeCopied, setCodeCopied]       = useState(false);
+  const [starshipId, setStarshipId]       = useState(null);
   const [productCardImages, setProductCardImages] = useState({
-    saturn: SATURN_V_IMAGE, sls: SLS_IMAGE, starship: STARSHIP_HERO,
+    saturn:   SATURN_V_GALLERY,
+    sls:      SLS_GALLERY,
+    starship: STARSHIP_GALLERY,
   });
+  const slotsLeft = useWeeklySlotsLeft();
   const { toast } = useToast();
 
   useEffect(() => {
@@ -58,9 +139,9 @@ export default function SaturnV() {
         const sls      = products.find((p) => p.id === SLS_ID);
         if (starship) setStarshipId(starship.id);
         setProductCardImages({
-          saturn:   saturn?.images?.[0]   || SATURN_V_IMAGE,
-          sls:      sls?.images?.[0]      || SLS_IMAGE,
-          starship: starship?.images?.[0] || STARSHIP_HERO,
+          saturn:   saturn?.images?.length   ? saturn.images   : SATURN_V_GALLERY,
+          sls:      sls?.images?.length      ? sls.images      : SLS_GALLERY,
+          starship: starship?.images?.length ? starship.images : STARSHIP_GALLERY,
         });
       })
       .catch(console.error);
@@ -71,14 +152,18 @@ export default function SaturnV() {
     try {
       const user = await base44.auth.me().catch(() => null);
 
+      const saturnImg   = Array.isArray(productCardImages.saturn)   ? productCardImages.saturn[0]   : productCardImages.saturn;
+      const slsImg      = Array.isArray(productCardImages.sls)      ? productCardImages.sls[0]      : productCardImages.sls;
+      const starshipImg = Array.isArray(productCardImages.starship) ? productCardImages.starship[0] : productCardImages.starship;
+
       const itemsToAdd = [];
-      if (type === "saturn")   itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V",       price: SATURN_V_PRICE,       image: SATURN_V_IMAGE });
-      if (type === "sls")      itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Artemis)",   price: SLS_PRICE,            image: SLS_IMAGE });
-      if (type === "starship") itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2",     price: STARSHIP_PRICE,       image: starshipImage });
+      if (type === "saturn")   itemsToAdd.push({ product_id: SATURN_V_ID,  product_name: "Saturn V",                        price: SATURN_V_PRICE,       image: saturnImg });
+      if (type === "sls")      itemsToAdd.push({ product_id: SLS_ID,       product_name: "SLS (Artemis)",                   price: SLS_PRICE,            image: slsImg });
+      if (type === "starship") itemsToAdd.push({ product_id: starshipId,   product_name: "Starship V2",                     price: STARSHIP_PRICE,       image: starshipImg });
       if (type === "giants_bundle") {
-        itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V (Heavy-Lift Bundle)",    price: GIANTS_SATURN_PRICE,   image: SATURN_V_IMAGE });
-        itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Heavy-Lift Bundle)",          price: GIANTS_SLS_PRICE,      image: SLS_IMAGE });
-        itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2 (Heavy-Lift Bundle)", price: GIANTS_STARSHIP_PRICE, image: starshipImage });
+        itemsToAdd.push({ product_id: SATURN_V_ID, product_name: "Saturn V (Heavy-Lift Bundle)",    price: GIANTS_SATURN_PRICE,   image: saturnImg });
+        itemsToAdd.push({ product_id: SLS_ID,      product_name: "SLS (Heavy-Lift Bundle)",          price: GIANTS_SLS_PRICE,      image: slsImg });
+        itemsToAdd.push({ product_id: starshipId,  product_name: "Starship V2 (Heavy-Lift Bundle)", price: GIANTS_STARSHIP_PRICE, image: starshipImg });
       }
 
       if (user) {
@@ -86,35 +171,25 @@ export default function SaturnV() {
           if (!item.product_id) continue;
           const existing = await base44.entities.Cart.filter({ user_id: user.id, product_id: item.product_id });
           if (existing.length > 0) {
-            await base44.entities.Cart.update(existing[0].id, {
-              unit_price: item.price, total_price: item.price * existing[0].quantity, product_name: item.product_name,
-            });
+            await base44.entities.Cart.update(existing[0].id, { unit_price: item.price, total_price: item.price * existing[0].quantity, product_name: item.product_name });
           } else {
-            await base44.entities.Cart.create({
-              user_id: user.id, product_id: item.product_id, product_name: item.product_name,
-              quantity: 1, selected_material: "PLA", selected_color: "Shown Colors",
-              unit_price: item.price, total_price: item.price, images: item.image ? [item.image] : [],
-            });
+            await base44.entities.Cart.create({ user_id: user.id, product_id: item.product_id, product_name: item.product_name, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: item.price, total_price: item.price, images: item.image ? [item.image] : [] });
           }
         }
       } else {
         const cart = JSON.parse(localStorage.getItem("anonymousCart") || "[]");
         for (const item of itemsToAdd) {
           if (!item.product_id) continue;
-          const idx = cart.findIndex(i => i.product_id === item.product_id);
-          if (idx >= 0) {
-            cart[idx].unit_price = item.price; cart[idx].total_price = item.price * cart[idx].quantity; cart[idx].product_name = item.product_name;
-          } else {
-            cart.push({ id: `anon_${item.product_id}_${Date.now()}`, product_id: item.product_id, product_name: item.product_name, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: item.price, total_price: item.price, images: item.image ? [item.image] : [] });
-          }
+          const idx = cart.findIndex((i) => i.product_id === item.product_id);
+          if (idx >= 0) { cart[idx].unit_price = item.price; cart[idx].total_price = item.price * cart[idx].quantity; cart[idx].product_name = item.product_name; }
+          else cart.push({ id: `anon_${item.product_id}_${Date.now()}`, product_id: item.product_id, product_name: item.product_name, quantity: 1, selected_material: "PLA", selected_color: "Shown Colors", unit_price: item.price, total_price: item.price, images: item.image ? [item.image] : [] });
         }
         localStorage.setItem("anonymousCart", JSON.stringify(cart));
       }
 
       window.dispatchEvent(new Event("cartUpdated"));
       if (type === "giants_bundle") toast({ title: "Bundle added! 🚀", description: `All three rockets for $${GIANTS_BUNDLE_PRICE}` });
-      const isBundle = type === "giants_bundle";
-      setTimeout(() => { window.location.href = "/Cart"; }, isBundle ? 500 : 0);
+      setTimeout(() => { window.location.href = "/Cart"; }, type === "giants_bundle" ? 500 : 0);
     } catch {
       toast({ title: "Failed to add to cart", variant: "destructive" });
     }
@@ -135,31 +210,37 @@ export default function SaturnV() {
   };
 
   const BundleBtn = ({ size = "base" }) => (
-    <button
-      onClick={() => addToCart("giants_bundle")}
-      disabled={adding !== null}
-      className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-6" : "text-base px-8 py-4"}`}
-    >
-      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle $${GIANTS_BUNDLE_PRICE}`}
+    <button onClick={() => addToCart("giants_bundle")} disabled={adding !== null}
+      className={`font-black rounded-full bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-yellow-400 text-white transition-all duration-200 hover:scale-105 disabled:opacity-60 shadow-xl shadow-orange-900/40 ${size === "lg" ? "text-xl px-14 py-6" : "text-base px-8 py-4"}`}>
+      {adding === "giants_bundle" ? "Adding…" : `Get the Bundle — $${GIANTS_BUNDLE_PRICE}`}
     </button>
   );
 
   const SingleBtn = ({ type, children }) => (
-    <button
-      onClick={() => addToCart(type)}
-      disabled={adding !== null}
-      className="w-full py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-semibold transition-all disabled:opacity-50"
-    >
+    <button onClick={() => addToCart(type)} disabled={adding !== null}
+      className="w-full py-2.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-sm font-semibold transition-all disabled:opacity-50">
       {adding === type ? "Adding…" : children}
     </button>
   );
 
+  const ScarcityBadge = () => {
+    if (slotsLeft === null) return null;
+    const urgent = slotsLeft <= 10;
+    return (
+      <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold tracking-wide ${urgent ? "bg-red-500/15 border border-red-500/30 text-red-400" : "bg-orange-500/10 border border-orange-500/20 text-orange-400"}`}>
+        <span className={`w-1.5 h-1.5 rounded-full ${urgent ? "bg-red-400 animate-pulse" : "bg-orange-400 animate-pulse"}`} />
+        {slotsLeft === 0 ? "Fully booked this week — check back Monday" : `Only ${slotsLeft} order slots left this week`}
+      </div>
+    );
+  };
+
   const faqs = [
-    { q: "How long until it arrives?",        a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you, not shipped from overseas.` },
-    { q: "How hard is assembly?",              a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
-    { q: "What if something arrives damaged?", a: "Email us. We send replacement parts free. No return shipping needed." },
-    { q: "Who designed these?",                a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
-    { q: "What's your return policy?",         a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right, no questions." },
+    { q: "How long until it arrives?",          a: `Most orders ship within ${SHIPPING_DAYS}. Printed by a maker near you — not shipped from overseas.` },
+    { q: "How hard is assembly?",               a: "Parts press-fit together. A little super glue on a few sections makes it rock-solid. No painting. About 30–60 min." },
+    { q: "What if something arrives damaged?",  a: "Email us. We send replacement parts free. No return shipping needed." },
+    { q: "Who designed these?",                 a: "kmobrain (AstroDesign 3D), one of the most accurate rocket modelers in 3D printing. EX3D prints and fulfills his designs." },
+    { q: "What payment methods do you accept?", a: "We check out via Stripe Link — which accepts Visa, Mastercard, Amex, Apple Pay, Google Pay, and all major cards." },
+    { q: "What's your return policy?",          a: "Printed to order, so no change-of-mind returns. If anything is wrong with what you received, we make it right." },
   ];
 
   return (
@@ -172,7 +253,7 @@ export default function SaturnV() {
         <div className="absolute inset-0 opacity-[0.12]" style={{ backgroundImage: "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)", backgroundSize: "55px 55px" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto w-full">
-          <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-4">EX3D Prints · Rocket Collection</p>
+          <p className="text-[10px] tracking-[0.45em] text-orange-400/70 uppercase mb-4">EX3D Prints · Heavy-Lift Collection</p>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black leading-[1.05] mb-4 tracking-tight">
             Own The Most Iconic<br />
@@ -181,29 +262,31 @@ export default function SaturnV() {
             </span>
           </h1>
 
-          <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs text-gray-500 mb-8 flex-wrap">
+          <div className="flex items-center justify-center gap-3 sm:gap-6 text-xs text-gray-500 mb-5 flex-wrap">
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Ships in {SHIPPING_DAYS}</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Printed locally in the US</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> Free replacement parts</span>
             <span className="flex items-center gap-1"><span className="text-orange-400">✦</span> {MAKER_COUNT} vetted makers</span>
           </div>
 
+          <div className="flex justify-center mb-6">
+            <ScarcityBadge />
+          </div>
+
           <p className="text-[10px] tracking-[0.3em] text-orange-400 uppercase mb-2">Best Value · The Heavy-Lift Bundle</p>
 
+          {/* Hero swipeable galleries */}
           <div className="flex justify-center items-end gap-2 sm:gap-4 md:gap-6 mb-8 w-full">
             {[
-              { src: SATURN_V_IMAGE, alt: "Saturn V",   label: "Saturn V · 56cm",  shadow: "#fb923c18", border: "rgba(251,146,60,0.3)" },
-              { src: SLS_IMAGE,      alt: "SLS",         label: "SLS · 50cm",       shadow: "#60a5fa18", border: "rgba(96,165,250,0.3)"  },
-              { src: starshipImage,  alt: "Starship V2", label: "Starship V2",       shadow: "#22d3ee18", border: "rgba(34,211,238,0.3)"  },
-            ].map(({ src, alt, label, shadow, border }) => (
+              { images: SATURN_V_GALLERY, alt: "Saturn V",   label: "Saturn V · 56cm",  border: "rgba(251,146,60,0.3)",  shadow: "#fb923c18" },
+              { images: SLS_GALLERY,      alt: "SLS",         label: "SLS · 50cm",       border: "rgba(96,165,250,0.3)",  shadow: "#60a5fa18" },
+              { images: STARSHIP_GALLERY, alt: "Starship V2", label: "Starship V2",       border: "rgba(34,211,238,0.3)",  shadow: "#22d3ee18" },
+            ].map(({ images, alt, label, border, shadow }) => (
               <div key={label} className="flex flex-col items-center min-w-0 flex-1 max-w-[160px] sm:max-w-[200px] md:max-w-[260px]">
-                <button
-                  onClick={() => setLightboxImage(src)}
-                  className="rounded-2xl overflow-hidden w-full h-[220px] sm:h-[320px] md:h-[420px] transition-transform hover:scale-[1.02]"
-                  style={{ border: `1px solid ${border}`, boxShadow: `0 24px 60px ${shadow}` }}
-                >
-                  <img src={src} alt={alt} className="w-full h-full object-cover" />
-                </button>
+                <div className="w-full h-[220px] sm:h-[320px] md:h-[420px] rounded-2xl overflow-hidden"
+                  style={{ border: `1px solid ${border}`, boxShadow: `0 24px 60px ${shadow}` }}>
+                  <ImageCarousel images={images} alt={alt} height="h-full" onExpand={setLightboxImage} />
+                </div>
                 <p className="text-xs sm:text-sm text-gray-500 mt-2">{label}</p>
               </div>
             ))}
@@ -225,18 +308,16 @@ export default function SaturnV() {
       {/* ── INDIVIDUAL ROCKETS ── */}
       <section className="py-12 px-5 border-t border-white/5">
         <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-black text-white text-center mb-2">Buy Each Separately</h2>
+          <h2 className="text-2xl font-black text-white text-center mb-6">Buy Each Separately</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {[
-              { type: "saturn",   image: productCardImages.saturn,   name: "Saturn V",   price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
-              { type: "sls",      image: productCardImages.sls,       name: "SLS",         price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "NASA's next Moon rocket, Artemis program." },
-              { type: "starship", image: productCardImages.starship,  name: "Starship V2", price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
-            ].map(({ type, image, name, price, color, spec, desc }) => (
+              { type: "saturn",   images: productCardImages.saturn,   name: "Saturn V",   price: SATURN_V_PRICE,  color: "text-orange-400", spec: "56cm · 1:200", desc: "The rocket that took humanity to the Moon." },
+              { type: "sls",      images: productCardImages.sls,       name: "SLS",         price: SLS_PRICE,       color: "text-blue-400",   spec: "50cm · 1:200", desc: "NASA's next Moon rocket, Artemis program." },
+              { type: "starship", images: productCardImages.starship,  name: "Starship V2", price: STARSHIP_PRICE,  color: "text-cyan-400",   spec: "26cm · 1:200", desc: "The most powerful rocket ever built." },
+            ].map(({ type, images, name, price, color, spec, desc }) => (
               <div key={type} className="bg-white/[0.03] border border-white/5 rounded-2xl p-4 flex flex-col">
-                <div className="rounded-xl overflow-hidden mb-3 bg-black h-44 flex items-center justify-center flex-shrink-0">
-                  <img src={image} alt={name} className="w-full h-full object-contain" />
-                </div>
-                <h3 className="font-bold text-sm mb-0.5">{name}</h3>
+                <ImageCarousel images={images} alt={name} height="h-44" onExpand={setLightboxImage} />
+                <h3 className="font-bold text-sm mb-0.5 mt-3">{name}</h3>
                 <p className={`${color} font-black text-lg mb-1`}>${price}</p>
                 <p className="text-xs text-gray-600 mb-1">{spec} · PLA · Press-fit</p>
                 <p className="text-xs text-gray-500 flex-1 mb-3">{desc}</p>
@@ -244,19 +325,43 @@ export default function SaturnV() {
               </div>
             ))}
           </div>
+
+          {/* Payment methods */}
+          <div className="flex flex-col items-center gap-2 mt-8">
+            <p className="text-[10px] text-gray-700 uppercase tracking-widest">Secure checkout via Stripe Link</p>
+            <div className="flex items-center gap-2 flex-wrap justify-center">
+              {["Visa", "Mastercard", "Amex", "Apple Pay", "Google Pay", "Link"].map((m) => (
+                <span key={m} className="px-3 py-1 rounded-md bg-white/4 border border-white/8 text-gray-500 text-[11px] font-medium">{m}</span>
+              ))}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* ── EMAIL CAPTURE ── */}
+      {/* ── EMAIL CAPTURE + SPACE SHUTTLE TEASER ── */}
       <section className="py-14 px-5 border-t border-white/5 bg-white/[0.02]">
         <div className="max-w-lg mx-auto text-center">
+
+          {/* Space Shuttle teaser */}
+          <div className="mb-8 p-5 rounded-2xl border border-white/10 bg-white/[0.03]">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <p className="text-[10px] tracking-[0.3em] text-amber-400 uppercase font-bold">Coming Next</p>
+            </div>
+            <p className="text-2xl mb-1">🛸</p>
+            <h3 className="text-lg font-black text-white mb-1">Space Shuttle</h3>
+            <p className="text-gray-500 text-sm">America's most iconic winged spacecraft. Be the first to know when it launches.</p>
+          </div>
+
           <p className="text-[10px] tracking-[0.4em] text-orange-400 uppercase mb-3">Space Nerds Only</p>
-          <h2 className="text-2xl font-black mb-2">Get 10% Off Your First Order</h2>
-          <p className="text-gray-500 text-sm mb-6">Join the list. Get a discount code instantly.</p>
+          <h2 className="text-2xl font-black mb-2">Get 10% Off + Early Access</h2>
+          <p className="text-gray-500 text-sm mb-6">
+            Join the list — get a discount code instantly and be first to know when the Space Shuttle drops.
+          </p>
+
           {!emailSubmitted ? (
             <form onSubmit={handleEmailSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email" value={email} onChange={(e) => setEmail(e.target.value)}
+              <input type="email" value={email} onChange={(e) => setEmail(e.target.value)}
                 placeholder="your@email.com" required
                 className="flex-1 px-4 py-3 rounded-full bg-black border border-white/10 text-white placeholder-gray-600 focus:outline-none focus:border-orange-500 text-sm"
               />
@@ -277,13 +382,12 @@ export default function SaturnV() {
                   {codeCopied ? "Copied!" : "Copy"}
                 </button>
               </div>
-              <p className="text-gray-600 text-xs">10% off any rocket or bundle. Enter it at checkout.</p>
+              <p className="text-gray-600 text-xs">10% off any rocket or bundle. We'll notify you when Space Shuttle goes live.</p>
               <button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                className="text-orange-400 hover:text-orange-300 text-sm font-semibold underline">
-                Shop now ↑
-              </button>
+                className="text-orange-400 hover:text-orange-300 text-sm font-semibold underline">Shop now ↑</button>
             </div>
           )}
+          <p className="text-[10px] text-gray-700 mt-4">No spam. Unsubscribe any time.</p>
         </div>
       </section>
 
@@ -323,6 +427,7 @@ export default function SaturnV() {
 
       {/* ── FINAL CTA ── */}
       <section className="py-20 px-5 text-center border-t border-white/5" style={{ background: "linear-gradient(to top, #1a0800, transparent)" }}>
+        <div className="flex justify-center mb-5"><ScarcityBadge /></div>
         <h2 className="text-4xl sm:text-5xl font-black mb-3 leading-tight">
           Three Rockets.<br />
           <span style={{ background: "linear-gradient(90deg, #fb923c, #fbbf24)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -345,12 +450,9 @@ export default function SaturnV() {
       {/* ── STICKY MOBILE CTA ── */}
       <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden px-4 pb-4 pt-3"
         style={{ background: "linear-gradient(to top, #080810 60%, transparent)" }}>
-        <button
-          onClick={() => addToCart("giants_bundle")}
-          disabled={adding !== null}
+        <button onClick={() => addToCart("giants_bundle")} disabled={adding !== null}
           className="w-full py-4 rounded-full font-black text-base text-white transition-all disabled:opacity-60"
-          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}
-        >
+          style={{ background: "linear-gradient(90deg, #f97316, #fbbf24)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
           {adding === "giants_bundle" ? "Adding…" : `Bundle — $${GIANTS_BUNDLE_PRICE} · Save $${GIANTS_BUNDLE_SAVINGS}`}
         </button>
       </div>
