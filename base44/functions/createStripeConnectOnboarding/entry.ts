@@ -46,9 +46,10 @@ Deno.serve(async (req) => {
             console.log('Created Stripe Connect account:', accountId);
         }
 
-        const origin = new URL(req.url).origin;
-        const returnUrl = `${origin}/StripeSetupComplete`;
-        const refreshUrl = `${origin}/StripeSetupComplete?refresh=true`;
+        // Always use the production frontend URL, not the backend function origin
+        const appOrigin = Deno.env.get('APP_ORIGIN') || 'https://ex3dprints.com';
+        const returnUrl = `${appOrigin}/StripeSetupComplete`;
+        const refreshUrl = `${appOrigin}/StripeSetupComplete?refresh=true`;
 
         const accountLink = await stripe.accountLinks.create({
             account: accountId,

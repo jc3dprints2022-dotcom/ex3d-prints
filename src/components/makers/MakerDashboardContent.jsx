@@ -59,7 +59,10 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
       const currentUser = propUser || await base44.auth.me();
       setUser(currentUser);
 
-      const allOrders = await base44.entities.Order.list();
+      // Use list() — the backend returns all orders the user can see.
+      // Maker RLS allows reading orders where maker_id matches.
+      // We fetch broadly and filter client-side to catch both maker_id and assigned_to_makers cases.
+      const allOrders = await base44.entities.Order.list('-created_date', 200);
       // Filter out supply/admin orders — never show on maker dashboard
       const isProductionOrder = (order) => {
         const notes = (order.notes || '').toLowerCase();
@@ -71,11 +74,16 @@ export default function MakerDashboardContent({ user: propUser, onUpdate }) {
 
       const myOrders = allOrders.filter(order => {
         if (!isProductionOrder(order)) return false;
+        // Primary assignment: maker_id matches
         const isAssignedMaker = order.maker_id === currentUser.maker_id;
-        const isInMultiAssignment = order.assigned_to_makers?.includes(currentUser.maker_id) && 
-                                   ['pending', 'unassigned'].includes(order.status) && 
-                                   !order.maker_id;
-        return isAssignedMaker || isInMultiAssignment;
+        // Multi-assignment pool: in assigned_to_makers and not yet claimed by another maker
+        const isInMultiAssignment = Array.isArray(order.assigned_to_makers) &&
+          order.assigned_to_makers.includes(currentUser.maker_id) &&
+          !order.maker_id;
+        // Offered but not yet accepted (offer_status offered, current_offered_maker_id matches)
+        const isOffered = order.current_offered_maker_id === currentUser.maker_id &&
+          order.offer_status === 'offered';
+        return isAssignedMaker || isInMultiAssignment || isOffered;
       });
 
       const sortedOrders = myOrders.sort((a, b) => {

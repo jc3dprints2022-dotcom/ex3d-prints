@@ -417,6 +417,17 @@ export default function Layout({ children, currentPageName }) {
                 Rocket Collection
               </Link>
               <Link
+                to="/Starship"
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === "/Starship"
+                    ? "bg-cyan-500 text-white"
+                    : "bg-cyan-50 text-cyan-700 hover:bg-cyan-100"
+                }`}
+              >
+                Starship
+              </Link>
+              <Link
                 to="/About"
                 onClick={scrollToTop}
                 className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
@@ -576,6 +587,13 @@ export default function Layout({ children, currentPageName }) {
                   onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
                 >
                   Rocket Collection
+                </Link>
+                <Link
+                  to="/Starship"
+                  className="block px-4 py-2 text-sm font-medium text-cyan-600 hover:text-cyan-700 hover:bg-cyan-50 rounded"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Starship
                 </Link>
                 <Link
                   to="/About"

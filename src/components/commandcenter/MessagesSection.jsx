@@ -67,7 +67,8 @@ function ContactMessagesTab() {
         sender_type: "admin",
         content: replyText.trim(),
       });
-      // Send email to user with reply + original message
+      // Send email to user with reply + link to view conversation
+      const conversationUrl = `https://ex3dprints.com/Contact?submission_id=${selected.id}`;
       try {
         await base44.functions.invoke("sendEmail", {
           to: selected.email,
@@ -76,6 +77,10 @@ function ContactMessagesTab() {
 <p>Hi ${selected.name},</p>
 <p>${replyText.trim().replace(/\n/g, '<br/>')}</p>
 <br/>
+<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;text-align:center;margin:20px 0;">
+  <p style="margin:0 0 10px;color:#0369a1;font-size:14px;font-weight:600;">Want to reply? View the full conversation:</p>
+  <a href="${conversationUrl}" style="background:#0891b2;color:white;padding:10px 24px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;display:inline-block;">View Conversation →</a>
+</div>
 <div style="background:#f5f5f5;padding:15px;border-left:3px solid #ccc;margin-top:20px;">
   <p style="color:#666;font-size:12px;margin-bottom:8px;">Your original message:</p>
   <p style="color:#444;">${selected.message?.replace(/\n/g, '<br/>')}</p>

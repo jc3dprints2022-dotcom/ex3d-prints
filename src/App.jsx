@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/lib/AuthContext';
 import UserNotRegisteredError from '@/components/UserNotRegisteredError';
 import SaturnV from './pages/SaturnV';
 import RocketCollection from './pages/RocketCollection';
+import Starship from './pages/Starship';
 import StripeSetupComplete from './pages/StripeSetupComplete';
 import About from './pages/About';
 
@@ -68,6 +69,7 @@ const AuthenticatedApp = () => {
       <Route path="/About" element={<LayoutWrapper currentPageName="About"><About /></LayoutWrapper>} />
       <Route path="/SaturnV" element={<SaturnV />} />
       <Route path="/rocketcollection" element={<RocketCollection />} />
+      <Route path="/Starship" element={<Starship />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );

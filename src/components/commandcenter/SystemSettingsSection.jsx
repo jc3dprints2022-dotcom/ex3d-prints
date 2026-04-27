@@ -209,6 +209,21 @@ export default function SystemSettingsSection() {
                       >
                         Reindex Database
                       </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-cyan-700 text-cyan-400 hover:bg-cyan-900/20"
+                        onClick={async () => {
+                          try {
+                            const res = await base44.functions.invoke("notifyMakersWithOrders", {});
+                            toast({ title: `Notified ${res?.data?.emailed || 0} maker(s) with assigned orders` });
+                          } catch (e) {
+                            toast({ title: "Failed to send maker notifications", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        📧 Notify Makers with Orders
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

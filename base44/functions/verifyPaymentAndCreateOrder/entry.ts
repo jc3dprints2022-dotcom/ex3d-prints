@@ -66,9 +66,40 @@ Deno.serve(async (req) => {
         const cartItems = await base44.asServiceRole.entities.Cart.filter({ user_id: user.id });
         console.log('Cart items found:', cartItems.length);
 
+        // If cart is empty but we have line items in the Stripe session, reconstruct from session
         if (cartItems.length === 0) {
-            console.error('Cart is empty');
-            return Response.json({ error: 'Cart is empty' }, { status: 400 });
+            console.warn('Cart is empty — attempting to reconstruct from Stripe session metadata');
+            const itemsMeta = session.metadata?.items_json;
+            if (!itemsMeta) {
+                console.error('Cart is empty and no items_json in session metadata');
+                return Response.json({ error: 'Cart is empty and cannot be recovered from session' }, { status: 400 });
+            }
+            try {
+                const parsedItems = JSON.parse(itemsMeta);
+                // Inject as synthetic cart items so enrichment loop can process them
+                for (const item of parsedItems) {
+                    cartItems.push({
+                        id: `recovered_${item.product_id}_${Date.now()}`,
+                        user_id: user.id,
+                        product_id: item.product_id,
+                        custom_request_id: item.custom_request_id || null,
+                        product_name: item.product_name,
+                        quantity: item.quantity || 1,
+                        selected_material: item.selected_material || 'PLA',
+                        selected_color: item.selected_color || 'Black',
+                        selected_resolution: item.selected_resolution || 0.2,
+                        use_recycled_filament: item.use_recycled_filament || false,
+                        unit_price: item.unit_price,
+                        total_price: item.total_price,
+                        multi_color_selections: item.multi_color_selections || [],
+                        print_file_scale: item.print_file_scale || 100,
+                    });
+                }
+                console.log(`Recovered ${cartItems.length} items from session metadata`);
+            } catch (parseErr) {
+                console.error('Failed to parse items_json from session metadata:', parseErr);
+                return Response.json({ error: 'Cart is empty and items_json could not be parsed' }, { status: 400 });
+            }
         }
 
         // Enrich cart items with full details (products or custom requests)
