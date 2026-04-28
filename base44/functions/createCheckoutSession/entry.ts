@@ -208,6 +208,22 @@ Deno.serve(async (req) => {
                 shipping_address: JSON.stringify(shippingAddress || {}),
                 is_local_delivery: isLocalDelivery ? 'true' : 'false',
                 shipping_fee: shippingFee ? String(shippingFee) : '0',
+                // Serialize cart items so guest orders can be recovered in verifyPaymentAndCreateOrder
+                // (guests have no DB cart to read from after payment completes)
+                items_json: JSON.stringify(cartItems.map(item => ({
+                    product_id: item.product_id,
+                    custom_request_id: item.custom_request_id || null,
+                    product_name: item.product_name,
+                    quantity: item.quantity || 1,
+                    selected_material: item.selected_material || 'PLA',
+                    selected_color: item.selected_color || 'Black',
+                    selected_resolution: item.selected_resolution || 0.2,
+                    use_recycled_filament: item.use_recycled_filament || false,
+                    unit_price: item.unit_price,
+                    total_price: item.total_price,
+                    multi_color_selections: item.multi_color_selections || [],
+                    print_file_scale: item.print_file_scale || 100,
+                }))).slice(0, 500), // Stripe metadata values capped at 500 chars
             },
         };
 
