@@ -6,14 +6,10 @@ Deno.serve(async (req) => {
         console.log('=== Verify Payment and Create Order Started ===');
         
         const base44 = createClientFromRequest(req);
-        const user = await base44.auth.me();
-        
-        if (!user) {
-            console.error('User not authenticated');
-            return Response.json({ error: 'Unauthorized' }, { status: 401 });
-        }
+        // Auth is optional — guests complete checkout without an account.
+        const user = await base44.auth.me().catch(() => null);
 
-        console.log('User authenticated:', user.email);
+        console.log(user ? `User authenticated: ${user.email}` : 'Guest checkout (no auth)');
 
         const { sessionId } = await req.json();
 
@@ -31,8 +27,10 @@ Deno.serve(async (req) => {
         const session = await stripe.checkout.sessions.retrieve(sessionId);
         console.log('Stripe session retrieved:', session.payment_status);
 
-        // Verify the session belongs to this user
-        if (session.metadata.user_id !== user.id) {
+        // For logged-in users, verify the session belongs to them.
+        // For guests, the session metadata will have user_id = 'guest' — allow it.
+        const sessionUserId = session.metadata?.user_id;
+        if (user && sessionUserId !== 'guest' && sessionUserId !== user.id) {
             console.error('Session user mismatch');
             return Response.json({ error: 'Session does not belong to this user' }, { status: 403 });
         }
@@ -61,12 +59,18 @@ Deno.serve(async (req) => {
             });
         }
 
-        // Get cart items from database
-        console.log('Fetching cart items for user:', user.id);
-        const cartItems = await base44.asServiceRole.entities.Cart.filter({ user_id: user.id });
-        console.log('Cart items found:', cartItems.length);
+        // Get cart items — for logged-in users from DB; for guests, from session metadata
+        const isGuest = !user || sessionUserId === 'guest';
+        const cartItems = [];
 
-        // If cart is empty but we have line items in the Stripe session, reconstruct from session
+        if (!isGuest) {
+            console.log('Fetching cart items for user:', user.id);
+            const dbCart = await base44.asServiceRole.entities.Cart.filter({ user_id: user.id });
+            console.log('Cart items found:', dbCart.length);
+            cartItems.push(...dbCart);
+        }
+
+        // If no cart items yet (guest always, or logged-in user with cleared cart), recover from session metadata
         if (cartItems.length === 0) {
             console.warn('Cart is empty — attempting to reconstruct from Stripe session metadata');
             const itemsMeta = session.metadata?.items_json;
@@ -76,11 +80,11 @@ Deno.serve(async (req) => {
             }
             try {
                 const parsedItems = JSON.parse(itemsMeta);
-                // Inject as synthetic cart items so enrichment loop can process them
+                const syntheticUserId = user?.id || session.metadata?.guest_email || 'guest';
                 for (const item of parsedItems) {
                     cartItems.push({
                         id: `recovered_${item.product_id}_${Date.now()}`,
-                        user_id: user.id,
+                        user_id: syntheticUserId,
                         product_id: item.product_id,
                         custom_request_id: item.custom_request_id || null,
                         product_name: item.product_name,
@@ -210,15 +214,20 @@ Deno.serve(async (req) => {
             console.error('Failed to parse shipping_address from session metadata:', e);
         }
         
-        // Update user's campus location if not set
-        if (!user.campus_location && campusLocation) {
+        // Update user's campus location if not set (logged-in only)
+        if (user && !user.campus_location && campusLocation) {
             await base44.asServiceRole.entities.User.update(user.id, {
                 campus_location: campusLocation
             });
         }
+
+        // Determine the email to use for confirmation
+        const orderEmail = user?.email || session.metadata?.guest_email || '';
+        const customerName = user?.full_name || shippingAddress?.name || 'Customer';
         
         const newOrder = await base44.asServiceRole.entities.Order.create({
-            customer_id: user.id,
+            customer_id: user?.id || null,
+            customer_email: orderEmail,
             items: enrichedItems,
             total_amount: totalAmount,
             delivery_option: 'campus_pickup',
@@ -237,89 +246,88 @@ Deno.serve(async (req) => {
 
         console.log('✅ Order created:', newOrder.id);
 
-        // Award EXP points: 5 EXP per dollar spent
-        const expFromPurchase = Math.floor(totalAmount * 5);
-        console.log('Awarding EXP for purchase:', expFromPurchase);
+        // Award EXP points — only for logged-in users
+        let totalExpAwarded = 0;
+        let expDetails = '';
+        let isFirstOrder = false;
 
-        // Check if this is user's first order
-        const userOrders = await base44.asServiceRole.entities.Order.filter({ customer_id: user.id });
-        const isFirstOrder = userOrders.length === 1; // Just created order is the only one
+        if (user) {
+            const expFromPurchase = Math.floor(totalAmount * 5);
+            console.log('Awarding EXP for purchase:', expFromPurchase);
 
-        let totalExpAwarded = expFromPurchase;
-        let expDetails = `Purchase: ${expFromPurchase} EXP`;
+            const userOrders = await base44.asServiceRole.entities.Order.filter({ customer_id: user.id });
+            isFirstOrder = userOrders.length === 1;
 
-        // Award 250 EXP for first order
-        if (isFirstOrder) {
-            totalExpAwarded += 250;
-            expDetails += `, First Order Bonus: 250 EXP`;
-            console.log('First order bonus: 250 EXP');
-        }
+            totalExpAwarded = expFromPurchase;
+            expDetails = `Purchase: ${expFromPurchase} EXP`;
 
-        // Award 250 EXP if referral code was used AND this is the first order
-        const hasReferral = session.metadata.has_referral === 'true';
-        const referrerId = session.metadata.referrer_id;
-
-        if (hasReferral && referrerId && isFirstOrder) {
-            totalExpAwarded += 250;
-            expDetails += `, Referral Bonus: 250 EXP`;
-            console.log('Referral bonus: 250 EXP (first order only)');
-
-            // Award 250 EXP to the referrer ONLY on the referred user's first order
-            try {
-                const referrer = await base44.asServiceRole.entities.User.get(referrerId);
-                if (referrer) {
-                    // Check if this referrer has already received EXP for this user
-                    const existingReferralTransactions = await base44.asServiceRole.entities.ExpTransaction.filter({
-                        user_id: referrer.id,
-                        source: 'referral_given',
-                        description: { $regex: user.id } // Check if this specific user was already credited
-                    });
-
-                    if (existingReferralTransactions.length === 0) {
-                        await base44.asServiceRole.entities.User.update(referrer.id, {
-                            exp_points: (referrer.exp_points || 0) + 250,
-                            total_exp_earned: (referrer.total_exp_earned || 0) + 250,
-                            referral_count: (referrer.referral_count || 0) + 1
-                        });
-
-                        await base44.asServiceRole.entities.ExpTransaction.create({
-                            user_id: referrer.id,
-                            action: 'earned',
-                            amount: 250,
-                            source: 'referral_given',
-                            order_id: newOrder.id,
-                            description: `Referral bonus for referring ${user.full_name || user.email} (${user.id})`
-                        });
-
-                        console.log('✅ Awarded 250 EXP to referrer:', referrer.email);
-                    } else {
-                        console.log('⚠️ Referrer already received EXP for this user');
-                    }
-                }
-            } catch (error) {
-                console.error('Failed to award EXP to referrer:', error);
+            if (isFirstOrder) {
+                totalExpAwarded += 250;
+                expDetails += `, First Order Bonus: 250 EXP`;
+                console.log('First order bonus: 250 EXP');
             }
-        } else if (hasReferral && !isFirstOrder) {
-            console.log('⚠️ Referral code used but not first order - no referral bonus awarded');
+
+            const hasReferral = session.metadata.has_referral === 'true';
+            const referrerId = session.metadata.referrer_id;
+
+            if (hasReferral && referrerId && isFirstOrder) {
+                totalExpAwarded += 250;
+                expDetails += `, Referral Bonus: 250 EXP`;
+                console.log('Referral bonus: 250 EXP (first order only)');
+
+                try {
+                    const referrer = await base44.asServiceRole.entities.User.get(referrerId);
+                    if (referrer) {
+                        const existingReferralTransactions = await base44.asServiceRole.entities.ExpTransaction.filter({
+                            user_id: referrer.id,
+                            source: 'referral_given',
+                            description: { $regex: user.id }
+                        });
+
+                        if (existingReferralTransactions.length === 0) {
+                            await base44.asServiceRole.entities.User.update(referrer.id, {
+                                exp_points: (referrer.exp_points || 0) + 250,
+                                total_exp_earned: (referrer.total_exp_earned || 0) + 250,
+                                referral_count: (referrer.referral_count || 0) + 1
+                            });
+                            await base44.asServiceRole.entities.ExpTransaction.create({
+                                user_id: referrer.id,
+                                action: 'earned',
+                                amount: 250,
+                                source: 'referral_given',
+                                order_id: newOrder.id,
+                                description: `Referral bonus for referring ${user.full_name || user.email} (${user.id})`
+                            });
+                            console.log('✅ Awarded 250 EXP to referrer:', referrer.email);
+                        } else {
+                            console.log('⚠️ Referrer already received EXP for this user');
+                        }
+                    }
+                } catch (error) {
+                    console.error('Failed to award EXP to referrer:', error);
+                }
+            } else if (hasReferral && !isFirstOrder) {
+                console.log('⚠️ Referral code used but not first order - no referral bonus awarded');
+            }
+
+            await base44.asServiceRole.entities.User.update(user.id, {
+                exp_points: (user.exp_points || 0) + totalExpAwarded,
+                total_exp_earned: (user.total_exp_earned || 0) + totalExpAwarded
+            });
+
+            await base44.asServiceRole.entities.ExpTransaction.create({
+                user_id: user.id,
+                action: 'earned',
+                amount: totalExpAwarded,
+                source: 'purchase',
+                order_id: newOrder.id,
+                description: expDetails
+            });
+
+            console.log('✅ Total EXP awarded:', totalExpAwarded);
+        } else {
+            console.log('Guest order — skipping EXP award');
         }
-
-        // Update user's EXP points
-        await base44.asServiceRole.entities.User.update(user.id, {
-            exp_points: (user.exp_points || 0) + totalExpAwarded,
-            total_exp_earned: (user.total_exp_earned || 0) + totalExpAwarded
-        });
-
-        // Create EXP transaction record
-        await base44.asServiceRole.entities.ExpTransaction.create({
-            user_id: user.id,
-            action: 'earned',
-            amount: totalExpAwarded,
-            source: 'purchase',
-            order_id: newOrder.id,
-            description: expDetails
-        });
-
-        console.log('✅ Total EXP awarded:', totalExpAwarded);
 
         // If order contains custom requests, DON'T update their status - keep them available for re-purchase
         // Custom requests now stay as "accepted" for 30 days from acceptance date
@@ -373,10 +381,10 @@ Deno.serve(async (req) => {
                 </tr>`;
             }).join('');
 
-            const bonusLines = [
+            const bonusLines = user ? [
                 isFirstOrder ? `<p style="margin:4px 0;color:#276749;font-size:13px;">🎉 <strong>First Order Bonus:</strong> +250 EXP</p>` : '',
-                (hasReferral && isFirstOrder) ? `<p style="margin:4px 0;color:#276749;font-size:13px;">🎉 <strong>Referral Bonus:</strong> +250 EXP</p>` : ''
-            ].filter(Boolean).join('');
+                (session.metadata?.has_referral === 'true' && isFirstOrder) ? `<p style="margin:4px 0;color:#276749;font-size:13px;">🎉 <strong>Referral Bonus:</strong> +250 EXP</p>` : ''
+            ].filter(Boolean).join('') : '';
 
             const shippingRow = shippingAddress
                 ? `<tr><td style="padding:6px 0;color:#718096;">Shipping</td><td style="padding:6px 0;text-align:right;color:#2d3748;">$${shippingFeeDisplay}</td></tr>`
@@ -403,7 +411,7 @@ Deno.serve(async (req) => {
     <p style="color:#90cdf4;margin:8px 0 0;font-size:15px;">Order #${newOrder.id.slice(-8)}</p>
   </div>
   <div style="padding:28px 32px 0;">
-    <p style="color:#2d3748;font-size:16px;margin:0;">Hi <strong>${user.full_name}</strong>,</p>
+    <p style="color:#2d3748;font-size:16px;margin:0;">Hi <strong>${customerName}</strong>,</p>
     <p style="color:#4a5568;font-size:15px;margin:10px 0 0;line-height:1.6;">
       Thank you for your order! Your payment has been processed and a maker is being assigned to handle your prints.
       You'll receive another email when your order ships.
@@ -432,11 +440,11 @@ Deno.serve(async (req) => {
     </table>
     ${shippingAddrBlock}
   </div>
-  <div style="margin:20px 32px 0;background:linear-gradient(135deg,#fffaf0,#feebc8);border:2px solid #f6ad55;border-radius:12px;padding:16px;text-align:center;">
+  ${user && totalExpAwarded > 0 ? `<div style="margin:20px 32px 0;background:linear-gradient(135deg,#fffaf0,#feebc8);border:2px solid #f6ad55;border-radius:12px;padding:16px;text-align:center;">
     <p style="margin:0;color:#92400e;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:1px;">EXP Earned This Order</p>
     <p style="margin:6px 0 0;color:#78350f;font-size:28px;font-weight:bold;">+${totalExpAwarded} EXP</p>
     ${bonusLines}
-  </div>
+  </div>` : ''}
   <div style="padding:20px 32px 0;">
     <div style="background:#ebf8ff;border-radius:10px;padding:16px;">
       <p style="margin:0;color:#2b6cb0;font-size:14px;font-weight:600;margin-bottom:8px;">📋 What Happens Next</p>
@@ -457,7 +465,7 @@ Deno.serve(async (req) => {
 </html>`;
 
             await base44.integrations.Core.SendEmail({
-                to: user.email,
+                to: orderEmail,
                 subject: `Order Confirmed — EX3D Prints #${newOrder.id.slice(-8)}`,
                 body: emailHtml
             });
@@ -466,15 +474,19 @@ Deno.serve(async (req) => {
             console.error('⚠️ Failed to send confirmation email:', emailError);
         }
 
-        // Clear user's cart
-        try {
-            console.log('Clearing cart...');
-            for (const item of cartItems) {
-                await base44.asServiceRole.entities.Cart.delete(item.id);
+        // Clear user's DB cart (only for logged-in users; guests cart is in localStorage, cleared client-side)
+        if (!isGuest) {
+            try {
+                console.log('Clearing cart...');
+                for (const item of cartItems) {
+                    // Skip synthetic recovered items — they have no real DB row
+                    if (item.id?.startsWith('recovered_')) continue;
+                    await base44.asServiceRole.entities.Cart.delete(item.id);
+                }
+                console.log('✅ Cart cleared');
+            } catch (cartError) {
+                console.error('⚠️ Failed to clear cart:', cartError);
             }
-            console.log('✅ Cart cleared');
-        } catch (cartError) {
-            console.error('⚠️ Failed to clear cart:', cartError);
         }
 
         console.log('=== Order Creation Complete ===');
