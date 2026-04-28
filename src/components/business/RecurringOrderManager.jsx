@@ -58,7 +58,7 @@ export default function RecurringOrderManager({ user, subscriptions, onUpdate })
           <p className="text-gray-600 text-sm">Automate your regular product orders</p>
         </div>
         <Button asChild className="bg-purple-600 hover:bg-purple-700">
-          <Link to={createPageUrl("BusinessMarketplace")}>
+          <Link to={createPageUrl("Marketplace")}>
             <Plus className="w-4 h-4 mr-2" />
             Create Recurring Order
           </Link>
@@ -74,7 +74,7 @@ export default function RecurringOrderManager({ user, subscriptions, onUpdate })
               Set up automatic recurring orders to save time and never run out of inventory
             </p>
             <Button asChild className="bg-purple-600 hover:bg-purple-700">
-              <Link to={createPageUrl("BusinessMarketplace")}>
+              <Link to={createPageUrl("Marketplace")}>
                 Browse Products
               </Link>
             </Button>
