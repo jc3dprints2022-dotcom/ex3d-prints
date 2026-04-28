@@ -12,61 +12,20 @@ export default function ForDesigners() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const loadDesignerEarnings = async () => {
+      try {
+        // Use getPublicStats which runs with service role — safe for unauthenticated visitors
+        const res = await base44.functions.invoke("getPublicStats", {});
+        setTotalEarnings(res.data?.designer_total || 0);
+      } catch (error) {
+        console.error("Failed to load designer earnings:", error);
+        setTotalEarnings(0);
+      } finally {
+        setLoading(false);
+      }
+    };
     loadDesignerEarnings();
   }, []);
-
-  const loadDesignerEarnings = async () => {
-    try {
-      // FIX: Payout records are created as 'pending' and never updated to 'completed'
-      // so we fetch all designer payouts and include both 'paid' and 'pending' statuses
-      // Priority: use DesignerEarnings entity which processMonthlyPayouts actually marks 'paid'
-      try {
-        const designerEarnings = await base44.entities.DesignerEarnings.list();
-        const paid = designerEarnings
-          .filter(e => e.status === 'paid')
-          .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
-
-        // Also add pending so the number reflects total owed, not just transferred
-        const pending = designerEarnings
-          .filter(e => e.status === 'pending')
-          .reduce((sum, e) => sum + (e.royalty_amount || 0), 0);
-
-        setTotalEarnings(paid + pending);
-        setLoading(false);
-        return;
-      } catch (_) {
-        // DesignerEarnings entity may not exist yet, fall through
-      }
-
-      // Fallback: sum all Payout records regardless of status
-      const payouts = await base44.entities.Payout.filter({ user_role: 'designer' });
-      if (payouts.length > 0) {
-        const total = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
-        setTotalEarnings(total);
-        setLoading(false);
-        return;
-      }
-
-      // Final fallback: calculate from order history
-      const allOrders = await base44.entities.Order.list();
-      const completedOrders = allOrders.filter(o =>
-        ['completed', 'delivered', 'dropped_off'].includes(o.status) && o.payment_status === 'paid'
-      );
-      let total = 0;
-      completedOrders.forEach(order => {
-        order.items?.forEach(item => {
-          if (item.designer_id && item.designer_id !== 'admin') {
-            total += (item.total_price || 0) * 0.10;
-          }
-        });
-      });
-      setTotalEarnings(total);
-    } catch (error) {
-      console.error("Failed to load designer earnings:", error);
-      setTotalEarnings(0);
-    }
-    setLoading(false);
-  };
 
   return (
     <div className="min-h-screen">
