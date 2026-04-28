@@ -1,9 +1,5 @@
-
 import React, { useState, useEffect } from "react";
-import { User } from "@/entities/User";
-import { Order } from "@/entities/Order";
-import { Product } from "@/entities/Product";
-import { Printer } from "@/entities/Printer";
+import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,14 +43,14 @@ export default function UserDetailModal({ user, isOpen, onClose, onUpdate }) {
     setLoading(true);
     try {
       // Load orders (both as customer and maker)
-      const customerOrders = await Order.filter({ customer_id: user.id });
-      const makerOrders = user.maker_id ? await Order.filter({ maker_id: user.maker_id }) : [];
+      const customerOrders = await base44.entities.Order.filter({ customer_id: user.id });
+      const makerOrders = user.maker_id ? await base44.entities.Order.filter({ maker_id: user.maker_id }) : [];
       
       // Load products if designer
-      const designerProducts = user.designer_id ? await Product.filter({ designer_id: user.designer_id }) : [];
+      const designerProducts = user.designer_id ? await base44.entities.Product.filter({ designer_id: user.designer_id }) : [];
       
       // Load printers if maker
-      const makerPrinters = user.maker_id ? await Printer.filter({ maker_id: user.maker_id }) : [];
+      const makerPrinters = user.maker_id ? await base44.entities.Printer.filter({ maker_id: user.maker_id }) : [];
       
       // Calculate stats
       const totalSpent = customerOrders
@@ -85,7 +81,7 @@ export default function UserDetailModal({ user, isOpen, onClose, onUpdate }) {
         .reduce((sum, o) => sum + (o.total_amount * 0.7), 0);
       
       // Calculate designer stats
-      const allOrders = await Order.list();
+      const allOrders = await base44.entities.Order.list();
       const designerSales = {};
       const designerRevenue = {};
       
@@ -135,7 +131,7 @@ export default function UserDetailModal({ user, isOpen, onClose, onUpdate }) {
     if (!window.confirm(`Are you sure you want to freeze ${user.full_name}'s account?`)) return;
     
     try {
-      await User.update(user.id, { account_status: 'frozen' });
+      await base44.entities.User.update(user.id, { account_status: 'frozen' });
       toast({ title: "Account frozen successfully" });
       onUpdate();
       onClose();
@@ -148,7 +144,7 @@ export default function UserDetailModal({ user, isOpen, onClose, onUpdate }) {
     if (!window.confirm(`Are you sure you want to DEACTIVATE ${user.full_name}'s account? This action may be irreversible.`)) return;
     
     try {
-      await User.update(user.id, { account_status: 'deactivated' });
+      await base44.entities.User.update(user.id, { account_status: 'deactivated' });
       toast({ title: "Account deactivated" });
       onUpdate();
       onClose();
@@ -162,7 +158,7 @@ export default function UserDetailModal({ user, isOpen, onClose, onUpdate }) {
     if (!newMakerId || newMakerId === currentMakerId) return;
     
     try {
-      await Order.update(orderId, { maker_id: newMakerId, status: 'pending' });
+      await base44.entities.Order.update(orderId, { maker_id: newMakerId, status: 'pending' });
       toast({ title: "Order reassigned successfully" });
       loadUserData();
     } catch (error) {
