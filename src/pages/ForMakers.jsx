@@ -16,50 +16,9 @@ export default function ForMakers() {
     const fetchRevenue = async () => {
       setLoading(true);
       try {
-        // FIX: Payout records are created as 'pending' and processMonthlyPayouts
-        // marks MakerEarnings as 'paid' — the Payout entity itself is never set
-        // to 'completed', so filtering for that always returned 0.
-        // Priority: read from MakerEarnings which is actually marked 'paid'
-        try {
-          const makerEarnings = await base44.entities.MakerEarnings.list();
-          const paid = makerEarnings
-            .filter(e => e.status === 'paid')
-            .reduce((sum, e) => sum + (e.maker_earnings || 0), 0);
-
-          const pending = makerEarnings
-            .filter(e => e.status === 'pending')
-            .reduce((sum, e) => sum + (e.maker_earnings || 0), 0);
-
-          setTotalRevenue(paid + pending);
-          setLoading(false);
-          return;
-        } catch (_) {
-          // MakerEarnings entity may not exist yet, fall through
-        }
-
-        // Fallback: sum all maker Payout records regardless of status
-        const payouts = await base44.entities.Payout.filter({ user_role: 'maker' });
-        if (payouts.length > 0) {
-          const total = payouts.reduce((sum, p) => sum + (p.net_amount || 0), 0);
-          setTotalRevenue(total);
-          setLoading(false);
-          return;
-        }
-
-        // Final fallback: calculate from order history
-        const [completed, dropped, delivered] = await Promise.all([
-          base44.entities.Order.filter({ status: 'completed' }),
-          base44.entities.Order.filter({ status: 'dropped_off' }),
-          base44.entities.Order.filter({ status: 'delivered' })
-        ]);
-        const allOrders = [...completed, ...dropped, ...delivered].filter(
-          o => o.payment_status === 'paid'
-        );
-        const total = allOrders.reduce((sum, order) => {
-          const itemsTotal = (order.items || []).reduce((s, item) => s + (item.total_price || 0), 0);
-          return sum + (order.maker_payout_amount || itemsTotal * 0.50 || 0);
-        }, 0);
-        setTotalRevenue(total);
+        // Use getPublicStats which runs with service role — safe for unauthenticated visitors
+        const res = await base44.functions.invoke("getPublicStats", {});
+        setTotalRevenue(res.data?.maker_total || 0);
       } catch (error) {
         console.error("Failed to fetch revenue:", error);
         setTotalRevenue(0);
