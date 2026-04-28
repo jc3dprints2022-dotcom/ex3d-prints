@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { User } from '@/entities/User';
-import { Printer } from '@/entities/Printer';
+import { base44 } from '@/api/base44Client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -22,13 +21,13 @@ export default function FixMakers() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const user = await User.me();
+      const user = await base44.auth.me();
       setCurrentUser(user);
       
-      const users = await User.list();
+      const users = await base44.entities.User.list();
       setAllUsers(users);
       
-      const allPrinters = await Printer.list();
+      const allPrinters = await base44.entities.Printer.list();
       setPrinters(allPrinters);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -46,7 +45,7 @@ export default function FixMakers() {
       
       const newRoles = currentRoles.includes('maker') ? currentRoles : [...currentRoles, 'maker'];
       
-      await User.updateMyUserData({
+      await base44.auth.updateMe({
         business_roles: newRoles
       });
       
