@@ -253,8 +253,9 @@ export default function Checkout() {
           shipping: shippingFee,
           tax: 0,
         }));
-        // Clear anonymous cart once checkout begins
-        if (!user) localStorage.removeItem("anonymousCart");
+        // NOTE: anonymousCart is intentionally NOT cleared here.
+        // If the user hits 'back' from Stripe, their cart should still be intact.
+        // The cart is cleared in PaymentSuccess once the order is confirmed.
         window.location.href = response.data.url;
       } else if (response.data?.error) {
         throw new Error(response.data.error);
