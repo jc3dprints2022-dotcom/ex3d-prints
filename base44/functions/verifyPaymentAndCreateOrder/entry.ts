@@ -332,15 +332,7 @@ Deno.serve(async (req) => {
         // If order contains custom requests, DON'T update their status - keep them available for re-purchase
         // Custom requests now stay as "accepted" for 30 days from acceptance date
 
-        // Record designer royalties + maker earnings
-        try {
-            await base44.functions.invoke('recordOrderEarnings', { orderId: newOrder.id });
-            console.log('✅ Earnings recorded');
-        } catch (earningsError) {
-            console.error('⚠️ Failed to record earnings:', earningsError);
-        }
-
-        // Assign to maker(s) based on total print time
+        // Assign to maker(s) FIRST — recordOrderEarnings needs maker_id to be set on the order
         try {
             console.log('Assigning order to maker...');
             const totalPrintTime = enrichedItems.reduce((sum, item) => 
@@ -348,7 +340,6 @@ Deno.serve(async (req) => {
             );
             console.log('Total print time:', totalPrintTime, 'hours');
             
-            // Determine if we need multiple makers
             const assignToMultiple = totalPrintTime > 5;
             
             await base44.functions.invoke('assignOrderToMaker', { 
@@ -358,6 +349,14 @@ Deno.serve(async (req) => {
             console.log('✅ Order assigned to maker(s)');
         } catch (assignError) {
             console.error('⚠️ Maker assignment failed:', assignError);
+        }
+
+        // Record designer royalties + maker earnings AFTER assignment so maker_id is populated
+        try {
+            await base44.functions.invoke('recordOrderEarnings', { orderId: newOrder.id });
+            console.log('✅ Earnings recorded');
+        } catch (earningsError) {
+            console.error('⚠️ Failed to record earnings:', earningsError);
         }
 
         // Send confirmation email to customer
