@@ -36,6 +36,9 @@ export default function PaymentSuccess() {
         setSuccess(true);
         setOrderId(data.order_id);
 
+        // Clear guest cart now that order is confirmed
+        localStorage.removeItem('anonymousCart');
+
         // Axon: purchase
         if (typeof window.axon === 'function') {
           const pendingPurchase = JSON.parse(localStorage.getItem('axon_pending_purchase') || '{}');
