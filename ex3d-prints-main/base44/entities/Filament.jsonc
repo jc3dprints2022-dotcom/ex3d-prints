@@ -1,0 +1,29 @@
+{
+  "name": "Filament",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string"
+    },
+    "material_type": {
+      "type": "string"
+    },
+    "color": {
+      "type": "string"
+    },
+    "quantity_kg": {
+      "type": "number"
+    },
+    "in_stock": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "maker_id",
+    "material_type",
+    "color",
+    "quantity_kg"
+  ],
+  "rls": {}
+}

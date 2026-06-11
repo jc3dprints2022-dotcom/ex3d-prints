@@ -1,0 +1,41 @@
+{
+  "name": "PickupCabinet",
+  "type": "object",
+  "properties": {
+    "cabinet_number": {
+      "type": "number",
+      "enum": [
+        1,
+        2,
+        3
+      ],
+      "description": "Cabinet number (1, 2, or 3)"
+    },
+    "location": {
+      "type": "string",
+      "description": "Physical location description"
+    },
+    "unlock_code": {
+      "type": "string",
+      "description": "4-digit code to unlock the cabinet"
+    },
+    "current_orders": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "Array of order IDs currently stored in this cabinet (max 10)"
+    },
+    "assigned_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the cabinet was last assigned"
+    }
+  },
+  "required": [
+    "cabinet_number",
+    "location",
+    "unlock_code"
+  ]
+}

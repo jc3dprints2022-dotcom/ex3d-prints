@@ -1,0 +1,128 @@
+{
+  "name": "AdCampaign",
+  "type": "object",
+  "properties": {
+    "designer_id": {
+      "type": "string",
+      "description": "Designer's designer_id field"
+    },
+    "designer_user_id": {
+      "type": "string"
+    },
+    "listing_id": {
+      "type": "string",
+      "description": "Product ID this campaign is for"
+    },
+    "listing_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "draft",
+        "ended"
+      ],
+      "default": "draft"
+    },
+    "ad_copies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Generated ad copy variants"
+    },
+    "hooks": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "generated_images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "external_campaign_id": {
+      "type": "string",
+      "description": "Campaign ID from external ads engine"
+    },
+    "landing_page_url": {
+      "type": "string",
+      "description": "URL of the auto-generated landing page"
+    },
+    "total_impressions": {
+      "type": "number",
+      "default": 0
+    },
+    "total_clicks": {
+      "type": "number",
+      "default": 0
+    },
+    "total_conversions": {
+      "type": "number",
+      "default": 0
+    },
+    "ctr": {
+      "type": "number",
+      "default": 0,
+      "description": "Click-through rate (clicks/impressions)"
+    },
+    "ad_generation_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "generating",
+        "ready",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Status of external ad generation"
+    },
+    "ad_generation_error": {
+      "type": "string"
+    },
+    "last_optimized_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "designer_id",
+    "listing_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.designer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.designer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

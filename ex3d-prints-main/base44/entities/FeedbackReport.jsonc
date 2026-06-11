@@ -1,0 +1,71 @@
+{
+  "name": "FeedbackReport",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who submitted the report"
+    },
+    "user_email": {
+      "type": "string",
+      "description": "Email of the user"
+    },
+    "user_name": {
+      "type": "string",
+      "description": "Name of the user"
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "bug",
+        "feature_request",
+        "improvement",
+        "other"
+      ],
+      "description": "Type of feedback"
+    },
+    "title": {
+      "type": "string",
+      "description": "Brief title/summary"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium",
+      "description": "User-specified priority"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "new",
+        "in_progress",
+        "resolved",
+        "closed"
+      ],
+      "default": "new",
+      "description": "Status of the report"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal admin notes"
+    },
+    "page_url": {
+      "type": "string",
+      "description": "Page where the issue was reported from"
+    }
+  },
+  "required": [
+    "report_type",
+    "title",
+    "description"
+  ]
+}

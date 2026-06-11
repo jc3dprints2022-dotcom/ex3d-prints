@@ -1,0 +1,23 @@
+{
+  "name": "HomepageFeatured",
+  "type": "object",
+  "properties": {
+    "product_id": {
+      "type": "string",
+      "description": "Product to feature on homepage"
+    },
+    "display_order": {
+      "type": "number",
+      "description": "Order in which to display (1-10)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this product is currently featured"
+    }
+  },
+  "required": [
+    "product_id",
+    "display_order"
+  ]
+}

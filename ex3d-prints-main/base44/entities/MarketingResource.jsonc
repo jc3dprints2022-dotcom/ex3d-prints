@@ -1,0 +1,70 @@
+{
+  "name": "MarketingResource",
+  "type": "object",
+  "properties": {
+    "key": {
+      "type": "string",
+      "description": "Unique key for lookup, e.g. maker_hub_global"
+    },
+    "label": {
+      "type": "string",
+      "description": "Human-readable label"
+    },
+    "title": {
+      "type": "string",
+      "description": "Resource title"
+    },
+    "description": {
+      "type": "string",
+      "description": "Resource description"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL to the file"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original file name"
+    },
+    "file_type": {
+      "type": "string",
+      "description": "Type of file (pdf, image, etc.)"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "makers",
+        "designers",
+        "all"
+      ],
+      "default": "all",
+      "description": "Who this resource is for"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of image/file URLs for gallery broadcast"
+    },
+    "links": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Array of links for broadcast"
+    }
+  },
+  "required": []
+}

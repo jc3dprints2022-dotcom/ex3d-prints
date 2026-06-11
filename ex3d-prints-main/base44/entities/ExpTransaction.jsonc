@@ -1,0 +1,51 @@
+{
+  "name": "ExpTransaction",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who earned or redeemed EXP"
+    },
+    "action": {
+      "type": "string",
+      "enum": [
+        "earned",
+        "redeemed"
+      ],
+      "description": "Whether EXP was earned or redeemed"
+    },
+    "amount": {
+      "type": "number",
+      "description": "EXP amount (positive for earned, negative for redeemed)"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Related order ID if applicable"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "purchase",
+        "referral_given",
+        "referral_received",
+        "redemption",
+        "admin_adjustment"
+      ],
+      "description": "Source of the transaction"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the transaction"
+    },
+    "stripe_coupon_id": {
+      "type": "string",
+      "description": "Stripe coupon ID if this was a redemption"
+    }
+  },
+  "required": [
+    "user_id",
+    "action",
+    "amount",
+    "source"
+  ]
+}

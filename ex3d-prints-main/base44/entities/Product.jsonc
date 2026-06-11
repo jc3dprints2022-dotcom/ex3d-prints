@@ -1,0 +1,395 @@
+{
+  "name": "Product",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "Brief product description for business listings"
+    },
+    "price": {
+      "type": "number"
+    },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business"
+      ],
+      "default": "consumer"
+    },
+    "product_type": {
+      "type": "string",
+      "enum": [
+        "print",
+        "design"
+      ],
+      "default": "print"
+    },
+    "seller_type": {
+      "type": "string",
+      "enum": [
+        "maker",
+        "designer"
+      ]
+    },
+    "seller_id": {
+      "type": "string"
+    },
+    "wholesale_price": {
+      "type": "number"
+    },
+    "suggested_retail_price": {
+      "type": "number"
+    },
+    "business_industry": {
+      "type": "string",
+      "enum": [
+        "Local Souvenir Shops",
+        "Toy Shop",
+        "Health & Personal Care",
+        "Office & Desk",
+        "Other"
+      ]
+    },
+    "capacity_per_day": {
+      "type": "number"
+    },
+    "can_ship": {
+      "type": "boolean",
+      "default": true
+    },
+    "local_delivery_eligible": {
+      "type": "boolean",
+      "default": false
+    },
+    "local_delivery_radius_miles": {
+      "type": "number"
+    },
+    "eligible_zip_codes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "is_core_business_product": {
+      "type": "boolean",
+      "default": false
+    },
+    "stripe_product_id": {
+      "type": "string"
+    },
+    "stripe_price_id": {
+      "type": "string"
+    },
+    "exp_cost": {
+      "type": "number"
+    },
+    "is_exp_product": {
+      "type": "boolean",
+      "default": false
+    },
+    "print_time_hours": {
+      "type": "number"
+    },
+    "weight_grams": {
+      "type": "number"
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      }
+    },
+    "infill_percentage": {
+      "type": "number",
+      "default": 15
+    },
+    "print_file_scale": {
+      "type": "number",
+      "default": 100
+    },
+    "custom_scale": {
+      "type": "number"
+    },
+    "designer_id": {
+      "type": "string"
+    },
+    "designer_name": {
+      "type": "string"
+    },
+    "designer_user_id": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "kit_cards",
+        "rocket_models",
+        "halloween",
+        "easter",
+        "april_fools",
+        "independence_day",
+        "dorm_essentials",
+        "desk",
+        "art",
+        "gadgets",
+        "toys_and_games",
+        "thanksgiving",
+        "christmas",
+        "valentines_day",
+        "home_decor",
+        "office_supplies",
+        "accessories",
+        "collectibles",
+        "misc"
+      ],
+      "default": "misc"
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "colors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "use_shown_colors": {
+      "type": "boolean",
+      "default": false
+    },
+    "shown_color_specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "file_index": {
+            "type": "number"
+          },
+          "color": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number",
+            "default": 1
+          }
+        }
+      }
+    },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "same_price": {
+            "type": "boolean",
+            "default": true
+          },
+          "base_price": {
+            "type": "number"
+          },
+          "options": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "print_files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "rating": {
+      "type": "number"
+    },
+    "review_count": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "pending",
+        "inactive",
+        "rejected",
+        "draft"
+      ],
+      "default": "draft"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "view_count": {
+      "type": "number",
+      "default": 0
+    },
+    "sales_count": {
+      "type": "number",
+      "default": 0
+    },
+    "rejection_count": {
+      "type": "number",
+      "default": 0
+    },
+    "rejection_reason": {
+      "type": "string",
+      "enum": [
+        "inappropriate",
+        "violates_copyright",
+        "unreasonable_pricing",
+        "violates_terms_of_service",
+        "other"
+      ]
+    },
+    "admin_feedback": {
+      "type": "string"
+    },
+    "version_of": {
+      "type": "string"
+    },
+    "availability_type": {
+      "type": "string",
+      "enum": [
+        "physical",
+        "digital",
+        "both"
+      ],
+      "default": "physical"
+    },
+    "protection_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ],
+      "default": "medium"
+    },
+    "multi_color": {
+      "type": "boolean",
+      "default": false
+    },
+    "number_of_colors": {
+      "type": "number"
+    },
+    "is_boosted": {
+      "type": "boolean",
+      "default": false
+    },
+    "boost_start_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "boost_end_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "boost_duration_weeks": {
+      "type": "number"
+    },
+    "boost_pending_payment": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "name",
+    "description"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.designer_id": "{{user.designer_id}}"
+        },
+        {
+          "data.designer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.status": "active"
+        },
+        {
+          "data.designer_id": "{{user.designer_id}}"
+        },
+        {
+          "data.designer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.designer_id": "{{user.designer_id}}"
+        },
+        {
+          "data.designer_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

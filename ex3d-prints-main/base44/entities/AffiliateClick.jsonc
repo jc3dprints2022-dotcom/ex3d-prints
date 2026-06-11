@@ -1,0 +1,50 @@
+{
+  "name": "AffiliateClick",
+  "type": "object",
+  "properties": {
+    "affiliate_id": {
+      "type": "string",
+      "description": "Affiliate's affiliate_id"
+    },
+    "product_id": {
+      "type": "string"
+    },
+    "product_slug": {
+      "type": "string"
+    },
+    "referrer_url": {
+      "type": "string"
+    },
+    "session_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "affiliate_id"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.affiliate_id": "{{user.affiliate_id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

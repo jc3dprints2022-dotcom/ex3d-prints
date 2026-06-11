@@ -1,0 +1,42 @@
+{
+  "name": "ExpRedemption",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who redeemed the reward"
+    },
+    "reward_id": {
+      "type": "string",
+      "description": "Reward that was redeemed"
+    },
+    "reward_name": {
+      "type": "string",
+      "description": "Name of redeemed reward (for record keeping)"
+    },
+    "exp_cost": {
+      "type": "number",
+      "description": "EXP points deducted"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "fulfilled",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Redemption status"
+    },
+    "fulfillment_notes": {
+      "type": "string",
+      "description": "Admin notes on fulfillment"
+    }
+  },
+  "required": [
+    "user_id",
+    "reward_id",
+    "reward_name",
+    "exp_cost"
+  ]
+}

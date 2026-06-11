@@ -1,0 +1,123 @@
+{
+  "name": "CustomPrintRequest",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Customer user ID who made the request"
+    },
+    "title": {
+      "type": "string",
+      "description": "Title or name for the print request"
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed description and comments"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Uploaded file URLs (STL, OBJ, etc.)"
+    },
+    "images": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Reference image URLs"
+    },
+    "material_preference": {
+      "type": "string",
+      "description": "Preferred material"
+    },
+    "color_preference": {
+      "type": "string",
+      "description": "Preferred color"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Number of items needed"
+    },
+    "timeline": {
+      "type": "string",
+      "description": "Timeline preference"
+    },
+    "budget_range": {
+      "type": "string",
+      "description": "Budget range or max budget"
+    },
+    "special_requirements": {
+      "type": "string",
+      "description": "Any special requirements or notes"
+    },
+    "dimensions": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "description": "Expected dimensions in mm"
+    },
+    "is_class_project": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is for a class project or capstone (qualifies for 25% discount)"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "quoted",
+        "accepted",
+        "declined",
+        "printing",
+        "completed",
+        "shipped",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Request status"
+    },
+    "quoted_price": {
+      "type": "number",
+      "description": "Price quoted by admin/maker"
+    },
+    "print_time_hours": {
+      "type": "number",
+      "description": "Estimated print time in hours"
+    },
+    "weight_grams": {
+      "type": "number",
+      "description": "Estimated weight in grams"
+    },
+    "assigned_maker_id": {
+      "type": "string",
+      "description": "Maker assigned to this request"
+    },
+    "admin_notes": {
+      "type": "string",
+      "description": "Internal notes or notes for the customer about the quote"
+    },
+    "accepted_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the quote was first accepted by customer"
+    }
+  },
+  "required": [
+    "customer_id",
+    "title",
+    "description"
+  ]
+}

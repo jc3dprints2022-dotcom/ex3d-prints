@@ -1,0 +1,77 @@
+{
+  "name": "Coupon",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string",
+      "description": "Unique coupon code"
+    },
+    "discount_type": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "percentage"
+      ],
+      "description": "Type of discount"
+    },
+    "discount_value": {
+      "type": "number",
+      "description": "Discount amount (dollars or percentage)"
+    },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business",
+        "both"
+      ],
+      "default": "consumer",
+      "description": "Which marketplace this coupon is valid for"
+    },
+    "min_purchase": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum purchase amount to use coupon"
+    },
+    "max_uses": {
+      "type": "number",
+      "description": "Maximum number of times this coupon can be used (null = unlimited)"
+    },
+    "uses_count": {
+      "type": "number",
+      "default": 0,
+      "description": "How many times this coupon has been used"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "If set, coupon is only valid for this specific user"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the coupon expires"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the coupon is currently active"
+    },
+    "coupon_type": {
+      "type": "string",
+      "enum": [
+        "email_signup",
+        "welcome",
+        "referral",
+        "promotional",
+        "custom"
+      ],
+      "default": "custom",
+      "description": "Type/source of the coupon"
+    }
+  },
+  "required": [
+    "code",
+    "discount_type",
+    "discount_value"
+  ]
+}

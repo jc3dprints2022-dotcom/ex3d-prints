@@ -1,0 +1,91 @@
+{
+  "name": "EmailCampaign",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Campaign name"
+    },
+    "trigger_type": {
+      "type": "string",
+      "enum": [
+        "user_signup",
+        "first_purchase",
+        "order_delivered",
+        "inactive_days",
+        "cart_abandoned",
+        "wishlist_abandoned",
+        "manual"
+      ],
+      "description": "What triggers this email campaign"
+    },
+    "trigger_condition": {
+      "type": "object",
+      "description": "Condition parameters (e.g., {days: 3} for inactive_days)"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "makers",
+        "consumers"
+      ],
+      "default": "all",
+      "description": "Who should receive this campaign"
+    },
+    "email_subject": {
+      "type": "string",
+      "description": "Email subject line (supports variables like {user.full_name})"
+    },
+    "email_body": {
+      "type": "string",
+      "description": "Email body content (HTML supported, supports variables)"
+    },
+    "include_dynamic_content": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to include dynamic product recommendations"
+    },
+    "dynamic_content_type": {
+      "type": "string",
+      "enum": [
+        "recently_viewed",
+        "cart_items",
+        "wishlist_items",
+        "popular_products",
+        "specific_product"
+      ],
+      "description": "Type of dynamic content to include"
+    },
+    "specific_product_id": {
+      "type": "string",
+      "description": "Specific product ID if dynamic_content_type is specific_product"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the campaign is currently active"
+    },
+    "emails_sent": {
+      "type": "number",
+      "default": 0,
+      "description": "Total number of emails sent by this campaign"
+    },
+    "emails_sent_last_24h": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of emails sent in the last 24 hours"
+    },
+    "last_run": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When this campaign last ran"
+    }
+  },
+  "required": [
+    "name",
+    "trigger_type",
+    "email_subject",
+    "email_body"
+  ]
+}

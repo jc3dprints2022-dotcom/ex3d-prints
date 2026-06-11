@@ -1,0 +1,135 @@
+{
+  "name": "MakerContent",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string",
+      "description": "Maker's maker_id field"
+    },
+    "maker_user_id": {
+      "type": "string",
+      "description": "Maker's user ID"
+    },
+    "maker_name": {
+      "type": "string"
+    },
+    "maker_email": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string",
+      "description": "URL of the uploaded file"
+    },
+    "file_type": {
+      "type": "string",
+      "enum": [
+        "video",
+        "image"
+      ],
+      "description": "video or image"
+    },
+    "file_name": {
+      "type": "string",
+      "description": "Original filename"
+    },
+    "clip_category": {
+      "type": "string",
+      "enum": [
+        "timelapse_print",
+        "bed_removal",
+        "packaging",
+        "final_product_shot",
+        "other"
+      ],
+      "description": "Type of content"
+    },
+    "order_id": {
+      "type": "string",
+      "description": "Optional linked order ID"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Maker notes about this clip"
+    },
+    "usage_rights_granted": {
+      "type": "boolean",
+      "default": true,
+      "description": "Maker granted EX3D full usage rights"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected",
+        "flagged"
+      ],
+      "default": "pending",
+      "description": "Admin review status"
+    },
+    "admin_notes": {
+      "type": "string"
+    },
+    "payout_amount": {
+      "type": "number",
+      "default": 0.25,
+      "description": "$0.25 per approved clip"
+    },
+    "payout_status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "paid"
+      ],
+      "default": "pending"
+    },
+    "approved_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "approved_by": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "maker_id",
+    "file_url",
+    "clip_category"
+  ],
+  "rls": {
+    "create": {
+      "$or": [
+        {
+          "data.maker_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "read": {
+      "$or": [
+        {
+          "data.maker_user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "name": "ReferralTracking",
+  "type": "object",
+  "properties": {
+    "referrer_user_id": {
+      "type": "string",
+      "description": "User ID of the affiliate who made the referral"
+    },
+    "referrer_code": {
+      "type": "string",
+      "description": "Referral code used"
+    },
+    "referred_user_id": {
+      "type": "string",
+      "description": "User ID of the person who signed up"
+    },
+    "referred_user_email": {
+      "type": "string",
+      "description": "Email of referred user"
+    },
+    "referral_type": {
+      "type": "string",
+      "enum": [
+        "maker",
+        "designer",
+        "consumer"
+      ],
+      "description": "Type of signup"
+    },
+    "conversion_status": {
+      "type": "string",
+      "enum": [
+        "click",
+        "signup",
+        "converted"
+      ],
+      "default": "signup",
+      "description": "Conversion stage"
+    },
+    "commission_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Commission earned from this referral"
+    },
+    "commission_paid": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether commission has been paid"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of the referral click"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser user agent"
+    }
+  },
+  "required": [
+    "referrer_user_id",
+    "referrer_code"
+  ]
+}

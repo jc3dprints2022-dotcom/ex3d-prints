@@ -1,0 +1,37 @@
+{
+  "name": "ChatMessage",
+  "type": "object",
+  "properties": {
+    "session_id": {
+      "type": "string",
+      "description": "Groups messages. Usually the ID of the initial contact submission."
+    },
+    "user_id": {
+      "type": "string",
+      "description": "The user this conversation is with."
+    },
+    "sender_role": {
+      "type": "string",
+      "enum": [
+        "user",
+        "support"
+      ],
+      "description": "Who sent the message."
+    },
+    "message": {
+      "type": "string",
+      "description": "The content of the message."
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the user has read the message."
+    }
+  },
+  "required": [
+    "session_id",
+    "user_id",
+    "sender_role",
+    "message"
+  ]
+}

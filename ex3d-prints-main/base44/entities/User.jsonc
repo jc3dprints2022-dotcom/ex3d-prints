@@ -1,0 +1,364 @@
+{
+  "name": "User",
+  "type": "object",
+  "properties": {
+    "phone": {
+      "type": "string"
+    },
+    "account_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business"
+      ],
+      "default": "consumer",
+      "description": "Whether this is a consumer or business account"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business name for business accounts"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "business_address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      },
+      "description": "Separate business delivery address for business marketplace orders"
+    },
+    "preferred_marketplace": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business"
+      ],
+      "default": "consumer",
+      "description": "User's last selected marketplace mode"
+    },
+    "business_buyer_info": {
+      "type": "object",
+      "properties": {
+        "business_name": {
+          "type": "string"
+        },
+        "tax_id": {
+          "type": "string"
+        },
+        "business_type": {
+          "type": "string"
+        }
+      },
+      "description": "Business buyer information for wholesale purchases"
+    },
+    "wishlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "business_wishlist": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Separate wishlist for business marketplace"
+    },
+    "business_roles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "consumer",
+          "maker",
+          "designer",
+          "campus_manager",
+          "business_buyer"
+        ]
+      },
+      "default": [
+        "consumer"
+      ]
+    },
+    "account_status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "pending_approval",
+        "application_rejected"
+      ],
+      "default": "active"
+    },
+    "campus_location": {
+      "type": "string",
+      "enum": [
+        "erau_prescott",
+        "erau_daytona",
+        "arizona_state"
+      ],
+      "description": "User's campus location for order routing"
+    },
+    "managed_campus": {
+      "type": "string",
+      "enum": [
+        "erau_prescott",
+        "erau_daytona",
+        "arizona_state"
+      ],
+      "description": "Campus this user manages (if campus_manager)"
+    },
+    "maker_application_id": {
+      "type": "string"
+    },
+    "designer_application_id": {
+      "type": "string"
+    },
+    "subscription_id": {
+      "type": "string"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "enum": [
+        "lite",
+        "pro",
+        "express",
+        "unlimited"
+      ],
+      "description": "Current maker subscription plan"
+    },
+    "subscription_billing_cycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "yearly"
+      ],
+      "description": "Billing cycle for subscription"
+    },
+    "subscription_exempt": {
+      "type": "boolean",
+      "default": false,
+      "description": "If true, user does not need to pay for maker subscription"
+    },
+    "subscription_start_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "plan_type": {
+      "type": "string"
+    },
+    "maker_id": {
+      "type": "string"
+    },
+    "designer_id": {
+      "type": "string"
+    },
+    "bio": {
+      "type": "string"
+    },
+    "website_url": {
+      "type": "string"
+    },
+    "portfolio_links": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "experience_level": {
+      "type": "string"
+    },
+    "weekly_capacity": {
+      "type": "number"
+    },
+    "wishlist_last_updated": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "recently_viewed": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of recently viewed product IDs (max 10)"
+    },
+    "profile_image": {
+      "type": "string"
+    },
+    "onboarding_completed": {
+      "type": "boolean",
+      "default": false
+    },
+    "marketing_role": {
+      "type": "string"
+    },
+    "promotion_channels": {
+      "type": "string"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "bank_account",
+        "paypal"
+      ]
+    },
+    "bank_account_info": {
+      "type": "object",
+      "properties": {
+        "account_holder_name": {
+          "type": "string"
+        },
+        "bank_name": {
+          "type": "string"
+        },
+        "account_number_last4": {
+          "type": "string"
+        },
+        "routing_number": {
+          "type": "string"
+        },
+        "account_type": {
+          "type": "string",
+          "enum": [
+            "checking",
+            "savings"
+          ]
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "paypal_email": {
+      "type": "string"
+    },
+    "shipping_kits_received": {
+      "type": "number",
+      "default": 0
+    },
+    "last_kit_reset_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "open_to_unowned_filaments": {
+      "type": "boolean",
+      "default": false
+    },
+    "hours_printed_this_week": {
+      "type": "number",
+      "default": 0
+    },
+    "max_hours_per_week": {
+      "type": "number",
+      "default": 40
+    },
+    "last_hours_reset": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "has_bundle_discount": {
+      "type": "boolean",
+      "default": false
+    },
+    "maintenance_mode": {
+      "type": "boolean",
+      "default": false
+    },
+    "vacation_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "When true, maker will not receive new order assignments"
+    },
+    "exp_points": {
+      "type": "number",
+      "default": 0,
+      "description": "Total EXP (Experience/Loyalty) points"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "User's unique referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "User ID of the person who referred this user"
+    },
+    "referral_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of successful referrals this user has made"
+    },
+    "total_exp_earned": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime EXP earned (for tracking)"
+    },
+    "total_exp_redeemed": {
+      "type": "number",
+      "default": 0,
+      "description": "Lifetime EXP redeemed (for tracking)"
+    },
+    "payout_day_of_month": {
+      "type": "number",
+      "description": "Day of month for automatic payouts (1-31, null = last day of month)"
+    },
+    "welcome_coupon_claimed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has claimed their welcome coupon"
+    },
+    "welcome_coupon_code": {
+      "type": "string",
+      "description": "The unique coupon code generated for this user"
+    },
+    "email_signup_coupon_claimed": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether user has claimed the $5 email signup coupon"
+    },
+    "email_signup_coupon_code": {
+      "type": "string",
+      "description": "The $5 off coupon code from email signup"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID for this user"
+    },
+    "stripe_connect_account_id": {
+      "type": "string",
+      "description": "Stripe Connect account ID for receiving payments as a merchant (makers)"
+    },
+    "stripe_connect_onboarding_complete": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether Stripe Connect onboarding is complete"
+    }
+  },
+  "required": []
+}

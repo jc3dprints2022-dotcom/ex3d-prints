@@ -1,0 +1,51 @@
+{
+  "name": "ScheduledEmail",
+  "type": "object",
+  "properties": {
+    "subject": {
+      "type": "string",
+      "description": "Email subject"
+    },
+    "body": {
+      "type": "string",
+      "description": "Email body (HTML supported)"
+    },
+    "recipient_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of user IDs to send to"
+    },
+    "scheduled_for": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When to send this email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "sent",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Email send status"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When email was actually sent"
+    },
+    "error_message": {
+      "type": "string",
+      "description": "Error message if send failed"
+    }
+  },
+  "required": [
+    "subject",
+    "body",
+    "recipient_ids",
+    "scheduled_for"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "name": "MakerPerformance",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string",
+      "description": "Maker ID"
+    },
+    "tier": {
+      "type": "string",
+      "enum": [
+        "bronze",
+        "silver",
+        "gold"
+      ],
+      "default": "bronze",
+      "description": "Current tier assignment"
+    },
+    "week_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start of performance tracking week"
+    },
+    "on_time_delivery_rate": {
+      "type": "number",
+      "default": 100,
+      "description": "Percentage of on-time deliveries"
+    },
+    "defect_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentage of defective orders"
+    },
+    "average_turnaround_hours": {
+      "type": "number",
+      "description": "Average hours from accept to complete"
+    },
+    "responsiveness_rating": {
+      "type": "number",
+      "default": 5,
+      "description": "Manual rating 1-5 by admin"
+    },
+    "total_volume_fulfilled": {
+      "type": "number",
+      "default": 0,
+      "description": "Total orders completed this week"
+    },
+    "orders_completed": {
+      "type": "number",
+      "default": 0
+    },
+    "orders_late": {
+      "type": "number",
+      "default": 0
+    },
+    "orders_defective": {
+      "type": "number",
+      "default": 0
+    },
+    "flagged_for_review": {
+      "type": "boolean",
+      "default": false,
+      "description": "Auto-flagged for underperformance"
+    },
+    "consecutive_weeks_below_standard": {
+      "type": "number",
+      "default": 0,
+      "description": "Weeks below 95% on-time or >5% defects"
+    },
+    "routing_priority_reduced": {
+      "type": "boolean",
+      "default": false,
+      "description": "Temporarily reduced priority"
+    }
+  },
+  "required": [
+    "maker_id",
+    "week_start"
+  ]
+}

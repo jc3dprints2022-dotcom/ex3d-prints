@@ -1,0 +1,56 @@
+{
+  "name": "Subscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "plan_id": {
+      "type": "string"
+    },
+    "plan_name": {
+      "type": "string"
+    },
+    "user_role": {
+      "type": "string",
+      "enum": [
+        "maker",
+        "designer"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "cancelled",
+        "past_due"
+      ],
+      "default": "active"
+    },
+    "billing_cycle": {
+      "type": "string",
+      "enum": [
+        "monthly",
+        "annual"
+      ]
+    },
+    "price": {
+      "type": "number"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "next_billing_date": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "required": [
+    "user_id",
+    "plan_id",
+    "status",
+    "billing_cycle",
+    "price"
+  ]
+}

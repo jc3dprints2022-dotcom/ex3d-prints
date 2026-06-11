@@ -1,0 +1,39 @@
+{
+  "name": "EmailCampaignLog",
+  "type": "object",
+  "properties": {
+    "campaign_id": {
+      "type": "string",
+      "description": "Campaign that sent this email"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who received the email"
+    },
+    "sent_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When email was sent"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "sent",
+        "failed"
+      ],
+      "default": "sent",
+      "description": "Email delivery status"
+    },
+    "dynamic_content_included": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Product IDs included in email"
+    }
+  },
+  "required": [
+    "campaign_id",
+    "user_id"
+  ]
+}

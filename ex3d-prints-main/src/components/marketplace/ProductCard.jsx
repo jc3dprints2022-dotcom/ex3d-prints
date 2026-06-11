@@ -1,0 +1,301 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Star, ShoppingCart, ChevronLeft, ChevronRight, Package, Heart } from "lucide-react";
+import { base44 } from "@/api/base44Client";
+import { useToast } from "@/components/ui/use-toast";
+
+export default function ProductCard({ product, user: initialUser }) {
+  const { toast } = useToast();
+  const [addingToCart, setAddingToCart] = React.useState(false);
+  const [currentImageIndex, setCurrentImageIndex] = React.useState(0);
+  const [user, setUser] = React.useState(initialUser || null);
+  const [isInWishlist, setIsInWishlist] = React.useState(
+    initialUser?.wishlist?.includes(product?.id) || false
+  );
+  const [imageLoaded, setImageLoaded] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!product) return;
+    // Only fetch user if not provided by parent
+    if (!initialUser) {
+      base44.auth.me().then(u => {
+        setUser(u);
+        setIsInWishlist(u?.wishlist?.includes(product.id) || false);
+      }).catch(() => {});
+    }
+  }, [initialUser]);
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Get user from state or fetch if not available
+    let currentUser = user;
+    if (!currentUser) {
+      try {
+        currentUser = await base44.auth.me();
+        setUser(currentUser);
+      } catch {
+        currentUser = null;
+      }
+    }
+
+    if (!currentUser) {
+      // Anonymous cart — save to localStorage
+      const cart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
+      const existingIdx = cart.findIndex(i => i.product_id === product.id);
+      if (existingIdx >= 0) {
+        cart[existingIdx].quantity = (cart[existingIdx].quantity || 1) + 1;
+        cart[existingIdx].total_price = cart[existingIdx].unit_price * cart[existingIdx].quantity;
+        toast({ title: "Quantity updated in cart!" });
+      } else {
+        cart.push({
+          id: `anon_${product.id}_${Date.now()}`,
+          product_id: product.id,
+          product_name: product.name,
+          quantity: 1,
+          selected_material: product.materials?.[0] || 'PLA',
+          selected_color: product.colors?.[0] || 'Standard',
+          unit_price: product.price,
+          total_price: product.price,
+          images: product.images || [],
+        });
+        toast({ title: "Added to cart!" });
+      }
+      localStorage.setItem('anonymousCart', JSON.stringify(cart));
+      window.dispatchEvent(new Event('cartUpdated'));
+      setAddingToCart(false);
+      return;
+    }
+
+    setAddingToCart(true);
+    try {
+      const existingCartItems = await base44.entities.Cart.filter({
+        user_id: currentUser.id,
+        product_id: product.id
+      });
+
+      if (existingCartItems.length > 0) {
+        const existingItem = existingCartItems[0];
+        const newQuantity = existingItem.quantity + 1;
+        await base44.entities.Cart.update(existingItem.id, {
+          quantity: newQuantity,
+          total_price: existingItem.unit_price * newQuantity
+        });
+        toast({ title: "Quantity updated in cart!" });
+      } else {
+        await base44.entities.Cart.create({
+          user_id: currentUser.id,
+          product_id: product.id,
+          quantity: 1,
+          selected_material: product.materials?.[0] || 'PLA',
+          selected_color: product.colors?.[0] || 'Standard',
+          unit_price: product.price,
+          total_price: product.price
+        });
+        toast({ title: "Added to cart!" });
+      }
+
+      window.dispatchEvent(new Event('cartUpdated'));
+    } catch (error) {
+      toast({ 
+        title: "Something went wrong", 
+        description: "Failed to add to cart. Please try again.",
+        variant: "destructive" 
+      });
+    }
+    setAddingToCart(false);
+  };
+
+  const handleToggleWishlist = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user) {
+      toast({ 
+        title: "Please sign in", 
+        description: "Please sign in to add to wishlist.",
+        variant: "destructive" 
+      });
+      return;
+    }
+
+    try {
+      // Optimistically update UI
+      const wasInWishlist = isInWishlist;
+      setIsInWishlist(!wasInWishlist);
+
+      // Fetch latest user data to ensure we have the most current wishlist
+      const currentUser = await base44.auth.me();
+      const currentWishlist = currentUser.wishlist || [];
+      
+      // Check if product is already in wishlist
+      const productInWishlist = currentWishlist.includes(product.id);
+      
+      const updatedWishlist = productInWishlist
+        ? currentWishlist.filter(pid => pid !== product.id)
+        : [...currentWishlist, product.id];
+
+      await base44.auth.updateMe({ wishlist: updatedWishlist });
+      
+      // Update local state
+      setUser(prev => ({ ...prev, wishlist: updatedWishlist }));
+      
+      toast({ title: productInWishlist ? "Removed from wishlist" : "Added to wishlist ❤️" });
+      window.dispatchEvent(new Event('wishlistUpdated'));
+    } catch (error) {
+      // Revert optimistic update on error
+      setIsInWishlist(isInWishlist);
+      toast({ title: "Failed to update wishlist", variant: "destructive" });
+    }
+  };
+
+  const nextImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => 
+      prev === (product.images?.length || 1) - 1 ? 0 : prev + 1
+    );
+  };
+
+  const prevImage = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => 
+      prev === 0 ? (product.images?.length || 1) - 1 : prev - 1
+    );
+  };
+
+  const truncateTitle = (title) => {
+    if (title.length > 20) {
+      return title.substring(0, 20) + '...';
+    }
+    return title;
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (!product) return null;
+
+  // "New" badge: only for listings added in the past 30 days
+  const isNewListing = (() => {
+    if (!product.created_date) return false;
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    return new Date(product.created_date) >= thirtyDaysAgo;
+  })();
+
+  const handleCardClick = (e) => {
+    e.preventDefault();
+    scrollToTop();
+    // Navigate to product detail
+    window.location.href = createPageUrl(`ProductDetail?id=${product.id}`);
+  };
+
+  return (
+    <div onClick={handleCardClick} className="cursor-pointer">
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow relative">
+        {/* Wishlist Button */}
+        <button
+          onClick={handleToggleWishlist}
+          className={`absolute top-3 right-3 z-20 p-2 rounded-full shadow-lg transition-all ${
+            isInWishlist 
+              ? 'bg-red-500 hover:bg-red-600 border-2 border-red-600' 
+              : 'bg-white/90 hover:bg-white border-2 border-gray-300 hover:border-red-400'
+          }`}
+        >
+          <Heart 
+            className={`w-5 h-5 ${
+              isInWishlist 
+                ? 'fill-white text-white' 
+                : 'text-gray-600 hover:text-red-500'
+            }`} 
+          />
+        </button>
+
+        <div className="relative w-full" style={{ paddingBottom: '66.67%' }}>
+          {product.images && product.images.length > 0 ? (
+            <>
+              {!imageLoaded && (
+                <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+              )}
+              <img 
+                src={product.images[currentImageIndex] || product.images[0]} 
+                alt={product.name}
+                className={`absolute top-0 left-0 w-full h-full object-contain transition-opacity duration-300 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
+                loading="lazy"
+                onLoad={() => setImageLoaded(true)}
+                key={currentImageIndex}
+              />
+              {product.images.length > 1 && (
+                <>
+                  <button
+                    onClick={prevImage}
+                    className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 p-1 rounded-full shadow-lg hover:bg-white transition-all z-10"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={nextImage}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 p-1 rounded-full shadow-lg hover:bg-white transition-all z-10"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                  <div className="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/50 text-white px-2 py-1 rounded-full text-xs z-10">
+                    {currentImageIndex + 1} / {product.images.length}
+                  </div>
+                </>
+              )}
+            </>
+          ) : (
+            <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-gray-200">
+              <Package className="w-16 h-16 text-gray-400" />
+            </div>
+          )}
+          {product.multi_color && (
+            <Badge className="absolute top-2 left-2 bg-purple-500 z-10">
+              Multi-Color
+            </Badge>
+          )}
+        </div>
+        <CardContent className="p-3 sm:p-4">
+          <h3 className="font-semibold text-sm sm:text-lg mb-1 sm:mb-2 line-clamp-2" title={product.name}>
+            {product.name}
+          </h3>
+          
+          <div className="flex items-center justify-between mb-2">
+            {product.review_count > 0 ? (
+              <div className="flex items-center gap-1">
+                <Star className="w-3 h-3 sm:w-4 sm:h-4 fill-yellow-400 text-yellow-400" />
+                <span className="text-xs sm:text-sm font-medium">{product.rating?.toFixed(1)}</span>
+                <span className="text-xs text-gray-500">({product.review_count})</span>
+              </div>
+            ) : isNewListing ? (
+              <span className="text-xs bg-teal-50 text-teal-700 font-semibold px-2 py-0.5 rounded-full border border-teal-200">New</span>
+            ) : (
+              <span />
+            )}
+            <span className="text-base sm:text-lg font-bold text-gray-900">${product.price?.toFixed(2)}</span>
+          </div>
+
+          <div className="mt-2 sm:mt-3">
+            <Button
+              onClick={handleAddToCart}
+              disabled={addingToCart}
+              className="w-full bg-teal-600 hover:bg-teal-700 text-sm sm:text-base font-semibold py-4 sm:py-5"
+            >
+              <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 mr-1 sm:mr-2" />
+              {addingToCart ? 'Adding...' : 'Add to Cart'}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

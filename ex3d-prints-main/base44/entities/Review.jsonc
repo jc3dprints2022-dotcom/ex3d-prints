@@ -1,0 +1,64 @@
+{
+  "name": "Review",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Order this review is for"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Customer who wrote the review"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product being reviewed"
+    },
+    "maker_id": {
+      "type": "string",
+      "description": "Maker being reviewed"
+    },
+    "designer_id": {
+      "type": "string",
+      "description": "Designer being reviewed"
+    },
+    "review_type": {
+      "type": "string",
+      "enum": [
+        "product",
+        "maker"
+      ],
+      "description": "Type of review"
+    },
+    "rating": {
+      "type": "number",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Star rating 1-5"
+    },
+    "title": {
+      "type": "string",
+      "description": "Review title"
+    },
+    "comment": {
+      "type": "string",
+      "description": "Review comment"
+    },
+    "verified_purchase": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether this is a verified purchase"
+    },
+    "helpful_count": {
+      "type": "number",
+      "default": 0,
+      "description": "Number of users who found this helpful"
+    }
+  },
+  "required": [
+    "order_id",
+    "customer_id",
+    "review_type",
+    "rating"
+  ]
+}

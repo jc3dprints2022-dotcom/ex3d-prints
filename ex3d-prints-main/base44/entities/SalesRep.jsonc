@@ -1,0 +1,62 @@
+{
+  "name": "SalesRep",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID of the sales rep"
+    },
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "total_offices_assigned": {
+      "type": "number",
+      "default": 0
+    },
+    "offices_visited": {
+      "type": "number",
+      "default": 0
+    },
+    "conversations_logged": {
+      "type": "number",
+      "default": 0
+    },
+    "follow_ups_scheduled": {
+      "type": "number",
+      "default": 0
+    },
+    "proposals_sent": {
+      "type": "number",
+      "default": 0
+    },
+    "deals_closed": {
+      "type": "number",
+      "default": 0
+    },
+    "deals_lost": {
+      "type": "number",
+      "default": 0
+    },
+    "close_rate": {
+      "type": "number",
+      "default": 0,
+      "description": "Percentage close rate"
+    },
+    "revenue_generated": {
+      "type": "number",
+      "default": 0
+    },
+    "active_accounts": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "user_id",
+    "name",
+    "email"
+  ]
+}

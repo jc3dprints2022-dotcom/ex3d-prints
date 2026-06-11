@@ -1,0 +1,94 @@
+{
+  "name": "SalesOffice",
+  "type": "object",
+  "properties": {
+    "office_name": {
+      "type": "string"
+    },
+    "assigned_rep_id": {
+      "type": "string",
+      "description": "Sales rep assigned to this office"
+    },
+    "stage": {
+      "type": "string",
+      "enum": [
+        "cold",
+        "contacted",
+        "follow_up",
+        "proposal_sent",
+        "closed_won",
+        "closed_lost"
+      ],
+      "default": "cold"
+    },
+    "contact_person": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string",
+      "description": "General notes about office"
+    },
+    "objection_type": {
+      "type": "string",
+      "description": "Type of objection if any"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_follow_up_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "proposal_sent_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "closed_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "monthly_value": {
+      "type": "number",
+      "description": "Monthly recurring revenue if closed"
+    },
+    "is_active_account": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "office_name"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

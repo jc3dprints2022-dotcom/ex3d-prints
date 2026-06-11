@@ -1,0 +1,73 @@
+{
+  "name": "ShippingKitOrder",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Maker who ordered the kit"
+    },
+    "subscription_plan": {
+      "type": "string",
+      "description": "Maker's subscription plan at time of order"
+    },
+    "cost": {
+      "type": "number",
+      "description": "Cost of the shipping kit"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "shipped",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Order status"
+    },
+    "tracking_number": {
+      "type": "string",
+      "description": "Tracking number for kit shipment"
+    },
+    "shipping_address": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "kit_contents": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [
+        "packing_tape",
+        "boxes",
+        "packing_paper"
+      ],
+      "description": "Items included in the kit"
+    }
+  },
+  "required": [
+    "user_id",
+    "cost"
+  ]
+}

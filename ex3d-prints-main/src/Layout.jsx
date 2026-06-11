@@ -1,0 +1,732 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Link, useLocation } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { base44 } from "@/api/base44Client";
+import {
+  Menu, X, ShoppingCart, Heart, User as UserIcon,
+  LogOut, Settings, Search, LogIn, Bell,
+  Printer, Paintbrush
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import BottomNav from "@/components/shared/BottomNav";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/components/ui/use-toast";
+import NewUserGiftPopup from "@/components/shared/NewUserGiftPopup";
+
+export default function Layout({ children, currentPageName }) {
+  const location = useLocation();
+  const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showAnnouncementDialog, setShowAnnouncementDialog] = useState(false);
+  const [pendingAnnouncement, setPendingAnnouncement] = useState(null);
+  const showAnnouncementDialogRef = useRef(false);
+  const pendingAnnouncementRef = useRef(null);
+  const { toast } = useToast();
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+    
+    const initLayout = async () => {
+      if (isMounted) {
+        await loadUserData();
+        await checkForNewAnnouncements();
+        await checkNewUserWelcome();
+      }
+    };
+    
+    initLayout();
+
+    window.addEventListener('cartUpdated', loadUserData);
+    window.addEventListener('wishlistUpdated', loadUserData);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('cartUpdated', loadUserData);
+      window.removeEventListener('wishlistUpdated', loadUserData);
+    };
+  }, []);
+
+  // Track page view
+  useEffect(() => {
+    trackPageView();
+  }, [location.pathname]);
+
+  const checkNewUserWelcome = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      if (!currentUser) return;
+
+      // Auto-set account type to consumer if not set
+      if (!currentUser.account_type) {
+        await base44.auth.updateMe({ account_type: 'consumer' });
+        return;
+      }
+
+      // Check if user was just created (within last 10 seconds) and hasn't received welcome bonus
+      const userCreatedAt = new Date(currentUser.created_date);
+      const now = new Date();
+      const timeSinceCreation = (now - userCreatedAt) / 1000; // seconds
+
+      // Check localStorage to see if we already sent the welcome email
+      const welcomeSentKey = `welcome_sent_${currentUser.id}`;
+      const welcomeAlreadySent = localStorage.getItem(welcomeSentKey);
+
+      if (timeSinceCreation < 10 && !welcomeAlreadySent) {
+        // New user - trigger welcome email and EXP bonus
+        try {
+          await base44.functions.invoke('onUserSignup', { userId: currentUser.id });
+          localStorage.setItem(welcomeSentKey, 'true');
+          
+          // Reload user data to show updated EXP
+          setTimeout(() => {
+            loadUserData();
+            toast({
+              title: "Welcome to EX3D Prints! 🎉",
+              description: "You've received 120 EXP as a welcome bonus! Check your email.",
+              duration: 8000
+            });
+          }, 1000);
+        } catch (error) {
+          console.error('Failed to send welcome email:', error);
+        }
+      }
+    } catch (error) {
+      // User not logged in or other error - ignore
+    }
+  };
+
+  const checkForNewAnnouncements = async () => {
+    try {
+      const currentUser = await base44.auth.me();
+      if (!currentUser) return;
+
+      const allAnnouncements = await base44.entities.Announcement.list();
+      const now = new Date();
+
+      // Get last seen announcement timestamp from localStorage
+      const lastSeenKey = `last_seen_announcement_${currentUser.id}`;
+      const lastSeenTimestamp = localStorage.getItem(lastSeenKey);
+      const lastSeen = lastSeenTimestamp ? new Date(lastSeenTimestamp) : null;
+
+      // Find newest unread announcement
+      const relevantAnnouncements = allAnnouncements.filter(announcement => {
+        // Check if expired
+        if (announcement.expiry_date && new Date(announcement.expiry_date) < now) {
+          return false;
+        }
+
+        // Check if already read
+        if (announcement.read_by?.includes(currentUser.id)) {
+          return false;
+        }
+
+        // Check if it's newer than last seen
+        const announcementDate = new Date(announcement.created_date);
+        if (lastSeen && announcementDate <= lastSeen) {
+          return false;
+        }
+
+        // Check target audience
+        if (announcement.target_audience === 'all') return true;
+        // Check if user is consumer AND NOT maker. A user can be both, but a maker is not *just* a consumer for maker-specific announcements.
+        if (announcement.target_audience === 'consumers' && currentUser.business_roles?.includes('consumer') && !(currentUser.business_roles?.includes('maker'))) return true;
+        if (announcement.target_audience === 'makers' && currentUser.business_roles?.includes('maker')) return true;
+        if (announcement.target_audience === 'specific_user' && announcement.specific_user_id === currentUser.id) return true;
+
+        return false;
+      });
+
+      // Show popup for the newest announcement
+      if (relevantAnnouncements.length > 0) {
+        const newestAnnouncement = relevantAnnouncements.sort(
+          (a, b) => new Date(b.created_date) - new Date(a.created_date)
+        )[0];
+        
+        setPendingAnnouncement(newestAnnouncement);
+        pendingAnnouncementRef.current = newestAnnouncement;
+        setShowAnnouncementDialog(true);
+        showAnnouncementDialogRef.current = true;
+
+        // Auto-dismiss after 15 seconds — use refs to avoid stale closure
+        setTimeout(() => {
+          if (showAnnouncementDialogRef.current && pendingAnnouncementRef.current?.id === newestAnnouncement.id) {
+            handleDismissAnnouncement();
+          }
+        }, 15000);
+      }
+    } catch (error) {
+      console.error('Failed to check announcements:', error);
+    }
+  };
+
+  const handleAnnouncementClick = () => {
+    if (pendingAnnouncement && user) {
+      // Mark as seen in local storage
+      const lastSeenKey = `last_seen_announcement_${user.id}`;
+      localStorage.setItem(lastSeenKey, new Date().toISOString());
+      
+      setShowAnnouncementDialog(false);
+      
+      // Navigate to dashboard
+      const dashboardUrl = getDashboardUrl();
+      window.location.href = dashboardUrl;
+    }
+  };
+
+  const handleDismissAnnouncement = async () => {
+    if (pendingAnnouncement && user) {
+      try {
+        // Mark as read in database
+        const announcement = pendingAnnouncement;
+        const updatedReadBy = [...(announcement.read_by || []), user.id];
+        
+        await base44.entities.Announcement.update(announcement.id, {
+          read_by: updatedReadBy
+        });
+
+        // Update localStorage to mark it as seen
+        const lastSeenKey = `last_seen_announcement_${user.id}`;
+        localStorage.setItem(lastSeenKey, new Date().toISOString());
+      } catch (error) {
+        console.error("Failed to dismiss announcement:", error);
+      }
+    }
+    setShowAnnouncementDialog(false);
+    showAnnouncementDialogRef.current = false;
+    setPendingAnnouncement(null);
+    pendingAnnouncementRef.current = null;
+  };
+
+  const trackPageView = async () => {
+    // Axon: page_view
+    if (typeof window.axon === 'function') {
+      window.axon('track', 'page_view');
+    }
+
+    try {
+      let userType = 'not_signed_in';
+      let userId = null;
+
+      try {
+        const currentUser = await base44.auth.me();
+        if (currentUser) {
+          userId = currentUser.id;
+          userType = currentUser.business_roles?.includes('maker') ? 'maker' : 'signed_in';
+        }
+      } catch (error) {
+        // Not logged in, keep as not_signed_in
+      }
+
+      // Generate or retrieve session ID
+      let sessionId = localStorage.getItem('session_id');
+      if (!sessionId) {
+        sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        localStorage.setItem('session_id', sessionId);
+      }
+
+      await base44.entities.PageView.create({
+        user_id: userId,
+        user_type: userType,
+        page_url: location.pathname,
+        timestamp: new Date().toISOString(),
+        session_id: sessionId
+      }).catch(err => {
+        // Silently catch PageView errors - non-critical
+        console.log('PageView tracking skipped:', err.message);
+      });
+    } catch (error) {
+      // Silently catch all tracking errors
+      console.log('Page tracking skipped');
+    }
+  };
+
+  const loadUserData = async () => {
+    try {
+      // Check if we have a cached user in sessionStorage to prevent re-auth on every page change
+      const cachedUser = sessionStorage.getItem('cached_user');
+      const cacheTime = sessionStorage.getItem('user_cache_time');
+      const now = Date.now();
+      
+      // Use cache if less than 5 minutes old
+      if (cachedUser && cacheTime && (now - parseInt(cacheTime)) < 300000) {
+        const userData = JSON.parse(cachedUser);
+        setUser(userData);
+        
+        const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
+        setCartCount(cartItems.length);
+        setWishlistCount(userData.wishlist?.length || 0);
+        return;
+      }
+
+      const userData = await base44.auth.me().catch(() => null);
+      if (!userData) {
+        // Don't clear cached user on a single failed fetch — could be a transient error.
+        // Only clear if there was never a cached user.
+        const wasCached = sessionStorage.getItem('cached_user');
+        if (!wasCached) {
+          setUser(null);
+          const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
+          setCartCount(localCart.length);
+          const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
+          setWishlistCount(localWishlist.length);
+        }
+        return;
+      }
+      
+      // Cache the user data
+      sessionStorage.setItem('cached_user', JSON.stringify(userData));
+      sessionStorage.setItem('user_cache_time', now.toString());
+      
+      setUser(userData);
+
+      const cartItems = await base44.entities.Cart.filter({ user_id: userData.id }).catch(() => []);
+      setCartCount(cartItems.length);
+
+      setWishlistCount(userData.wishlist?.length || 0);
+    } catch (error) {
+      // Not logged in - this is fine for public pages
+      setUser(null);
+      sessionStorage.removeItem('cached_user');
+      sessionStorage.removeItem('user_cache_time');
+      const localCart = JSON.parse(localStorage.getItem('anonymousCart') || '[]');
+      setCartCount(localCart.length);
+      const localWishlist = JSON.parse(localStorage.getItem('anonymousWishlist') || '[]');
+      setWishlistCount(localWishlist.length);
+    }
+  };
+
+  const handleLogout = async () => {
+    await base44.auth.logout();
+    setUser(null);
+    setCartCount(0);
+    setWishlistCount(0);
+    localStorage.removeItem('anonymousCart');
+    localStorage.removeItem('anonymousWishlist');
+    sessionStorage.removeItem('cached_user');
+    sessionStorage.removeItem('user_cache_time');
+    window.location.href = createPageUrl("Home");
+  };
+
+  const handleLogin = () => {
+    base44.auth.redirectToLogin(window.location.href);
+  };
+
+  const getDashboardUrl = () => {
+    if (!user) return createPageUrl("Home");
+    if (user.role === 'admin') return createPageUrl("jc3dcommandcenter");
+    return createPageUrl("ConsumerDashboard");
+  };
+
+  const getDashboardLabel = () => {
+    if (!user) return "Dashboard";
+    if (user.role === 'admin') return "Admin Command Center";
+    return "My Dashboard";
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      window.location.href = `${createPageUrl("Marketplace")}?search=${encodeURIComponent(searchQuery)}`;
+    } else {
+      window.location.href = createPageUrl("Marketplace");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-safe-bottom">
+      <header className="bg-white dark:bg-gray-800 shadow-sm border-b dark:border-gray-700 sticky top-0 z-50 safe-area-top">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <Link to={createPageUrl("Home")} className="flex items-center space-x-2" onClick={scrollToTop}>
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-12 w-auto"/>
+            </Link>
+
+            <nav className="hidden md:flex flex-1 items-center justify-evenly mx-6">
+              <Link
+                to={createPageUrl("Marketplace")}
+                onClick={scrollToTop}
+                className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg ${
+                  location.pathname === createPageUrl("Marketplace") || location.pathname.startsWith(createPageUrl("ProductDetail"))
+                    ? "bg-teal-500 text-white"
+                    : "bg-teal-50 text-teal-700 hover:bg-teal-100"
+                }`}
+              >
+                Shop
+              </Link>
+
+              {/* For Makers - dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg flex items-center gap-1.5 ${
+                      location.pathname === createPageUrl("ForMakers") || location.pathname === createPageUrl("MakerSignup") || location.pathname === createPageUrl("MakerHowItWorks")
+                        ? "bg-orange-500 text-white"
+                        : "bg-orange-50 text-orange-700 hover:bg-orange-100"
+                    }`}
+                  >
+                    <Printer className="w-3.5 h-3.5" />
+                    For Makers
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="flex items-center gap-2">
+                      <Printer className="w-4 h-4 text-orange-500" />
+                      For Makers
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    {user?.business_roles?.includes('maker') ? (
+                      <Link to={`${createPageUrl("ConsumerDashboard")}?tab=maker`} onClick={scrollToTop} className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-orange-500" />
+                        Maker Hub
+                      </Link>
+                    ) : (
+                      <Link to={createPageUrl("MakerSignup")} onClick={scrollToTop} className="flex items-center gap-2">
+                        <Printer className="w-4 h-4 text-orange-500" />
+                        Become a Maker
+                      </Link>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* For Designers - dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`text-sm font-medium transition-colors px-4 py-2 rounded-lg flex items-center gap-1.5 ${
+                      location.pathname === createPageUrl("ForDesigners") || location.pathname === createPageUrl("DesignerSignup") || location.pathname === createPageUrl("DesignerHowItWorks")
+                        ? "bg-blue-500 text-white"
+                        : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+                    }`}
+                  >
+                    <Paintbrush className="w-3.5 h-3.5" />
+                    For Designers
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuItem asChild>
+                    <Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="flex items-center gap-2">
+                      <Paintbrush className="w-4 h-4 text-blue-500" />
+                      For Designers
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    {user?.business_roles?.includes('designer') ? (
+                      <Link to={`${createPageUrl("ConsumerDashboard")}?tab=designer`} onClick={scrollToTop} className="flex items-center gap-2">
+                        <Settings className="w-4 h-4 text-blue-500" />
+                        Designer Hub
+                      </Link>
+                    ) : (
+                      <Link to={createPageUrl("DesignerSignup")} onClick={scrollToTop} className="flex items-center gap-2">
+                        <Paintbrush className="w-4 h-4 text-blue-500" />
+                        Become a Designer
+                      </Link>
+                    )}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </nav>
+
+            <div className="flex items-center space-x-4">
+              {/* Search Bar - Desktop */}
+              <div className="hidden md:block relative w-64">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  placeholder="Search..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-10 h-9"
+                />
+              </div>
+
+              {/* Cart Icon */}
+              <Link
+                to={createPageUrl("Cart")}
+                className="relative"
+              >
+                <Button variant="ghost" size="icon">
+                  <ShoppingCart className="w-5 h-5" />
+                  {cartCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                      {cartCount}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+
+              {/* Wishlist Icon - Consumer Only */}
+              {(!user || user.account_type !== 'business') && (
+                <Link to={createPageUrl("Wishlist")} className="relative">
+                  <Button variant="ghost" size="icon">
+                    <Heart className="w-5 h-5" />
+                    {wishlistCount > 0 && (
+                      <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {wishlistCount}
+                      </span>
+                    )}
+                  </Button>
+                </Link>
+              )}
+
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      {user.profile_image ? (
+                        <img
+                          src={user.profile_image}
+                          alt="Profile"
+                          className="w-8 h-8 rounded-full"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center">
+                           <UserIcon className="w-5 h-5 text-slate-600" />
+                        </div>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <div className="px-3 py-2">
+                      <p className="text-sm font-medium">{user.full_name}</p>
+                      <p className="text-xs text-gray-500">{user.email}</p>
+                      {user.business_roles && user.business_roles.length > 0 && user.business_roles.some(role => role !== 'consumer') && (
+                        <p className="text-xs text-teal-600 capitalize">
+                          {user.business_roles.filter(role => role !== 'consumer').join(', ')}
+                        </p>
+                      )}
+                    </div>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem asChild>
+                      <Link to={createPageUrl("ConsumerDashboard")} onClick={scrollToTop} className="flex items-center">
+                        <Settings className="w-4 h-4 mr-2" />
+                        My Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+
+                    {user.role === 'admin' && (
+                      <DropdownMenuItem asChild>
+                        <Link to={createPageUrl("jc3dcommandcenter")} onClick={scrollToTop} className="flex items-center">
+                          <Settings className="w-4 h-4 mr-2" />
+                          Admin Command Center
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
+
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="w-4 h-4 mr-2" />
+                      Sign Out
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="default" onClick={handleLogin}>
+                  Sign In
+                </Button>
+              )}
+
+              {/* Mobile search icon */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => { setMobileSearchOpen(!mobileSearchOpen); setMobileMenuOpen(false); }}
+              >
+                <Search className="w-5 h-5" />
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              </Button>
+            </div>
+          </div>
+
+          {/* Mobile search bar */}
+          {mobileSearchOpen && (
+            <div className="md:hidden border-t bg-white px-4 py-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <Input
+                  autoFocus
+                  placeholder="Search products…"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { setMobileSearchOpen(false); handleSearch(); } }}
+                  className="pl-10 h-9"
+                />
+              </div>
+            </div>
+          )}
+
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t bg-white py-4">
+              <div className="pt-2 space-y-1">
+                <Link
+                  to={createPageUrl("Marketplace")}
+                  className="block px-4 py-2 text-sm font-medium text-teal-600 hover:text-teal-700 hover:bg-teal-50 rounded"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  Shop
+                </Link>
+
+                <Link
+                  to={createPageUrl("ForMakers")}
+                  className="block px-4 py-2 text-sm font-medium text-orange-600 hover:text-orange-700 hover:bg-orange-50 rounded"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  For Makers
+                </Link>
+                {user?.business_roles?.includes('maker') ? (
+                  <Link
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=maker`}
+                    className="block px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded pl-8"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    → Maker Hub
+                  </Link>
+                ) : (
+                  <Link
+                    to={createPageUrl("MakerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-orange-500 hover:text-orange-600 hover:bg-orange-50 rounded pl-8"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    → Become a Maker
+                  </Link>
+                )}
+                <Link
+                  to={createPageUrl("ForDesigners")}
+                  className="block px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded"
+                  onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                >
+                  For Designers
+                </Link>
+                {user?.business_roles?.includes('designer') ? (
+                  <Link
+                    to={`${createPageUrl("ConsumerDashboard")}?tab=designer`}
+                    className="block px-4 py-2 text-sm font-medium text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded pl-8"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    → Designer Hub
+                  </Link>
+                ) : (
+                  <Link
+                    to={createPageUrl("DesignerSignup")}
+                    className="block px-4 py-2 text-sm font-medium text-blue-500 hover:text-blue-600 hover:bg-blue-50 rounded pl-8"
+                    onClick={() => { setMobileMenuOpen(false); scrollToTop(); }}
+                  >
+                    → Become a Designer
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </header>
+
+      {/* Announcement Popup Dialog */}
+      <Dialog open={showAnnouncementDialog} onOpenChange={setShowAnnouncementDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <div className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-teal-600" />
+              <DialogTitle>New Announcement</DialogTitle>
+            </div>
+            <DialogDescription>
+              {pendingAnnouncement?.title}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-sm text-gray-700">{pendingAnnouncement?.message}</p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleDismissAnnouncement}>
+              Dismiss
+            </Button>
+            <Button onClick={handleAnnouncementClick} className="bg-teal-600 hover:bg-teal-700">
+              View Dashboard
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <main className="flex-1 pb-safe-bottom md:pb-0">
+        {children}
+      </main>
+      
+      <BottomNav />
+
+      <footer className="bg-slate-800 dark:bg-gray-950 text-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-safe-bottom">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+            <div className="col-span-1 md:col-span-2">
+              <div className="flex items-center space-x-2 mb-4">
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68d8b5f745d1a8c804de1fda/0fca6282c_EX3DPrintsLogo.png" alt="EXpressPrints Logo" className="h-10 w-auto"/>
+              </div>
+              <p className="text-gray-300 mb-4">
+                Premium rocket models and space gifts, designed for people who love space.
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Platform</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link to={createPageUrl("ForMakers")} onClick={scrollToTop} className="hover:text-white">For Makers</Link></li>
+                <li><Link to={createPageUrl("ForDesigners")} onClick={scrollToTop} className="hover:text-white">For Designers</Link></li>
+                <li><Link to="/AffiliateSignup" onClick={scrollToTop} className="hover:text-white">For Affiliates</Link></li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wider mb-4">Support</h3>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><Link to="/About" onClick={scrollToTop} className="hover:text-white">About</Link></li>
+                <li><Link to={createPageUrl("FAQ")} onClick={scrollToTop} className="hover:text-white">FAQ</Link></li>
+                <li><Link to={createPageUrl("Contact")} onClick={scrollToTop} className="hover:text-white">Contact Us</Link></li>
+                <li><Link to={createPageUrl("ReportIssue")} onClick={scrollToTop} className="hover:text-white">Report Issue / Feature Request</Link></li>
+                <li><Link to={createPageUrl("Privacy")} onClick={scrollToTop} className="hover:text-white">Privacy Policy</Link></li>
+                <li><Link to={createPageUrl("Terms")} onClick={scrollToTop} className="hover:text-white">Terms of Service</Link></li>
+              </ul>
+            </div>
+          </div>
+
+          <div className="border-t border-slate-700 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>&copy; 2025 EX3DPrints. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

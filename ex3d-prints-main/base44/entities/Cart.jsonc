@@ -1,0 +1,128 @@
+{
+  "name": "Cart",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User who owns this cart item"
+    },
+    "marketplace_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "business"
+      ],
+      "default": "consumer",
+      "description": "Which marketplace this cart item belongs to"
+    },
+    "product_id": {
+      "type": "string",
+      "description": "Product ID or Custom Request ID"
+    },
+    "product_name": {
+      "type": "string",
+      "description": "Name of product or custom request"
+    },
+    "custom_request_id": {
+      "type": "string",
+      "description": "Reference to CustomPrintRequest if this is a custom quote"
+    },
+    "quantity": {
+      "type": "number",
+      "default": 1,
+      "description": "Quantity of items"
+    },
+    "selected_material": {
+      "type": "string",
+      "description": "Selected material"
+    },
+    "selected_color": {
+      "type": "string",
+      "description": "Selected color(s) - comma separated for multi-color"
+    },
+    "selected_resolution": {
+      "type": "number",
+      "default": 0.2,
+      "description": "Selected print resolution in mm"
+    },
+    "use_recycled_filament": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to use recycled/eco-friendly filament"
+    },
+    "unit_price": {
+      "type": "number",
+      "description": "Price per unit"
+    },
+    "total_price": {
+      "type": "number",
+      "description": "Total price for this line item"
+    },
+    "multi_color_selections": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Array of colors for multi-color prints"
+    },
+    "print_file_scale": {
+      "type": "number",
+      "default": 100,
+      "description": "Scale percentage for print files"
+    },
+    "business_name": {
+      "type": "string",
+      "description": "Business name for business orders"
+    },
+    "business_customization": {
+      "type": "string",
+      "description": "Customization details for business orders (logo, text, etc.)"
+    }
+  },
+  "required": [
+    "user_id",
+    "product_id",
+    "quantity"
+  ],
+  "rls": {
+    "create": {
+      "data.user_id": "{{user.id}}"
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    }
+  }
+}

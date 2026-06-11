@@ -1,0 +1,65 @@
+{
+  "name": "Printer",
+  "type": "object",
+  "properties": {
+    "maker_id": {
+      "type": "string",
+      "description": "Owner maker ID"
+    },
+    "name": {
+      "type": "string",
+      "description": "Custom name for the printer"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Printer brand"
+    },
+    "model": {
+      "type": "string",
+      "description": "Printer model"
+    },
+    "print_volume": {
+      "type": "object",
+      "properties": {
+        "length": {
+          "type": "number"
+        },
+        "width": {
+          "type": "number"
+        },
+        "height": {
+          "type": "number"
+        }
+      },
+      "description": "Maximum print volume in mm"
+    },
+    "supported_materials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Materials this printer can handle"
+    },
+    "multi_color_capable": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this printer can do multi-color prints"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "printing",
+        "maintenance",
+        "inactive"
+      ],
+      "default": "active",
+      "description": "Printer status"
+    }
+  },
+  "required": [
+    "maker_id",
+    "brand",
+    "model"
+  ]
+}

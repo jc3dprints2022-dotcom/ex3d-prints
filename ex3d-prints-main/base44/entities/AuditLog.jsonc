@@ -1,0 +1,58 @@
+{
+  "name": "AuditLog",
+  "type": "object",
+  "properties": {
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "file_upload",
+        "token_issue",
+        "file_download",
+        "token_revoke",
+        "file_delete",
+        "download_failed",
+        "shipping_label_purchase",
+        "shipping_kit_order",
+        "email_sent"
+      ],
+      "description": "Type of security or business event"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "User who triggered the event"
+    },
+    "file_id": {
+      "type": "string",
+      "description": "Related file/product ID"
+    },
+    "token_id": {
+      "type": "string",
+      "description": "Related download token ID"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of request"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser/client user agent"
+    },
+    "details": {
+      "type": "object",
+      "description": "Additional event details"
+    },
+    "severity": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "critical"
+      ],
+      "default": "info",
+      "description": "Event severity level"
+    }
+  },
+  "required": [
+    "event_type"
+  ]
+}

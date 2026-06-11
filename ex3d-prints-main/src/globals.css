@@ -1,0 +1,145 @@
+/* Mobile-First Android Compatibility */
+body {
+  overscroll-behavior: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: pan-x pan-y;
+}
+
+/* Safe Area Insets for Notches */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-safe-bottom {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+}
+
+/* Disable Text Selection on Interactive Elements */
+button,
+a,
+.select-none,
+[role="button"] {
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+/* Touch Target Size - Minimum 44px */
+.touch-target,
+button,
+a,
+[role="button"] {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+  }
+}
+
+/* Custom Range Slider Styling - Show BOTH thumbs */
+
+/* Target slider thumbs */
+[data-radix-collection-item] {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #14b8a6;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Slider thumb role selector */
+span[role="slider"] {
+  width: 20px;
+  height: 20px;
+  border: 3px solid #14b8a6;
+  background: white;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  display: block;
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Hover state */
+span[role="slider"]:hover {
+  transform: scale(1.15);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  border-color: #0d9488;
+}
+
+/* Focus state */
+span[role="slider"]:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.3);
+  border-color: #0d9488;
+}
+
+/* Slider track */
+[data-orientation="horizontal"] {
+  position: relative;
+}
+
+/* Style the active range between thumbs */
+[data-orientation="horizontal"] > span[data-orientation="horizontal"] {
+  background: #14b8a6;
+  height: 4px;
+}
+
+/* Ensure slider root doesn't clip thumbs */
+.slider-root {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+/* Radix slider thumb */
+[data-radix-slider-thumb] {
+  display: block;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border: 3px solid #14b8a6;
+  border-radius: 50%;
+  cursor: grab;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+[data-radix-slider-thumb]:active {
+  cursor: grabbing;
+}

@@ -1,0 +1,18 @@
+{
+  "name": "runEmailCampaigns",
+  "entry": "entry.ts",
+  "automations": [
+    {
+      "type": "scheduled",
+      "name": "daily_email_campaigns",
+      "description": "Runs all active email campaigns (cart abandonment, inactive users, order delivered, wishlist reminders) once per day. Runs an hour after the delivery check so newly delivered orders are included.",
+      "is_active": true,
+
+      "schedule_mode": "recurring",
+      "schedule_type": "simple",
+      "repeat_unit": "days",
+      "repeat_interval": 1,
+      "start_time": "15:00"
+    }
+  ]
+}

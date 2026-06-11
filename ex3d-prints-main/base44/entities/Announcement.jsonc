@@ -1,0 +1,72 @@
+{
+  "name": "Announcement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Announcement title"
+    },
+    "message": {
+      "type": "string",
+      "description": "Announcement message content"
+    },
+    "target_audience": {
+      "type": "string",
+      "enum": [
+        "all",
+        "consumers",
+        "makers",
+        "specific_user"
+      ],
+      "default": "all",
+      "description": "Who should see this announcement"
+    },
+    "specific_user_id": {
+      "type": "string",
+      "description": "Specific user ID if target is specific_user"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warning",
+        "urgent"
+      ],
+      "default": "info",
+      "description": "Priority level of announcement"
+    },
+    "send_email": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to also send as email"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "published",
+        "archived"
+      ],
+      "default": "published",
+      "description": "Announcement status"
+    },
+    "expiry_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When announcement should stop showing"
+    },
+    "read_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "description": "User IDs who have read this announcement"
+    }
+  },
+  "required": [
+    "title",
+    "message",
+    "target_audience"
+  ]
+}

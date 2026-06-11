@@ -1,0 +1,118 @@
+{
+  "name": "Payout",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User receiving the payout"
+    },
+    "user_role": {
+      "type": "string",
+      "enum": [
+        "maker",
+        "designer",
+        "affiliate"
+      ],
+      "description": "Role for this payout"
+    },
+    "gross_amount": {
+      "type": "number",
+      "description": "Total earnings before deductions"
+    },
+    "subscription_cost": {
+      "type": "number",
+      "default": 0,
+      "description": "Subscription fee deducted"
+    },
+    "shipping_kit_charges": {
+      "type": "number",
+      "default": 0,
+      "description": "Shipping kit charges deducted"
+    },
+    "platform_fees": {
+      "type": "number",
+      "default": 0,
+      "description": "Other platform fees"
+    },
+    "net_amount": {
+      "type": "number",
+      "description": "Final payout amount after deductions"
+    },
+    "period_start": {
+      "type": "string",
+      "format": "date",
+      "description": "Start of payout period"
+    },
+    "period_end": {
+      "type": "string",
+      "format": "date",
+      "description": "End of payout period"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "processing",
+        "completed",
+        "failed"
+      ],
+      "default": "pending",
+      "description": "Payout status"
+    },
+    "payment_method": {
+      "type": "string",
+      "description": "Payment method used"
+    },
+    "transaction_id": {
+      "type": "string",
+      "description": "External transaction ID"
+    },
+    "related_orders": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Order IDs included in this payout"
+    },
+    "payout_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When payout was processed"
+    }
+  },
+  "required": [
+    "user_id",
+    "user_role",
+    "gross_amount",
+    "net_amount"
+  ],
+  "rls": {
+    "create": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

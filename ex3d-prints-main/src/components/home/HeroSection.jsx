@@ -1,0 +1,181 @@
+import React, { useState, useEffect, useRef } from "react";
+import { Link } from "react-router-dom";
+import { createPageUrl } from "@/utils";
+import { Button } from "@/components/ui/button";
+import { base44 } from "@/api/base44Client";
+
+export default function HeroSection() {
+  const [products, setProducts] = useState([]);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [nextImageIndex, setNextImageIndex] = useState(null);
+  const [isFading, setIsFading] = useState(false);
+  const [preloadedImages, setPreloadedImages] = useState(new Set());
+
+  useEffect(() => {
+    loadProducts();
+  }, []);
+
+  useEffect(() => {
+    if (products.length > 0) {
+      products.forEach((product, index) => {
+        const img = new Image();
+        img.src = product.images[0];
+        img.onload = () => {
+          setPreloadedImages((prev) => new Set(prev).add(index));
+        };
+      });
+    }
+  }, [products]);
+
+  const transitionTo = (nextIndex) => {
+    if (isFading || nextIndex === currentImageIndex) return;
+    setNextImageIndex(nextIndex);
+    setIsFading(true);
+    setTimeout(() => {
+      setCurrentImageIndex(nextIndex);
+      setNextImageIndex(null);
+      setIsFading(false);
+    }, 800);
+  };
+
+  useEffect(() => {
+    if (products.length > 1 && preloadedImages.size > 0) {
+      const interval = setInterval(() => {
+        const nextIndex = (currentImageIndex + 1) % products.length;
+        if (preloadedImages.has(nextIndex)) {
+          transitionTo(nextIndex);
+        }
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, [products, currentImageIndex, preloadedImages, isFading]);
+
+  const loadProducts = async () => {
+    try {
+      const featuredList = await base44.entities.HomepageFeatured.filter({ is_active: true });
+      if (featuredList.length > 0) {
+        featuredList.sort((a, b) => a.display_order - b.display_order);
+        const productsData = await Promise.all(
+          featuredList.map((f) => base44.entities.Product.get(f.product_id).catch(() => null))
+        );
+        const validProducts = productsData.filter((p) => p && p.images && p.images.length > 0);
+        if (validProducts.length > 0) {
+          setProducts(validProducts);
+          return;
+        }
+      }
+      const allProducts = await base44.entities.Product.list();
+      const topProducts = allProducts.
+      filter((p) => p.status === "active" && p.images && p.images.length > 0).
+      sort((a, b) => (b.view_count || 0) - (a.view_count || 0)).
+      slice(0, 12);
+      setProducts(topProducts);
+    } catch (error) {
+      console.error("Failed to load products for slideshow:", error);
+    }
+  };
+
+  const handleImageClick = () => {
+    if (products[currentImageIndex]) {
+      window.location.href = `${createPageUrl("ProductDetail")}?id=${products[currentImageIndex].id}`;
+    }
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleDotClick = (index) => {
+    if (preloadedImages.has(index) && index !== currentImageIndex) {
+      transitionTo(index);
+    }
+  };
+
+  return (
+    <section className="relative bg-gradient-to-br from-slate-50 via-white to-teal-50 py-20 overflow-hidden" style={{ minHeight: "600px" }}>
+      {/* Background Slideshow */}
+      <div className="absolute inset-0">
+        {products.length > 0 && preloadedImages.size > 0 &&
+        <>
+            {/* Current image - fades out */}
+            <div
+            className="absolute inset-0 cursor-pointer"
+            style={{ opacity: isFading ? 0 : 1, transition: "opacity 800ms ease-in-out", zIndex: 10, pointerEvents: isFading ? "none" : "auto" }}
+            onClick={handleImageClick}>
+            
+              <img
+              src={products[currentImageIndex]?.images?.[0]}
+              alt="Featured product"
+              className="w-full h-full object-cover"
+              style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
+              draggable={false} />
+            
+            </div>
+            {/* Next image - fades in simultaneously */}
+            {nextImageIndex !== null &&
+          <div className="absolute inset-0" style={{ zIndex: 9, opacity: isFading ? 1 : 0, transition: "opacity 800ms ease-in-out" }}>
+                <img
+              src={products[nextImageIndex]?.images?.[0]}
+              alt="Next featured product"
+              className="w-full h-full object-cover"
+              style={{ filter: "brightness(0.6)", transform: "translateZ(0)" }}
+              draggable={false} />
+
+              </div>
+          }
+            <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/25 to-black/40 pointer-events-none" style={{ zIndex: 30 }} />
+          </>
+        }
+      </div>
+
+      {/* Main Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" style={{ zIndex: 40 }}>
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl font-bold text-white mb-6 leading-tight drop-shadow-lg">The Best Rocket Models You Can Buy
+
+          </h1>
+
+          <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed drop-shadow-md">
+            Premium Saturn V and SLS rocket model kits for people who love space.
+          </p>
+
+          <div className="flex flex-col sm:flex-row justify-center gap-4 mb-8">
+            <Button
+              asChild
+              size="lg"
+              onClick={scrollToTop}
+              className="h-16 px-10 bg-teal-600 hover:bg-teal-700 text-white text-xl font-bold shadow-2xl">
+              
+              <Link to={createPageUrl("Marketplace")}>Shop</Link>
+            </Button>
+          </div>
+
+          {/* Trust badges */}
+          <div className="flex flex-wrap justify-center gap-4 sm:gap-8 mb-6 text-white/90 text-sm font-medium">
+            <span>🔄 Free remake guarantee</span>
+            <span>⚡ Ships in days, not weeks</span>
+          </div>
+
+          {products.length > 1 &&
+          <div className="flex justify-center gap-2">
+              {products.map((_, index) =>
+            <button
+              key={index}
+              onClick={() => handleDotClick(index)}
+              disabled={!preloadedImages.has(index)}
+              className={`w-2 h-2 rounded-full transition-all ${
+              index === currentImageIndex ?
+              "bg-teal-400 w-8" :
+              preloadedImages.has(index) ?
+              "bg-white/50 hover:bg-white/80" :
+              "bg-white/20"}`
+              } />
+
+            )}
+            </div>
+          }
+        </div>
+      </div>
+    </section>);
+
+}

@@ -1,0 +1,72 @@
+{
+  "name": "ExpReward",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Name of the reward"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of what the reward includes"
+    },
+    "exp_cost": {
+      "type": "number",
+      "description": "EXP points required to redeem"
+    },
+    "reward_type": {
+      "type": "string",
+      "enum": [
+        "consumer",
+        "maker",
+        "designer"
+      ],
+      "default": "consumer",
+      "description": "Type of user this reward is for"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "filament",
+        "equipment",
+        "print",
+        "accessory",
+        "discount",
+        "boost"
+      ],
+      "description": "Category of the reward"
+    },
+    "image_url": {
+      "type": "string",
+      "description": "Image URL for the reward"
+    },
+    "stock_quantity": {
+      "type": "number",
+      "description": "Available stock (null/undefined for unlimited)"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the reward is currently available"
+    },
+    "existing_product_id": {
+      "type": "string",
+      "description": "Link to existing Product if this reward redeems a specific product"
+    },
+    "product_link": {
+      "type": "string",
+      "description": "URL path to the product listing page"
+    },
+    "boost_duration_weeks": {
+      "type": "number",
+      "description": "Duration in weeks for boost rewards"
+    }
+  },
+  "required": [
+    "name",
+    "description",
+    "exp_cost",
+    "reward_type",
+    "category"
+  ]
+}

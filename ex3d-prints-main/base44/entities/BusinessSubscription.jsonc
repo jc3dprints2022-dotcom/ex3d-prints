@@ -1,0 +1,126 @@
+{
+  "name": "BusinessSubscription",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Business buyer user ID"
+    },
+    "stripe_subscription_id": {
+      "type": "string",
+      "description": "Stripe subscription ID for recurring billing"
+    },
+    "stripe_customer_id": {
+      "type": "string",
+      "description": "Stripe customer ID"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "paused",
+        "cancelled",
+        "past_due"
+      ],
+      "default": "active"
+    },
+    "frequency": {
+      "type": "string",
+      "enum": [
+        "weekly",
+        "biweekly",
+        "monthly"
+      ],
+      "description": "Recurring order frequency"
+    },
+    "next_order_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the next order will be created"
+    },
+    "last_order_date": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the last order was placed"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "product_id": {
+            "type": "string"
+          },
+          "product_name": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "number"
+          },
+          "unit_price": {
+            "type": "number"
+          },
+          "selected_material": {
+            "type": "string"
+          },
+          "selected_color": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Products in the recurring order"
+    },
+    "delivery_method": {
+      "type": "string",
+      "enum": [
+        "shipping",
+        "local_delivery"
+      ],
+      "default": "shipping"
+    },
+    "delivery_address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        }
+      }
+    },
+    "subtotal_per_cycle": {
+      "type": "number",
+      "description": "Subtotal before discounts"
+    },
+    "bulk_discount_percentage": {
+      "type": "number",
+      "description": "Applied bulk discount percentage (10 or 20)"
+    },
+    "total_per_cycle": {
+      "type": "number",
+      "description": "Total amount charged per cycle"
+    },
+    "paused_until": {
+      "type": "string",
+      "format": "date-time",
+      "description": "If paused, when to resume"
+    },
+    "skip_next_order": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether to skip the next scheduled order"
+    }
+  },
+  "required": [
+    "user_id",
+    "frequency",
+    "items"
+  ]
+}

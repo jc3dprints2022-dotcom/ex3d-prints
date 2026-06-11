@@ -1,0 +1,56 @@
+{
+  "name": "NewsletterSubscriber",
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "string",
+      "description": "Subscriber email address"
+    },
+    "name": {
+      "type": "string",
+      "description": "Subscriber name if available"
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "checkout",
+        "signup",
+        "landing_page",
+        "other"
+      ],
+      "default": "checkout",
+      "description": "Where the subscriber opted in"
+    },
+    "opted_in": {
+      "type": "boolean",
+      "default": true,
+      "description": "Whether the subscriber has opted in"
+    },
+    "unsubscribed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When they unsubscribed (if applicable)"
+    }
+  },
+  "required": [
+    "email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "update": {
+      "user_condition": {
+        "role": "admin"
+      }
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

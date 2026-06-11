@@ -1,0 +1,151 @@
+{
+  "name": "Affiliate",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "Affiliated user's ID"
+    },
+    "affiliate_id": {
+      "type": "string",
+      "description": "Unique URL-safe affiliate identifier"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "platform": {
+      "type": "string",
+      "description": "e.g. YouTube, Instagram, TikTok, Blog"
+    },
+    "follower_count": {
+      "type": "number"
+    },
+    "content_category": {
+      "type": "string",
+      "enum": [
+        "kit_cards",
+        "rocket_models",
+        "halloween",
+        "easter",
+        "april_fools",
+        "independence_day",
+        "dorm_essentials",
+        "desk",
+        "art",
+        "gadgets",
+        "toys_and_games",
+        "thanksgiving",
+        "christmas",
+        "valentines_day",
+        "home_decor",
+        "office_supplies",
+        "accessories",
+        "collectibles",
+        "misc"
+      ],
+      "description": "Content category matching product categories"
+    },
+    "shipping_address": {
+      "type": "object",
+      "description": "Shipping address for complimentary product delivery",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "street": {
+          "type": "string"
+        },
+        "street2": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zip": {
+          "type": "string"
+        },
+        "country": {
+          "type": "string"
+        }
+      }
+    },
+    "free_sample_claimed": {
+      "type": "boolean",
+      "default": false
+    },
+    "free_sample_claimed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the free sample was claimed"
+    },
+    "free_sample_product_id": {
+      "type": "string"
+    },
+    "free_sample_order_id": {
+      "type": "string"
+    },
+    "total_clicks": {
+      "type": "number",
+      "default": 0
+    },
+    "total_orders": {
+      "type": "number",
+      "default": 0
+    },
+    "total_earnings": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended"
+      ],
+      "default": "active"
+    }
+  },
+  "required": [
+    "user_id",
+    "affiliate_id",
+    "email"
+  ],
+  "rls": {
+    "create": {},
+    "read": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "update": {
+      "$or": [
+        {
+          "data.user_id": "{{user.id}}"
+        },
+        {
+          "user_condition": {
+            "role": "admin"
+          }
+        }
+      ]
+    },
+    "delete": {
+      "user_condition": {
+        "role": "admin"
+      }
+    }
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "name": "PageView",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "description": "User ID if logged in, null for anonymous"
+    },
+    "user_type": {
+      "type": "string",
+      "enum": [
+        "signed_in",
+        "not_signed_in",
+        "maker"
+      ],
+      "description": "Type of user viewing the page"
+    },
+    "page_url": {
+      "type": "string",
+      "description": "URL of the page viewed"
+    },
+    "timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the page was viewed"
+    },
+    "session_id": {
+      "type": "string",
+      "description": "Session identifier for tracking unique visitors"
+    },
+    "ip_address": {
+      "type": "string",
+      "description": "IP address of viewer"
+    },
+    "user_agent": {
+      "type": "string",
+      "description": "Browser user agent"
+    }
+  },
+  "required": [
+    "user_type",
+    "page_url"
+  ]
+}

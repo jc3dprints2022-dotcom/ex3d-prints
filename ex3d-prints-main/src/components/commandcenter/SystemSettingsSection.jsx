@@ -1,0 +1,249 @@
+import React, { useState, useEffect } from "react";
+import { base44 } from "@/api/base44Client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Settings, AlertTriangle, CheckCircle, Loader2, Truck } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SecurityDRMSection from "./SecurityDRMSection";
+import AnnouncementsSection from "./AnnouncementsSection";
+import UserManagementSection from "./UserManagementSection";
+
+export default function SystemSettingsSection() {
+  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [shippingApiMode, setShippingApiMode] = useState('live');
+  const [loading, setLoading] = useState(false);
+  const [shippingLoading, setShippingLoading] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const systemUser = await base44.auth.me();
+      setMaintenanceMode(systemUser.maintenance_mode || false);
+      setShippingApiMode(systemUser.shipping_api_mode || 'live');
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  };
+
+  const toggleMaintenanceMode = async (enabled) => {
+    setLoading(true);
+    try {
+      const adminUser = await base44.auth.me();
+      await base44.entities.User.update(adminUser.id, { maintenance_mode: enabled });
+      setMaintenanceMode(enabled);
+      toast({ 
+        title: enabled ? "Maintenance Mode Enabled" : "Maintenance Mode Disabled",
+        description: enabled 
+          ? "The platform is now in maintenance mode. Users will see a maintenance page."
+          : "The platform is now accessible to all users."
+      });
+    } catch (error) {
+      toast({ title: "Failed to toggle maintenance mode", variant: "destructive" });
+    }
+    setLoading(false);
+  };
+
+  const toggleShippingApiMode = async (mode) => {
+    setShippingLoading(true);
+    try {
+      const adminUser = await base44.auth.me();
+      await base44.entities.User.update(adminUser.id, { shipping_api_mode: mode });
+      setShippingApiMode(mode);
+      toast({
+        title: `Shipping API switched to ${mode === 'test' ? 'TEST' : 'LIVE'} mode`,
+        description: mode === 'test'
+          ? "All shipping calls will use the Shippo test key."
+          : "All shipping calls will use the live Shippo key (except jc3dprints2022@gmail.com which always uses test)."
+      });
+    } catch (error) {
+      toast({ title: "Failed to update shipping API mode", variant: "destructive" });
+    }
+    setShippingLoading(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      <Tabs defaultValue="general" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 bg-slate-900 border-slate-700">
+          <TabsTrigger value="general" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            General Settings
+          </TabsTrigger>
+          <TabsTrigger value="users" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            User Management
+          </TabsTrigger>
+          <TabsTrigger value="security" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            Security & Logs
+          </TabsTrigger>
+          <TabsTrigger value="announcements" className="data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-300">
+            Announcements
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="general">
+          <Card className="bg-slate-800 border-slate-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                System Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="bg-slate-900 p-6 rounded-lg border border-slate-700">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <Label className="text-white text-lg font-semibold">Maintenance Mode</Label>
+                    <p className="text-slate-400 text-sm mt-1">
+                      Temporarily disable user access for system maintenance
+                    </p>
+                  </div>
+                  <Switch
+                    checked={maintenanceMode}
+                    onCheckedChange={toggleMaintenanceMode}
+                    disabled={loading}
+                  />
+                </div>
+                
+                {maintenanceMode && (
+                  <Alert className="border-orange-500 bg-orange-950">
+                    <AlertTriangle className="w-4 h-4 text-orange-400" />
+                    <AlertDescription className="text-orange-200">
+                      Platform is currently in maintenance mode. Only admins can access the system.
+                    </AlertDescription>
+                  </Alert>
+                )}
+                
+                {!maintenanceMode && (
+                  <Alert className="border-green-500 bg-green-950">
+                    <CheckCircle className="w-4 h-4 text-green-400" />
+                    <AlertDescription className="text-green-200">
+                      Platform is operational and accessible to all users.
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+
+              {/* Shipping API Mode */}
+              <div className="bg-slate-900 p-6 rounded-lg border border-slate-700">
+                <div className="flex items-center gap-2 mb-4">
+                  <Truck className="w-5 h-5 text-cyan-400" />
+                  <Label className="text-white text-lg font-semibold">Shipping API Mode</Label>
+                </div>
+                <p className="text-slate-400 text-sm mb-4">
+                  Note: jc3dprints2022@gmail.com always uses the test key regardless of this setting.
+                </p>
+                <div className="flex gap-3">
+                  <Button
+                    size="sm"
+                    onClick={() => toggleShippingApiMode('live')}
+                    disabled={shippingLoading}
+                    className={shippingApiMode === 'live' ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}
+                  >
+                    {shippingLoading && shippingApiMode !== 'live' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                    🟢 Live Mode
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => toggleShippingApiMode('test')}
+                    disabled={shippingLoading}
+                    className={shippingApiMode === 'test' ? 'bg-yellow-600 hover:bg-yellow-700' : 'bg-slate-700 hover:bg-slate-600 text-slate-300'}
+                  >
+                    {shippingLoading && shippingApiMode !== 'test' ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                    🟡 Test Mode
+                  </Button>
+                </div>
+                <p className="text-xs mt-3 text-slate-500">
+                  Current: <span className={shippingApiMode === 'test' ? 'text-yellow-400 font-semibold' : 'text-green-400 font-semibold'}>
+                    {shippingApiMode === 'test' ? 'TEST (Shippo Test Key)' : 'LIVE (Shippo Live Key)'}
+                  </span>
+                </p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <Card className="bg-slate-900 border-slate-700">
+                  <CardContent className="p-4">
+                    <h4 className="text-white font-semibold mb-2">Platform Status</h4>
+                    <div className="space-y-2 text-sm text-slate-300">
+                      <div className="flex justify-between">
+                        <span>Status:</span>
+                        <span className={maintenanceMode ? "text-orange-400" : "text-green-400"}>
+                          {maintenanceMode ? "Maintenance" : "Operational"}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Version:</span>
+                        <span>v2.1.0</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Last Restart:</span>
+                        <span>{new Date().toLocaleDateString()}</span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-900 border-slate-700">
+                  <CardContent className="p-4">
+                    <h4 className="text-white font-semibold mb-2">Quick Actions</h4>
+                    <div className="space-y-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full border-slate-600 text-slate-300"
+                        onClick={() => window.location.reload()}
+                      >
+                        Clear Cache
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="w-full border-slate-600 text-slate-300"
+                        onClick={() => toast({ title: "Reindex triggered" })}
+                      >
+                        Reindex Database
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="w-full border-cyan-700 text-cyan-400 hover:bg-cyan-900/20"
+                        onClick={async () => {
+                          try {
+                            const res = await base44.functions.invoke("notifyMakersWithOrders", {});
+                            toast({ title: `Notified ${res?.data?.emailed || 0} maker(s) with assigned orders` });
+                          } catch (e) {
+                            toast({ title: "Failed to send maker notifications", variant: "destructive" });
+                          }
+                        }}
+                      >
+                        📧 Notify Makers with Orders
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <UserManagementSection />
+        </TabsContent>
+
+        <TabsContent value="security">
+          <SecurityDRMSection />
+        </TabsContent>
+
+        <TabsContent value="announcements">
+          <AnnouncementsSection />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

@@ -1,0 +1,111 @@
+{
+  "name": "MakerApplication",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "type": "string"
+    },
+    "full_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "experience_level": {
+      "type": "string"
+    },
+    "weekly_capacity": {
+      "type": "number"
+    },
+    "campus_location": {
+      "type": "string",
+      "description": "Pipe-delimited address: street|city|state|zip"
+    },
+    "materials": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "printers": {
+      "type": "array",
+      "description": "Printer data submitted during application",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "brand": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "print_volume": {
+            "type": "object",
+            "properties": {
+              "length": {
+                "type": "number"
+              },
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              }
+            }
+          },
+          "supported_materials": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "multi_color_capable": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "filaments": {
+      "type": "array",
+      "description": "Filament data submitted during application",
+      "items": {
+        "type": "object",
+        "properties": {
+          "material_type": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "quantity_kg": {
+            "type": "number"
+          }
+        }
+      }
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "approved",
+        "rejected"
+      ],
+      "default": "pending"
+    },
+    "admin_notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "user_id",
+    "full_name",
+    "email",
+    "campus_location"
+  ]
+}

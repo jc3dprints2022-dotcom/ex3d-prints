@@ -1,0 +1,32 @@
+{
+  "name": "CabinetQueue",
+  "type": "object",
+  "properties": {
+    "order_id": {
+      "type": "string",
+      "description": "Order waiting for cabinet"
+    },
+    "maker_id": {
+      "type": "string",
+      "description": "Maker who needs to drop off"
+    },
+    "queue_position": {
+      "type": "number",
+      "description": "Position in queue"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "waiting",
+        "assigned",
+        "completed"
+      ],
+      "default": "waiting",
+      "description": "Queue status"
+    }
+  },
+  "required": [
+    "order_id",
+    "maker_id"
+  ]
+}
